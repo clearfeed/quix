@@ -8,7 +8,9 @@
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "lint": "eslint . --ext .ts",
-    "test": "jest"
+    "test": "jest",
+    "link-packages": "yarn link @clearfeed-agent/hubspot && yarn link @clearfeed-agent/jira && yarn link @clearfeed-agent/github",
+    "postinstall": "cd agent-packages && yarn install && yarn build && cd .. && yarn run link-packages"
   },
   "keywords": [
     "openai",
@@ -20,8 +22,9 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@hubspot/api-client": "^12.0.1",
-    "@octokit/rest": "^20.0.2",
+    "@clearfeed-agent/github": "file:agent-packages/packages/github",
+    "@clearfeed-agent/hubspot": "file:agent-packages/packages/hubspot",
+    "@clearfeed-agent/jira": "file:agent-packages/packages/jira",
     "@slack/web-api": "^7.8.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
@@ -29,7 +32,6 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "jira-client": "^8.2.2",
     "openai": "^4.83.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3",

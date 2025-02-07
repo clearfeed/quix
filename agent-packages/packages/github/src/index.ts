@@ -1,47 +1,26 @@
 import { Octokit } from '@octokit/rest';
-import config from '../config';
+import {
+  GitHubConfig,
+  GitHubPR,
+  GitHubPRResponse,
+  SearchPRsParams,
+  SearchPRsResponse,
+  GetPRResponse
+} from './types';
 
-interface GitHubPR {
-  number: number;
-  title: string;
-  state: string;
-  user: {
-    login: string;
-  };
-  created_at: string;
-  updated_at: string;
-  html_url: string;
-  body?: string;
-  labels: Array<{ name: string }>;
-}
-
-interface GitHubPRResponse {
-  number: number;
-  title: string;
-  status: string;
-  reporter: string;
-  createdAt: string;
-  lastUpdated: string;
-  url: string;
-  description?: string;
-  labels: string[];
-}
+export * from './types';
+export * from './tools';
 
 export class GitHubService {
-  private static instance: GitHubService;
   private client: Octokit | null = null;
+  private config: GitHubConfig;
 
-  private constructor() { }
-
-  static getInstance(): GitHubService {
-    if (!GitHubService.instance) {
-      GitHubService.instance = new GitHubService();
-    }
-    return GitHubService.instance;
+  constructor(config: GitHubConfig) {
+    this.config = config;
   }
 
   private validateConfig(): { isValid: boolean; error?: string } {
-    if (!config.github.token || !config.github.owner) {
+    if (!this.config.token || !this.config.owner) {
       return {
         isValid: false,
         error: 'GitHub integration is not configured. Please set GITHUB_TOKEN and GITHUB_OWNER environment variables.'
@@ -58,7 +37,7 @@ export class GitHubService {
       }
 
       this.client = new Octokit({
-        auth: config.github.token
+        auth: this.config.token
       });
     }
     return this.client;
@@ -78,19 +57,14 @@ export class GitHubService {
     };
   }
 
-  async searchPRs(params: {
-    repo: string;
-    status?: string;
-    keyword?: string;
-    reporter?: string;
-  }): Promise<{ success: boolean; prs?: GitHubPRResponse[]; error?: string }> {
+  async searchPRs(params: SearchPRsParams): Promise<SearchPRsResponse> {
     try {
       const validation = this.validateConfig();
       if (!validation.isValid) {
         return { success: false, error: validation.error };
       }
 
-      let query = `repo:${config.github.owner}/${params.repo}`;
+      let query = `repo:${this.config.owner}/${params.repo}`;
 
       if (params.status) {
         query += ` is:${params.status}`;
@@ -117,7 +91,7 @@ export class GitHubService {
 
       return {
         success: true,
-        prs
+        data: { prs }
       };
     } catch (error) {
       console.error('Error searching GitHub PRs:', error);
@@ -128,7 +102,7 @@ export class GitHubService {
     }
   }
 
-  async getPR(prNumber: number, repo: string): Promise<{ success: boolean; pr?: GitHubPRResponse; error?: string }> {
+  async getPR(prNumber: number, repo: string): Promise<GetPRResponse> {
     try {
       const validation = this.validateConfig();
       if (!validation.isValid) {
@@ -136,14 +110,16 @@ export class GitHubService {
       }
 
       const response = await this.getClient().pulls.get({
-        owner: config.github.owner!,
+        owner: this.config.owner,
         repo: repo,
         pull_number: prNumber
       });
 
       return {
         success: true,
-        pr: this.formatPR(response.data as unknown as GitHubPR)
+        data: {
+          pr: this.formatPR(response.data as unknown as GitHubPR)
+        }
       };
     } catch (error) {
       console.error('Error fetching GitHub PR:', error);
@@ -153,7 +129,4 @@ export class GitHubService {
       };
     }
   }
-}
-
-// Export the singleton instance
-export const github = GitHubService.getInstance(); 
+} 

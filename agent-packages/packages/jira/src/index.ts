@@ -1,51 +1,27 @@
 import JiraClient from 'jira-client';
-import config from '../config';
-import logger from '../utils/logger';
-interface JiraIssue {
-  key: string;
-  fields: {
-    summary: string;
-    status: { name: string };
-    assignee?: { displayName: string };
-    priority?: { name: string };
-    issuetype: { name: string };
-    updated: string;
-    description?: string;
-    created?: string;
-    reporter?: { displayName: string };
-    labels?: string[];
-  };
-}
+import {
+  JiraConfig,
+  JiraIssue,
+  JiraIssueResponse,
+  CreateIssueParams,
+  GetIssueResponse,
+  SearchIssuesResponse,
+  AssignIssueResponse
+} from './types';
 
-interface JiraIssueResponse {
-  id: string;
-  summary: string;
-  status: string;
-  assignee: string;
-  priority: string;
-  type: string;
-  description?: string;
-  created?: string;
-  reporter: string;
-  lastUpdated: string;
-  labels?: string[];
-}
+export * from './types';
+export * from './tools';
 
 export class JiraService {
-  private static instance: JiraService;
   private client: JiraClient | null = null;
+  private config: JiraConfig;
 
-  private constructor() { }
-
-  static getInstance(): JiraService {
-    if (!JiraService.instance) {
-      JiraService.instance = new JiraService();
-    }
-    return JiraService.instance;
+  constructor(config: JiraConfig) {
+    this.config = config;
   }
 
   private validateConfig(): { isValid: boolean; error?: string } {
-    if (!config.jira.host || !config.jira.password) {
+    if (!this.config.host || !this.config.password) {
       return {
         isValid: false,
         error: 'JIRA integration is not configured. Please set JIRA_HOST and JIRA_API_TOKEN environment variables.'
@@ -62,9 +38,9 @@ export class JiraService {
       }
 
       this.client = new JiraClient({
-        host: config.jira.host!,
-        username: config.jira.username,
-        password: config.jira.password!,
+        host: this.config.host,
+        username: this.config.username,
+        password: this.config.password,
         protocol: 'https',
         apiVersion: '2',
         strictSSL: true
@@ -89,7 +65,7 @@ export class JiraService {
     };
   }
 
-  async getIssue(issueId: string): Promise<{ success: boolean; issue?: JiraIssueResponse; error?: string }> {
+  async getIssue(issueId: string): Promise<GetIssueResponse> {
     try {
       const validation = this.validateConfig();
       if (!validation.isValid) {
@@ -99,7 +75,9 @@ export class JiraService {
       const issue: JiraIssue = await this.getClient().findIssue(issueId);
       return {
         success: true,
-        issue: this.formatIssue(issue)
+        data: {
+          issue: this.formatIssue(issue)
+        }
       };
     } catch (error) {
       console.error('Error fetching Jira issue:', error);
@@ -110,7 +88,7 @@ export class JiraService {
     }
   }
 
-  async searchIssues(keyword: string): Promise<{ success: boolean; issues?: JiraIssueResponse[]; error?: string }> {
+  async searchIssues(keyword: string): Promise<SearchIssuesResponse> {
     try {
       const validation = this.validateConfig();
       if (!validation.isValid) {
@@ -125,7 +103,9 @@ export class JiraService {
 
       return {
         success: true,
-        issues: response.issues.map((issue: JiraIssue) => this.formatIssue(issue))
+        data: {
+          issues: response.issues.map((issue: JiraIssue) => this.formatIssue(issue))
+        }
       };
     } catch (error) {
       console.error('Error searching Jira issues:', error);
@@ -136,14 +116,7 @@ export class JiraService {
     }
   }
 
-  async createIssue(params: {
-    projectKey: string;
-    summary: string;
-    description: string;
-    issueType: string;
-    priority?: string;
-    assignee?: string;
-  }): Promise<{ success: boolean; issue?: JiraIssueResponse; error?: string }> {
+  async createIssue(params: CreateIssueParams): Promise<GetIssueResponse> {
     try {
       const validation = this.validateConfig();
       if (!validation.isValid) {
@@ -189,7 +162,9 @@ export class JiraService {
 
       return {
         success: true,
-        issue: this.formatIssue(issue.fields ? issue : minimalIssue, params)
+        data: {
+          issue: this.formatIssue(issue.fields ? issue : minimalIssue, params)
+        }
       };
     } catch (error) {
       console.error('Error creating Jira issue:', error);
@@ -203,7 +178,6 @@ export class JiraService {
   private async findUserAccountId(username: string): Promise<string | null> {
     try {
       const client = this.getClient() as any;
-      // Using doRequest method which is definitely available
       const users = await client.searchUsers({
         query: username,
         startAt: 0,
@@ -220,7 +194,7 @@ export class JiraService {
     }
   }
 
-  async assignIssue(issueId: string, assignee: string): Promise<{ success: boolean; error?: string }> {
+  async assignIssue(issueId: string, assignee: string): Promise<AssignIssueResponse> {
     try {
       const validation = this.validateConfig();
       if (!validation.isValid) {
@@ -236,7 +210,6 @@ export class JiraService {
       }
 
       const client = this.getClient() as any;
-      // Using doRequest method for assignment
       await client.updateAssigneeWithId(issueId, accountId);
 
       return {
@@ -250,12 +223,4 @@ export class JiraService {
       };
     }
   }
-}
-
-// Export the singleton instance
-export const jira = JiraService.getInstance();
-
-// These exports can be removed if not needed elsewhere
-// export const getJiraIssue = (issueId: string) => jiraService.getIssue(issueId);
-// export const searchJiraIssues = (keyword: string) => jiraService.searchIssues(keyword);
-// export const createJiraIssue = (params: Parameters<typeof jiraService.createIssue>[0]) => jiraService.createIssue(params); 
+} 
