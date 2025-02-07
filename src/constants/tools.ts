@@ -10,10 +10,10 @@ const toolsMap = {
     },
   },
   jira: {
-    search_jira_issues: {
-      name: 'search_jira_issues',
+    find_jira_ticket: {
+      name: 'find_jira_ticket',
       function: ({ keyword }: { keyword: string }) => searchJiraIssues(keyword),
-      description: 'Search for issues in Jira based on a keyword',
+      description: 'Find JIRA issues based on a keyword',
     },
   },
 } as const;
@@ -39,8 +39,8 @@ export const tools = [
   {
     type: 'function' as const,
     function: {
-      name: toolsMap.jira.search_jira_issues.name,
-      description: toolsMap.jira.search_jira_issues.description,
+      name: toolsMap.jira.find_jira_ticket.name,
+      description: toolsMap.jira.find_jira_ticket.description,
       parameters: {
         type: 'object',
         properties: {
@@ -57,5 +57,5 @@ export const tools = [
 
 export const toolHandlers: Record<string, (args: any) => Promise<any>> = {
   [toolsMap.hubspot.search_hubspot_deals.name]: toolsMap.hubspot.search_hubspot_deals.function,
-  [toolsMap.jira.search_jira_issues.name]: toolsMap.jira.search_jira_issues.function,
+  [toolsMap.jira.find_jira_ticket.name]: toolsMap.jira.find_jira_ticket.function,
 };

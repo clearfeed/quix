@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import config from '../config';
 import { toolHandlers } from '../constants/tools';
 import { tools } from '../constants/tools';
+import logger from '../utils/logger';
 const openai = new OpenAI({
   apiKey: config.openai.apiKey,
 });
@@ -13,7 +14,7 @@ export async function processMessage(message: string): Promise<string> {
     messages: [
       {
         role: 'system',
-        content: 'You are a helpful assistant that can interact with various business tools and APIs. Use the available tools to help users find the information they need.',
+        content: 'You are a helpful assistant that must use the available tools when relevant to answer the user\'s queries. If a user asks about Jira issues, always call the Jira search tool.',
       },
       { role: 'user', content: message },
     ],
@@ -23,10 +24,14 @@ export async function processMessage(message: string): Promise<string> {
 
   const responseMessage = response.choices[0].message;
 
+  logger.info(`Response: ${JSON.stringify(responseMessage)}`);
+
   if (responseMessage.tool_calls?.[0]) {
     const toolCall = responseMessage.tool_calls[0];
     const functionName = toolCall.function.name;
     const args = JSON.parse(toolCall.function.arguments);
+
+    logger.info(`Tool call: ${functionName} with args: ${JSON.stringify(args)}`);
 
     if (functionName in toolHandlers) {
       const result = await toolHandlers[functionName](args);
