@@ -81,4 +81,62 @@ export async function searchJiraIssues(keyword: string) {
       error: 'Failed to search Jira issues',
     };
   }
+}
+
+export async function createJiraIssue(params: {
+  projectKey: string;
+  summary: string;
+  description: string;
+  issueType: string;
+  priority?: string;
+  assignee?: string;
+}) {
+  try {
+    const issueData = {
+      fields: {
+        project: {
+          key: params.projectKey
+        },
+        summary: params.summary,
+        description: params.description,
+        issuetype: {
+          name: params.issueType
+        },
+        ...(params.priority && {
+          priority: {
+            name: params.priority
+          }
+        }),
+        ...(params.assignee && {
+          assignee: {
+            name: params.assignee
+          }
+        })
+      }
+    };
+
+    const issue: JiraIssue = await jiraClient.addNewIssue(issueData);
+
+    return {
+      success: true,
+      issue: {
+        id: issue.key,
+        summary: params.summary,
+        status: issue.fields?.status?.name || 'To Do',
+        assignee: issue.fields?.assignee?.displayName || params.assignee || 'Unassigned',
+        priority: issue.fields?.priority?.name || params.priority || 'None',
+        type: params.issueType,
+        description: params.description,
+        created: issue.fields?.created || new Date().toISOString(),
+        reporter: issue.fields?.reporter?.displayName || 'Unknown',
+        lastUpdated: issue.fields?.updated || new Date().toISOString(),
+      }
+    };
+  } catch (error) {
+    console.error('Error creating Jira issue:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to create Jira issue'
+    };
+  }
 } 

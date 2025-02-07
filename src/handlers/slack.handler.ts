@@ -67,7 +67,6 @@ export const slackEventsHandler: RequestHandler = async (req, res) => {
             break;
           }
           case 'app_mention': {
-            logger.info('App mention event:', { event });
             processMessage(event.event.text).then(async (response) => {
               await slackClient.chat.postMessage({
                 channel: event.event.channel,

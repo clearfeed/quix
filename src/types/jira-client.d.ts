@@ -45,6 +45,29 @@ declare module 'jira-client' {
         reporter?: { displayName: string };
       };
     }>;
+    addNewIssue(issueData: {
+      fields: {
+        project: { key: string };
+        summary: string;
+        description: string;
+        issuetype: { name: string };
+        priority?: { name: string };
+        assignee?: { name: string };
+      };
+    }): Promise<{
+      key: string;
+      fields: {
+        summary: string;
+        status: { name: string };
+        assignee?: { displayName: string };
+        priority?: { name: string };
+        issuetype: { name: string };
+        updated: string;
+        description?: string;
+        created?: string;
+        reporter?: { displayName: string };
+      };
+    }>;
   }
 
   export default JiraApi;
