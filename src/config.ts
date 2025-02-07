@@ -21,4 +21,8 @@ export default {
     username: process.env.JIRA_USERNAME || '',
     password: process.env.JIRA_API_TOKEN,
   },
+  github: {
+    token: process.env.GITHUB_TOKEN,
+    owner: process.env.GITHUB_OWNER,
+  },
 } as const; 

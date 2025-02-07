@@ -48,7 +48,7 @@ export const slackEventsHandler: RequestHandler = async (req, res) => {
             break;
           }
           case 'message': {
-            if (event.event?.channel_type === 'im' && !event.event.bot_id && !event.event.subtype) {
+            if (!event.event.bot_id && !event.event.subtype) {
               try {
                 // ignore bot messages
                 if (event.event.bot_id) {
@@ -64,6 +64,15 @@ export const slackEventsHandler: RequestHandler = async (req, res) => {
                   await slackClient.chat.postMessage({
                     channel: event.event.channel,
                     text: response,
+                    blocks: [
+                      {
+                        type: 'section',
+                        text: {
+                          type: 'mrkdwn',
+                          text: response
+                        }
+                      }
+                    ],
                     thread_ts: event.event.thread_ts
                   });
                   logger.info('Sent response to message', { channel: event.event.channel, response });

@@ -1,5 +1,6 @@
 import { searchHubspotDeals } from "../services/hubspot.service";
 import { jira } from "../services/jira.service";
+import { github } from "../services/github.service";
 
 const toolsMap = {
   hubspot: {
@@ -25,6 +26,18 @@ const toolsMap = {
       function: (params: { projectKey: string; summary: string; description: string; issueType: string; priority?: string; assignee?: string }) =>
         jira.createIssue(params),
       description: 'Create a new JIRA issue',
+    },
+  },
+  github: {
+    search_github_prs: {
+      name: 'search_github_prs',
+      function: (params: { repo: string; status?: string; keyword?: string; reporter?: string }) => github.searchPRs(params),
+      description: 'Search GitHub PRs based on status, keywords, and reporter',
+    },
+    get_github_pr: {
+      name: 'get_github_pr',
+      function: ({ prNumber, repo }: { prNumber: number; repo: string }) => github.getPR(prNumber, repo),
+      description: 'Get detailed information about a specific GitHub PR by number',
     },
   },
 } as const;
@@ -91,7 +104,7 @@ export const tools = [
         properties: {
           projectKey: {
             type: 'string',
-            description: 'The project key where the issue should be created (e.g., PROJ)',
+            description: 'The project key where the issue will be created',
           },
           summary: {
             type: 'string',
@@ -99,7 +112,7 @@ export const tools = [
           },
           description: {
             type: 'string',
-            description: 'The detailed description of the issue',
+            description: 'The description of the issue',
           },
           issueType: {
             type: 'string',
@@ -107,14 +120,64 @@ export const tools = [
           },
           priority: {
             type: 'string',
-            description: 'Optional: The priority of the issue (e.g., High, Medium, Low)',
+            description: 'The priority of the issue',
           },
           assignee: {
             type: 'string',
-            description: 'Optional: The username of the person to assign the issue to',
+            description: 'The username of the assignee',
           },
         },
         required: ['projectKey', 'summary', 'description', 'issueType'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: toolsMap.github.search_github_prs.name,
+      description: toolsMap.github.search_github_prs.description,
+      parameters: {
+        type: 'object',
+        properties: {
+          repo: {
+            type: 'string',
+            description: 'The name of the repository to search in',
+          },
+          status: {
+            type: 'string',
+            description: 'The status of PRs to search for (e.g., open, closed, merged)',
+          },
+          keyword: {
+            type: 'string',
+            description: 'The keyword to search for in PR titles and descriptions',
+          },
+          reporter: {
+            type: 'string',
+            description: 'The GitHub username of the PR author',
+          },
+        },
+        required: ['repo'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
+      name: toolsMap.github.get_github_pr.name,
+      description: toolsMap.github.get_github_pr.description,
+      parameters: {
+        type: 'object',
+        properties: {
+          prNumber: {
+            type: 'number',
+            description: 'The PR number to fetch',
+          },
+          repo: {
+            type: 'string',
+            description: 'The name of the repository containing the PR',
+          },
+        },
+        required: ['prNumber', 'repo'],
       },
     },
   },
@@ -125,4 +188,6 @@ export const toolHandlers: Record<string, (args: any) => Promise<any>> = {
   [toolsMap.jira.find_jira_ticket.name]: toolsMap.jira.find_jira_ticket.function,
   [toolsMap.jira.get_jira_issue.name]: toolsMap.jira.get_jira_issue.function,
   [toolsMap.jira.create_jira_issue.name]: toolsMap.jira.create_jira_issue.function,
+  [toolsMap.github.search_github_prs.name]: toolsMap.github.search_github_prs.function,
+  [toolsMap.github.get_github_pr.name]: toolsMap.github.get_github_pr.function,
 };

@@ -45,9 +45,18 @@ const generateResponse = async (message: string, result: Record<string, any>, fu
   const formattedResponse = await openai.chat.completions.create({
     model: 'gpt-4-turbo',
     messages: [
-      { role: 'system', content: 'You are a business assistant. Given a user\'s query and structured API data, generate a response that directly answers the user\'s question in a clear and concise manner.' },
+      {
+        role: 'system', content: `
+        You are a business assistant. Given a user's query and structured API data, generate a response that directly answers the user's question in a clear and concise manner. Format the response as a Slack message using Slack's supported markdown syntax:
+
+- Use <URL|Text> for links instead of [text](URL).
+- Use *bold* instead of **bold**.
+- Ensure proper line breaks by using \n\n between list items.
+- Retain code blocks using triple backticks where needed.
+- Ensure all output is correctly formatted to display properly in Slack.
+        ` },
       { role: 'user', content: `User's question: "${message}"` },
-      { role: 'user', content: `Here is the structured response from ${functionName}: ${JSON.stringify(result, null, 2)}` },
+      { role: 'user', content: `Here is the structured response from ${functionName}: ${JSON.stringify(result, null, 2)}` }
     ],
   });
 
