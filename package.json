@@ -28,6 +28,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "jira-client": "^8.2.2",
     "openai": "^4.83.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3",
