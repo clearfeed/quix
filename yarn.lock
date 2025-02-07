@@ -280,18 +280,24 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@clearfeed/github-agent@file:agent-packages/packages/github":
+"@clearfeed/github-agent@1.0.0":
   version "1.0.0"
+  resolved "https://npm.pkg.github.com/download/@clearfeed/github-agent/1.0.0/0d61de94e26e99e12200b1b65b9be69d3f695837#0d61de94e26e99e12200b1b65b9be69d3f695837"
+  integrity sha512-T1QCV87okoRqkQlrF+HbyoQi9Q8iL9BZ8/5j5p9U1LqFYZ3mk6Y2/DyQjLMhOgfvSRuRBdkXzlgKUqi0umrpWQ==
   dependencies:
     "@octokit/rest" "^20.0.2"
 
-"@clearfeed/hubspot-agent@file:agent-packages/packages/hubspot":
+"@clearfeed/hubspot-agent@1.0.0":
   version "1.0.0"
+  resolved "https://npm.pkg.github.com/download/@clearfeed/hubspot-agent/1.0.0/fbecf5fc49f7f87c2aa9bba6bb058463423ed147#fbecf5fc49f7f87c2aa9bba6bb058463423ed147"
+  integrity sha512-4ok//TccViNvsisc9jjhxBr0q3WGo5P/SBFp/Lid4vPgNm2yCYn+pbMvjpUCkl2rsj7ThdubW0baVtknIa7PwQ==
   dependencies:
     "@hubspot/api-client" "^12.0.1"
 
-"@clearfeed/jira-agent@file:agent-packages/packages/jira":
+"@clearfeed/jira-agent@1.0.0":
   version "1.0.0"
+  resolved "https://npm.pkg.github.com/download/@clearfeed/jira-agent/1.0.0/198efa02c509dfa4868e97cb7ed913ef08282031#198efa02c509dfa4868e97cb7ed913ef08282031"
+  integrity sha512-ZvVn1AXPiXH2122CHQedKeoyq9KgcqibILVaXDZPZXG/I3mGYwFnl2mONY2iEO+j8vP5rDuuDdMF3U967aXJkw==
   dependencies:
     jira-client "^8.2.2"
 

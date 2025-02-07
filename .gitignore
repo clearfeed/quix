@@ -46,3 +46,6 @@ coverage/
 *.pid
 *.seed
 *.pid.lock
+
+# NPMRC
+.npmrc
