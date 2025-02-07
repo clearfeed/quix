@@ -28,6 +28,7 @@ declare module 'jira-client' {
           description?: string;
           created?: string;
           reporter?: { displayName: string };
+          labels?: string[];
         };
       }>;
     }>;
@@ -43,6 +44,7 @@ declare module 'jira-client' {
         description?: string;
         created?: string;
         reporter?: { displayName: string };
+        labels?: string[];
       };
     }>;
     addNewIssue(issueData: {
@@ -53,6 +55,7 @@ declare module 'jira-client' {
         issuetype: { name: string };
         priority?: { name: string };
         assignee?: { name: string };
+        labels?: string[];
       };
     }): Promise<{
       key: string;
@@ -66,6 +69,7 @@ declare module 'jira-client' {
         description?: string;
         created?: string;
         reporter?: { displayName: string };
+        labels?: string[];
       };
     }>;
   }

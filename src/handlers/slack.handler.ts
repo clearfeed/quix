@@ -28,8 +28,16 @@ export const slackEventsHandler: RequestHandler = async (req, res) => {
                 title: "Welcome to ClearFeed Agent. Here are some suggestions to get started:",
                 prompts: [
                   {
-                    title: "What's the deal with a company?",
-                    message: "What's the status of my deal with xyz company?",
+                    title: "Get deal details from HubSpot",
+                    message: "What's the status of my deal with Tesla?",
+                  },
+                  {
+                    title: "Create a Jira issue",
+                    message: "I need to create a new Jira task to build AI agents in the APP project.",
+                  },
+                  {
+                    title: "Get Jira issue details",
+                    message: "What's the status of my Jira issue APP-123?",
                   }
                 ]
               });

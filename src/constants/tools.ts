@@ -1,5 +1,5 @@
 import { searchHubspotDeals } from "../services/hubspot.service";
-import { searchJiraIssues, getJiraIssue, createJiraIssue } from "../services/jira.service";
+import { jira } from "../services/jira.service";
 
 const toolsMap = {
   hubspot: {
@@ -12,18 +12,18 @@ const toolsMap = {
   jira: {
     find_jira_ticket: {
       name: 'find_jira_ticket',
-      function: ({ keyword }: { keyword: string }) => searchJiraIssues(keyword),
+      function: ({ keyword }: { keyword: string }) => jira.searchIssues(keyword),
       description: 'Find JIRA issues based on a keyword',
     },
     get_jira_issue: {
       name: 'get_jira_issue',
-      function: ({ issueId }: { issueId: string }) => getJiraIssue(issueId),
+      function: ({ issueId }: { issueId: string }) => jira.getIssue(issueId),
       description: 'Get detailed information about a specific Jira issue by ID',
     },
     create_jira_issue: {
       name: 'create_jira_issue',
       function: (params: { projectKey: string; summary: string; description: string; issueType: string; priority?: string; assignee?: string }) =>
-        createJiraIssue(params),
+        jira.createIssue(params),
       description: 'Create a new JIRA issue',
     },
   },

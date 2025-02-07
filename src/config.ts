@@ -2,10 +2,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-if (!process.env.JIRA_HOST || !process.env.JIRA_API_TOKEN) {
-  throw new Error('Missing required JIRA environment variables');
-}
-
 export default {
   port: process.env.PORT || 3000,
   openai: {
