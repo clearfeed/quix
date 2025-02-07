@@ -1,5 +1,9 @@
 {
-  "name": "@clearfeed-agent/jira",
+  "name": "@clearfeed/jira",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,5 +1,9 @@
 {
-  "name": "@clearfeed-agent/hubspot",
+  "name": "@clearfeed/hubspot",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
   "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

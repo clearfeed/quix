@@ -68,9 +68,9 @@ jobs:
 
       - name: Publish packages
         run: |
-          cd packages/hubspot && npm publish --access restricted
-          cd ../jira && npm publish --access restricted
-          cd ../github && npm publish --access restricted
+          cd packages/hubspot && npm publish --registry https://npm.pkg.github.com --access restricted
+          cd ../jira && npm publish --registry https://npm.pkg.github.com --access restricted
+          cd ../github && npm publish --registry https://npm.pkg.github.com --access restricted
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
