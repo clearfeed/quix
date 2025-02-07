@@ -280,17 +280,17 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@clearfeed-agent/github@file:agent-packages/packages/github":
+"@clearfeed/github-agent@file:agent-packages/packages/github":
   version "1.0.0"
   dependencies:
     "@octokit/rest" "^20.0.2"
 
-"@clearfeed-agent/hubspot@file:agent-packages/packages/hubspot":
+"@clearfeed/hubspot-agent@file:agent-packages/packages/hubspot":
   version "1.0.0"
   dependencies:
     "@hubspot/api-client" "^12.0.1"
 
-"@clearfeed-agent/jira@file:agent-packages/packages/jira":
+"@clearfeed/jira-agent@file:agent-packages/packages/jira":
   version "1.0.0"
   dependencies:
     jira-client "^8.2.2"

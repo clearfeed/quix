@@ -22,9 +22,9 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@clearfeed-agent/github": "file:agent-packages/packages/github",
-    "@clearfeed-agent/hubspot": "file:agent-packages/packages/hubspot",
-    "@clearfeed-agent/jira": "file:agent-packages/packages/jira",
+    "@clearfeed/github-agent": "file:agent-packages/packages/github",
+    "@clearfeed/hubspot-agent": "file:agent-packages/packages/hubspot",
+    "@clearfeed/jira-agent": "file:agent-packages/packages/jira",
     "@slack/web-api": "^7.8.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",

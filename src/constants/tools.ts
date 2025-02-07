@@ -1,6 +1,6 @@
-import { createHubspotToolsExport } from '@clearfeed-agent/hubspot';
-import { createJiraToolsExport } from '@clearfeed-agent/jira';
-import { createGitHubToolsExport } from '@clearfeed-agent/github';
+import { createHubspotToolsExport } from '@clearfeed/hubspot-agent';
+import { createJiraToolsExport } from '@clearfeed/jira-agent';
+import { createGitHubToolsExport } from '@clearfeed/github-agent';
 import config from '../config';
 
 // Get tools and handlers from each service

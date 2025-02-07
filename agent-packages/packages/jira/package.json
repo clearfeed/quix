@@ -1,5 +1,5 @@
 {
-  "name": "@clearfeed/jira",
+  "name": "@clearfeed/jira-agent",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",
     "access": "restricted"
