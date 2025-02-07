@@ -13,6 +13,21 @@ declare module 'jira-client' {
     fields?: string[];
   }
 
+  interface SearchUsersOptions {
+    username: string;
+    startAt?: number;
+    maxResults?: number;
+    includeActive?: boolean;
+    includeInactive?: boolean;
+  }
+
+  interface JiraUser {
+    accountId: string;
+    displayName: string;
+    emailAddress?: string;
+    active: boolean;
+  }
+
   class JiraApi {
     constructor(options: JiraClientOptions);
     searchJira(jql: string, options?: SearchJiraOptions): Promise<{
@@ -72,6 +87,8 @@ declare module 'jira-client' {
         labels?: string[];
       };
     }>;
+    searchUsers(options: SearchUsersOptions): Promise<JiraUser[]>;
+    updateAssignee(issueId: string, assignee: { accountId: string }): Promise<void>;
   }
 
   export default JiraApi;

@@ -27,6 +27,11 @@ const toolsMap = {
         jira.createIssue(params),
       description: 'Create a new JIRA issue',
     },
+    assign_jira_issue: {
+      name: 'assign_jira_issue',
+      function: ({ issueId, assignee }: { issueId: string; assignee: string }) => jira.assignIssue(issueId, assignee),
+      description: 'Assign a Jira issue to a user',
+    },
   },
   github: {
     search_github_prs: {
@@ -134,6 +139,27 @@ export const tools = [
   {
     type: 'function' as const,
     function: {
+      name: toolsMap.jira.assign_jira_issue.name,
+      description: toolsMap.jira.assign_jira_issue.description,
+      parameters: {
+        type: 'object',
+        properties: {
+          issueId: {
+            type: 'string',
+            description: 'The Jira issue ID (e.g., PROJ-123)',
+          },
+          assignee: {
+            type: 'string',
+            description: 'The username of the person to assign the issue to',
+          },
+        },
+        required: ['issueId', 'assignee'],
+      },
+    },
+  },
+  {
+    type: 'function' as const,
+    function: {
       name: toolsMap.github.search_github_prs.name,
       description: toolsMap.github.search_github_prs.description,
       parameters: {
@@ -188,6 +214,7 @@ export const toolHandlers: Record<string, (args: any) => Promise<any>> = {
   [toolsMap.jira.find_jira_ticket.name]: toolsMap.jira.find_jira_ticket.function,
   [toolsMap.jira.get_jira_issue.name]: toolsMap.jira.get_jira_issue.function,
   [toolsMap.jira.create_jira_issue.name]: toolsMap.jira.create_jira_issue.function,
+  [toolsMap.jira.assign_jira_issue.name]: toolsMap.jira.assign_jira_issue.function,
   [toolsMap.github.search_github_prs.name]: toolsMap.github.search_github_prs.function,
   [toolsMap.github.get_github_pr.name]: toolsMap.github.get_github_pr.function,
 };

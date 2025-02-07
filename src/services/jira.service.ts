@@ -1,6 +1,6 @@
 import JiraClient from 'jira-client';
 import config from '../config';
-
+import logger from '../utils/logger';
 interface JiraIssue {
   key: string;
   fields: {
@@ -196,6 +196,57 @@ export class JiraService {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to create Jira issue'
+      };
+    }
+  }
+
+  private async findUserAccountId(username: string): Promise<string | null> {
+    try {
+      const client = this.getClient() as any;
+      // Using doRequest method which is definitely available
+      const users = await client.searchUsers({
+        query: username,
+        startAt: 0,
+        maxResults: 1,
+        includeActive: true
+      });
+      if (users && users.length > 0) {
+        return users[0].accountId;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error finding user account ID:', error);
+      return null;
+    }
+  }
+
+  async assignIssue(issueId: string, assignee: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const validation = this.validateConfig();
+      if (!validation.isValid) {
+        return { success: false, error: validation.error };
+      }
+
+      const accountId = await this.findUserAccountId(assignee);
+      if (!accountId) {
+        return {
+          success: false,
+          error: `Could not find user with username/email: ${assignee}`
+        };
+      }
+
+      const client = this.getClient() as any;
+      // Using doRequest method for assignment
+      await client.updateAssigneeWithId(issueId, accountId);
+
+      return {
+        success: true
+      };
+    } catch (error) {
+      console.error('Error assigning Jira issue:', error);
+      return {
+        success: false,
+        error: 'Failed to assign Jira issue'
       };
     }
   }
