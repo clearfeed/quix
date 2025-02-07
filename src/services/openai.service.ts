@@ -24,8 +24,6 @@ export async function processMessage(message: string): Promise<string> {
 
   const responseMessage = response.choices[0].message;
 
-  logger.info(`Response: ${JSON.stringify(responseMessage)}`);
-
   if (responseMessage.tool_calls?.[0]) {
     const toolCall = responseMessage.tool_calls[0];
     const functionName = toolCall.function.name;
@@ -37,9 +35,10 @@ export async function processMessage(message: string): Promise<string> {
       const result = await toolHandlers[functionName](args);
       return generateResponse(message, result, functionName);
     }
+  } else {
+    logger.info(`No tool call found in response: ${JSON.stringify(responseMessage)}`);
   }
-
-  return responseMessage.content ?? '';
+  return 'I\'m sorry, I don\'t know how to answer that. Please try again with a different question.';
 }
 
 const generateResponse = async (message: string, result: Record<string, any>, functionName: string): Promise<string> => {

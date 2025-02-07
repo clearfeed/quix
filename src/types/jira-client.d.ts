@@ -25,8 +25,25 @@ declare module 'jira-client' {
           priority?: { name: string };
           issuetype: { name: string };
           updated: string;
+          description?: string;
+          created?: string;
+          reporter?: { displayName: string };
         };
       }>;
+    }>;
+    findIssue(issueId: string): Promise<{
+      key: string;
+      fields: {
+        summary: string;
+        status: { name: string };
+        assignee?: { displayName: string };
+        priority?: { name: string };
+        issuetype: { name: string };
+        updated: string;
+        description?: string;
+        created?: string;
+        reporter?: { displayName: string };
+      };
     }>;
   }
 
