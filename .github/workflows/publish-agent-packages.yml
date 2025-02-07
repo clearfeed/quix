@@ -1,6 +1,17 @@
 name: Publish Agent Packages
 
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (e.g., patch, minor, major)"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
   push:
     branches:
       - main
@@ -16,6 +27,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -24,6 +37,12 @@ jobs:
           registry-url: "https://npm.pkg.github.com"
           scope: "@clearfeed"
           cache: "yarn"
+
+      - name: Configure git
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
       - name: Configure npm registry
         run: |
@@ -36,8 +55,22 @@ jobs:
       - name: Build packages
         run: yarn build
 
+      - name: Version bump (manual trigger only)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          cd packages/hubspot && npm version ${{ github.event.inputs.version }} -m "Bump hubspot to %s"
+          cd ../jira && npm version ${{ github.event.inputs.version }} -m "Bump jira to %s"
+          cd ../github && npm version ${{ github.event.inputs.version }} -m "Bump github to %s"
+
+      - name: Push version changes
+        if: github.event_name == 'workflow_dispatch'
+        run: git push --follow-tags
+
       - name: Publish packages
-        run: yarn workspaces foreach npm publish --access restricted
+        run: |
+          cd packages/hubspot && npm publish --access restricted
+          cd ../jira && npm publish --access restricted
+          cd ../github && npm publish --access restricted
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
