@@ -1,5 +1,5 @@
 import { Octokit } from '@octokit/rest';
-import { BaseService } from '@clearfeed/common-agent';
+import { BaseService } from 'quix-common-agent';
 import {
   GitHubConfig,
   SearchPRsParams,

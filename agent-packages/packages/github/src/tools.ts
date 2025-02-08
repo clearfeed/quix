@@ -1,4 +1,4 @@
-import { Tool, Tools, createToolsExport } from '@clearfeed/common-agent';
+import { Tool, Tools, createToolsExport } from 'quix-common-agent';
 import { GitHubService } from './index';
 import { SearchPRsParams, SearchPRsResponse, GetPRResponse, GitHubConfig } from './types';
 

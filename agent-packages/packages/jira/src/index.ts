@@ -1,5 +1,5 @@
 import JiraClient from 'jira-client';
-import { BaseService } from '@clearfeed/common-agent';
+import { BaseService } from 'quix-common-agent';
 import {
   JiraConfig,
   JiraIssue,

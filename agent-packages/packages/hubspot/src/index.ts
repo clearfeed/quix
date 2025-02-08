@@ -1,6 +1,6 @@
 import { Client } from '@hubspot/api-client';
 import { FilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/deals';
-import { BaseService } from '@clearfeed/common-agent';
+import { BaseService } from 'quix-common-agent';
 import { HubspotConfig, SearchDealsResponse, Deal } from './types';
 
 export * from './types';

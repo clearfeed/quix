@@ -1,4 +1,4 @@
-import { Tool, Tools, createToolsExport } from '@clearfeed/common-agent';
+import { Tool, Tools, createToolsExport } from 'quix-common-agent';
 import { HubspotService } from './index';
 import { SearchDealsResponse, HubspotConfig } from './types';
 

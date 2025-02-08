@@ -1,10 +1,10 @@
 {
-  "name": "@clearfeed/hubspot-agent",
+  "name": "quix-hubspot-agent",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",
     "access": "restricted"
   },
-  "version": "1.0.1",
+  "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -13,7 +13,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@clearfeed/common-agent": "^1.0.0",
+    "quix-common-agent": "^1.0.0",
     "@hubspot/api-client": "^12.0.1"
   },
   "devDependencies": {

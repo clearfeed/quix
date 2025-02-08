@@ -1,17 +1,17 @@
 {
-  "name": "@clearfeed-agent/packages",
+  "name": "quix-packages",
   "private": true,
   "workspaces": [
     "packages/*"
   ],
-  "version": "1.0.1",
-  "description": "Clearfeed Integration Packages",
+  "version": "1.0.0",
+  "description": "Quix Packages",
   "scripts": {
     "build": "yarn workspaces run build",
     "test": "yarn workspaces run test"
   },
   "keywords": [
-    "clearfeed",
+    "quix",
     "integrations"
   ],
   "author": "",

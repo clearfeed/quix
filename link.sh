@@ -21,8 +21,8 @@ for package in packages/github packages/hubspot packages/jira; do
     cd $package
 
     # Link common package if it's a dependency
-    if grep -q "@clearfeed/common-agent" package.json; then
-      yarn link "@clearfeed/common-agent"
+    if grep -q "quix-common-agent" package.json; then
+      yarn link "quix-common-agent"
     fi
 
     # Register this package
@@ -35,13 +35,13 @@ done
 # Go back to root and link all packages except common
 cd ..
 echo "📦 Linking agent packages in root directory..."
-yarn link "@clearfeed/github-agent"
-yarn link "@clearfeed/hubspot-agent"
-yarn link "@clearfeed/jira-agent"
+yarn link "quix-github-agent"
+yarn link "quix-hubspot-agent"
+yarn link "quix-jira-agent"
 
 echo "✅ All packages linked successfully in root and sub-packages!"
 echo "To use these packages in another project, run:"
-echo "  yarn link @clearfeed/github-agent"
-echo "  yarn link @clearfeed/hubspot-agent"
-echo "  yarn link @clearfeed/jira-agent"
-echo "Note: @clearfeed/common-agent is an internal dependency and not needed in consuming projects"
+echo "  yarn link quix-github-agent"
+echo "  yarn link quix-hubspot-agent"
+echo "  yarn link quix-jira-agent"
+echo "Note: quix-common-agent is an internal dependency and not needed in consuming projects"

@@ -1,7 +1,7 @@
 {
-  "name": "openai-hubspot-integration",
+  "name": "quix-server",
   "version": "1.0.0",
-  "description": "OpenAI function calling integration with HubSpot",
+  "description": "Quix server",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -9,7 +9,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "lint": "eslint . --ext .ts",
     "test": "jest",
-    "link-packages": "yarn link @clearfeed/hubspot-agent && yarn link @clearfeed/jira-agent && yarn link @clearfeed/github-agent && yarn link @clearfeed/postgres-agent"
+    "link-packages": "yarn link quix-hubspot-agent && yarn link quix-jira-agent && yarn link quix-github-agent && yarn link quix-postgres-agent"
   },
   "keywords": [
     "openai",
@@ -21,9 +21,10 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@clearfeed/github-agent": "1.0.1",
-    "@clearfeed/hubspot-agent": "1.0.1",
-    "@clearfeed/jira-agent": "1.0.1",
+    "quix-github-agent": "1.0.0",
+    "quix-hubspot-agent": "1.0.0",
+    "quix-jira-agent": "1.0.0",
+    "quix-postgres-agent": "1.0.0",
     "@slack/web-api": "^7.8.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
