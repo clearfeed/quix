@@ -1,4 +1,4 @@
-import { BaseConfig, BaseResponse } from 'quix-common-agent';
+import { BaseConfig, BaseResponse } from '@clearfeed/quix-common-agent';
 
 export interface JiraConfig extends BaseConfig {
   host: string;

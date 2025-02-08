@@ -11,19 +11,19 @@ yarn link
 # Link and build hubspot package
 cd ../hubspot
 yarn install
-yarn link quix-common-agent
+yarn link "@clearfeed/quix-common-agent"
 yarn build
 
 # Link and build github package
 cd ../github
 yarn install
-yarn link quix-common-agent
+yarn link "@clearfeed/quix-common-agent"
 yarn build
 
 # Link and build jira package
 cd ../jira
 yarn install
-yarn link quix-common-agent
+yarn link "@clearfeed/quix-common-agent"
 yarn build
 
 echo "All packages built successfully!"

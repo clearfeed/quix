@@ -1,5 +1,5 @@
-import JiraClient from 'jira-client';
-import { BaseService } from 'quix-common-agent';
+import JiraApi from 'jira-client';
+import { BaseService } from '@clearfeed/quix-common-agent';
 import {
   JiraConfig,
   JiraIssue,
@@ -35,10 +35,10 @@ interface JiraSearchResponse {
 }
 
 export class JiraService implements BaseService<JiraConfig> {
-  private client: JiraClient;
+  private client: JiraApi;
 
   constructor(private config: JiraConfig) {
-    this.client = new JiraClient({
+    this.client = new JiraApi({
       protocol: 'https',
       host: config.host,
       username: config.username,

@@ -1,5 +1,5 @@
 {
-  "name": "quix-common-agent",
+  "name": "@clearfeed/quix-common-agent",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
