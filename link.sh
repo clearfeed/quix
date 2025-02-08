@@ -15,7 +15,7 @@ yarn link
 cd ../..
 
 # Link other packages and their dependencies
-for package in packages/github packages/hubspot packages/jira packages/postgres; do
+for package in packages/github packages/hubspot packages/jira; do
   if [ -d "$package" ]; then
     echo "📦 Linking $package..."
     cd $package
@@ -38,12 +38,10 @@ echo "📦 Linking agent packages in root directory..."
 yarn link "@clearfeed/github-agent"
 yarn link "@clearfeed/hubspot-agent"
 yarn link "@clearfeed/jira-agent"
-yarn link "@clearfeed/postgres-agent"
 
 echo "✅ All packages linked successfully in root and sub-packages!"
 echo "To use these packages in another project, run:"
 echo "  yarn link @clearfeed/github-agent"
 echo "  yarn link @clearfeed/hubspot-agent"
 echo "  yarn link @clearfeed/jira-agent"
-echo "  yarn link @clearfeed/postgres-agent"
 echo "Note: @clearfeed/common-agent is an internal dependency and not needed in consuming projects"

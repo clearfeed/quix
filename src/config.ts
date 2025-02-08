@@ -25,12 +25,4 @@ export default {
     token: process.env.GITHUB_TOKEN,
     owner: process.env.GITHUB_OWNER,
   },
-  postgres: {
-    host: process.env.POSTGRES_HOST,
-    database: process.env.POSTGRES_DB,
-    user: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD,
-    port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
-    whitelistedTables: (process.env.POSTGRES_WHITELISTED_TABLES || '').split(',').filter(Boolean),
-  },
 } as const; 
