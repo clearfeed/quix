@@ -1,122 +1,79 @@
-# OpenAI Function Calling with HubSpot Integration
+# 🚀 Quix: AI-Powered Slack Agent
 
-This project implements a Node.js API that uses OpenAI's function calling feature to search HubSpot deals based on natural language queries.
+Quix is an AI-powered Slack agent that can query JIRA, GitHub, and HubSpot, with support for more tools coming soon. It allows users to interact with these services directly from Slack channels or through 1:1 chats.
 
-## Features
+## 🔗 Supported Integrations
 
-- Express.js HTTP API
-- OpenAI GPT-4 Turbo integration with function calling
-- HubSpot CRM integration for deal search
-- TypeScript support
-- Logging with Winston
-- Environment variable configuration
-- CORS enabled
+- ![Jira](https://img.shields.io/badge/Jira-0052CC?style=for-the-badge&logo=jira&logoColor=white)
+- ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+- ![HubSpot](https://img.shields.io/badge/HubSpot-FF7A59?style=for-the-badge&logo=hubspot&logoColor=white)
 
-## Prerequisites
+## ✨ Features
 
-- Node.js (v16 or higher)
-- Yarn package manager
-- OpenAI API key
-- HubSpot access token
+- **Slack Integration**: Quix can respond to queries when tagged in Slack channels. 🗨️
+- **Multi-Service Querying**: Supports querying multiple tools.
+- **User Query Endpoint**: Exposes an endpoint to accept user queries. 🔍
+- **Future Plans**: Includes accepting the context of a conversation for more personalized responses.
 
-## Setup
+## 🛠️ Setup
 
-1. Clone the repository
-2. Install dependencies:
+1. **Clone the Repository**:
+   ```bash
+   git clone <repository-url>
+   cd <repository-directory>
+   ```
+
+2. **Install Dependencies**:
    ```bash
    yarn install
    ```
 
-3. Copy the `.env.example` file to `.env` and fill in your API keys:
+3. **Environment Configuration**:
+   Copy the `.env.example` file to `.env` and fill in your API keys:
    ```bash
    cp .env.example .env
    ```
 
-4. Configure the following environment variables in `.env`:
+   Configure the following environment variables in `.env`:
    - `PORT`: Server port (default: 3000)
    - `OPENAI_API_KEY`: Your OpenAI API key
    - `HUBSPOT_ACCESS_TOKEN`: Your HubSpot access token
+   - `JIRA_API_TOKEN`: Your JIRA API token
+   - `GITHUB_ACCESS_TOKEN`: Your GitHub access token
+   - `SLACK_BOT_TOKEN`: Your Slack bot token
    - `LOG_LEVEL`: Logging level (default: info)
 
-## Development
+4. **Start the Development Server**:
+   ```bash
+   yarn dev
+   ```
 
-Start the development server:
-```bash
-yarn dev
-```
+5. **Build and Run**:
+   - Build the project:
+     ```bash
+     yarn build
+     ```
+   - Start the production server:
+     ```bash
+     yarn start
+     ```
 
-## Build and Run
-
-Build the project:
-```bash
-yarn build
-```
-
-Start the production server:
-```bash
-yarn start
-```
-
-## API Endpoints
+## 🌐 API Endpoints
 
 ### POST /query
-Search for HubSpot deals using natural language.
-
-Request body:
-```json
-{
-  "message": "Find all HubSpot deals related to ClearFeed"
-}
-```
-
-Response:
-```json
-{
-  "success": true,
-  "result": {
-    "type": "function_result",
-    "function": "search_hubspot_deals",
-    "result": {
-      "success": true,
-      "deals": [
-        {
-          "id": "123",
-          "name": "ClearFeed Enterprise Deal",
-          "amount": "50000",
-          "stage": "closedwon",
-          "closeDate": "2024-03-15",
-          "pipeline": "default"
-        }
-      ]
-    }
-  }
-}
-```
+Accepts user queries to interact with integrated services.
 
 ### GET /health
 Health check endpoint.
 
-Response:
-```json
-{
-  "status": "ok"
-}
-```
-
 ## Future Extensions
 
-- Support for additional tools (JIRA, GitHub)
+- Support for additional tools
 - Dynamic function registration
-- Extended CRM operations (deal creation, updates)
+- Extended CRM operations
 - Authentication and rate limiting
 - Caching layer for improved performance
 
-## Logging
+## 📜 License
 
-Logs are stored in the `logs` directory:
-- `logs/error.log`: Error-level logs
-- `logs/combined.log`: All logs
-
-## License
-
-MIT 
+Apache License, Version 2.0 

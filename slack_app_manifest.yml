@@ -1,0 +1,35 @@
+display_information:
+  name: Quix
+  description: Query your SaaS tools using Quix
+  background_color: "#590088"
+features:
+  app_home:
+    home_tab_enabled: false
+    messages_tab_enabled: true
+    messages_tab_read_only_enabled: false
+  bot_user:
+    display_name: ClearFeed Agent
+    always_online: false
+  assistant_view:
+    assistant_description: Query your SaaS tools from Slack.
+    suggested_prompts: []
+oauth_config:
+  scopes:
+    bot:
+      - assistant:write
+      - im:history
+      - chat:write
+      - app_mentions:read
+      - mpim:history
+settings:
+  event_subscriptions:
+    request_url: <EXPRESS_ENDPOINT>
+    bot_events:
+      - app_mention
+      - assistant_thread_context_changed
+      - assistant_thread_started
+      - message.im
+      - message.mpim
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false

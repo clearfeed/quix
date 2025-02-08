@@ -18,5 +18,6 @@
   "devDependencies": {
     "@types/jira-client": "^7.1.8",
     "typescript": "^5.7.3"
-  }
+  },
+  "license": "Apache-2.0"
 }
