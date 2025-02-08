@@ -1,6 +1,6 @@
 # 🚀 Quix: AI-Powered Slack Agent
 
-Quix is an AI-powered Slack agent that can query JIRA, GitHub, and HubSpot, with support for more tools coming soon. It allows users to interact with these services directly from Slack channels or through 1:1 chats.
+Quix is an AI-powered Slack agent that can query your business tools such as JIRA, GitHub, and HubSpot, with support for more tools coming soon. It allows users to interact with these services directly from Slack channels or through 1:1 chats.
 
 ## 🔗 Supported Integrations
 
