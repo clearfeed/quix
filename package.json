@@ -9,7 +9,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "lint": "eslint . --ext .ts",
     "test": "jest",
-    "link-packages": "yarn link @clearfeed-agent/hubspot && yarn link @clearfeed-agent/jira && yarn link @clearfeed-agent/github"
+    "link-packages": "yarn link @clearfeed/hubspot-agent && yarn link @clearfeed/jira-agent && yarn link @clearfeed/github-agent && yarn link @clearfeed/postgres-agent"
   },
   "keywords": [
     "openai",
@@ -24,6 +24,7 @@
     "@clearfeed/github-agent": "1.0.1",
     "@clearfeed/hubspot-agent": "1.0.1",
     "@clearfeed/jira-agent": "1.0.1",
+    "@clearfeed/postgres-agent": "1.0.0",
     "@slack/web-api": "^7.8.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",

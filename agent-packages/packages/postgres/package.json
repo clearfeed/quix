@@ -1,14 +1,15 @@
 {
-  "name": "@clearfeed/postgrs-agent",
+  "name": "@clearfeed/postgres-agent",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",
     "access": "restricted"
   },
-  "version": "1.0.1",
+  "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
+    "build": "yarn clean && tsc",
     "test": "jest"
   },
   "dependencies": {
