@@ -1,4 +1,4 @@
-import { BaseConfig, BaseResponse } from '@clearfeed/quix-common-agent';
+import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 
 export interface HubspotConfig extends BaseConfig {
   apiKey: string;

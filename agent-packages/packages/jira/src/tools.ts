@@ -1,4 +1,4 @@
-import { Tool, Tools, createToolsExport } from '@clearfeed/quix-common-agent';
+import { Tool, Tools, createToolsExport } from '@clearfeed-ai/quix-common-agent';
 import { JiraService } from './index';
 import {
   CreateIssueParams,

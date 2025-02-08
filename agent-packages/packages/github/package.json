@@ -1,5 +1,5 @@
 {
-  "name": "@clearfeed/quix-github-agent",
+  "name": "@clearfeed-ai/quix-github-agent",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
@@ -12,7 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@clearfeed/quix-common-agent": "^1.0.0",
+    "@clearfeed-ai/quix-common-agent": "^1.0.0",
     "@octokit/rest": "^19.0.13"
   },
   "devDependencies": {
