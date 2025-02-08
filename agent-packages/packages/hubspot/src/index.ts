@@ -1,34 +1,47 @@
 import { Client } from '@hubspot/api-client';
 import { FilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/deals';
-import { HubspotConfig, SearchDealsResponse } from './types';
+import { BaseService } from '@clearfeed/common-agent';
+import { HubspotConfig, SearchDealsResponse, Deal } from './types';
 
 export * from './types';
 export * from './tools';
 
-export class HubspotService {
+interface HubspotDeal {
+  id: string;
+  properties: Record<string, string | null>;
+  associations?: {
+    companies?: {
+      results: Array<{
+        id: string;
+      }>;
+    };
+  };
+}
+
+export class HubspotService implements BaseService<HubspotConfig> {
   private client: Client;
 
-  constructor(config: HubspotConfig) {
-    this.client = new Client({ accessToken: config.accessToken });
+  constructor(private config: HubspotConfig) {
+    this.client = new Client({ accessToken: config.apiKey });
   }
 
-  private async getDealStageLabel(stageId: string, pipelineId: string): Promise<string> {
-    try {
-      const pipelines = await this.client.crm.pipelines.pipelinesApi.getAll('deals');
-      const pipeline = pipelines.results.find((p: { id: string }) => p.id === pipelineId);
-      if (pipeline) {
-        const stage = pipeline.stages.find((s: { id: string }) => s.id === stageId);
-        return stage?.label || stageId;
-      }
-      return stageId;
-    } catch (error) {
-      console.error('Error fetching deal stage:', error);
-      return stageId;
+  validateConfig(): { isValid: boolean; error?: string } {
+    if (!this.config.apiKey) {
+      return {
+        isValid: false,
+        error: 'HubSpot integration is not configured. Please set HUBSPOT_API_KEY environment variable.'
+      };
     }
+    return { isValid: true };
   }
 
   async searchDeals(keyword: string): Promise<SearchDealsResponse> {
     try {
+      const validation = this.validateConfig();
+      if (!validation.isValid) {
+        return { success: false, error: validation.error };
+      }
+
       const response = await this.client.crm.deals.searchApi.doSearch({
         filterGroups: [
           {
@@ -41,22 +54,47 @@ export class HubspotService {
             ],
           },
         ],
-        properties: ['dealname', 'amount', 'dealstage', 'closedate', 'pipeline'],
+        properties: ['dealname', 'pipeline', 'dealstage', 'amount', 'closedate', 'hubspot_owner_id', 'createdate', 'hs_lastmodifieddate', 'associations.company'],
         limit: 10,
       });
 
-      const deals = await Promise.all(response.results.map(async deal => {
-        const stageId = deal.properties.dealstage || '';
-        const pipelineId = deal.properties.pipeline || '';
-        return {
-          id: deal.id,
-          name: deal.properties.dealname,
-          amount: deal.properties.amount,
-          stage: await this.getDealStageLabel(stageId, pipelineId),
-          closeDate: deal.properties.closedate,
-          pipeline: pipelineId,
-        };
-      }));
+      const deals = await Promise.all(
+        response.results.map(async (deal) => {
+          const hubspotDeal = deal as unknown as HubspotDeal;
+          let company = 'Unknown';
+          let owner = 'Unassigned';
+
+          // Get company name if available
+          if (hubspotDeal.associations?.companies?.results?.[0]?.id) {
+            const companyResponse = await this.client.crm.companies.basicApi.getById(
+              hubspotDeal.associations.companies.results[0].id
+            );
+            company = companyResponse.properties.name || 'Unknown';
+          }
+
+          // Get owner name if available
+          if (hubspotDeal.properties.hubspot_owner_id) {
+            const ownerId = parseInt(hubspotDeal.properties.hubspot_owner_id, 10);
+            if (!isNaN(ownerId)) {
+              const ownerResponse = await this.client.crm.owners.ownersApi.getById(ownerId);
+              owner = `${ownerResponse.firstName} ${ownerResponse.lastName}`.trim() || 'Unassigned';
+            }
+          }
+
+          return {
+            id: hubspotDeal.id,
+            name: hubspotDeal.properties.dealname || 'Unnamed Deal',
+            stage: hubspotDeal.properties.dealstage || 'Unknown',
+            amount: parseFloat(hubspotDeal.properties.amount || '0'),
+            closeDate: hubspotDeal.properties.closedate || '',
+            pipeline: hubspotDeal.properties.pipeline || 'Default Pipeline',
+            owner,
+            company,
+            createdAt: hubspotDeal.properties.createdate || '',
+            lastModifiedDate: hubspotDeal.properties.hs_lastmodifieddate || '',
+          };
+        })
+      );
 
       return {
         success: true,
@@ -66,7 +104,7 @@ export class HubspotService {
       console.error('Error searching HubSpot deals:', error);
       return {
         success: false,
-        error: 'Failed to search HubSpot deals',
+        error: error instanceof Error ? error.message : 'Failed to search HubSpot deals'
       };
     }
   }

@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Compiled files
+dist/
+*.js
+*.js.map
+*.d.ts
+
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
