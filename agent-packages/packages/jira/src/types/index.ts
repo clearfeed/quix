@@ -1,23 +1,23 @@
-export interface JiraConfig {
+import { BaseConfig, BaseResponse } from '@clearfeed/common-agent';
+
+export interface JiraConfig extends BaseConfig {
   host: string;
   username: string;
   password: string;
 }
 
 export interface JiraIssue {
-  key: string;
-  fields: {
-    summary: string;
-    status: { name: string };
-    assignee?: { displayName: string };
-    priority?: { name: string };
-    issuetype: { name: string };
-    updated: string;
-    description?: string;
-    created?: string;
-    reporter?: { displayName: string };
-    labels?: string[];
-  };
+  id: string;
+  summary: string;
+  status: string;
+  assignee: string;
+  priority: string;
+  type: string;
+  description: string;
+  created: string;
+  reporter: string;
+  lastUpdated: string;
+  labels: string[];
 }
 
 export interface JiraIssueResponse {
@@ -40,21 +40,23 @@ export interface JiraResponse<T> {
   error?: string;
 }
 
-export interface CreateIssueParams {
+export type CreateIssueParams = {
   projectKey: string;
   summary: string;
   description: string;
   issueType: string;
   priority?: string;
   assignee?: string;
-}
+};
 
-export interface GetIssueResponse extends JiraResponse<{
-  issue: JiraIssueResponse;
-}> { }
+export type SearchIssuesResponse = BaseResponse<{
+  issues: JiraIssue[];
+}>;
 
-export interface SearchIssuesResponse extends JiraResponse<{
-  issues: JiraIssueResponse[];
-}> { }
+export type GetIssueResponse = BaseResponse<{
+  issue: JiraIssue;
+}>;
 
-export interface AssignIssueResponse extends JiraResponse<void> { } 
+export type AssignIssueResponse = BaseResponse<{
+  issue: JiraIssue;
+}>; 

@@ -1,25 +1,9 @@
+import { Tool, Tools, createToolsExport } from '@clearfeed/common-agent';
 import { HubspotService } from './index';
 import { SearchDealsResponse, HubspotConfig } from './types';
 
-export interface HubspotTools {
-  search_hubspot_deals: {
-    type: 'function';
-    function: {
-      name: 'search_hubspot_deals';
-      description: 'Search for deals in HubSpot based on a keyword';
-      parameters: {
-        type: 'object';
-        properties: {
-          keyword: {
-            type: 'string';
-            description: 'The keyword to search for in HubSpot deals';
-          };
-        };
-        required: ['keyword'];
-      };
-    };
-    handler: (args: { keyword: string }) => Promise<SearchDealsResponse>;
-  };
+export interface HubspotTools extends Tools {
+  search_hubspot_deals: Tool<{ keyword: string }, SearchDealsResponse>;
 }
 
 export function createHubspotTools(config: HubspotConfig): HubspotTools {
@@ -42,17 +26,12 @@ export function createHubspotTools(config: HubspotConfig): HubspotTools {
           required: ['keyword'],
         },
       },
-      handler: ({ keyword }) => service.searchDeals(keyword),
+      handler: ({ keyword }: { keyword: string }) => service.searchDeals(keyword),
     },
   };
 }
 
 export function createHubspotToolsExport(config: HubspotConfig) {
   const tools = createHubspotTools(config);
-  return {
-    tools: Object.values(tools),
-    handlers: Object.fromEntries(
-      Object.entries(tools).map(([_, tool]) => [tool.function.name, tool.handler])
-    ),
-  };
+  return createToolsExport(tools);
 } 

@@ -1,25 +1,24 @@
 import { Octokit } from '@octokit/rest';
+import { BaseService } from '@clearfeed/common-agent';
 import {
   GitHubConfig,
-  GitHubPR,
-  GitHubPRResponse,
   SearchPRsParams,
   SearchPRsResponse,
-  GetPRResponse
+  GetPRResponse,
+  PullRequest
 } from './types';
 
 export * from './types';
 export * from './tools';
 
-export class GitHubService {
-  private client: Octokit | null = null;
-  private config: GitHubConfig;
+export class GitHubService implements BaseService<GitHubConfig> {
+  private client: Octokit;
 
-  constructor(config: GitHubConfig) {
-    this.config = config;
+  constructor(private config: GitHubConfig) {
+    this.client = new Octokit({ auth: config.token });
   }
 
-  private validateConfig(): { isValid: boolean; error?: string } {
+  validateConfig(): { isValid: boolean; error?: string } {
     if (!this.config.token || !this.config.owner) {
       return {
         isValid: false,
@@ -29,21 +28,7 @@ export class GitHubService {
     return { isValid: true };
   }
 
-  private getClient(): Octokit {
-    if (!this.client) {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        throw new Error(validation.error);
-      }
-
-      this.client = new Octokit({
-        auth: this.config.token
-      });
-    }
-    return this.client;
-  }
-
-  private formatPR(pr: GitHubPR): GitHubPRResponse {
+  private formatPR(pr: any): PullRequest {
     return {
       number: pr.number,
       title: pr.title,
@@ -53,7 +38,7 @@ export class GitHubService {
       lastUpdated: pr.updated_at,
       url: pr.html_url,
       description: pr.body,
-      labels: pr.labels.map(label => label.name)
+      labels: pr.labels.map((label: { name: string }) => label.name)
     };
   }
 
@@ -65,39 +50,30 @@ export class GitHubService {
       }
 
       let query = `repo:${this.config.owner}/${params.repo}`;
+      if (params.status) query += ` is:${params.status}`;
+      if (params.keyword) query += ` in:title,body ${params.keyword}`;
+      if (params.reporter) query += ` author:${params.reporter}`;
 
-      if (params.status) {
-        query += ` is:${params.status}`;
-      }
-
-      if (params.keyword) {
-        query += ` in:title,body ${params.keyword}`;
-      }
-
-      if (params.reporter) {
-        query += ` author:${params.reporter}`;
-      }
-
-      query += ` is:pr`;
-
-      const response = await this.getClient().search.issuesAndPullRequests({
+      const response = await this.client.search.issuesAndPullRequests({
         q: query,
         per_page: 10,
         sort: 'updated',
         order: 'desc'
       });
 
-      const prs = response.data.items.map((pr: any) => this.formatPR(pr as unknown as GitHubPR));
-
       return {
         success: true,
-        data: { prs }
+        data: {
+          pullRequests: response.data.items
+            .filter(item => 'pull_request' in item)
+            .map(pr => this.formatPR(pr))
+        }
       };
     } catch (error) {
       console.error('Error searching GitHub PRs:', error);
       return {
         success: false,
-        error: 'Failed to search GitHub PRs'
+        error: error instanceof Error ? error.message : 'Failed to search GitHub PRs'
       };
     }
   }
@@ -109,23 +85,23 @@ export class GitHubService {
         return { success: false, error: validation.error };
       }
 
-      const response = await this.getClient().pulls.get({
+      const response = await this.client.pulls.get({
         owner: this.config.owner,
-        repo: repo,
+        repo,
         pull_number: prNumber
       });
 
       return {
         success: true,
         data: {
-          pr: this.formatPR(response.data as unknown as GitHubPR)
+          pullRequest: this.formatPR(response.data)
         }
       };
     } catch (error) {
       console.error('Error fetching GitHub PR:', error);
       return {
         success: false,
-        error: 'Failed to fetch GitHub PR'
+        error: error instanceof Error ? error.message : 'Failed to fetch GitHub PR'
       };
     }
   }

@@ -1,0 +1,41 @@
+# Cursor Rules for Clearfeed Agents Monorepo
+
+## Project Structure
+- This is a TypeScript monorepo containing integration packages for various services
+- Main packages are located in `agent-packages/packages/`
+- Each package follows a consistent structure with `src/`, `types/`, and configuration files
+
+## Code Organization Rules
+1. Keep all service-specific code within its respective package directory
+2. Common utilities and shared types should go in the `common` package
+3. Maintain consistent file naming:
+   - `src/index.ts` - Main package exports
+   - `src/types.ts` or `src/types/index.ts` - Type definitions
+   - `src/tools.ts` - Service-specific tools and utilities
+
+## TypeScript Guidelines
+1. Always use strict type checking
+2. Export interfaces and types from dedicated type files
+3. Leverage the common package for shared types and utilities
+4. Use proper type imports from @types packages when available
+
+## Package Dependencies
+1. Each package should have its own `package.json`
+2. Keep dependencies up to date and consistent across packages
+3. Use the common package as a shared dependency where appropriate
+4. Use Yarn exclusively for package management:
+   - No `package-lock.json` or `npm` commands
+   - Use `yarn.lock` for dependency locking
+   - Run `yarn install` for installing dependencies
+   - Use `yarn workspace` commands for monorepo operations
+
+## Build and Development
+1. Use the root `build.sh` script for building packages
+2. Ensure all packages compile successfully before committing
+3. Follow consistent tsconfig settings across packages
+
+## Integration Guidelines
+1. Each service integration should be self-contained
+2. Implement proper error handling and logging
+3. Use environment variables for sensitive configuration
+4. Document API usage and requirements 

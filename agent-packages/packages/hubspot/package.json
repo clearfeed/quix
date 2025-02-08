@@ -12,12 +12,10 @@
     "test": "jest"
   },
   "dependencies": {
+    "@clearfeed/common-agent": "^1.0.0",
     "@hubspot/api-client": "^12.0.1"
   },
   "devDependencies": {
     "typescript": "^5.7.3"
-  },
-  "peerDependencies": {
-    "winston": "^3.17.0"
   }
 }

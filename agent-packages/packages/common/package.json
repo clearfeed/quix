@@ -1,19 +1,15 @@
 {
-  "name": "@clearfeed/github-agent",
+  "name": "@clearfeed/common-agent",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",
     "access": "restricted"
   },
-  "version": "1.0.1",
+  "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "jest"
-  },
-  "dependencies": {
-    "@clearfeed/common-agent": "^1.0.0",
-    "@octokit/rest": "^19.0.13"
   },
   "devDependencies": {
     "typescript": "^5.7.3"
