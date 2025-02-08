@@ -65,7 +65,7 @@ jobs:
       - name: Determine changed packages
         id: changes
         run: |
-          echo "CHANGED_PACKAGES=$(git diff --name-only HEAD^ HEAD | grep 'packages/' | cut -d/ -f2 | sort | uniq)" >> $GITHUB_ENV
+          echo "CHANGED_PACKAGES=$(git diff --name-only HEAD^ HEAD | grep 'agent-packages/packages/' | cut -d/ -f3 | sort | uniq)" >> $GITHUB_ENV
 
       - name: Publish changed packages
         run: |
@@ -76,4 +76,3 @@ jobs:
           done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
