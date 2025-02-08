@@ -30,6 +30,7 @@ export async function processMessage(message: string): Promise<string> {
     const args = JSON.parse(toolCall.function.arguments);
 
     logger.info(`Tool call: ${functionName} with args: ${JSON.stringify(args)}`);
+    // return 'Tool call: ' + functionName + ' with args: ' + JSON.stringify(args);
 
     if (functionName in toolHandlers) {
       const result = await toolHandlers[functionName](args);

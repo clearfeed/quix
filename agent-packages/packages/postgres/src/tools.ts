@@ -1,138 +1,38 @@
 import { Tool, Tools, createToolsExport } from '@clearfeed/common-agent';
-import { Pool } from 'pg';
 import {
-  PostgresClient,
   PostgresConfig,
-  PostgresError,
   QueryResult,
 } from './types';
+import { PostgresService } from './index';
 
 export interface PostgresTools extends Tools {
-  query_table: Tool<{
-    tableName: string;
-    query: string;
-    values?: any[];
-  }, QueryResult>;
+  run_query: Tool<{ userQuery: string }, QueryResult>;
   list_tables: Tool<void, { tables: string[] }>;
-}
-
-class PostgresService {
-  private client: PostgresClient;
-
-  constructor(config: PostgresConfig) {
-    const { whitelistedTables, ...poolConfig } = config;
-
-    if (!whitelistedTables || whitelistedTables.length === 0) {
-      throw new PostgresError('No whitelisted tables provided');
-    }
-
-    const pool = new Pool(poolConfig);
-    this.client = {
-      pool,
-      config,
-    };
-  }
-
-  async init() {
-    try {
-      const client = await this.client.pool.connect();
-      await client.release();
-    } catch (error) {
-      throw new PostgresError('Failed to connect to PostgreSQL', (error as any).code);
-    }
-  }
-
-  async query<T = any>(
-    tableName: string,
-    text: string,
-    values?: any[]
-  ): Promise<QueryResult<T>> {
-    // Check if the table is whitelisted
-    if (!this.client.config.whitelistedTables.includes(tableName)) {
-      throw new PostgresError(`Table "${tableName}" is not whitelisted`);
-    }
-
-    // Simple SQL injection prevention by checking if the query contains only the whitelisted table
-    const tableRegex = new RegExp(`\\b${tableName}\\b`, 'g');
-    const tableMatches = text.match(tableRegex) || [];
-    const otherTables = this.client.config.whitelistedTables
-      .filter(t => t !== tableName)
-      .some(t => text.includes(t));
-
-    if (tableMatches.length === 0 || otherTables) {
-      throw new PostgresError('Query contains unauthorized table access');
-    }
-
-    try {
-      const result = await this.client.pool.query(text, values);
-      return {
-        rows: result.rows as T[],
-        rowCount: result.rowCount,
-      };
-    } catch (error) {
-      throw new PostgresError(
-        `Query execution failed: ${(error as Error).message}`,
-        (error as any).code
-      );
-    }
-  }
-
-  async listTables(): Promise<string[]> {
-    try {
-      const result = await this.client.pool.query<{ table_name: string }>(
-        'SELECT table_name FROM information_schema.tables WHERE table_schema = $1',
-        ['public']
-      );
-      return result.rows
-        .map((row: { table_name: string }) => row.table_name)
-        .filter((table: string) => this.client.config.whitelistedTables.includes(table));
-    } catch (error) {
-      throw new PostgresError(
-        `Failed to list tables: ${(error as Error).message}`,
-        (error as any).code
-      );
-    }
-  }
-
-  async close() {
-    await this.client.pool.end();
-  }
 }
 
 export function createPostgresTools(config: PostgresConfig): PostgresTools {
   const service = new PostgresService(config);
 
   return {
-    query_table: {
+    run_query: {
       type: 'function',
       function: {
-        name: 'query_table',
-        description: 'Execute a SQL query on a whitelisted table',
+        name: 'run_query',
+        description: 'Generate and execute a SQL query based on user input.',
         parameters: {
           type: 'object',
           properties: {
-            tableName: {
+            userQuery: {
               type: 'string',
-              description: 'The name of the table to query (must be whitelisted)',
-            },
-            query: {
-              type: 'string',
-              description: 'The SQL query to execute',
-            },
-            values: {
-              type: 'array',
-              items: {
-                type: 'any',
-              },
-              description: 'Optional parameterized values for the query',
-            },
+              description: 'A natural language query from the user, which will be converted into SQL',
+            }
           },
-          required: ['tableName', 'query'],
+          required: ['userQuery'],
         },
       },
-      handler: async ({ tableName, query, values }) => {
+      handler: async ({ userQuery }) => {
         await service.init();
-        return service.query(tableName, query, values);
+        return service.query(userQuery);
       },
     },
     list_tables: {
@@ -148,7 +48,7 @@ export function createPostgresTools(config: PostgresConfig): PostgresTools {
       },
       handler: async () => {
         await service.init();
-        const tables = await service.listTables();
+        const tables = service.listTables();
         return { tables };
       },
     },
