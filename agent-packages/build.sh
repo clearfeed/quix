@@ -26,10 +26,4 @@ yarn install
 yarn link @clearfeed/common-agent
 yarn build
 
-# Link and build postgres package
-cd ../postgres
-yarn install
-yarn link @clearfeed/common-agent
-yarn build
-
 echo "All packages built successfully!"
