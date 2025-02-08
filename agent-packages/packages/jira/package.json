@@ -1,8 +1,7 @@
 {
   "name": "quix-jira-agent",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "restricted"
+    "registry": "https://npm.pkg.github.com"
   },
   "version": "1.0.0",
   "main": "dist/index.js",
