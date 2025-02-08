@@ -56,16 +56,24 @@ jobs:
           cd packages/hubspot && npm version ${{ github.event.inputs.version }} -m "Bump hubspot to %s"
           cd ../jira && npm version ${{ github.event.inputs.version }} -m "Bump jira to %s"
           cd ../github && npm version ${{ github.event.inputs.version }} -m "Bump github to %s"
+          cd ../common && npm version ${{ github.event.inputs.version }} -m "Bump common to %s"
 
       - name: Push version changes
         if: github.event_name == 'workflow_dispatch'
         run: git push --follow-tags
 
-      - name: Publish packages
+      - name: Determine changed packages
+        id: changes
         run: |
-          cd packages/hubspot && npm publish --access public
-          cd ../jira && npm publish --access public
-          cd ../github && npm publish --access public
+          echo "CHANGED_PACKAGES=$(git diff --name-only HEAD^ HEAD | grep 'packages/' | cut -d/ -f2 | sort | uniq)" >> $GITHUB_ENV
+
+      - name: Publish changed packages
+        run: |
+          for package in $CHANGED_PACKAGES; do
+            cd packages/$package
+            npm publish --access public
+            cd ../..
+          done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
