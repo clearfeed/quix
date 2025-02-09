@@ -8,6 +8,10 @@ echo "🔗 Linking packages for local development..."
 # Navigate to the agent-packages directory
 cd agent-packages
 
+# Run the build script to ensure all packages are up-to-date before linking
+echo "🏗️  Running build script..."
+./build.sh
+
 # First link the common package since others may depend on it
 echo "📦 Linking common package..."
 cd packages/common

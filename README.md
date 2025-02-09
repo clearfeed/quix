@@ -43,12 +43,17 @@ Quix is an AI-powered Slack agent that can query your business tools such as JIR
    - `SLACK_BOT_TOKEN`: Your Slack bot token
    - `LOG_LEVEL`: Logging level (default: info)
 
+4. **Link Packages**:
+   ```bash
+   ./link.sh
+   ```
+   
 4. **Start the Development Server**:
    ```bash
    yarn dev
    ```
 
-5. **Build and Run**:
+6. **Build and Run**:
    - Build the project:
      ```bash
      yarn build
