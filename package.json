@@ -24,7 +24,6 @@
     "@clearfeed-ai/quix-github-agent": "1.0.0",
     "@clearfeed-ai/quix-hubspot-agent": "1.0.0",
     "@clearfeed-ai/quix-jira-agent": "1.0.0",
-    "@clearfeed-ai/quix-postgres-agent": "1.0.0",
     "@slack/web-api": "^7.8.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
