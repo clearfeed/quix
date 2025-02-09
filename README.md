@@ -15,7 +15,19 @@ Quix is an AI-powered Slack agent that can query your business tools such as JIR
 - **User Query Endpoint**: Exposes an endpoint to accept user queries. 🔍
 - **Future Plans**: Includes accepting the context of a conversation for more personalized responses.
 
-## 🛠️ Setup
+## 🚀 Setting Up the Slack App
+
+1. **Create a Slack App**:
+   - Go to the [Slack API](https://api.slack.com/apps) and create a new app.
+   - Choose "From an app manifest" and paste the contents of `slack_app_manifest.yml` from this repository.
+
+2. **Update the Events Endpoint**:
+   - In the manifest, replace `<EXPRESS_ENDPOINT>` with your server's public URL where Slack can send event notifications.
+
+3. **Install the App to Your Workspace**:
+   - Follow the instructions in the Slack API to install the app to your workspace.
+
+## ��️ Setup
 
 1. **Clone the Repository**:
    ```bash

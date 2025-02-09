@@ -16,7 +16,8 @@ on:
     branches:
       - main
     paths:
-      - "agent-packages/**"
+      - "agent-packages/packages/**/*.ts"
+      - "agent-packages/packages/**/package.json"
 
 jobs:
   publish:
@@ -62,17 +63,14 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: git push --follow-tags
 
-      - name: Determine changed packages
-        id: changes
+      - name: Publish packages
         run: |
-          echo "CHANGED_PACKAGES=$(git diff --name-only HEAD^ HEAD | grep 'agent-packages/packages/' | cut -d/ -f3 | sort | uniq)" >> $GITHUB_ENV
-
-      - name: Publish changed packages
-        run: |
-          for package in $CHANGED_PACKAGES; do
-            cd packages/$package
-            npm publish --access public
-            cd ../..
+          cd packages
+          for d in */ ; do
+            if [ -f "package.json" ]; then
+              npm publish --access public
+            fi
+            cd ..
           done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
