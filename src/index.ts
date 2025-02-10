@@ -4,18 +4,25 @@ import config from './config';
 import logger from './utils/logger';
 import { loggingMiddleware } from './middleware/logging.middleware';
 import { queryHandler } from './handlers/query.handler';
-import { slackEventsHandler } from './handlers/slack.handler';
+import slackRoutes from './routes/slack.routes';
 
 const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+// Don't use express.json() for Slack routes as we need raw body
+app.use((req, res, next) => {
+  if (req.path.startsWith('/slack')) {
+    next();
+  } else {
+    express.json()(req, res, next);
+  }
+});
 app.use(loggingMiddleware);
 
 // API Routes
 app.post('/query', queryHandler);
-app.post('/slack/events', slackEventsHandler);
+app.use('/slack', slackRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
