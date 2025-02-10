@@ -1,6 +1,6 @@
 import { AppMentionEvent } from './types';
 import { processMessage } from '../../services/openai.service';
-import logger from '@/utils/logger';
+import logger from '../../utils/logger';
 import { WebClient } from '@slack/web-api';
 
 export const handleAppMention = async (
@@ -9,7 +9,7 @@ export const handleAppMention = async (
   const client = new WebClient(process.env.SLACK_BOT_TOKEN);
 
   try {
-    const response = await processMessage(event.text);
+    const response = await processMessage(event.text, []);
     await client.chat.postMessage({
       channel: event.channel,
       text: response,

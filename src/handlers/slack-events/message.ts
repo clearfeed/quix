@@ -1,7 +1,9 @@
 import { MessageEvent } from './types';
 import { processMessage } from '../../services/openai.service';
-import logger from '@/utils/logger';
+import logger from '../../utils/logger';
 import { WebClient } from '@slack/web-api';
+import { OpenAIContext } from '../../types';
+import { MessageElement } from '@slack/web-api/dist/types/response/ConversationsHistoryResponse';
 
 export const handleMessage = async (
   event: MessageEvent,
@@ -22,7 +24,26 @@ export const handleMessage = async (
     });
 
     if (event.text) {
-      const response = await processMessage(event.text);
+      let messages: OpenAIContext[] = [];
+      // get previous messages
+      if (event.thread_ts) {
+        const messagesResponse = await client.conversations.replies({
+          channel: event.channel,
+          ts: event.thread_ts,
+          limit: 10
+        });
+
+        if (messagesResponse.messages && messagesResponse.messages.length > 0) {
+          messages = messagesResponse.messages.map((message: MessageElement) => {
+            if (message.subtype === 'assistant_app_thread' || !message.text) return;
+            return {
+              role: message.bot_id ? 'assistant' : 'user',
+              content: message.text
+            } as OpenAIContext;
+          }).filter((message) => message !== undefined).slice(-10);
+        }
+      }
+      const response = await processMessage(event.text, messages);
       await client.chat.postMessage({
         channel: event.channel,
         text: response,

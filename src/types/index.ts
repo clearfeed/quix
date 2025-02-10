@@ -14,4 +14,9 @@ export interface APIResponse<T> {
 
 export interface QueryRequest {
   message: string;
-} 
+}
+
+export type OpenAIContext = {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
