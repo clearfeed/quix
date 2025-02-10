@@ -1,10 +1,9 @@
 {
   "name": "@clearfeed-ai/quix-packages",
-  "private": true,
   "workspaces": [
     "packages/*"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Quix Packages",
   "scripts": {
     "build": "yarn workspaces run build",
@@ -15,7 +14,7 @@
     "integrations"
   ],
   "author": "",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@types/node": "^22.13.1",
     "typescript": "^5.7.3",
