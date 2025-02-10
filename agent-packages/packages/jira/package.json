@@ -15,7 +15,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^1.0.0",
+    "@clearfeed-ai/quix-common-agent": "^1.0.3",
     "jira-client": "^8.2.2"
   },
   "devDependencies": {

@@ -1,5 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-packages",
+  "private": true,
   "workspaces": [
     "packages/*"
   ],
