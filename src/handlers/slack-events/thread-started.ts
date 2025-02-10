@@ -1,9 +1,13 @@
-import { AssistantThreadEvent, SlackEventContext } from './types';
+import { WebClient } from '@slack/web-api';
+import { AssistantThreadEvent } from './types';
+import logger from '../../utils/logger';
 
 export const handleThreadStarted = async (
-  event: AssistantThreadEvent,
-  { client, logger }: SlackEventContext
+  event: AssistantThreadEvent
 ) => {
+  
+  const client = new WebClient(process.env.SLACK_BOT_TOKEN);
+
   const threadId = event.assistant_thread.thread_ts;
   const channelId = event.assistant_thread.channel_id;
 

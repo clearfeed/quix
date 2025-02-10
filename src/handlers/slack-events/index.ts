@@ -1,21 +1,14 @@
 import { RequestHandler } from 'express';
-import { WebClient } from '@slack/web-api';
 import logger from '../../utils/logger';
 import { handleUrlVerification } from './url-verification';
 import { handleThreadStarted } from './thread-started';
 import { handleMessage } from './message';
 import { handleAppMention } from './app-mention';
-import { SlackEventContext } from './types';
 
-const slackClient = new WebClient(process.env.SLACK_BOT_TOKEN);
-
-const context: SlackEventContext = {
-  client: slackClient,
-  logger
-};
 
 export const slackEventsHandler: RequestHandler = async (req, res) => {
   const event = req.body;
+  const innerEvent = event.event;
 
   try {
     switch (event.type) {
@@ -28,15 +21,15 @@ export const slackEventsHandler: RequestHandler = async (req, res) => {
 
         switch (event.event?.type) {
           case 'assistant_thread_started':
-            await handleThreadStarted(event.event, context);
+            await handleThreadStarted(innerEvent);
             break;
 
           case 'message':
-            await handleMessage(event.event, context);
+            await handleMessage(innerEvent);
             break;
 
           case 'app_mention':
-            await handleAppMention(event.event, context);
+            await handleAppMention(innerEvent);
             break;
 
           default:

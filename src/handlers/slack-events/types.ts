@@ -3,11 +3,6 @@ import { AppMentionEvent as SlackAppMentionEvent } from '@slack/types/dist/event
 import { GenericMessageEvent } from '@slack/types/dist/events/message';
 import { AssistantThreadStartedEvent } from '@slack/types/dist/events/assistant';
 
-export interface SlackEventContext {
-  client: WebClient;
-  logger: any;
-}
-
 export interface SlackChallengeEvent {
   type: 'url_verification';
   challenge: string;
