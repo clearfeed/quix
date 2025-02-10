@@ -25,4 +25,9 @@ export default {
     token: process.env.GITHUB_TOKEN,
     owner: process.env.GITHUB_OWNER,
   },
+  zendesk: {
+    subdomain: process.env.ZENDESK_SUBDOMAIN,
+    email: process.env.ZENDESK_EMAIL,
+    token: process.env.ZENDESK_API_TOKEN,
+  },
 } as const; 

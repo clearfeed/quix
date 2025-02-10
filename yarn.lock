@@ -280,34 +280,42 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@clearfeed-ai/quix-common-agent@^1.0.0":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.0.2.tgz#772dff9d1614f79279c9f6b8da4d3c0a0f0fdf78"
-  integrity sha512-ig8WY4N0XNfuglXlGtccuzPOg9E66QvTp4ogo+jYHaVOUX4UoUtb5CJkwHp/m9tyhHViPJKqZDNYus/yucZK1Q==
+"@clearfeed-ai/quix-common-agent@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.0.3.tgz#8ca42168cdf2cf427abbcc8a1f8b3965147343e4"
+  integrity sha512-v6jaGZh3yAv/V4IuYC/tltnLFpvW/wisgbcnvCo7kAvmT0zFQLKZB4g4bn96RjrTk8X+xyiSwSiWtBMh1rV3ZA==
 
-"@clearfeed-ai/quix-github-agent@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.0.0.tgz#ec26234339ef011b82508194aa7f34ac0bf0af30"
-  integrity sha512-ZC+ltMmbLDrAYZpI30V09oD5PA5x22hQDU6tjS9HLvnjFwQP8qh3lYlYlGCmgZ562y5bRFKHiTunR7oYrudROw==
+"@clearfeed-ai/quix-github-agent@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.0.2.tgz#a837d7f21c9e520c71d50bbfe0cb7b504c620126"
+  integrity sha512-mOO9PyzMKMdRqPbj5DO7vCKpD4diPJNd5q7JUM2+tXTA4p6VNG4lrSsdjrCn7C+i/ES4vmGnpQLLo2rq6XTphQ==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "^1.0.0"
+    "@clearfeed-ai/quix-common-agent" "^1.0.3"
     "@octokit/rest" "^19.0.13"
 
-"@clearfeed-ai/quix-hubspot-agent@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-1.0.0.tgz#2a77a5cc7d743bad343bf2af71f4cce96ae1be7e"
-  integrity sha512-a6Sz2Y5ABdtuBnn8rLFV+VEdBtXNadAd9AmMNyFMnPdg47q6EBKXyPyeLgVCY8rjLjN0BO+fNzn5qgSVA7NC5A==
+"@clearfeed-ai/quix-hubspot-agent@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-1.0.1.tgz#3e36f4a4b2540cf2292a09f64d4933a7f382b5ba"
+  integrity sha512-w3HxGfzphCIxUB+LnMsF7A/dm0xn3RbkTAEJEvESa4YAINm4VLcz0Xw6YTQ+tJaaUEfyjM2TMqboGd69wU5rzQ==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "^1.0.0"
+    "@clearfeed-ai/quix-common-agent" "^1.0.3"
     "@hubspot/api-client" "^12.0.1"
 
-"@clearfeed-ai/quix-jira-agent@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.0.0.tgz#a346e33af1964fd601acfbd962f491f2a44d89ad"
-  integrity sha512-eOvyVjGdh7grCwDVMgzMn14eu3U5/eY2qsD6+VDfrnKCPnPkFSOxJTq4ZmBbsuRf0Y/twhmG+kpv98mAXbCT0A==
+"@clearfeed-ai/quix-jira-agent@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.0.1.tgz#d301449a83af41aa3527bfa54bc01fed00ef78d6"
+  integrity sha512-FfxXz3I84cMrqxN7YflokK3IwHsV7RXiS8QdHKghewHFU7A4mGf92YhgrunHTYy5D5FYgSqt9k8Ijt1XPHX0eA==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "^1.0.0"
+    "@clearfeed-ai/quix-common-agent" "^1.0.3"
     jira-client "^8.2.2"
+
+"@clearfeed-ai/quix-zendesk-agent@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-zendesk-agent/-/quix-zendesk-agent-1.0.0.tgz#2c09ba96a98564eb1cb7516b77584c5216782830"
+  integrity sha512-TJyOTHsMHF8UxD75B4sfSdMVEg++NPtrHi6mrWHeAXQ900vEht8ujTj8TRj4jvaxC9/naAsjZcvFv+TDCb7mdg==
+  dependencies:
+    "@clearfeed-ai/quix-common-agent" "^1.0.3"
+    node-zendesk "^6.0.1"
 
 "@colors/colors@1.6.0", "@colors/colors@^1.6.0":
   version "1.6.0"
@@ -1751,6 +1759,13 @@ create-require@^1.1.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/create-require/-/create-require-1.1.1.tgz#c1d7e8f1e5f6cfc9ff65f9cd352d37348756c333"
   integrity sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==
+
+cross-fetch@^4.0.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-4.1.0.tgz#8f69355007ee182e47fa692ecbaa37a52e43c3d2"
+  integrity sha512-uKm5PU+MHTootlWEY+mZ4vvXoCn4fLQxT9dSc1sXVMSFkINTJVN8cAQROpwcKm8bJ/c7rgZVIBWzH5T78sNZZw==
+  dependencies:
+    node-fetch "^2.7.0"
 
 cross-spawn@^7.0.3, cross-spawn@^7.0.6:
   version "7.0.6"
@@ -3354,7 +3369,7 @@ node-domexception@1.0.0:
   resolved "https://registry.yarnpkg.com/node-domexception/-/node-domexception-1.0.0.tgz#6888db46a1f71c0b76b3f7555016b63fe64766e5"
   integrity sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==
 
-node-fetch@^2.6.0, node-fetch@^2.6.7:
+node-fetch@^2.6.0, node-fetch@^2.6.7, node-fetch@^2.7.0:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.7.0.tgz#d0f0fa6e3e2dc1d27efcd8ad99d550bda94d187d"
   integrity sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==
@@ -3370,6 +3385,13 @@ node-releases@^2.0.19:
   version "2.0.19"
   resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-2.0.19.tgz#9e445a52950951ec4d177d843af370b411caf314"
   integrity sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==
+
+node-zendesk@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/node-zendesk/-/node-zendesk-6.0.1.tgz#d935a7bf3bdb25316b3ac547e434f4c6202e9366"
+  integrity sha512-WWXF9NisTZR766J9Mzaxl3q3L+DR9TqrN4PZTiQoVBwtWCWQ3eChDMJbNxy98En6F/ZqJWHs9ojRd7R5gOtdoA==
+  dependencies:
+    cross-fetch "^4.0.0"
 
 normalize-path@^3.0.0, normalize-path@~3.0.0:
   version "3.0.0"

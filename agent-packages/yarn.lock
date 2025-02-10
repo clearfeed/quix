@@ -785,6 +785,13 @@
   dependencies:
     undici-types "~6.20.0"
 
+"@types/node@^20.0.0":
+  version "20.17.17"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.17.17.tgz#5cea2af2e271313742c14f418eaf5dcfa8ae2e3a"
+  integrity sha512-/WndGO4kIfMicEQLTi/mDANUu/iVUhT7KboZPdEqqHQ4aTS+3qT3U5gIqWDFV+XouorjfgGqvKILJeHhuQgFYg==
+  dependencies:
+    undici-types "~6.19.2"
+
 "@types/request@*":
   version "2.48.12"
   resolved "https://registry.yarnpkg.com/@types/request/-/request-2.48.12.tgz#0f590f615a10f87da18e9790ac94c29ec4c5ef30"
@@ -1164,6 +1171,13 @@ create-jest@^29.7.0:
     jest-config "^29.7.0"
     jest-util "^29.7.0"
     prompts "^2.0.1"
+
+cross-fetch@^4.0.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-4.1.0.tgz#8f69355007ee182e47fa692ecbaa37a52e43c3d2"
+  integrity sha512-uKm5PU+MHTootlWEY+mZ4vvXoCn4fLQxT9dSc1sXVMSFkINTJVN8cAQROpwcKm8bJ/c7rgZVIBWzH5T78sNZZw==
+  dependencies:
+    node-fetch "^2.7.0"
 
 cross-spawn@^7.0.3:
   version "7.0.6"
@@ -2174,7 +2188,7 @@ natural-compare@^1.4.0:
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
 
-node-fetch@^2.6.0, node-fetch@^2.6.7:
+node-fetch@^2.6.0, node-fetch@^2.6.7, node-fetch@^2.7.0:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.7.0.tgz#d0f0fa6e3e2dc1d27efcd8ad99d550bda94d187d"
   integrity sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==
@@ -2190,6 +2204,13 @@ node-releases@^2.0.19:
   version "2.0.19"
   resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-2.0.19.tgz#9e445a52950951ec4d177d843af370b411caf314"
   integrity sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==
+
+node-zendesk@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/node-zendesk/-/node-zendesk-6.0.1.tgz#d935a7bf3bdb25316b3ac547e434f4c6202e9366"
+  integrity sha512-WWXF9NisTZR766J9Mzaxl3q3L+DR9TqrN4PZTiQoVBwtWCWQ3eChDMJbNxy98En6F/ZqJWHs9ojRd7R5gOtdoA==
+  dependencies:
+    cross-fetch "^4.0.0"
 
 normalize-path@^3.0.0:
   version "3.0.0"
@@ -2635,6 +2656,11 @@ typescript@^5.7.3:
   version "5.7.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.7.3.tgz#919b44a7dbb8583a9b856d162be24a54bf80073e"
   integrity sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==
+
+undici-types@~6.19.2:
+  version "6.19.8"
+  resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-6.19.8.tgz#35111c9d1437ab83a7cdc0abae2f26d88eda0a02"
+  integrity sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==
 
 undici-types@~6.20.0:
   version "6.20.0"

@@ -1,6 +1,7 @@
 import { createHubspotToolsExport } from '@clearfeed-ai/quix-hubspot-agent';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
+import { createZendeskToolsExport } from '@clearfeed-ai/quix-zendesk-agent';
 import config from '../config';
 
 // Get tools and handlers from each service
@@ -26,15 +27,26 @@ if (config.github?.token && config.github?.owner) {
   });
 }
 
+let zendeskExport;
+if (config.zendesk?.subdomain && config.zendesk?.email && config.zendesk?.token) {
+  zendeskExport = createZendeskToolsExport({
+    subdomain: config.zendesk.subdomain,
+    email: config.zendesk.email,
+    token: config.zendesk.token
+  });
+}
+
 // Combine all tools and handlers
 export const tools = [
   ...(hubspotExport?.tools || []),
   ...(jiraExport?.tools || []),
   ...(githubExport?.tools || []),
+  ...(zendeskExport?.tools || [])
 ];
 
 export const toolHandlers = {
-  ...(hubspotExport?.handlers || {}),
-  ...(jiraExport?.handlers || {}),
-  ...(githubExport?.handlers || {}),
+  ...hubspotExport?.handlers,
+  ...jiraExport?.handlers,
+  ...githubExport?.handlers,
+  ...zendeskExport?.handlers
 };
