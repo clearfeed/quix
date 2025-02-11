@@ -50,3 +50,5 @@ export const toolHandlers = {
   ...githubExport?.handlers,
   ...zendeskExport?.handlers
 };
+
+export const OPENAI_CONTEXT_SIZE = 30;
