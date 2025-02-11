@@ -80,4 +80,33 @@ export function createToolsExport<T extends Tools>(tools: T): ToolsExport {
       Object.entries(tools).map(([_, tool]) => [tool.function.name, tool.handler])
     ),
   };
+}
+
+export interface ToolExport {
+  tools: any[];
+  handlers: Record<string, Function>;
+  prompts: {
+    toolSelection?: string;  // Additional prompt for tool selection
+    responseGeneration?: string;  // Additional prompt for response generation
+  };
+}
+
+export interface ToolConfig {
+  tools: Array<{
+    type: 'function';
+    function: {
+      name: string;
+      description: string;
+      parameters: {
+        type: 'object';
+        properties: Record<string, any>;
+        required: string[];
+      };
+    };
+  }>;
+  handlers: Record<string, Function>;
+  prompts?: {
+    toolSelection?: string;
+    responseGeneration?: string;
+  };
 } 

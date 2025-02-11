@@ -49,7 +49,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
         return { success: false, error: validation.error };
       }
 
-      let query = `repo:${this.config.owner}/${params.repo}`;
+      let query = `repo:${this.config.owner}/${params.repo} is:pull-request`;
       if (params.status) query += ` is:${params.status}`;
       if (params.keyword) query += ` in:title,body ${params.keyword}`;
       if (params.reporter) query += ` author:${params.reporter}`;

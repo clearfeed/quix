@@ -1,17 +1,31 @@
-import { Tool, Tools, createToolsExport } from '@clearfeed-ai/quix-common-agent';
+import { Tool, Tools, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { GitHubService } from './index';
-import { SearchPRsParams, SearchPRsResponse, GetPRResponse, GitHubConfig } from './types';
+import { GitHubConfig, SearchPRsParams } from './types';
 
-export interface GitHubTools extends Tools {
-  search_github_prs: Tool<SearchPRsParams, SearchPRsResponse>;
-  get_github_pr: Tool<{ prNumber: number; repo: string }, GetPRResponse>;
-}
+const GITHUB_TOOL_SELECTION_PROMPT = `
+For GitHub-related queries, consider using GitHub tools when the user wants to:
+- Search for repositories or issues
+- View pull request information
+- Check commit history or branch status
+- Access repository details and metadata
+- View or manage GitHub issues
+`;
 
-export function createGitHubTools(config: GitHubConfig): GitHubTools {
+const GITHUB_RESPONSE_GENERATION_PROMPT = `
+When formatting GitHub responses:
+- Include repository names and issue/PR numbers
+- Format commit hashes in monospace
+- Present branch names and status clearly
+- Include relevant timestamps in human-readable format
+- Format code snippets using proper markdown
+- Use bullet points for listing multiple items
+`;
+
+export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
   const service = new GitHubService(config);
 
-  return {
-    search_github_prs: {
+  const tools: ToolConfig['tools'] = [
+    {
       type: 'function',
       function: {
         name: 'search_github_prs',
@@ -21,27 +35,27 @@ export function createGitHubTools(config: GitHubConfig): GitHubTools {
           properties: {
             repo: {
               type: 'string',
-              description: 'The name of the repository to search in',
+              description: 'The name of the repository to search in'
             },
             status: {
               type: 'string',
-              description: 'The status of PRs to search for (e.g., open, closed, merged)',
+              enum: ['open', 'closed', 'merged'],
+              description: 'The status of PRs to search for'
             },
             keyword: {
               type: 'string',
-              description: 'The keyword to search for in PR titles and descriptions',
+              description: 'The keyword to search for in PR titles and descriptions'
             },
             reporter: {
               type: 'string',
-              description: 'The GitHub username of the PR author',
-            },
+              description: 'The GitHub username of the PR author'
+            }
           },
-          required: ['repo'],
-        },
-      },
-      handler: (params: SearchPRsParams) => service.searchPRs(params),
+          required: ['repo']
+        }
+      }
     },
-    get_github_pr: {
+    {
       type: 'function',
       function: {
         name: 'get_github_pr',
@@ -49,24 +63,32 @@ export function createGitHubTools(config: GitHubConfig): GitHubTools {
         parameters: {
           type: 'object',
           properties: {
-            prNumber: {
-              type: 'number',
-              description: 'The PR number to fetch',
-            },
             repo: {
               type: 'string',
-              description: 'The name of the repository containing the PR',
+              description: 'The name of the repository containing the PR'
             },
+            prNumber: {
+              type: 'number',
+              description: 'The PR number to fetch'
+            }
           },
-          required: ['prNumber', 'repo'],
-        },
-      },
-      handler: ({ prNumber, repo }: { prNumber: number; repo: string }) => service.getPR(prNumber, repo),
-    },
-  };
-}
+          required: ['repo', 'prNumber']
+        }
+      }
+    }
+  ];
 
-export function createGitHubToolsExport(config: GitHubConfig) {
-  const tools = createGitHubTools(config);
-  return createToolsExport(tools);
+  const handlers = {
+    search_github_prs: (args: SearchPRsParams) => service.searchPRs(args),
+    get_github_pr: (args: { repo: string; prNumber: number }) => service.getPR(args.prNumber, args.repo)
+  };
+
+  return {
+    tools,
+    handlers,
+    prompts: {
+      toolSelection: GITHUB_TOOL_SELECTION_PROMPT,
+      responseGeneration: GITHUB_RESPONSE_GENERATION_PROMPT
+    }
+  };
 } 
