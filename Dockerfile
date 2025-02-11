@@ -30,9 +30,6 @@ COPY package.json yarn.lock ./
 # Install only production dependencies
 RUN yarn install --frozen-lockfile --production
 
-# Remove .npmrc to avoid token leak
-RUN rm -f .npmrc
-
 # Copy built assets from builder stage
 COPY --from=builder --chown=appuser:nodejs /app/dist ./dist
 
