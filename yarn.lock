@@ -285,7 +285,7 @@
   resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.0.3.tgz#8ca42168cdf2cf427abbcc8a1f8b3965147343e4"
   integrity sha512-v6jaGZh3yAv/V4IuYC/tltnLFpvW/wisgbcnvCo7kAvmT0zFQLKZB4g4bn96RjrTk8X+xyiSwSiWtBMh1rV3ZA==
 
-"@clearfeed-ai/quix-github-agent@1.0.2":
+"@clearfeed-ai/quix-github-agent@^1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.0.2.tgz#a837d7f21c9e520c71d50bbfe0cb7b504c620126"
   integrity sha512-mOO9PyzMKMdRqPbj5DO7vCKpD4diPJNd5q7JUM2+tXTA4p6VNG4lrSsdjrCn7C+i/ES4vmGnpQLLo2rq6XTphQ==
@@ -293,7 +293,7 @@
     "@clearfeed-ai/quix-common-agent" "^1.0.3"
     "@octokit/rest" "^19.0.13"
 
-"@clearfeed-ai/quix-hubspot-agent@1.0.1":
+"@clearfeed-ai/quix-hubspot-agent@^1.0.0":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-1.0.1.tgz#3e36f4a4b2540cf2292a09f64d4933a7f382b5ba"
   integrity sha512-w3HxGfzphCIxUB+LnMsF7A/dm0xn3RbkTAEJEvESa4YAINm4VLcz0Xw6YTQ+tJaaUEfyjM2TMqboGd69wU5rzQ==
@@ -301,15 +301,15 @@
     "@clearfeed-ai/quix-common-agent" "^1.0.3"
     "@hubspot/api-client" "^12.0.1"
 
-"@clearfeed-ai/quix-jira-agent@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.0.1.tgz#d301449a83af41aa3527bfa54bc01fed00ef78d6"
-  integrity sha512-FfxXz3I84cMrqxN7YflokK3IwHsV7RXiS8QdHKghewHFU7A4mGf92YhgrunHTYy5D5FYgSqt9k8Ijt1XPHX0eA==
+"@clearfeed-ai/quix-jira-agent@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.0.2.tgz#815e952ccc9c9b0a32c31cef07afa1a138f0aeb7"
+  integrity sha512-THbWcVry+pKGbehMZRSvNPXLdbl5OnZQWjyOxdjjSr/6/hOseOnvOzgFjJ6kd+IwU57q2e4cP2kUekprj7rymw==
   dependencies:
     "@clearfeed-ai/quix-common-agent" "^1.0.3"
     jira-client "^8.2.2"
 
-"@clearfeed-ai/quix-zendesk-agent@1.0.0":
+"@clearfeed-ai/quix-zendesk-agent@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-zendesk-agent/-/quix-zendesk-agent-1.0.0.tgz#2c09ba96a98564eb1cb7516b77584c5216782830"
   integrity sha512-TJyOTHsMHF8UxD75B4sfSdMVEg++NPtrHi6mrWHeAXQ900vEht8ujTj8TRj4jvaxC9/naAsjZcvFv+TDCb7mdg==

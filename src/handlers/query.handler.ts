@@ -15,7 +15,7 @@ export const queryHandler: RequestHandler = async (req, res) => {
       return;
     }
 
-    const result = await processMessage(message);
+    const result = await processMessage(message, []);
     res.json({
       success: true,
       result,
