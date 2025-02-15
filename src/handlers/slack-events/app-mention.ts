@@ -1,5 +1,5 @@
 import { AppMentionEvent } from './types';
-import { processMessage } from '../../services/openai.service';
+import { llmService } from '../../services/llm/llm.service';
 import logger from '../../utils/logger';
 import { WebClient } from '@slack/web-api';
 import { createOpenAIContext } from '../../utils/slack';
@@ -11,7 +11,7 @@ export const handleAppMention = async (
 
   try {
     const messages = await createOpenAIContext(event);
-    const response = await processMessage(event.text, messages);
+    const response = await llmService.processMessage(event.text, messages);
     await client.chat.postMessage({
       channel: event.channel,
       text: response,

@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { processMessage } from '../services/openai.service';
+import { llmService } from '../services/llm/llm.service';
 import { QueryRequest, APIResponse } from '../types';
 import logger from '../utils/logger';
 
@@ -15,7 +15,7 @@ export const queryHandler: RequestHandler = async (req, res) => {
       return;
     }
 
-    const result = await processMessage(message, []);
+    const result = await llmService.processMessage(message, []);
     res.json({
       success: true,
       result,

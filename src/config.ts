@@ -6,6 +6,11 @@ export default {
   port: process.env.PORT || 3000,
   openai: {
     apiKey: process.env.OPENAI_API_KEY,
+    model: process.env.OPENAI_MODEL || 'gpt-4-turbo',
+  },
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY,
+    model: process.env.GEMINI_MODEL || 'gemini-pro',
   },
   hubspot: {
     accessToken: process.env.HUBSPOT_ACCESS_TOKEN,

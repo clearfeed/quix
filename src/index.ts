@@ -5,8 +5,15 @@ import logger from './utils/logger';
 import { loggingMiddleware } from './middleware/logging.middleware';
 import { queryHandler } from './handlers/query.handler';
 import slackRoutes from './routes/slack.routes';
+import { llmService } from './services/llm/llm.service';
 
 const app = express();
+
+// Initialize services with default provider (OpenAI)
+llmService.initialize().catch(error => {
+  logger.error('Failed to initialize LLM service:', error);
+  process.exit(1);
+});
 
 // Middleware
 app.use(cors());
