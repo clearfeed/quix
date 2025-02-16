@@ -39,18 +39,18 @@ if (config.zendesk?.subdomain && config.zendesk?.email && config.zendesk?.token)
 
 // Combine all tools and handlers
 export const tools = {
-  // ...(hubspotExport?.tools || []),
+  ...(hubspotExport?.tools && { hubspot: hubspotExport.tools }),
   ...(jiraExport?.tools && { jira: jiraExport.tools }),
-  // ...(githubExport?.tools || []),
-  // ...(zendeskExport?.tools || [])
+  ...(githubExport?.tools && { github: githubExport.tools }),
+  ...(zendeskExport?.tools && { zendesk: zendeskExport.tools })
 };
 
 // Combine all prompts
 export const toolPrompts: Record<keyof typeof tools, { toolSelection?: string; responseGeneration?: string }> = {
-  // hubspot: hubspotExport?.prompts || {},
+  hubspot: hubspotExport?.prompts || {},
   jira: jiraExport?.prompts || {},
-  // github: githubExport?.prompts || {},
-  // zendesk: zendeskExport?.prompts || {}
+  github: githubExport?.prompts || {},
+  zendesk: zendeskExport?.prompts || {}
 };
 
 export const OPENAI_CONTEXT_SIZE = 30;

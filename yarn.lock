@@ -286,41 +286,44 @@
   resolved "https://registry.yarnpkg.com/@cfworker/json-schema/-/json-schema-4.1.1.tgz#4a2a3947ee9fa7b7c24be981422831b8674c3be6"
   integrity sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==
 
-"@clearfeed-ai/quix-common-agent@^1.0.3", "@clearfeed-ai/quix-common-agent@^1.0.4":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.0.5.tgz#c06b98120ca80f3a9fb96bdb3870348352981607"
-  integrity sha512-g2b1bWnM8sFMrG/eqwnwKwXIisYCsHiCYnp0pbWVpHG4k/aDgNUtJr2KdYE8CS66Ud4nUtIS6t8PqvEtZ4lQcA==
-
-"@clearfeed-ai/quix-github-agent@^1.0.2":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.0.4.tgz#0fa046bbbf157e2f90ae227b953b0f31319ca614"
-  integrity sha512-EoX+X42BzjzzsSPy81VB7uQQLSWtwuR8DMOtTxxfdM0KFwvT4MLhYkCg/p0Y5hHwRO7hF/TEVUiYoNBgPbOkxw==
+"@clearfeed-ai/quix-common-agent@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.1.0.tgz#6b20fd826e9bd1fad0f42d408611c3f7b992117a"
+  integrity sha512-OyHHuMVo51jtLo4cdygtnJ1nY/Kv+yLASZyt8pnfougL2CATqdIzAZvvfhRYy4v6OQdrrjJvyerZ+ks2nHHXTA==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "^1.0.3"
+    "@langchain/core" "^0.3.40"
+    zod "^3.24.2"
+
+"@clearfeed-ai/quix-github-agent@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.1.0.tgz#f3e721fd0c5523adce86bb1efd26539aa40baaf5"
+  integrity sha512-+3+R/7kRbTjLh3MDuohgLJC8X/4jEbytuxpo3i0RKvywjAn5fOoE7MqFgrknKyb+eh4C0WPO0pQijCetT/05fg==
+  dependencies:
+    "@clearfeed-ai/quix-common-agent" "^1.1.0"
     "@octokit/rest" "^19.0.13"
 
-"@clearfeed-ai/quix-hubspot-agent@^1.0.0":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-1.0.2.tgz#ca864b37a2c255e1b7235897814cb4bae6c27dc4"
-  integrity sha512-ZIVm0EAuAp8S+nv/DYE5u8n0DGXMqeI6O8AOVLs/JPa2VC3fCWJ6LfrlXOgQXnUjQEp63rQk0dFgTy5b0Vtaag==
+"@clearfeed-ai/quix-hubspot-agent@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-1.1.0.tgz#11b2393172e4345a6201af9a5e095f86f30e56cd"
+  integrity sha512-s2vPWPcwpBcOpOuFIBKtGkZmUrD5tWfDhl9FyzLGQvspm7poSV9KUW9ltCq3JoKKCcVZOAcH9g/bJzmU90DJ8g==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "^1.0.3"
+    "@clearfeed-ai/quix-common-agent" "^1.1.0"
     "@hubspot/api-client" "^12.0.1"
 
-"@clearfeed-ai/quix-jira-agent@^1.0.2":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.0.3.tgz#a3639175e6cb09bdddf5bdb8cd7aabbc7b6ece86"
-  integrity sha512-feGKjTSxNTNyVZxChlYUbYdeL1SFC0PyD6MkoIzQcEbN1e/3UBCY/o7KZM/ftri6ErUPYrcA8Se+LHhxXhaL/A==
+"@clearfeed-ai/quix-jira-agent@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.1.0.tgz#e9d6dcb9ec7fb6dbbd5a29ada0d6d5eaaa140fea"
+  integrity sha512-LW5pqles28xHszaMo8nz4KF0ePFEGrVCbH2ouVeM8ONva7bRSPDNWZJq5XvL4jxbWNCeXjD51vU+twMt7zOvJQ==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "^1.0.3"
+    "@clearfeed-ai/quix-common-agent" "^1.1.0"
     jira-client "^8.2.2"
 
-"@clearfeed-ai/quix-zendesk-agent@^1.0.0":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-zendesk-agent/-/quix-zendesk-agent-1.0.1.tgz#1e97e75ff7cf4b92435d62a9e13fe929195ae673"
-  integrity sha512-5swl8QgWhNHiDzoFPwe00suMH9LuFX9NplTNB9yaOhhfjrdLkrmzPnZKgiNe+yfIpEGbvwTyoCoyRR2ty9ASkg==
+"@clearfeed-ai/quix-zendesk-agent@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-zendesk-agent/-/quix-zendesk-agent-1.1.0.tgz#8ea4d9adbe52de6ac9e489a57b3285caea890f4f"
+  integrity sha512-mellaHUVs70JEGRHx4cqZC7cm1Z3IUqSEXzC3pptVbvrnrOtkSndR+SuH2ODmJTtxiJ64eROGuEwerPt9h7ZqQ==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "^1.0.3"
+    "@clearfeed-ai/quix-common-agent" "^1.1.0"
     node-zendesk "^6.0.1"
 
 "@colors/colors@1.6.0", "@colors/colors@^1.6.0":

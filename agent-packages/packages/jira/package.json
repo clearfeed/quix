@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-jira-agent",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -12,7 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^1.0.3",
+    "@clearfeed-ai/quix-common-agent": "^1.1.0",
     "jira-client": "^8.2.2"
   },
   "devDependencies": {
