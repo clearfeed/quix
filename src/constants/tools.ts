@@ -46,11 +46,11 @@ export const tools = {
 };
 
 // Combine all prompts
-export const toolPrompts: Record<string, { toolSelection?: string; responseGeneration?: string }> = {
-  hubspot: hubspotExport?.prompts || {},
+export const toolPrompts: Record<keyof typeof tools, { toolSelection?: string; responseGeneration?: string }> = {
+  // hubspot: hubspotExport?.prompts || {},
   jira: jiraExport?.prompts || {},
-  github: githubExport?.prompts || {},
-  zendesk: zendeskExport?.prompts || {}
+  // github: githubExport?.prompts || {},
+  // zendesk: zendeskExport?.prompts || {}
 };
 
 export const OPENAI_CONTEXT_SIZE = 30;

@@ -3,9 +3,8 @@ import { tools, toolPrompts } from '../../constants/tools';
 import logger from '../../utils/logger';
 import { OpenAIContext } from '../../types';
 import { LLMFactory } from './llm.factory';
-import { Tool, SupportedChatModels } from './types';
-import { HumanMessage } from '@langchain/core/messages';
-import { RunnableMap, RunnableSequence } from '@langchain/core/runnables';
+import { SupportedChatModels } from './types';
+import { RunnableSequence } from '@langchain/core/runnables';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 
@@ -33,8 +32,8 @@ export class LLMService {
   }
 
   private availableCategories: string[] = ['none', ...Object.keys(toolPrompts).filter(key =>
-    toolPrompts[key] &&
-    Object.keys(toolPrompts[key]).length > 0
+    toolPrompts[key as keyof typeof toolPrompts] &&
+    Object.keys(toolPrompts[key as keyof typeof toolPrompts]).length > 0
   )];
 
   public async processMessage(message: string, previousMessages: OpenAIContext[]): Promise<string> {
@@ -84,7 +83,23 @@ export class LLMService {
       tool_choice: 'auto'
     });
 
-    return Array.isArray(result.content) ? result.content.join(' ') : result.content;
+    const toolCall = result.tool_calls?.[0];
+
+    if (toolCall) {
+      const toolName = toolCall.name;
+      const toolArgs = toolCall.args;
+
+      const tool = selectedFunctions.find(t => t.name === toolName);
+
+      if (tool) {
+        const result = await tool.func(toolArgs);
+        return this.generateResponse(message, result, toolName, toolSelection.selectedTool, previousMessages);
+      }
+
+      return `I apologize, but I don't have any tools configured to help with your request at the moment.`;
+    }
+
+    return this.generateResponse(message, result, 'none', toolSelection.selectedTool, previousMessages);
   }
 
   private toolSelection = async (message: string, previousMessages: OpenAIContext[]): Promise<{
@@ -93,7 +108,7 @@ export class LLMService {
   }> => {
     const llmProvider = this.factory.getProvider(SupportedChatModels.OPENAI);
 
-    const toolSelectionPrompts = this.availableCategories.map(category => toolPrompts[category]?.toolSelection).filter(Boolean).join('\n');
+    const toolSelectionPrompts = this.availableCategories.map(category => toolPrompts[category as keyof typeof toolPrompts]?.toolSelection).filter(Boolean).join('\n');
     const systemPrompt = `${BASE_SYSTEM_PROMPT}\n${toolSelectionPrompts}`;
 
     const toolSelectionFunction = new DynamicStructuredTool({
@@ -136,38 +151,44 @@ export class LLMService {
     };
   }
 
-  //   private generateResponse = async (
-  //     message: string,
-  //     result: Record<string, any>,
-  //     functionName: string,
-  //     toolCategory: string
-  //   ): Promise<string> => {
-  //     const toolPrompt = toolPrompts[toolCategory]?.responseGeneration || '';
-  //     const llmProvider = this.factory.getProvider();
+  private generateResponse = async (
+    message: string,
+    result: Record<string, any>,
+    functionName: string,
+    toolCategory: keyof typeof tools,
+    previousMessages: OpenAIContext[]
+  ): Promise<string> => {
 
-  //     const formattedResponse = await llmProvider.generateCompletion(
-  //       [
-  //         {
-  //           role: 'system',
-  //           content: `
-  // You are a business assistant. Given a user's query and structured API data, generate a response that directly answers the user's question in a clear and concise manner. Format the response as a Slack message using Slack's supported markdown syntax:
+    const responsePrompt = ChatPromptTemplate.fromMessages([
+      SystemMessagePromptTemplate.fromTemplate(`
+            You are a business assistant. Given a user's query and structured API data, generate a response that directly answers the user's question in a clear and concise manner. Format the response as a Slack message using Slack's supported markdown syntax:
 
-  // - Use <URL|Text> for links instead of [text](URL).
-  // - Use *bold* instead of **bold**.
-  // - Ensure proper line breaks by using \n\n between list items.
-  // - Retain code blocks using triple backticks where needed.
-  // - Ensure all output is correctly formatted to display properly in Slack.
+          - Use <URL|Text> for links instead of [text](URL).
+          - Use *bold* instead of **bold**.
+          - Ensure proper line breaks by using \n\n between list items.
+          - Retain code blocks using triple backticks where needed.
+          - Ensure all output is correctly formatted to display properly in Slack.
 
-  // ${toolPrompt}
-  //         `
-  //         },
-  //         { role: 'user', content: `User's question: "${message}"` },
-  //         { role: 'user', content: `Here is the structured response from ${functionName}: ${JSON.stringify(result, null, 2)}` }
-  //       ]
-  //     );
+          ${toolPrompts[toolCategory]?.responseGeneration}
+        `),
+      new MessagesPlaceholder('chat_history'),
+      HumanMessagePromptTemplate.fromTemplate('{input}')
+    ]);
 
-  //     return formattedResponse.content ?? '';
-  //   };
+    const llmProvider = this.factory.getProvider(SupportedChatModels.OPENAI);
+
+    const responseChain = RunnableSequence.from([
+      responsePrompt,
+      llmProvider
+    ]);
+
+    const response = await responseChain.invoke({
+      chat_history: previousMessages,
+      input: `The user's question is: "${message}". Here is the structured response from ${functionName}: ${JSON.stringify(result, null, 2)}`
+    });
+
+    return Array.isArray(response.content) ? response.content.join(' ') : response.content;
+  };
 }
 
 // Export only the singleton instance
