@@ -14,11 +14,13 @@ export class LLMFactory {
       model: 'gpt-4-turbo',
       temperature: 0.5
     }));
-    this.providers.set(SupportedChatModels.GEMINI, new ChatGoogleGenerativeAI({
-      model: 'gemini-2.0-flash',
-      temperature: 0.5,
-      apiKey: config.gemini.apiKey
-    }));
+    if (config.gemini.apiKey) {
+      this.providers.set(SupportedChatModels.GEMINI, new ChatGoogleGenerativeAI({
+        model: 'gemini-2.0-flash',
+        temperature: 0.5,
+        apiKey: config.gemini.apiKey
+      }));
+    }
   }
 
   public static getInstance(): LLMFactory {
