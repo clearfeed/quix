@@ -8,11 +8,15 @@
   ],
   "scripts": {
     "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
-    "build": "yarn clean && tsc",
+    "build": "tsc",
     "test": "jest"
   },
   "devDependencies": {
     "typescript": "^5.7.3"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@langchain/core": "^0.3.40",
+    "zod": "^3.24.2"
+  }
 }

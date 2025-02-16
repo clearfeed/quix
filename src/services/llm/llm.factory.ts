@@ -1,18 +1,24 @@
-import { OpenAIProvider } from './providers/openai.provider';
-import { GeminiProvider } from './providers/gemini.provider';
-import { LLMConfig, LLMProvider } from './types';
-
-export type SupportedLLMProvider = 'openai' | 'gemini';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { ChatOpenAI } from '@langchain/openai';
+import config from '../../config';
+import { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import { SupportedChatModels } from './types';
 
 export class LLMFactory {
   private static instance: LLMFactory;
-  private providers: Map<SupportedLLMProvider, LLMProvider>;
-  private activeProvider: LLMProvider | null = null;
+  private providers: Map<SupportedChatModels, BaseChatModel>;
 
   private constructor() {
     this.providers = new Map();
-    this.providers.set('openai', new OpenAIProvider());
-    this.providers.set('gemini', new GeminiProvider());
+    this.providers.set(SupportedChatModels.OPENAI, new ChatOpenAI({
+      model: 'gpt-4-turbo',
+      temperature: 0.5
+    }));
+    this.providers.set(SupportedChatModels.GEMINI, new ChatGoogleGenerativeAI({
+      model: 'gemini-2.0-flash',
+      temperature: 0.5,
+      apiKey: config.gemini.apiKey
+    }));
   }
 
   public static getInstance(): LLMFactory {
@@ -22,23 +28,11 @@ export class LLMFactory {
     return LLMFactory.instance;
   }
 
-  public async initializeProvider(
-    provider: SupportedLLMProvider,
-    config: LLMConfig
-  ): Promise<void> {
-    const llmProvider = this.providers.get(provider);
-    if (!llmProvider) {
-      throw new Error(`Provider ${provider} not supported`);
+  public getProvider(model: SupportedChatModels): BaseChatModel {
+    const provider = this.providers.get(model);
+    if (!provider) {
+      throw new Error(`Provider for model ${model} not found`);
     }
-
-    await llmProvider.initialize(config);
-    this.activeProvider = llmProvider;
-  }
-
-  public getProvider(): LLMProvider {
-    if (!this.activeProvider) {
-      throw new Error('No LLM provider has been initialized');
-    }
-    return this.activeProvider;
+    return provider;
   }
 } 

@@ -1,4 +1,4 @@
-import { Tool, Tools, createToolsExport } from '@clearfeed-ai/quix-common-agent';
+import { z, ZodObject } from 'zod';
 import { JiraService } from './index';
 import {
   CreateIssueParams,
@@ -8,13 +8,7 @@ import {
   JiraConfig
 } from './types';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
-
-export interface JiraTools extends Tools {
-  find_jira_ticket: Tool<{ keyword: string }, SearchIssuesResponse>;
-  get_jira_issue: Tool<{ issueId: string }, GetIssueResponse>;
-  create_jira_issue: Tool<CreateIssueParams, GetIssueResponse>;
-  assign_jira_issue: Tool<{ issueId: string; assignee: string }, AssignIssueResponse>;
-}
+import { DynamicStructuredTool } from '@langchain/core/tools';
 
 const JIRA_TOOL_SELECTION_PROMPT = `
 For Jira-related queries, consider using Jira tools when the user wants to:
@@ -34,217 +28,57 @@ When formatting Jira responses:
 - When linking JIRA issues, use the host url: ${config.host}
 `;
 
-export function createJiraTools(config: JiraConfig): JiraTools {
+export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
   const service = new JiraService(config);
 
-  return {
-    find_jira_ticket: {
-      type: 'function',
-      function: {
-        name: 'find_jira_ticket',
-        description: 'Find JIRA issues based on a keyword',
-        parameters: {
-          type: 'object',
-          properties: {
-            keyword: {
-              type: 'string',
-              description: 'The keyword to search for in Jira issues',
-            },
-          },
-          required: ['keyword'],
-        },
-      },
-      handler: ({ keyword }: { keyword: string }) => service.searchIssues(keyword),
-    },
-    get_jira_issue: {
-      type: 'function',
-      function: {
-        name: 'get_jira_issue',
-        description: 'Get detailed information about a specific Jira issue by ID',
-        parameters: {
-          type: 'object',
-          properties: {
-            issueId: {
-              type: 'string',
-              description: 'The Jira issue ID (e.g., PROJ-123)',
-            },
-          },
-          required: ['issueId'],
-        },
-      },
-      handler: ({ issueId }: { issueId: string }) => service.getIssue(issueId),
-    },
-    create_jira_issue: {
-      type: 'function',
-      function: {
-        name: 'create_jira_issue',
-        description: 'Create a new JIRA issue',
-        parameters: {
-          type: 'object',
-          properties: {
-            projectKey: {
-              type: 'string',
-              description: 'The project key where the issue will be created',
-            },
-            summary: {
-              type: 'string',
-              description: 'The summary/title of the issue',
-            },
-            description: {
-              type: 'string',
-              description: 'The description of the issue',
-            },
-            issueType: {
-              type: 'string',
-              description: 'The type of issue (e.g., Bug, Task, Story)',
-            },
-            priority: {
-              type: 'string',
-              description: 'The priority of the issue',
-            },
-            assignee: {
-              type: 'string',
-              description: 'The username of the assignee',
-            },
-          },
-          required: ['projectKey', 'summary', 'description', 'issueType'],
-        },
-      },
-      handler: (params: CreateIssueParams) => service.createIssue(params),
-    },
-    assign_jira_issue: {
-      type: 'function',
-      function: {
-        name: 'assign_jira_issue',
-        description: 'Assign a Jira issue to a user',
-        parameters: {
-          type: 'object',
-          properties: {
-            issueId: {
-              type: 'string',
-              description: 'The Jira issue ID (e.g., PROJ-123)',
-            },
-            assignee: {
-              type: 'string',
-              description: 'The username of the person to assign the issue to',
-            },
-          },
-          required: ['issueId', 'assignee'],
-        },
-      },
-      handler: ({ issueId, assignee }: { issueId: string; assignee: string }) => service.assignIssue(issueId, assignee),
-    },
-  };
+  const tools: DynamicStructuredTool<any>[] = [
+    new DynamicStructuredTool({
+      name: 'find_jira_ticket',
+      description: 'Find JIRA issues based on a keyword',
+      schema: z.object({
+        keyword: z.string().describe('The keyword to search for in Jira issues')
+      }),
+      func: async ({ keyword }: { keyword: string }): Promise<SearchIssuesResponse> => service.searchIssues(keyword)
+    }),
+    new DynamicStructuredTool<ZodObject<{ issueId: z.ZodString }>>({
+      name: 'get_jira_issue',
+      description: 'Get detailed information about a specific Jira issue by ID',
+      schema: z.object({
+        issueId: z.string().describe('The Jira issue ID (e.g., PROJ-123)')
+      }),
+      func: async ({ issueId }: { issueId: string }): Promise<GetIssueResponse> => service.getIssue(issueId)
+    }),
+    new DynamicStructuredTool({
+      name: 'create_jira_issue',
+      description: 'Create a new JIRA issue',
+      schema: z.object({
+        projectKey: z.string().describe('The project key where the issue will be created'),
+        summary: z.string().describe('The summary/title of the issue'),
+        description: z.string().describe('The description of the issue'),
+        issueType: z.string().describe('The type of issue (e.g., Bug, Task, Story)'),
+        priority: z.string().describe('The priority of the issue').optional(),
+        assignee: z.string().describe('The username of the assignee').optional()
+      }),
+      func: async (params: CreateIssueParams): Promise<GetIssueResponse> => service.createIssue(params)
+    }),
+    new DynamicStructuredTool({
+      name: 'assign_jira_issue',
+      description: 'Assign a Jira issue to a user',
+      schema: z.object({
+        issueId: z.string().describe('The Jira issue ID (e.g., PROJ-123)'),
+        assignee: z.string().describe('The username of the person to assign the issue to')
+      }),
+      func: async ({ issueId, assignee }: { issueId: string, assignee: string }): Promise<AssignIssueResponse> => service.assignIssue(issueId, assignee)
+    })
+  ];
+
+  return tools;
 }
 
 export function createJiraToolsExport(config: JiraConfig): ToolConfig {
-  const service = new JiraService(config);
-
-  const tools: ToolConfig['tools'] = [
-    {
-      type: 'function',
-      function: {
-        name: 'jiraSearchIssues',
-        description: 'Search for Jira issues using a keyword',
-        parameters: {
-          type: 'object',
-          properties: {
-            keyword: {
-              type: 'string',
-              description: 'Keyword to search for in Jira issues'
-            }
-          },
-          required: ['keyword']
-        }
-      }
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'jiraGetIssue',
-        description: 'Get details of a specific Jira issue by ID',
-        parameters: {
-          type: 'object',
-          properties: {
-            issueId: {
-              type: 'string',
-              description: 'The ID of the Jira issue'
-            }
-          },
-          required: ['issueId']
-        }
-      }
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'jiraCreateIssue',
-        description: 'Create a new Jira issue',
-        parameters: {
-          type: 'object',
-          properties: {
-            projectKey: {
-              type: 'string',
-              description: 'The project key where the issue should be created'
-            },
-            summary: {
-              type: 'string',
-              description: 'The summary/title of the issue'
-            },
-            description: {
-              type: 'string',
-              description: 'The description of the issue'
-            },
-            issueType: {
-              type: 'string',
-              description: 'The type of issue (e.g., Bug, Task, Story)'
-            },
-            priority: {
-              type: 'string',
-              description: 'The priority of the issue'
-            },
-            assignee: {
-              type: 'string',
-              description: 'The username of the assignee'
-            }
-          },
-          required: ['projectKey', 'summary', 'description', 'issueType']
-        }
-      }
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'jiraAssignIssue',
-        description: 'Assign a Jira issue to a user',
-        parameters: {
-          type: 'object',
-          properties: {
-            issueId: {
-              type: 'string',
-              description: 'The ID of the Jira issue'
-            },
-            assignee: {
-              type: 'string',
-              description: 'The username of the assignee'
-            }
-          },
-          required: ['issueId', 'assignee']
-        }
-      }
-    }
-  ];
-
-  const handlers = {
-    jiraSearchIssues: (args: { keyword: string }) => service.searchIssues(args.keyword),
-    jiraGetIssue: (args: { issueId: string }) => service.getIssue(args.issueId),
-    jiraCreateIssue: (args: any) => service.createIssue(args),
-    jiraAssignIssue: (args: { issueId: string; assignee: string }) => service.assignIssue(args.issueId, args.assignee)
-  };
 
   return {
-    tools,
-    handlers,
+    tools: createJiraTools(config),
     prompts: {
       toolSelection: JIRA_TOOL_SELECTION_PROMPT,
       responseGeneration: getJiraResponsePrompt(config)

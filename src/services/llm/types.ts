@@ -37,4 +37,9 @@ export interface LLMProvider {
     tools?: Tool[],
     toolChoice?: 'none' | 'auto',
   ): Promise<LLMResponse>;
-} 
+}
+
+export enum SupportedChatModels {
+  OPENAI = 'openai',
+  GEMINI = 'gemini',
+}

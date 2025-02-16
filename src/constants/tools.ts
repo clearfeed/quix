@@ -38,18 +38,11 @@ if (config.zendesk?.subdomain && config.zendesk?.email && config.zendesk?.token)
 }
 
 // Combine all tools and handlers
-export const tools = [
-  ...(hubspotExport?.tools || []),
-  ...(jiraExport?.tools || []),
-  ...(githubExport?.tools || []),
-  ...(zendeskExport?.tools || [])
-];
-
-export const toolHandlers = {
-  ...hubspotExport?.handlers,
-  ...jiraExport?.handlers,
-  ...githubExport?.handlers,
-  ...zendeskExport?.handlers
+export const tools = {
+  // ...(hubspotExport?.tools || []),
+  ...(jiraExport?.tools && { jira: jiraExport.tools }),
+  // ...(githubExport?.tools || []),
+  // ...(zendeskExport?.tools || [])
 };
 
 // Combine all prompts
@@ -58,16 +51,6 @@ export const toolPrompts: Record<string, { toolSelection?: string; responseGener
   jira: jiraExport?.prompts || {},
   github: githubExport?.prompts || {},
   zendesk: zendeskExport?.prompts || {}
-};
-
-// Add global tool selection prompt
-toolPrompts.toolSelection = {
-  toolSelection: Object.values([
-    hubspotExport?.prompts?.toolSelection,
-    jiraExport?.prompts?.toolSelection,
-    githubExport?.prompts?.toolSelection,
-    zendeskExport?.prompts?.toolSelection
-  ]).filter(Boolean).join('\n')
 };
 
 export const OPENAI_CONTEXT_SIZE = 30;
