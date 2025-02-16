@@ -1,6 +1,8 @@
-import { Tool, Tools, ToolConfig } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { GitHubService } from './index';
 import { GitHubConfig, SearchPRsParams } from './types';
+import { DynamicStructuredTool } from '@langchain/core/tools';
+import { z } from 'zod';
 
 const GITHUB_TOOL_SELECTION_PROMPT = `
 For GitHub-related queries, consider using GitHub tools when the user wants to:
@@ -24,68 +26,32 @@ When formatting GitHub responses:
 export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
   const service = new GitHubService(config);
 
-  const tools: ToolConfig['tools'] = [
-    {
-      type: 'function',
-      function: {
-        name: 'search_github_prs',
-        description: 'Search GitHub PRs based on status, keywords, and reporter',
-        parameters: {
-          type: 'object',
-          properties: {
-            repo: {
-              type: 'string',
-              description: 'The name of the repository to search in'
-            },
-            status: {
-              type: 'string',
-              enum: ['open', 'closed', 'merged'],
-              description: 'The status of PRs to search for'
-            },
-            keyword: {
-              type: 'string',
-              description: 'The keyword to search for in PR titles and descriptions'
-            },
-            reporter: {
-              type: 'string',
-              description: 'The GitHub username of the PR author'
-            }
-          },
-          required: ['repo']
-        }
-      }
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'get_github_pr',
-        description: 'Get detailed information about a specific GitHub PR by number',
-        parameters: {
-          type: 'object',
-          properties: {
-            repo: {
-              type: 'string',
-              description: 'The name of the repository containing the PR'
-            },
-            prNumber: {
-              type: 'number',
-              description: 'The PR number to fetch'
-            }
-          },
-          required: ['repo', 'prNumber']
-        }
-      }
-    }
+  const tools: DynamicStructuredTool<any>[] = [
+    new DynamicStructuredTool({
+      name: 'search_github_prs',
+      description: 'Search GitHub PRs based on status, keywords, and reporter',
+      schema: z.object({
+        repo: z.string().describe('The name of the repository to search in'),
+        status: z.enum(['open', 'closed', 'merged']).describe('The status of PRs to search for'),
+        keyword: z.string().describe('The keyword to search for in PR titles and descriptions'),
+        reporter: z.string().describe('The GitHub username of the PR author')
+      }),
+      func: async (args: SearchPRsParams) => service.searchPRs(args)
+    }),
+    new DynamicStructuredTool({
+      name: 'get_github_pr',
+      description: 'Get detailed information about a specific GitHub PR by number',
+      schema: z.object({
+        repo: z.string().describe('The name of the repository containing the PR'),
+        prNumber: z.number().describe('The number of the PR to fetch')
+      }),
+      func: async (args: { repo: string; prNumber: number }) => service.getPR(args.prNumber, args.repo)
+    })
   ];
 
-  const handlers = {
-    search_github_prs: (args: SearchPRsParams) => service.searchPRs(args),
-    get_github_pr: (args: { repo: string; prNumber: number }) => service.getPR(args.prNumber, args.repo)
-  };
 
   return {
     tools,
-    handlers,
     prompts: {
       toolSelection: GITHUB_TOOL_SELECTION_PROMPT,
       responseGeneration: GITHUB_RESPONSE_GENERATION_PROMPT

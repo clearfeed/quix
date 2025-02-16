@@ -1,7 +1,7 @@
 import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from '@langchain/core/prompts';
 import { tools, toolPrompts } from '../../constants/tools';
 import logger from '../../utils/logger';
-import { OpenAIContext } from '../../types';
+import { LLMContext } from '../../types';
 import { LLMFactory } from './llm.factory';
 import { SupportedChatModels } from './types';
 import { RunnableSequence } from '@langchain/core/runnables';
@@ -36,7 +36,7 @@ export class LLMService {
     Object.keys(toolPrompts[key as keyof typeof toolPrompts]).length > 0
   )];
 
-  public async processMessage(message: string, previousMessages: OpenAIContext[]): Promise<string> {
+  public async processMessage(message: string, previousMessages: LLMContext[]): Promise<string> {
     logger.info(`Available tool categories: ${JSON.stringify(this.availableCategories)}`);
 
     if (this.availableCategories.length <= 1) {
@@ -102,7 +102,7 @@ export class LLMService {
     return this.generateResponse(message, result, 'none', toolSelection.selectedTool, previousMessages);
   }
 
-  private toolSelection = async (message: string, previousMessages: OpenAIContext[]): Promise<{
+  private toolSelection = async (message: string, previousMessages: LLMContext[]): Promise<{
     selectedTool: keyof typeof tools | 'none';
     content: string;
   }> => {
@@ -156,7 +156,7 @@ export class LLMService {
     result: Record<string, any>,
     functionName: string,
     toolCategory: keyof typeof tools,
-    previousMessages: OpenAIContext[]
+    previousMessages: LLMContext[]
   ): Promise<string> => {
 
     const responsePrompt = ChatPromptTemplate.fromMessages([

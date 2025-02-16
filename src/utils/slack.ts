@@ -1,11 +1,11 @@
-import { OpenAIContext } from "../types";
+import { LLMContext } from "../types";
 import { MessageElement } from "@slack/web-api/dist/types/response/ConversationsHistoryResponse";
 import { AppMentionEvent, MessageEvent } from "../handlers/slack-events/types";
 import { WebClient } from "@slack/web-api";
 import { OPENAI_CONTEXT_SIZE } from "../constants/tools";
-export const createOpenAIContext = async (event: MessageEvent | AppMentionEvent) => {
+export const createLLMContext = async (event: MessageEvent | AppMentionEvent) => {
   const client = new WebClient(process.env.SLACK_BOT_TOKEN);
-  let messages: OpenAIContext[] = [];
+  let messages: LLMContext[] = [];
   // get previous messages
   if (event.thread_ts) {
     const messagesResponse = await client.conversations.replies({
@@ -19,7 +19,7 @@ export const createOpenAIContext = async (event: MessageEvent | AppMentionEvent)
         return {
           role: message.bot_id ? 'assistant' : 'user',
           content: message.text
-        } as OpenAIContext;
+        } as LLMContext;
       }).filter((message) => message !== undefined).slice(-OPENAI_CONTEXT_SIZE);
     }
   }
