@@ -1,5 +1,5 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
-
+import { z } from 'zod';
 export interface JiraConfig extends BaseConfig {
   host: string;
   username: string;

@@ -21,12 +21,15 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^1.0.4",
-    "@clearfeed-ai/quix-github-agent": "^1.0.2",
-    "@clearfeed-ai/quix-hubspot-agent": "^1.0.0",
-    "@clearfeed-ai/quix-jira-agent": "^1.0.2",
-    "@clearfeed-ai/quix-zendesk-agent": "^1.0.0",
+    "@clearfeed-ai/quix-common-agent": "^1.1.0",
+    "@clearfeed-ai/quix-github-agent": "^1.1.0",
+    "@clearfeed-ai/quix-hubspot-agent": "^1.1.0",
+    "@clearfeed-ai/quix-jira-agent": "^1.1.0",
+    "@clearfeed-ai/quix-zendesk-agent": "^1.1.0",
     "@google/generative-ai": "^0.21.0",
+    "@langchain/core": "^0.3.40",
+    "@langchain/google-genai": "^0.1.8",
+    "@langchain/openai": "^0.4.4",
     "@slack/web-api": "^7.8.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
@@ -37,7 +40,8 @@
     "openai": "^4.83.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",

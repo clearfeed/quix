@@ -2,7 +2,7 @@ import { MessageEvent } from './types';
 import { llmService } from '../../services/llm/llm.service';
 import logger from '../../utils/logger';
 import { WebClient } from '@slack/web-api';
-import { createOpenAIContext } from '../../utils/slack';
+import { createLLMContext } from '../../utils/slack';
 
 export const handleMessage = async (
   event: MessageEvent,
@@ -23,7 +23,7 @@ export const handleMessage = async (
     });
 
     if (event.text) {
-      const messages = await createOpenAIContext(event);
+      const messages = await createLLMContext(event);
       const response = await llmService.processMessage(event.text, messages);
       await client.chat.postMessage({
         channel: event.channel,

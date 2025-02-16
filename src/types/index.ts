@@ -16,7 +16,7 @@ export interface QueryRequest {
   message: string;
 }
 
-export type OpenAIContext = {
+export type LLMContext = {
   role: 'user' | 'assistant' | 'system';
   content: string;
 }

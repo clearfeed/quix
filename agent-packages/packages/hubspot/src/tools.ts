@@ -1,7 +1,8 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { HubspotService } from './index';
 import { HubspotConfig } from './types';
-
+import { DynamicStructuredTool } from '@langchain/core/tools';
+import { z } from 'zod';
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
 HubSpot is a CRM platform that manages:
 - Contacts: People and leads with properties like name, email, phone, title, etc.
@@ -31,33 +32,19 @@ When formatting HubSpot responses:
 export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
   const service = new HubspotService(config);
 
-  const tools: ToolConfig['tools'] = [
-    {
-      type: 'function',
-      function: {
-        name: 'search_hubspot_deals',
-        description: 'Search for deals in HubSpot based on a keyword',
-        parameters: {
-          type: 'object',
-          properties: {
-            keyword: {
-              type: 'string',
-              description: 'The keyword to search for in HubSpot deals'
-            }
-          },
-          required: ['keyword']
-        }
-      }
-    }
-  ];
-
-  const handlers = {
-    search_hubspot_deals: (args: { keyword: string }) => service.searchDeals(args.keyword)
-  };
+  const tools: DynamicStructuredTool<any>[] = [
+    new DynamicStructuredTool({
+      name: 'search_hubspot_deals',
+      description: 'Search for deals in HubSpot based on a keyword',
+      schema: z.object({
+        keyword: z.string().describe('The keyword to search for in HubSpot deals')
+      }),
+      func: async (args: { keyword: string }) => service.searchDeals(args.keyword)
+    })
+  ]
 
   return {
     tools,
-    handlers,
     prompts: {
       toolSelection: HUBSPOT_TOOL_SELECTION_PROMPT,
       responseGeneration: HUBSPOT_RESPONSE_GENERATION_PROMPT

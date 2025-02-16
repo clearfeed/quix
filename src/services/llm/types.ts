@@ -1,4 +1,4 @@
-import { OpenAIContext } from '../../types';
+import { LLMContext } from '../../types';
 
 export interface Tool {
   type: 'function';
@@ -33,8 +33,13 @@ export interface LLMResponse {
 export interface LLMProvider {
   initialize(config: LLMConfig): Promise<void>;
   generateCompletion(
-    messages: OpenAIContext[],
+    messages: LLMContext[],
     tools?: Tool[],
     toolChoice?: 'none' | 'auto',
   ): Promise<LLMResponse>;
-} 
+}
+
+export enum SupportedChatModels {
+  OPENAI = 'openai',
+  GEMINI = 'gemini',
+}

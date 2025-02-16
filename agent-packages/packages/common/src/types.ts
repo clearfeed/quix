@@ -1,3 +1,5 @@
+import { DynamicStructuredTool } from '@langchain/core/tools';
+import { z } from 'zod';
 /**
  * Base configuration interface that all integrations must implement
  */
@@ -33,18 +35,13 @@ export interface FunctionDefinition {
 /**
  * Represents a single tool that can be exposed to the AI
  */
-export interface Tool<TArgs = any, TResponse = any> {
-  type: 'function';
-  function: FunctionDefinition;
-  handler: (args: TArgs) => Promise<TResponse>;
-}
+// export interface Tool<TArgs = any, TResponse = any> {
+//   type: 'function';
+//   function: FunctionDefinition;
+//   handler: (args: TArgs) => Promise<TResponse>;
+// }
 
-/**
- * Represents a collection of tools for an integration
- */
-export interface Tools {
-  [key: string]: Tool;
-}
+export type Tool = DynamicStructuredTool;
 
 /**
  * Standard response format for all integration operations
@@ -56,55 +53,14 @@ export interface BaseResponse<T = any> {
 }
 
 /**
- * The standardized export format that all integrations must provide
- */
-export interface ToolsExport {
-  tools: Tool[];
-  handlers: Record<string, Tool['handler']>;
-}
-
-/**
  * Base service interface that all integration services should implement
  */
 export interface BaseService<TConfig extends BaseConfig = BaseConfig> {
   validateConfig(): { isValid: boolean; error?: string };
 }
 
-/**
- * Helper function to create a standardized tools export
- */
-export function createToolsExport<T extends Tools>(tools: T): ToolsExport {
-  return {
-    tools: Object.values(tools),
-    handlers: Object.fromEntries(
-      Object.entries(tools).map(([_, tool]) => [tool.function.name, tool.handler])
-    ),
-  };
-}
-
-export interface ToolExport {
-  tools: any[];
-  handlers: Record<string, Function>;
-  prompts: {
-    toolSelection?: string;  // Additional prompt for tool selection
-    responseGeneration?: string;  // Additional prompt for response generation
-  };
-}
-
 export interface ToolConfig {
-  tools: Array<{
-    type: 'function';
-    function: {
-      name: string;
-      description: string;
-      parameters: {
-        type: 'object';
-        properties: Record<string, any>;
-        required: string[];
-      };
-    };
-  }>;
-  handlers: Record<string, Function>;
+  tools: Tool[];
   prompts?: {
     toolSelection?: string;
     responseGeneration?: string;

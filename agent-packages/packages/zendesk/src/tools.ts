@@ -7,6 +7,8 @@ import {
   GetTicketResponse,
   SearchTicketsResponse
 } from './types';
+import { DynamicStructuredTool } from '@langchain/core/tools';
+import { z } from 'zod';
 
 const ZENDESK_TOOL_SELECTION_PROMPT = `
 For Zendesk-related queries, consider using Zendesk tools when the user wants to:
@@ -34,86 +36,59 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
     subdomain: config.subdomain
   });
 
-  const tools: ToolConfig['tools'] = [
-    {
-      type: 'function',
-      function: {
-        name: 'search_zendesk_tickets',
-        description: 'Search Zendesk tickets using a query string',
-        parameters: {
-          type: 'object',
-          properties: {
-            query: {
-              type: 'string',
-              description: 'The search query'
-            },
-            limit: {
-              type: 'number',
-              description: 'Maximum number of tickets to return'
-            }
-          },
-          required: ['query']
+  const tools: DynamicStructuredTool<any>[] = [
+    new DynamicStructuredTool({
+      name: 'search_zendesk_tickets',
+      description: 'Search Zendesk tickets using a query string',
+      schema: z.object({
+        query: z.string().describe('The search query'),
+        limit: z.number().describe('Maximum number of tickets to return').optional()
+      }),
+      func: async (args: SearchTicketsParams) => {
+        try {
+          const searchQuery = args.query;
+          const limit = args.limit || 10;
+  
+          const response = await client.search.query(`type:ticket ${searchQuery}`);
+  
+          const tickets = Array.isArray(response.result) ? response.result.slice(0, limit) : [];
+          return {
+            success: true,
+            data: tickets
+          };
+        } catch (error: any) {
+          return {
+            success: false,
+            error: `Failed to search tickets: ${error.message}`
+          };
         }
       }
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'get_zendesk_ticket',
-        description: 'Retrieve a specific Zendesk ticket by ID',
-        parameters: {
-          type: 'object',
-          properties: {
-            ticketId: {
-              type: 'number',
-              description: 'The ID of the ticket to retrieve'
-            }
-          },
-          required: ['ticketId']
+    }),
+    new DynamicStructuredTool({
+      name: 'get_zendesk_ticket',
+      description: 'Retrieve a specific Zendesk ticket by ID',
+      schema: z.object({
+        ticketId: z.number().describe('The ID of the ticket to retrieve')
+      }),
+      func: async (args: GetTicketParams) => {
+        try {
+          const response = await client.tickets.show(args.ticketId);
+          return {
+            success: true,
+            data: response.result
+          };
+        } catch (error: any) {
+          return {
+            success: false,
+            error: `Failed to get ticket: ${error.message}`
+          };
         }
       }
-    }
+    })
   ];
-
-  const handlers = {
-    search_zendesk_tickets: async (params: SearchTicketsParams): Promise<SearchTicketsResponse> => {
-      try {
-        const searchQuery = params.query;
-        const limit = params.limit || 10;
-
-        const response = await client.search.query(`type:ticket ${searchQuery}`);
-
-        const tickets = Array.isArray(response.result) ? response.result.slice(0, limit) : [];
-        return {
-          success: true,
-          data: tickets
-        };
-      } catch (error: any) {
-        return {
-          success: false,
-          error: `Failed to search tickets: ${error.message}`
-        };
-      }
-    },
-    get_zendesk_ticket: async (params: GetTicketParams): Promise<GetTicketResponse> => {
-      try {
-        const response = await client.tickets.show(params.ticketId);
-        return {
-          success: true,
-          data: response.result
-        };
-      } catch (error: any) {
-        return {
-          success: false,
-          error: `Failed to get ticket: ${error.message}`
-        };
-      }
-    }
-  };
 
   return {
     tools,
-    handlers,
     prompts: {
       toolSelection: ZENDESK_TOOL_SELECTION_PROMPT,
       responseGeneration: ZENDESK_RESPONSE_GENERATION_PROMPT
