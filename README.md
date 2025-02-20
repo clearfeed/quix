@@ -13,8 +13,8 @@ Quix is an AI-powered Slack agent that can interact with your business tools suc
 
 - **Slack Integration**: Quix can respond to queries when tagged in Slack channels. 🗨️
 - **Multi-Service Querying**: Supports querying multiple tools.
+- **Thread Context**: Quix can understand the context of a Slack thread when answering queries.
 - **User Query Endpoint**: Exposes an endpoint to accept user queries. 🔍
-- **Future Plans**: Includes accepting the context of a conversation for more personalized responses.
 
 ## 🚀 Setting Up the Slack App
 
@@ -28,7 +28,7 @@ Quix is an AI-powered Slack agent that can interact with your business tools suc
 3. **Install the App to Your Workspace**:
    - Follow the instructions in the Slack API to install the app to your workspace.
 
-## ��️ Setup
+## Setup
 
 1. **Clone the Repository**:
    ```bash
@@ -82,7 +82,6 @@ Health check endpoint.
 ## Future Extensions
 
 - Support for additional tools
-- Dynamic function registration
 - Extended CRM operations
 - Authentication and rate limiting
 - Caching layer for improved performance
