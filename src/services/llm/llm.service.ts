@@ -37,7 +37,7 @@ export class LLMService {
   )];
 
   public async processMessage(message: string, previousMessages: LLMContext[]): Promise<string> {
-    logger.info(`Available tool categories: ${JSON.stringify(this.availableCategories)}`);
+    logger.info(`Processing message: ${message}`);
 
     if (this.availableCategories.length <= 1) {
       logger.info('No tool categories available, returning direct response');

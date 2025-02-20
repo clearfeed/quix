@@ -33,7 +33,7 @@ export const slackEventsHandler: RequestHandler = async (req, res) => {
             break;
 
           default:
-            logger.info('Unhandled Slack event:', { event });
+          // logger.info('Unhandled Slack event:', { event });
         }
         break;
 

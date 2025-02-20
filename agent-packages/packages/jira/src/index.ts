@@ -7,6 +7,7 @@ import {
   AssignIssueResponse,
 } from './types';
 import JiraClient from './JiraClient';
+import { AxiosError } from 'axios';
 
 export * from './types';
 export * from './tools';
@@ -106,7 +107,7 @@ export class JiraService implements BaseService<JiraConfig> {
         }
       };
     } catch (error) {
-      console.error('Error creating Jira issue:', error);
+      console.error('Error creating Jira issue:', (error as AxiosError).response?.data);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to create Jira issue'

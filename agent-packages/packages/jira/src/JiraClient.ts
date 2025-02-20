@@ -62,7 +62,6 @@ export class JiraClient {
   }
 
   async createIssue(issue: CreateIssueParams): Promise<JiraIssueResponse> {
-    console.log(`Creating issue ${issue.summary} in project ${issue.projectKey}`);
     const project = await this.getProject(issue.projectKey);
     if (!project) {
       throw new Error(`Project ${issue.projectKey} not found`);
@@ -83,7 +82,21 @@ export class JiraClient {
             id: issueType.id
           },
           summary: issue.summary,
-          description: issue.description
+          description: {
+            content: [
+              {
+                content: [
+                  {
+                    text: issue.description,
+                    type: "text"
+                  }
+                ],
+                type: "paragraph"
+              }
+            ],
+            type: "doc",
+            version: 1
+          }
         }
       }
     });
