@@ -22,7 +22,7 @@
   "license": "MIT",
   "dependencies": {
     "@clearfeed-ai/quix-common-agent": "^1.1.0",
-    "@clearfeed-ai/quix-github-agent": "^1.1.0",
+    "@clearfeed-ai/quix-github-agent": "^1.2.1",
     "@clearfeed-ai/quix-hubspot-agent": "^1.1.0",
     "@clearfeed-ai/quix-jira-agent": "^1.1.1",
     "@clearfeed-ai/quix-zendesk-agent": "^1.1.0",

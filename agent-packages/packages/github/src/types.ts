@@ -1,33 +1,25 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
+import { RestEndpointMethodTypes } from '@octokit/rest';
 
 export interface GitHubConfig extends BaseConfig {
   token: string;
   owner: string;
 }
 
-export interface PullRequest {
-  number: number;
-  title: string;
-  status: string;
-  reporter: string;
-  createdAt: string;
-  lastUpdated: string;
-  url: string;
-  description: string | null;
-  labels: string[];
-}
+type SearchResultItem = RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'][number];
+export type PullRequest = SearchResultItem;
 
-export type SearchPRsParams = {
+export type SearchIssuesParams = {
   repo: string;
-  status?: string;
   keyword?: string;
   reporter?: string;
+  type: 'issue' | 'pull-request';
 };
 
-export type SearchPRsResponse = BaseResponse<{
-  pullRequests: PullRequest[];
+export type SearchIssuesResponse = BaseResponse<{
+  issues: SearchResultItem[];
 }>;
 
 export type GetPRResponse = BaseResponse<{
-  pullRequest: PullRequest;
+  pullRequest: SearchResultItem;
 }>; 
