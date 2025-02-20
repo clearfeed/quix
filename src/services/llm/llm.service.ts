@@ -92,6 +92,7 @@ export class LLMService {
       const tool = selectedFunctions.find(t => t.name === toolName);
 
       if (tool) {
+        logger.info(`Invoking tool: ${toolName} with args: ${JSON.stringify(toolArgs)}`);
         const result = await tool.func(toolArgs);
         return this.generateResponse(message, result, toolName, toolSelection.selectedTool, previousMessages);
       }

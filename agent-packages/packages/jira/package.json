@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@clearfeed-ai/quix-common-agent": "^1.1.0",
+    "axios": "^1.7.9",
     "jira-client": "^8.2.2"
   },
   "devDependencies": {

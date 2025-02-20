@@ -7,7 +7,7 @@ import {
   AssignIssueResponse,
   JiraConfig
 } from './types';
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
+import { BaseResponse, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 
 const JIRA_TOOL_SELECTION_PROMPT = `
@@ -38,7 +38,7 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
       schema: z.object({
         keyword: z.string().describe('The keyword to search for in Jira issues')
       }),
-      func: async ({ keyword }: { keyword: string }): Promise<SearchIssuesResponse> => service.searchIssues(keyword)
+      func: async ({ keyword }: { keyword: string }): Promise<BaseResponse<SearchIssuesResponse>> => service.searchIssues(keyword)
     }),
     new DynamicStructuredTool<ZodObject<{ issueId: z.ZodString }>>({
       name: 'get_jira_issue',
@@ -54,7 +54,7 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
       schema: z.object({
         projectKey: z.string().describe('The project key where the issue will be created'),
         summary: z.string().describe('The summary/title of the issue'),
-        description: z.string().describe('The description of the issue'),
+        description: z.string().describe('The description of the issue').optional(),
         issueType: z.string().describe('The type of issue (e.g., Bug, Task, Story)'),
         priority: z.string().describe('The priority of the issue').optional(),
         assignee: z.string().describe('The username of the assignee').optional()
