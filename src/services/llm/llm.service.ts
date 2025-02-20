@@ -37,7 +37,7 @@ export class LLMService {
   )];
 
   public async processMessage(message: string, previousMessages: LLMContext[]): Promise<string> {
-    logger.info(`Available tool categories: ${JSON.stringify(this.availableCategories)}`);
+    logger.info(`Processing message: ${message}`);
 
     if (this.availableCategories.length <= 1) {
       logger.info('No tool categories available, returning direct response');
@@ -92,6 +92,7 @@ export class LLMService {
       const tool = selectedFunctions.find(t => t.name === toolName);
 
       if (tool) {
+        logger.info(`Invoking tool: ${toolName} with args: ${JSON.stringify(toolArgs)}`);
         const result = await tool.func(toolArgs);
         return this.generateResponse(message, result, toolName, toolSelection.selectedTool, previousMessages);
       }

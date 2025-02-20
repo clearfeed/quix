@@ -1,50 +1,26 @@
-import JiraApi from 'jira-client';
-import { BaseService } from '@clearfeed-ai/quix-common-agent';
+import { BaseService, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import {
   JiraConfig,
-  JiraIssue,
   CreateIssueParams,
   GetIssueResponse,
   SearchIssuesResponse,
-  AssignIssueResponse
+  AssignIssueResponse,
 } from './types';
+import JiraClient from './JiraClient';
+import { AxiosError } from 'axios';
 
 export * from './types';
 export * from './tools';
 
-interface JiraIssueFields {
-  summary?: string;
-  status?: { name: string };
-  assignee?: { displayName: string };
-  priority?: { name: string };
-  issuetype?: { name: string };
-  description?: string;
-  created?: string;
-  updated?: string;
-  reporter?: { displayName: string };
-  labels?: string[];
-}
-
-interface JiraApiIssue {
-  key: string;
-  fields: JiraIssueFields;
-}
-
-interface JiraSearchResponse {
-  issues: JiraApiIssue[];
-}
-
 export class JiraService implements BaseService<JiraConfig> {
-  private client: JiraApi;
+  private client: JiraClient;
 
   constructor(private config: JiraConfig) {
-    this.client = new JiraApi({
-      protocol: 'https',
+    this.client = new JiraClient({
       host: config.host,
       username: config.username,
       password: config.password,
-      apiVersion: '2',
-      strictSSL: true
+      apiVersion: '3',
     });
   }
 
@@ -58,23 +34,7 @@ export class JiraService implements BaseService<JiraConfig> {
     return { isValid: true };
   }
 
-  private formatIssue(issue: JiraApiIssue): JiraIssue {
-    return {
-      id: issue.key,
-      summary: issue.fields?.summary || '',
-      status: issue.fields?.status?.name || 'To Do',
-      assignee: issue.fields?.assignee?.displayName || 'Unassigned',
-      priority: issue.fields?.priority?.name || 'None',
-      type: issue.fields?.issuetype?.name || 'Task',
-      description: issue.fields?.description || '',
-      created: issue.fields?.created || new Date().toISOString(),
-      reporter: issue.fields?.reporter?.displayName || 'Unknown',
-      lastUpdated: issue.fields?.updated || new Date().toISOString(),
-      labels: issue.fields?.labels || []
-    };
-  }
-
-  async searchIssues(keyword: string): Promise<SearchIssuesResponse> {
+  async searchIssues(keyword: string): Promise<BaseResponse<SearchIssuesResponse>> {
     try {
       const validation = this.validateConfig();
       if (!validation.isValid) {
@@ -82,12 +42,12 @@ export class JiraService implements BaseService<JiraConfig> {
       }
 
       const jql = `text ~ "${keyword}" ORDER BY updated DESC`;
-      const response = await this.client.searchJira(jql, { maxResults: 10 });
+      const response = await this.client.searchIssues(jql, { maxResults: 10 });
 
       return {
         success: true,
         data: {
-          issues: response.issues.map((issue: JiraApiIssue) => this.formatIssue(issue))
+          issues: response.issues || []
         }
       };
     } catch (error) {
@@ -106,12 +66,12 @@ export class JiraService implements BaseService<JiraConfig> {
         return { success: false, error: validation.error };
       }
 
-      const issue = await this.client.findIssue(issueId);
+      const issue = await this.client.getIssue(issueId);
 
       return {
         success: true,
         data: {
-          issue: this.formatIssue(issue as JiraApiIssue)
+          issue
         }
       };
     } catch (error) {
@@ -131,50 +91,23 @@ export class JiraService implements BaseService<JiraConfig> {
       }
 
       const issueData = {
-        fields: {
-          project: {
-            key: params.projectKey
-          },
-          summary: params.summary,
-          description: params.description,
-          issuetype: {
-            name: params.issueType
-          },
-          ...(params.priority && {
-            priority: {
-              name: params.priority
-            }
-          }),
-          ...(params.assignee && {
-            assignee: {
-              name: params.assignee
-            }
-          })
-        }
+        summary: params.summary,
+        description: params.description,
+        projectKey: params.projectKey,
+        issueType: params.issueType,
+        priority: params.priority,
+        assignee: params.assignee
       };
 
-      const issue = await this.client.addNewIssue(issueData) as JiraApiIssue;
-
-      // If the response doesn't have fields (which can happen right after creation),
-      // construct a minimal issue object
-      const minimalIssue: JiraApiIssue = {
-        key: issue.key,
-        fields: {
-          summary: params.summary,
-          status: { name: 'To Do' },
-          issuetype: { name: params.issueType },
-          updated: new Date().toISOString(),
-        }
-      };
-
+      const issue = await this.client.createIssue(issueData);
       return {
         success: true,
         data: {
-          issue: this.formatIssue(issue.fields ? issue : minimalIssue)
+          issue
         }
       };
     } catch (error) {
-      console.error('Error creating Jira issue:', error);
+      console.error('Error creating Jira issue:', (error as AxiosError).response?.data);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to create Jira issue'
@@ -190,12 +123,7 @@ export class JiraService implements BaseService<JiraConfig> {
       }
 
       // First find the user's accountId
-      const users = await this.client.searchUsers({
-        query: assignee,
-        startAt: 0,
-        maxResults: 1,
-        includeActive: true
-      });
+      const users = await this.client.searchUsers(assignee);
 
       if (!users || users.length === 0) {
         return {
@@ -203,16 +131,11 @@ export class JiraService implements BaseService<JiraConfig> {
           error: `Could not find user with username/email: ${assignee}`
         };
       }
-
       const accountId = users[0].accountId;
-      await this.client.updateAssignee(issueId, accountId);
-      const issue = await this.client.findIssue(issueId) as JiraApiIssue;
+      await this.client.assignIssue(issueId, accountId);
 
       return {
-        success: true,
-        data: {
-          issue: this.formatIssue(issue)
-        }
+        success: true
       };
     } catch (error) {
       console.error('Error assigning Jira issue:', error);
