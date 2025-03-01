@@ -3,7 +3,6 @@ import { tools, toolPrompts } from '../../constants/tools';
 import logger from '../../utils/logger';
 import { LLMContext } from '../../types';
 import { LLMFactory } from './llm.factory';
-import { SupportedChatModels } from './types';
 import { RunnableSequence } from '@langchain/core/runnables';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
@@ -66,7 +65,7 @@ export class LLMService {
       HumanMessagePromptTemplate.fromTemplate('{input}')
     ]);
 
-    const llmProvider = this.factory.getProvider(SupportedChatModels.OPENAI);
+    const llmProvider = this.factory.getProvider();
     let llmProviderWithTools;
     if ('bindTools' in llmProvider && typeof llmProvider.bindTools === 'function') {
       llmProviderWithTools = llmProvider.bindTools(selectedFunctions);
@@ -107,7 +106,7 @@ export class LLMService {
     selectedTool: keyof typeof tools | 'none';
     content: string;
   }> => {
-    const llmProvider = this.factory.getProvider(SupportedChatModels.OPENAI);
+    const llmProvider = this.factory.getProvider();
 
     const toolSelectionPrompts = this.availableCategories.map(category => toolPrompts[category as keyof typeof toolPrompts]?.toolSelection).filter(Boolean).join('\n');
     const systemPrompt = `${BASE_SYSTEM_PROMPT}\n${toolSelectionPrompts}`;
@@ -176,7 +175,7 @@ export class LLMService {
       HumanMessagePromptTemplate.fromTemplate('{input}')
     ]);
 
-    const llmProvider = this.factory.getProvider(SupportedChatModels.OPENAI);
+    const llmProvider = this.factory.getProvider();
 
     const responseChain = RunnableSequence.from([
       responsePrompt,

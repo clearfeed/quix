@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { SupportedChatModels } from './services/llm/types';
 
 dotenv.config();
 
@@ -36,4 +37,7 @@ export default {
     email: process.env.ZENDESK_EMAIL,
     token: process.env.ZENDESK_API_TOKEN,
   },
+  llm: {
+    defaultModel: (process.env.DEFAULT_LLM_MODEL as SupportedChatModels)
+  }
 } as const; 

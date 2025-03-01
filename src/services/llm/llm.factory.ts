@@ -30,8 +30,9 @@ export class LLMFactory {
     return LLMFactory.instance;
   }
 
-  public getProvider(model: SupportedChatModels): BaseChatModel {
-    const provider = this.providers.get(model);
+  public getProvider(model?: SupportedChatModels): BaseChatModel {
+    const selectedModel = model || config.llm.defaultModel;
+    const provider = this.providers.get(selectedModel);
     if (!provider) {
       throw new Error(`Provider for model ${model} not found`);
     }
