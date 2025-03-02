@@ -45,12 +45,14 @@ export class ToolClass {
     return undefined;
   }
 
-  tools: Record<string, Tool[] | undefined> = {
-    hubspot: this.hubspotTools?.tools,
-    jira: this.jiraTools?.tools,
-    github: this.githubTools?.tools,
-    zendesk: this.zendeskTools?.tools
-  };
+  get tools(): Record<string, Tool[] | undefined> {
+    return {
+      hubspot: this.hubspotTools?.tools,
+      jira: this.jiraTools?.tools,
+      github: this.githubTools?.tools,
+      zendesk: this.zendeskTools?.tools
+    };
+  }
 
   get availableCategories(): string[] {
     return ['none', ...Object.keys(this.toolPrompts).filter(key =>
@@ -59,10 +61,12 @@ export class ToolClass {
     )];
   }
 
-  toolPrompts: Record<keyof typeof this.tools, { toolSelection?: string; responseGeneration?: string }> = {
-    hubspot: this.hubspotTools?.prompts || {},
-    jira: this.jiraTools?.prompts || {},
-    github: this.githubTools?.prompts || {},
-    zendesk: this.zendeskTools?.prompts || {}
+  get toolPrompts(): Record<keyof typeof this.tools, { toolSelection?: string; responseGeneration?: string }> {
+    return {
+      hubspot: this.hubspotTools?.prompts || {},
+      jira: this.jiraTools?.prompts || {},
+      github: this.githubTools?.prompts || {},
+      zendesk: this.zendeskTools?.prompts || {}
+    };
   }
 }

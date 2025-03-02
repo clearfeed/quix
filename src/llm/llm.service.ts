@@ -17,7 +17,7 @@ export class LlmService {
     private readonly config: ConfigService,
     private readonly llmProvider: LlmProviderService
   ) {
-    this.tool = new ToolClass(config);
+    this.tool = new ToolClass(this.config);
     this.toolPrompts = this.tool.toolPrompts;
   }
 
@@ -148,8 +148,8 @@ You should ask the user to provide more information only if required to answer t
     functionName: string,
     toolCategory: keyof typeof ToolClass.prototype.tools,
     previousMessages: LLMContext[]) {
-      const responsePrompt = ChatPromptTemplate.fromMessages([
-        SystemMessagePromptTemplate.fromTemplate(`
+    const responsePrompt = ChatPromptTemplate.fromMessages([
+      SystemMessagePromptTemplate.fromTemplate(`
               You are a business assistant. Given a user's query and structured API data, generate a response that directly answers the user's question in a clear and concise manner. Format the response as a Slack message using Slack's supported markdown syntax:
   
             - Use <URL|Text> for links instead of [text](URL).
@@ -160,22 +160,22 @@ You should ask the user to provide more information only if required to answer t
   
             ${this.toolPrompts[toolCategory]?.responseGeneration}
           `),
-        new MessagesPlaceholder('chat_history'),
-        HumanMessagePromptTemplate.fromTemplate('{input}')
-      ]);
-  
-      const llmProvider = this.llmProvider.getProvider(SupportedChatModels.OPENAI);
-  
-      const responseChain = RunnableSequence.from([
-        responsePrompt,
-        llmProvider
-      ]);
-  
-      const response = await responseChain.invoke({
-        chat_history: previousMessages,
-        input: `The user's question is: "${message}". Here is the structured response from ${functionName}: ${JSON.stringify(result, null, 2)}`
-      });
-  
-      return Array.isArray(response.content) ? response.content.join(' ') : response.content;
+      new MessagesPlaceholder('chat_history'),
+      HumanMessagePromptTemplate.fromTemplate('{input}')
+    ]);
+
+    const llmProvider = this.llmProvider.getProvider(SupportedChatModels.OPENAI);
+
+    const responseChain = RunnableSequence.from([
+      responsePrompt,
+      llmProvider
+    ]);
+
+    const response = await responseChain.invoke({
+      chat_history: previousMessages,
+      input: `The user's question is: "${message}". Here is the structured response from ${functionName}: ${JSON.stringify(result, null, 2)}`
+    });
+
+    return Array.isArray(response.content) ? response.content.join(' ') : response.content;
   }
 }

@@ -4,8 +4,9 @@ import { SlackService } from './slack.service';
 import { SlackMiddleware } from './slack.middleware';
 import * as express from 'express';
 import { LlmModule } from '@quix/llm/llm.module';
+import { ConfigModule } from '@nestjs/config';
 @Module({
-  imports: [LlmModule],
+  imports: [LlmModule, ConfigModule],
   controllers: [SlackController],
   providers: [SlackService]
 })

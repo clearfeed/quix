@@ -1,99 +1,113 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🚀 Quix: AI-Powered Slack Agent
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Quix is an AI-powered Slack agent that can interact with your business tools such as JIRA, GitHub, HubSpot and more. It allows users to interact with these services directly from Slack channels or through 1:1 chats.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🔗 Supported Integrations
 
-## Description
+- ![Jira](https://img.shields.io/badge/Jira-0052CC?style=for-the-badge&logo=jira&logoColor=white)
+- ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+- ![HubSpot](https://img.shields.io/badge/HubSpot-FF7A59?style=for-the-badge&logo=hubspot&logoColor=white)
+- ![Zendesk](https://img.shields.io/badge/Zendesk-034F62?style=flat&logo=zendesk)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## ✨ Features
 
-## Project setup
+- **Slack Integration**: Quix can respond to queries when tagged in Slack channels. 🗨️
+- **Multi-Service Querying**: Supports querying multiple tools.
+- **Thread Context**: Quix can understand the context of a Slack thread when answering queries.
+- **LLM Integration**: Powered by OpenAI and Google Generative AI models. 🧠
+- **Modular Architecture**: Built with Nest.js for scalability and maintainability. 🏗️
+
+## 🚀 Setting Up the Slack App
+
+1. **Create a Slack App**:
+   - Go to the [Slack API](https://api.slack.com/apps) and create a new app.
+   - Choose "From an app manifest" and paste the contents of `slack_app_manifest.yml` from this repository.
+
+2. **Update the Events Endpoint**:
+   - In the manifest, replace `<EXPRESS_ENDPOINT>` with your server's public URL where Slack can send event notifications.
+
+3. **Install the App to Your Workspace**:
+   - Follow the instructions in the Slack API to install the app to your workspace.
+
+## 📦 Project Structure
+
+This project is a Nest.js monorepo with:
+- Main Nest.js application in the root `src/` directory
+- Integration packages in `agent-packages/packages/`
+- Common utilities and shared types in `agent-packages/packages/common`
+
+## 🛠️ Setup
+
+1. **Clone the Repository**:
+   ```bash
+   git clone <repository-url>
+   cd <repository-directory>
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   yarn install
+   ```
+
+3. **Environment Configuration**:
+   Copy the `.env.example` file to `.env` and fill in your API keys:
+   ```bash
+   cp .env.example .env
+   ```
+
+   Configure the following environment variables in `.env`:
+   - `PORT`: Server port (default: 3000)
+   - `OPENAI_API_KEY`: Your OpenAI API key
+   - `GOOGLE_API_KEY`: Your Google Generative AI API key (optional)
+   - `HUBSPOT_ACCESS_TOKEN`: Your HubSpot access token
+   - `JIRA_API_TOKEN`: Your JIRA API token
+   - `GITHUB_ACCESS_TOKEN`: Your GitHub access token
+   - `SLACK_BOT_TOKEN`: Your Slack bot token
+   - `SLACK_SIGNING_SECRET`: Your Slack signing secret
+   - `LOG_LEVEL`: Logging level (default: info)
+
+6. **Start the Development Server**:
+   ```bash
+   yarn start:dev
+   ```
+
+7. **Build and Run for Production**:
+   - Build the project:
+     ```bash
+     yarn build
+     ```
+   - Start the production server:
+     ```bash
+     yarn start:prod
+     ```
+
+## 🐳 Docker Deployment
+
+You can also run the application using Docker:
 
 ```bash
-$ yarn install
+# Build the Docker image
+docker build -t quix .
+
+# Run the container
+docker run -p 3000:3000 --env-file .env quix
 ```
 
-## Compile and run the project
+### Slack Events
+Handles incoming Slack events and messages.
 
-```bash
-# development
-$ yarn run start
+### Health Check
+`GET /health` - Health check endpoint.
 
-# watch mode
-$ yarn run start:dev
+## 🧩 Extending with New Integrations
 
-# production mode
-$ yarn run start:prod
-```
+To add a new integration:
 
-## Run tests
+1. Create a new package in `agent-packages/packages/`
+2. Implement the integration following the common package structure
+3. Build and link the new package
+4. Import and register the package in the main application
 
-```bash
-# unit tests
-$ yarn run test
+## 📜 License
 
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ yarn install -g mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Apache License, Version 2.0 

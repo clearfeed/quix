@@ -1,47 +1,39 @@
 # Build stage
-FROM node:20-slim AS builder
+FROM node:20-slim AS build
 
 WORKDIR /app
 
-# Copy package files
+# Copy package.json and yarn.lock
 COPY package.json yarn.lock ./
 
-# Install all dependencies (including dev dependencies)
+# Install dependencies
 RUN yarn install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
-# Build TypeScript code
+# Build the application
 RUN yarn build
 
 # Production stage
 FROM node:20-slim
 
-# Create app directory
 WORKDIR /app
 
-# Create a non-root user
-RUN groupadd -r -g 1001 nodejs && useradd -r -u 1001 -g nodejs appuser && chown -R appuser:nodejs /app
+# Set NODE_ENV to production
+ENV NODE_ENV=production
 
-# Copy package files
+# Copy package.json and yarn.lock
 COPY package.json yarn.lock ./
 
 # Install only production dependencies
 RUN yarn install --frozen-lockfile --production
 
-# Copy built assets from builder stage
-COPY --from=builder --chown=appuser:nodejs /app/dist ./dist
+# Copy built application from build stage
+COPY --from=build /app/dist ./dist
 
-# Switch to non-root user
-USER appuser
-
-# Set environment variables
-ENV NODE_ENV=production \
-  PORT=3000
-
-# Expose the application port
+# Expose the port the app runs on
 EXPOSE 3000
 
-# Start the application
-CMD ["node", "dist/index.js"]
+# Command to run the application
+CMD ["node", "dist/src/main.js"]
