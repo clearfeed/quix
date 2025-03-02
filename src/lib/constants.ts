@@ -1,0 +1,1 @@
+export const OPENAI_CONTEXT_SIZE = 30;

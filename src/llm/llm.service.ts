@@ -1,57 +1,48 @@
-import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder, SystemMessagePromptTemplate } from '@langchain/core/prompts';
-import { tools, toolPrompts } from '../../constants/tools';
-import logger from '../../utils/logger';
-import { LLMContext } from '../../types';
-import { LLMFactory } from './llm.factory';
-import { SupportedChatModels } from './types';
-import { RunnableSequence } from '@langchain/core/runnables';
+import { Injectable, Logger } from '@nestjs/common';
+import { ToolClass } from './tool';
+import { LLMContext, SupportedChatModels } from './types';
+import { ConfigService } from '@nestjs/config';
+import { LlmProviderService } from './llm.provider';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
+import { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts';
+import { RunnableSequence } from '@langchain/core/runnables';
 
-const BASE_SYSTEM_PROMPT = `
-You are Quix, a helpful assistant that must use the available tools when relevant to answer the user's queries.
+@Injectable()
+export class LlmService {
+  private readonly tool: ToolClass;
+  private readonly toolPrompts: Record<keyof typeof this.tool.tools, { toolSelection?: string; responseGeneration?: string }>;
+  private readonly logger = new Logger(LlmService.name);
+  constructor(
+    private readonly config: ConfigService,
+    private readonly llmProvider: LlmProviderService
+  ) {
+    this.tool = new ToolClass(this.config);
+    this.toolPrompts = this.tool.toolPrompts;
+  }
+
+  private readonly baseSystemPrompt = `
+You are Quix, a helpful assistant that must use the available tools when relevant to answer the user's queries. These queries are sent to you either directly or by tagging you on Slack.
 You must not make up information, you must only use the tools to answer the user's queries.
 You must answer the user's queries in a clear and concise manner.
-You should ask the user to provide more information if they don't provide enough information to answer the question.
-If you don't have enough information to answer the user's query, you should say so.
+You should ask the user to provide more information only if required to answer the question or to perform the task.
 `;
 
-export class LLMService {
-  private static instance: LLMService;
-  private factory: LLMFactory;
-
-  private constructor() {
-    this.factory = LLMFactory.getInstance();
-  }
-
-  public static getInstance(): LLMService {
-    if (!LLMService.instance) {
-      LLMService.instance = new LLMService();
-    }
-    return LLMService.instance;
-  }
-
-  private availableCategories: string[] = ['none', ...Object.keys(toolPrompts).filter(key =>
-    toolPrompts[key as keyof typeof toolPrompts] &&
-    Object.keys(toolPrompts[key as keyof typeof toolPrompts]).length > 0
-  )];
-
-  public async processMessage(message: string, previousMessages: LLMContext[]): Promise<string> {
-    logger.info(`Processing message: ${message}`);
-
-    if (this.availableCategories.length <= 1) {
-      logger.info('No tool categories available, returning direct response');
+  async processMessage(message: string, previousMessages: LLMContext[]) {
+    this.logger.log(`Processing message: ${message} with tools: ${this.tool.availableCategories.map(c => c.toLowerCase()).join(', ')}`);
+    if (this.tool.availableCategories.length <= 1) {
+      this.logger.log('No tool categories available, returning direct response');
       return 'I apologize, but I don\'t have any tools configured to help with your request at the moment.';
     }
 
     const toolSelection = await this.toolSelection(message, previousMessages);
-    logger.info(`Selected tool: ${toolSelection.selectedTool}`);
+    this.logger.log(`Selected tool: ${toolSelection.selectedTool}`);
 
     if (toolSelection.selectedTool === 'none') {
       return toolSelection.content;
     }
 
-    const selectedFunctions = tools[toolSelection.selectedTool];
+    const selectedFunctions = this.tool.tools[toolSelection.selectedTool];
 
     if (!selectedFunctions) {
       return 'I apologize, but I don\'t have any tools configured to help with your request at the moment.';
@@ -59,14 +50,14 @@ export class LLMService {
 
     const executionPrompt = ChatPromptTemplate.fromMessages([
       SystemMessagePromptTemplate.fromTemplate(`
-        ${BASE_SYSTEM_PROMPT}
+        ${this.baseSystemPrompt}
         You are now using the tool ${toolSelection.selectedTool} to respond to the user's query.
       `),
       new MessagesPlaceholder('chat_history'),
       HumanMessagePromptTemplate.fromTemplate('{input}')
     ]);
 
-    const llmProvider = this.factory.getProvider(SupportedChatModels.OPENAI);
+    const llmProvider = this.llmProvider.getProvider(SupportedChatModels.OPENAI);
     let llmProviderWithTools;
     if ('bindTools' in llmProvider && typeof llmProvider.bindTools === 'function') {
       llmProviderWithTools = llmProvider.bindTools(selectedFunctions);
@@ -92,7 +83,7 @@ export class LLMService {
       const tool = selectedFunctions.find(t => t.name === toolName);
 
       if (tool) {
-        logger.info(`Invoking tool: ${toolName} with args: ${JSON.stringify(toolArgs)}`);
+        this.logger.log(`Invoking tool: ${toolName} with args: ${JSON.stringify(toolArgs)}`);
         const result = await tool.func(toolArgs);
         return this.generateResponse(message, result, toolName, toolSelection.selectedTool, previousMessages);
       }
@@ -103,20 +94,20 @@ export class LLMService {
     return this.generateResponse(message, result, 'none', toolSelection.selectedTool, previousMessages);
   }
 
-  private toolSelection = async (message: string, previousMessages: LLMContext[]): Promise<{
-    selectedTool: keyof typeof tools | 'none';
+  private async toolSelection(message: string, previousMessages: LLMContext[]): Promise<{
+    selectedTool: keyof typeof ToolClass.prototype.tools | 'none';
     content: string;
-  }> => {
-    const llmProvider = this.factory.getProvider(SupportedChatModels.OPENAI);
+  }> {
+    const llmProvider = this.llmProvider.getProvider(SupportedChatModels.OPENAI);
 
-    const toolSelectionPrompts = this.availableCategories.map(category => toolPrompts[category as keyof typeof toolPrompts]?.toolSelection).filter(Boolean).join('\n');
-    const systemPrompt = `${BASE_SYSTEM_PROMPT}\n${toolSelectionPrompts}`;
+    const toolSelectionPrompts = this.tool.availableCategories.map(category => this.toolPrompts[category as keyof typeof this.tool.toolPrompts]?.toolSelection).filter(Boolean).join('\n');
+    const systemPrompt = `${this.baseSystemPrompt}\n${toolSelectionPrompts}`;
 
     const toolSelectionFunction = new DynamicStructuredTool({
       name: 'selectTool',
       description: 'Select the tool category to use for the query. If no specific tool is needed, respond with "none" and provide a direct answer.',
       schema: z.object({
-        toolCategory: z.enum(this.availableCategories as [string, ...string[]]),
+        toolCategory: z.enum(this.tool.availableCategories as [string, ...string[]]),
         reason: z.string()
       }),
       func: async ({ toolCategory, reason }) => {
@@ -152,31 +143,28 @@ export class LLMService {
     };
   }
 
-  private generateResponse = async (
-    message: string,
+  private async generateResponse(message: string,
     result: Record<string, any>,
     functionName: string,
-    toolCategory: keyof typeof tools,
-    previousMessages: LLMContext[]
-  ): Promise<string> => {
-
+    toolCategory: keyof typeof ToolClass.prototype.tools,
+    previousMessages: LLMContext[]) {
     const responsePrompt = ChatPromptTemplate.fromMessages([
       SystemMessagePromptTemplate.fromTemplate(`
-            You are a business assistant. Given a user's query and structured API data, generate a response that directly answers the user's question in a clear and concise manner. Format the response as a Slack message using Slack's supported markdown syntax:
-
-          - Use <URL|Text> for links instead of [text](URL).
-          - Use *bold* instead of **bold**.
-          - Ensure proper line breaks by using \n\n between list items.
-          - Retain code blocks using triple backticks where needed.
-          - Ensure all output is correctly formatted to display properly in Slack.
-
-          ${toolPrompts[toolCategory]?.responseGeneration}
-        `),
+              You are a business assistant. Given a user's query and structured API data, generate a response that directly answers the user's question in a clear and concise manner. Format the response as a Slack message using Slack's supported markdown syntax:
+  
+            - Use <URL|Text> for links instead of [text](URL).
+            - Use *bold* instead of **bold**.
+            - Ensure proper line breaks by using \n\n between list items.
+            - Retain code blocks using triple backticks where needed.
+            - Ensure all output is correctly formatted to display properly in Slack.
+  
+            ${this.toolPrompts[toolCategory]?.responseGeneration}
+          `),
       new MessagesPlaceholder('chat_history'),
       HumanMessagePromptTemplate.fromTemplate('{input}')
     ]);
 
-    const llmProvider = this.factory.getProvider(SupportedChatModels.OPENAI);
+    const llmProvider = this.llmProvider.getProvider(SupportedChatModels.OPENAI);
 
     const responseChain = RunnableSequence.from([
       responsePrompt,
@@ -189,8 +177,5 @@ export class LLMService {
     });
 
     return Array.isArray(response.content) ? response.content.join(' ') : response.content;
-  };
+  }
 }
-
-// Export only the singleton instance
-export const llmService = LLMService.getInstance();

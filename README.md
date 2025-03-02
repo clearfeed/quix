@@ -14,7 +14,8 @@ Quix is an AI-powered Slack agent that can interact with your business tools suc
 - **Slack Integration**: Quix can respond to queries when tagged in Slack channels. 🗨️
 - **Multi-Service Querying**: Supports querying multiple tools.
 - **Thread Context**: Quix can understand the context of a Slack thread when answering queries.
-- **User Query Endpoint**: Exposes an endpoint to accept user queries. 🔍
+- **LLM Integration**: Powered by OpenAI and Google Generative AI models. 🧠
+- **Modular Architecture**: Built with Nest.js for scalability and maintainability. 🏗️
 
 ## 🚀 Setting Up the Slack App
 
@@ -28,7 +29,14 @@ Quix is an AI-powered Slack agent that can interact with your business tools suc
 3. **Install the App to Your Workspace**:
    - Follow the instructions in the Slack API to install the app to your workspace.
 
-## Setup
+## 📦 Project Structure
+
+This project is a Nest.js monorepo with:
+- Main Nest.js application in the root `src/` directory
+- Integration packages in `agent-packages/packages/`
+- Common utilities and shared types in `agent-packages/packages/common`
+
+## 🛠️ Setup
 
 1. **Clone the Repository**:
    ```bash
@@ -50,41 +58,55 @@ Quix is an AI-powered Slack agent that can interact with your business tools suc
    Configure the following environment variables in `.env`:
    - `PORT`: Server port (default: 3000)
    - `OPENAI_API_KEY`: Your OpenAI API key
+   - `GOOGLE_API_KEY`: Your Google Generative AI API key (optional)
    - `HUBSPOT_ACCESS_TOKEN`: Your HubSpot access token
    - `JIRA_API_TOKEN`: Your JIRA API token
    - `GITHUB_ACCESS_TOKEN`: Your GitHub access token
    - `SLACK_BOT_TOKEN`: Your Slack bot token
+   - `SLACK_SIGNING_SECRET`: Your Slack signing secret
    - `LOG_LEVEL`: Logging level (default: info)
 
-4. **Start the Development Server**:
+6. **Start the Development Server**:
    ```bash
-   yarn dev
+   yarn start:dev
    ```
 
-5. **Build and Run**:
+7. **Build and Run for Production**:
    - Build the project:
      ```bash
      yarn build
      ```
    - Start the production server:
      ```bash
-     yarn start
+     yarn start:prod
      ```
 
-## 🌐 API Endpoints
+## 🐳 Docker Deployment
 
-### POST /query
-Accepts user queries to interact with integrated services.
+You can also run the application using Docker:
 
-### GET /health
-Health check endpoint.
+```bash
+# Build the Docker image
+docker build -t quix .
 
-## Future Extensions
+# Run the container
+docker run -p 3000:3000 --env-file .env quix
+```
 
-- Support for additional tools
-- Extended CRM operations
-- Authentication and rate limiting
-- Caching layer for improved performance
+### Slack Events
+Handles incoming Slack events and messages.
+
+### Health Check
+`GET /health` - Health check endpoint.
+
+## 🧩 Extending with New Integrations
+
+To add a new integration:
+
+1. Create a new package in `agent-packages/packages/`
+2. Implement the integration following the common package structure
+3. Build and link the new package
+4. Import and register the package in the main application
 
 ## 📜 License
 
