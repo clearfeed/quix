@@ -1,6 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import { createHmac, timingSafeEqual } from 'crypto';
+import { createHmac } from 'crypto';
+import tsscmp from 'tsscmp';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -23,55 +24,23 @@ export class SlackMiddleware implements NestMiddleware {
   }
 
   private verifySlackRequest(req: Request, res: Response, next: NextFunction, rawBody: string) {
-    const signature = req.headers['x-slack-signature'];
-    const timestamp = req.headers['x-slack-request-timestamp'];
+    if (!this.signingSecret) return false;
+    if (!req.headers['x-slack-signature'] || !req.headers['x-slack-request-timestamp']) return false;
+    // Grab the signature and timestamp from the headers
+    const requestSignature = req.headers['x-slack-signature'] as string;
+    const requestTimestamp = req.headers['x-slack-request-timestamp'];
 
-    if (!signature || !timestamp) {
-      console.warn('Missing Slack signature headers');
-      res.status(401).send();
-      return;
-    }
+    // Create the HMAC
+    const hmac = createHmac('sha256', this.signingSecret);
 
-    // Verify timestamp is recent to prevent replay attacks
-    const currentTime = Math.floor(Date.now() / 1000);
-    if (Math.abs(currentTime - Number(timestamp)) > 300) {
-      console.warn('Slack request timestamp too old');
-      res.status(401).send();
-      return;
-    }
-
-    if (!this.signingSecret) {
-      console.error('Slack signing secret not configured');
-      res.status(500).send();
-      return;
-    }
-
-    if (!rawBody) {
-      console.error('Raw body not exposed');
-      res.status(500).send();
-      return;
-    }
-
-    const sigBasestring = `v0:${timestamp}:${rawBody}`;
-    const mySignature = `v0=${createHmac('sha256', this.signingSecret)
-      .update(sigBasestring)
-      .digest('hex')}`;
-
-    try {
-      if (timingSafeEqual(Buffer.from(mySignature), Buffer.from(signature as string))) {
-        // If JSON content, parse it
-        if (req.headers['content-type']?.includes('application/json')) {
-          req.body = JSON.parse(rawBody);
-        }
-        next();
-      } else {
-        // next();
-        console.warn('Invalid Slack signature');
-        res.status(401).send();
-      }
-    } catch (error) {
-      console.error('Error verifying Slack signature:', error);
-      res.status(500).send();
+    // Update it with the Slack Request
+    const [version, hash] = requestSignature.split('=');
+    const base = `${version}:${requestTimestamp}:${rawBody}`;
+    hmac.update(base);
+    if (tsscmp(hash, hmac.digest('hex'))) {
+      next();
+    } else {
+      res.status(401).send('Unauthorized');
     }
   }
 }
