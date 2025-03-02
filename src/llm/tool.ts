@@ -13,7 +13,6 @@ export class ToolClass {
     if (hubspotToken) {
       return createHubspotToolsExport({ apiKey: hubspotToken });
     }
-    return undefined;
   }
 
   get jiraTools(): ToolConfig | undefined {
@@ -23,7 +22,6 @@ export class ToolClass {
     if (jiraHost && jiraUsername && jiraApiToken) {
       return createJiraToolsExport({ host: jiraHost, username: jiraUsername, password: jiraApiToken });
     }
-    return undefined;
   }
 
   get githubTools(): ToolConfig | undefined {
@@ -32,7 +30,6 @@ export class ToolClass {
     if (githubToken && githubOwner) {
       return createGitHubToolsExport({ token: githubToken, owner: githubOwner });
     }
-    return undefined;
   }
 
   get zendeskTools(): ToolConfig | undefined {
@@ -42,7 +39,6 @@ export class ToolClass {
     if (zendeskSubdomain && zendeskEmail && zendeskToken) {
       return createZendeskToolsExport({ subdomain: zendeskSubdomain, email: zendeskEmail, token: zendeskToken });
     }
-    return undefined;
   }
 
   get tools(): Record<string, Tool[] | undefined> {

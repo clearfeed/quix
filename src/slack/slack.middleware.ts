@@ -8,7 +8,7 @@ export class SlackMiddleware implements NestMiddleware {
   private readonly signingSecret: string | undefined;
 
   constructor(private readonly configService: ConfigService) {
-    this.signingSecret = configService.get('SLACK_SIGNING_SECRET');
+    this.signingSecret = this.configService.get('SLACK_SIGNING_SECRET');
   }
 
   use(req: Request, res: Response, next: NextFunction) {
