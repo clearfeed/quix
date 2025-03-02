@@ -66,7 +66,7 @@ export class SlackMiddleware implements NestMiddleware {
         next();
       } else {
         // next();
-        console.warn('Invalid Slack signature', req.body);
+        console.warn('Invalid Slack signature');
         res.status(401).send();
       }
     } catch (error) {
