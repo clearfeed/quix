@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { SlackModule } from './slack/slack.module';
 import { ConfigModule } from '@nestjs/config';
 import { LlmModule } from './llm/llm.module';
+import { PrismaService } from './prisma.service';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { LlmModule } from './llm/llm.module';
     LlmModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, PrismaService],
 })
 export class AppModule {}

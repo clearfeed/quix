@@ -5,6 +5,8 @@ import { ConfigService } from '@nestjs/config';
 import { AppMentionEvent, GenericMessageEvent, WebClient } from '@slack/web-api';
 import { createLLMContext } from '@quix/lib/utils/slack';
 import { LlmService } from '@quix/llm/llm.service';
+import { PrismaService } from '../prisma.service';
+import { AppHomeService } from './app_home.service';
 @Injectable()
 export class SlackService {
   private readonly webClient: WebClient;
@@ -12,7 +14,9 @@ export class SlackService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly llmService: LlmService
+    private readonly llmService: LlmService,
+    private readonly prisma: PrismaService,
+    private readonly appHomeService: AppHomeService
   ) {
     this.webClient = new WebClient(configService.get('SLACK_BOT_TOKEN'));
   }
@@ -22,7 +26,7 @@ export class SlackService {
       case 'url_verification':
         return this.handleUrlVerification(body);
       case 'event_callback':
-        this.handleEventCallback(body.event);
+        this.handleEventCallback(body);
         return;
     }
   }
@@ -33,19 +37,22 @@ export class SlackService {
     };
   }
 
-  private handleEventCallback(event: EventCallbackEvent['event']) {
-    switch (event.type) {
+  private handleEventCallback(eventBody: EventCallbackEvent) {
+    const innerEvent = eventBody.event;
+    switch (innerEvent.type) {
       case 'assistant_thread_started':
-        return this.handleAssistantThreadStarted(event);
+        return this.handleAssistantThreadStarted(innerEvent);
       case 'message':
-        if (event.subtype === undefined && !event.bot_id) {
-          return this.handleMessage(event);
+        if (innerEvent.subtype === undefined && !innerEvent.bot_id) {
+          return this.handleMessage(innerEvent);
         }
         break;
       case 'app_mention':
-        return this.handleAppMention(event);
+        return this.handleAppMention(innerEvent);
+      case 'app_home_opened':
+        return this.appHomeService.handleAppHomeOpened(innerEvent, eventBody.team_id);
       default:
-        this.logger.log('Unhandled event', { event });
+        this.logger.log('Unhandled event', { event: eventBody });
     }
   }
 
@@ -133,5 +140,46 @@ export class SlackService {
     } catch (error) {
       this.logger.error('Error sending response:', error);
     }
+  }
+
+  async install(code: string): Promise<{
+    team_id: string;
+    app_id: string;
+  } | void> {
+    const response = await this.webClient.oauth.v2.access({
+      client_id: this.configService.get<string>('SLACK_CLIENT_ID') || '',
+      client_secret: this.configService.get<string>('SLACK_CLIENT_SECRET') || '',
+      code
+    });
+    if (response.ok && response.team?.id) {
+      await this.prisma.slackWorkspace.upsert({
+        where: {
+          team_id: response.team?.id
+        },
+        update: {
+          name: response.team?.name || '',
+          bot_access_token: response.access_token,
+          authed_user_id: response.authed_user?.id,
+          bot_user_id: response.bot_user_id,
+          is_enterprise_install: response.is_enterprise_install,
+          scopes: response.response_metadata?.scopes,
+          app_id: response.app_id || ''
+        },
+        create: {
+          name: response.team?.name || '',
+          team_id: response.team?.id,
+          bot_access_token: response.access_token || '',
+          authed_user_id: response.authed_user?.id || '',
+          bot_user_id: response.bot_user_id || '',
+          is_enterprise_install: response.is_enterprise_install || false,
+          scopes: response.response_metadata?.scopes,
+          app_id: response.app_id || ''
+        }
+      });
+    }
+    return {
+      team_id: response.team?.id || '',
+      app_id: response.app_id || ''
+    };
   }
 }
