@@ -22,4 +22,5 @@ model SlackWorkspace {
   bot_user_id String
   is_enterprise_install Boolean
   scopes String[]
+  app_id String
 }

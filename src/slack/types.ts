@@ -32,6 +32,7 @@ export interface EnvelopedEvent<Event = SlackEvent> extends Record<string, any> 
 export type EventCallbackEvent = {
   type: 'event_callback';
   event: SlackEvent;
+  team_id: string;
 }
 
 export type AllSlackEvents = UrlVerificationEvent | EventCallbackEvent;

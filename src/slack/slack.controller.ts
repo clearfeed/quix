@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, RawBodyRequest, Query, Get, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Req, RawBodyRequest, Query, Get, HttpStatus, Redirect } from '@nestjs/common';
 import { SlackService } from './slack.service';
 import { Request } from 'express';
 import { verifySlackSignature } from '@quix/lib/utils/verifySlackSignature';
@@ -25,8 +25,15 @@ export class SlackController {
   }
 
   @Get('install')
+  @Redirect()
   async install(@Query('code') code: string) {
-    await this.slackService.install(code);
-    return HttpStatus.OK;
+    const result = await this.slackService.install(code);
+    if (result) {
+      return {
+        url: `slack://app?team=${result.team_id}&id=${result.app_id}&tab=home`,
+        statusCode: 302
+      };
+    }
+    return HttpStatus.BAD_REQUEST;
   }
 }

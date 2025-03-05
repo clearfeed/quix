@@ -7,6 +7,7 @@ CREATE TABLE "slack_workspaces" (
     "bot_user_id" TEXT NOT NULL,
     "is_enterprise_install" BOOLEAN NOT NULL,
     "scopes" TEXT[],
+    "app_id" TEXT NOT NULL,
 
     CONSTRAINT "slack_workspaces_pkey" PRIMARY KEY ("team_id")
 );
