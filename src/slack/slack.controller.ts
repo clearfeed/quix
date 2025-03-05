@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, RawBodyRequest } from '@nestjs/common';
+import { Controller, Post, Body, Req, RawBodyRequest, Query, Get, HttpStatus } from '@nestjs/common';
 import { SlackService } from './slack.service';
 import { Request } from 'express';
 import { verifySlackSignature } from '@quix/lib/utils/verifySlackSignature';
@@ -22,5 +22,11 @@ export class SlackController {
     }
     const response = await this.slackService.handleEvent(req.body);
     return response;
+  }
+
+  @Get('install')
+  async install(@Query('code') code: string) {
+    await this.slackService.install(code);
+    return HttpStatus.OK;
   }
 }

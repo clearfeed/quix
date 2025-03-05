@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { AppMentionEvent, GenericMessageEvent, WebClient } from '@slack/web-api';
 import { createLLMContext } from '@quix/lib/utils/slack';
 import { LlmService } from '@quix/llm/llm.service';
+import { PrismaService } from '../prisma.service';
 @Injectable()
 export class SlackService {
   private readonly webClient: WebClient;
@@ -12,7 +13,8 @@ export class SlackService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly llmService: LlmService
+    private readonly llmService: LlmService,
+    private readonly prisma: PrismaService
   ) {
     this.webClient = new WebClient(configService.get('SLACK_BOT_TOKEN'));
   }
@@ -133,5 +135,27 @@ export class SlackService {
     } catch (error) {
       this.logger.error('Error sending response:', error);
     }
+  }
+
+  async install(code: string) {
+    const response = await this.webClient.oauth.v2.access({
+      client_id: this.configService.get<string>('SLACK_CLIENT_ID') || '',
+      client_secret: this.configService.get<string>('SLACK_CLIENT_SECRET') || '',
+      code
+    });
+    if (response.ok) {
+      await this.prisma.slackWorkspace.create({
+        data: {
+          name: response.team?.name || '',
+          team_id: response.team?.id || '',
+          bot_access_token: response.access_token || '',
+          authed_user_id: response.authed_user?.id || '',
+          bot_user_id: response.bot_user_id || '',
+          is_enterprise_install: response.is_enterprise_install || false,
+          scopes: response.response_metadata?.scopes
+        }
+      });
+    }
+    return;
   }
 }
