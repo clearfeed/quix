@@ -15,9 +15,8 @@ datasource db {
 
 model SlackWorkspace {
   @@map("slack_workspaces")
-  id String @id @default(uuid())
+  team_id String @id
   name String
-  team_id String
   bot_access_token String
   authed_user_id String
   bot_user_id String

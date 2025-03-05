@@ -137,17 +137,28 @@ export class SlackService {
     }
   }
 
-  async install(code: string) {
+  async install(code: string): Promise<void> {
     const response = await this.webClient.oauth.v2.access({
       client_id: this.configService.get<string>('SLACK_CLIENT_ID') || '',
       client_secret: this.configService.get<string>('SLACK_CLIENT_SECRET') || '',
       code
     });
-    if (response.ok) {
-      await this.prisma.slackWorkspace.create({
-        data: {
+    if (response.ok && response.team?.id) {
+      await this.prisma.slackWorkspace.upsert({
+        where: {
+          team_id: response.team?.id
+        },
+        update: {
           name: response.team?.name || '',
-          team_id: response.team?.id || '',
+          bot_access_token: response.access_token,
+          authed_user_id: response.authed_user?.id,
+          bot_user_id: response.bot_user_id,
+          is_enterprise_install: response.is_enterprise_install,
+          scopes: response.response_metadata?.scopes
+        },
+        create: {
+          name: response.team?.name || '',
+          team_id: response.team?.id,
           bot_access_token: response.access_token || '',
           authed_user_id: response.authed_user?.id || '',
           bot_user_id: response.bot_user_id || '',
