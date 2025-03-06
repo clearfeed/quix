@@ -1,18 +1,24 @@
-import { Controller, Post, Body, Req, RawBodyRequest, Query, Get, HttpStatus, Redirect } from '@nestjs/common';
+import { Controller, Post, Body, Req, RawBodyRequest, Query, Get, HttpStatus, Redirect, Param, Inject } from '@nestjs/common';
 import { SlackService } from './slack.service';
 import { Request } from 'express';
 import { verifySlackSignature } from '@quix/lib/utils/verifySlackSignature';
 import { ConfigService } from '@nestjs/config';
 import { InteractionsService } from './interactions.service';
 import { Logger } from '@nestjs/common';
-import { BlockAction } from '@slack/bolt';
+import { IntegrationsService } from '../integrations/integrations.service';
+import { INTEGRATIONS } from '@quix/lib/constants';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+
 @Controller('slack')
 export class SlackController {
   private readonly logger = new Logger(SlackController.name);
   constructor(
     private readonly slackService: SlackService,
     private readonly configService: ConfigService,
-    private readonly interactionsService: InteractionsService
+    private readonly interactionsService: InteractionsService,
+    private readonly integrationsService: IntegrationsService,
+    @Inject(CACHE_MANAGER) private cache: Cache,
   ) { }
 
   @Post('events')
@@ -46,8 +52,18 @@ export class SlackController {
     this.interactionsService.handleInteraction(JSON.parse(payload));
   }
 
-  @Get('install')
-  async installTool(@Query('tool') tool: string) {
-    // return this.slackService.installTool(tool);
+  @Get('install/:tool')
+  @Redirect()
+  async installTool(@Param('tool') tool: typeof INTEGRATIONS[number]['value'], @Query('code') code: string) {
+    const result = await this.slackService.install(code, tool);
+    if (result) {
+      const state = Math.random().toString(36).substring(2, 15);
+      await this.cache.set(`install_${tool}_state`, state, 60 * 2);
+      return {
+        url: this.integrationsService.getInstallUrl(tool, state),
+        statusCode: 302
+      };
+    }
+    return HttpStatus.BAD_REQUEST;
   }
 }

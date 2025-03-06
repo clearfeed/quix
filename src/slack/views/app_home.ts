@@ -1,6 +1,8 @@
-import { AnyBlock, HomeView, SectionBlock } from "@slack/web-api";
+import { HomeView, SectionBlock } from "@slack/web-api";
 import { SLACK_ACTIONS } from "@quix/lib/utils/slack-constants";
 import { HomeViewArgs } from "./types";
+import { INTEGRATIONS } from "@quix/lib/constants";
+import { getInstallUrl } from "@quix/lib/utils/slack";
 
 export const getHomeView = (args: HomeViewArgs = {}): HomeView => {
   const { selectedTool } = args;
@@ -36,7 +38,7 @@ export const getHomeView = (args: HomeViewArgs = {}): HomeView => {
           "initial_option": selectedTool ? {
             "text": {
               "type": "plain_text",
-              "text": integrations.find(integration => integration.value === selectedTool)?.name || 'Select a tool',
+              "text": INTEGRATIONS.find(integration => integration.value === selectedTool)?.name || 'Select a tool',
               "emoji": true
             },
             "value": selectedTool
@@ -46,7 +48,7 @@ export const getHomeView = (args: HomeViewArgs = {}): HomeView => {
             "text": "Select a tool",
             "emoji": true
           },
-          "options": integrations.map(integration => ({
+          "options": INTEGRATIONS.map(integration => ({
             "text": {
               "type": "plain_text",
               "text": integration.name,
@@ -67,8 +69,8 @@ export const getHomeView = (args: HomeViewArgs = {}): HomeView => {
   }
 }
 
-const getIntegrationInfo = (selectedTool: string): SectionBlock[] => {
-  const integration = integrations.find(integration => integration.value === selectedTool);
+const getIntegrationInfo = (selectedTool: typeof INTEGRATIONS[number]['value']): SectionBlock[] => {
+  const integration = INTEGRATIONS.find(integration => integration.value === selectedTool);
   if (!integration) return [];
   return [
     {
@@ -86,32 +88,11 @@ const getIntegrationInfo = (selectedTool: string): SectionBlock[] => {
         },
         "style": "primary",
         "value": "connect_now",
-        "url": `${process.env.SELFSERVER_URL}/slack/install?tool=${selectedTool}`,
+        "url": getInstallUrl(selectedTool),
         "action_id": SLACK_ACTIONS.INSTALL_TOOL
       },
     }
   ]
 }
 
-const integrations = [
-  {
-    name: 'JIRA',
-    value: 'jira',
-    helpText: 'Connect JIRA to create, update, and view issues.'
-  },
-  {
-    name: 'GitHub',
-    value: 'github',
-    helpText: 'Connect GitHub to interat with issues and pull requests.'
-  },
-  {
-    name: 'Hubspot',
-    value: 'hubspot',
-    helpText: 'Connect Hubspot to create, update, and view contacts, deals, and companies.'
-  },
-  {
-    name: 'Zendesk',
-    value: 'zendesk',
-    helpText: 'Connect Zendesk to create, update, and view tickets.'
-  }
-]
+

@@ -7,6 +7,7 @@ import { createLLMContext } from '@quix/lib/utils/slack';
 import { LlmService } from '@quix/llm/llm.service';
 import { PrismaService } from '../prisma.service';
 import { AppHomeService } from './app_home.service';
+import { INTEGRATIONS } from '@quix/lib/constants';
 @Injectable()
 export class SlackService {
   private readonly webClient: WebClient;
@@ -142,13 +143,14 @@ export class SlackService {
     }
   }
 
-  async install(code: string): Promise<{
+  async install(code: string, tool?: typeof INTEGRATIONS[number]['value']): Promise<{
     team_id: string;
     app_id: string;
   } | void> {
     const response = await this.webClient.oauth.v2.access({
       client_id: this.configService.get<string>('SLACK_CLIENT_ID') || '',
       client_secret: this.configService.get<string>('SLACK_CLIENT_SECRET') || '',
+      redirect_uri: tool ? `${this.configService.get<string>('SELFSERVER_URL')}/slack/install/${tool}` : this.configService.get<string>('SELFSERVER_URL') + '/slack/install',
       code
     });
     if (response.ok && response.team?.id) {

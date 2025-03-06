@@ -1,3 +1,5 @@
+import { INTEGRATIONS } from "@quix/lib/constants";
+
 export type HomeViewArgs = {
-  selectedTool?: string;
+  selectedTool?: typeof INTEGRATIONS[number]['value'];
 }

@@ -5,6 +5,7 @@ import { SlackModule } from './slack/slack.module';
 import { ConfigModule } from '@nestjs/config';
 import { LlmModule } from './llm/llm.module';
 import { PrismaService } from './prisma.service';
+import { IntegrationsModule } from './integrations/integrations.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { PrismaService } from './prisma.service';
     }),
     SlackModule,
     LlmModule,
+    IntegrationsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
