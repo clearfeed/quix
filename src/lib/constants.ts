@@ -1,6 +1,6 @@
 export const OPENAI_CONTEXT_SIZE = 30;
 
-export enum SUPPORTED_INTEGRATIONS {
+enum SUPPORTED_INTEGRATIONS {
   JIRA = 'jira',
   GITHUB = 'github',
   HUBSPOT = 'hubspot',

@@ -27,6 +27,6 @@ export const createLLMContext = async (event: GenericMessageEvent | AppMentionEv
   return messages;
 }
 
-export const getInstallUrl = (tool: typeof INTEGRATIONS[number]['value']): string => {
-  return `https://slack.com/oauth/v2/authorize?client_id=${process.env.SLACK_CLIENT_ID}&scope=${SLACK_SCOPES.join(',')}&redirect_uri=${encodeURIComponent(`${process.env.SELFSERVER_URL}/slack/install/${tool}`)}`;
+export const getInstallUrl = (tool: typeof INTEGRATIONS[number]['value'], teamId?: string): string => {
+  return `https://slack.com/oauth/v2/authorize?client_id=${process.env.SLACK_CLIENT_ID}&scope=${SLACK_SCOPES.join(',')}&redirect_uri=${encodeURIComponent(`${process.env.SELFSERVER_URL}/slack/install/${tool}`)}&team=${teamId}`;
 }

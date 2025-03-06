@@ -4,8 +4,8 @@ import { HomeViewArgs } from "./types";
 import { INTEGRATIONS } from "@quix/lib/constants";
 import { getInstallUrl } from "@quix/lib/utils/slack";
 
-export const getHomeView = (args: HomeViewArgs = {}): HomeView => {
-  const { selectedTool } = args;
+export const getHomeView = (args: HomeViewArgs): HomeView => {
+  const { selectedTool, teamId } = args;
   return {
     type: 'home',
     blocks: [
@@ -64,12 +64,12 @@ export const getHomeView = (args: HomeViewArgs = {}): HomeView => {
         },
         "dispatch_action": true
       },
-      ...(selectedTool ? getIntegrationInfo(selectedTool) : [])
+      ...(selectedTool ? getIntegrationInfo(selectedTool, teamId) : [])
     ]
   }
 }
 
-const getIntegrationInfo = (selectedTool: typeof INTEGRATIONS[number]['value']): SectionBlock[] => {
+const getIntegrationInfo = (selectedTool: typeof INTEGRATIONS[number]['value'], teamId: string): SectionBlock[] => {
   const integration = INTEGRATIONS.find(integration => integration.value === selectedTool);
   if (!integration) return [];
   return [

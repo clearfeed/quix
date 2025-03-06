@@ -5,7 +5,7 @@ import { BlockElementAction, ButtonAction, StaticSelectAction } from '@slack/bol
 import { AppHomeOpenedEvent } from '@slack/web-api';
 import { WebClient } from '@slack/web-api';
 import { getHomeView } from './views/app_home';
-
+import { INTEGRATIONS } from '@quix/lib/constants';
 @Injectable()
 export class AppHomeService {
   private readonly logger = new Logger(AppHomeService.name);
@@ -38,7 +38,7 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     const result = await webClient.views.publish({
       user_id: event.user,
-      view: getHomeView()
+      view: getHomeView({ teamId })
     });
   }
 
@@ -55,7 +55,7 @@ export class AppHomeService {
     this.logger.log('Publishing home view', { selectedTool });
     await webClient.views.publish({
       user_id: userId,
-      view: getHomeView({ selectedTool })
+      view: getHomeView({ selectedTool: selectedTool as typeof INTEGRATIONS[number]['value'], teamId })
     });
 
   }
