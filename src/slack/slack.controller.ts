@@ -3,12 +3,16 @@ import { SlackService } from './slack.service';
 import { Request } from 'express';
 import { verifySlackSignature } from '@quix/lib/utils/verifySlackSignature';
 import { ConfigService } from '@nestjs/config';
+import { InteractionsService } from './interactions.service';
+import { Logger } from '@nestjs/common';
+import { BlockAction } from '@slack/bolt';
 @Controller('slack')
 export class SlackController {
-
+  private readonly logger = new Logger(SlackController.name);
   constructor(
     private readonly slackService: SlackService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly interactionsService: InteractionsService
   ) { }
 
   @Post('events')
@@ -35,5 +39,15 @@ export class SlackController {
       };
     }
     return HttpStatus.BAD_REQUEST;
+  }
+
+  @Post('interactions')
+  async handleInteraction(@Body() { payload }: { payload: string }) {
+    this.interactionsService.handleInteraction(JSON.parse(payload));
+  }
+
+  @Get('install')
+  async installTool(@Query('tool') tool: string) {
+    // return this.slackService.installTool(tool);
   }
 }
