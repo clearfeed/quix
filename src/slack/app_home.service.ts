@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
-import { PrismaService } from '@quix/prisma.service';
+import { PrismaService } from '@quix/prisma/prisma.service';
 import { BlockElementAction, ButtonAction, StaticSelectAction } from '@slack/bolt';
 import { AppHomeOpenedEvent } from '@slack/web-api';
 import { WebClient } from '@slack/web-api';

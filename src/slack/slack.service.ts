@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { AppMentionEvent, GenericMessageEvent, WebClient } from '@slack/web-api';
 import { createLLMContext } from '@quix/lib/utils/slack';
 import { LlmService } from '@quix/llm/llm.service';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { AppHomeService } from './app_home.service';
 import { INTEGRATIONS } from '@quix/lib/constants';
 @Injectable()

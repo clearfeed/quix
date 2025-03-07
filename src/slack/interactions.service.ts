@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '@quix/prisma.service';
+import { PrismaService } from '@quix/prisma/prisma.service';
 import { BlockAction, BlockElementAction, BlockOverflowAction, MessageShortcut, SlackShortcut, ViewSubmitAction } from '@slack/bolt';
 import { AppHomeService } from './app_home.service';
 @Injectable()

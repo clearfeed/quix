@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SlackModule } from './slack/slack.module';
@@ -6,9 +6,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LlmModule } from './llm/llm.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import * as redisStore from 'cache-manager-redis-store';
-import { CacheModule } from '@nestjs/cache-manager';
+import { CacheModule, CacheModuleOptions } from '@nestjs/cache-manager';
 import { EncryptionModule } from './lib/encryption/encryption.module';
-import { PrismaModule } from './prisma.service';
+import { PrismaModule } from './prisma/prisma.service';
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { PrismaModule } from './prisma.service';
       isGlobal: true,
     }),
     CacheModule.registerAsync({
-      useFactory: (configService: ConfigService) => {
+      useFactory: (configService: ConfigService): CacheModuleOptions => {
         // Check if Redis config is valid
         const host = configService.get('REDIS_HOST');
         const port = configService.get('REDIS_PORT');
