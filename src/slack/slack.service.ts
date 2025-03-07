@@ -179,6 +179,7 @@ export class SlackService {
         }
       });
     }
+    this.logger.log(`Connected to Slack workspace`, { team_id: response.team?.id, app_id: response.app_id });
     return {
       team_id: response.team?.id || '',
       app_id: response.app_id || ''

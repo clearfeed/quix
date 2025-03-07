@@ -5,7 +5,7 @@ import { verifySlackSignature } from '@quix/lib/utils/verifySlackSignature';
 import { ConfigService } from '@nestjs/config';
 import { InteractionsService } from './interactions.service';
 import { Logger } from '@nestjs/common';
-import { IntegrationsService } from '../integrations/integrations.service';
+import { IntegrationsInstallService } from '../integrations/integrations-install.service';
 import { INTEGRATIONS } from '@quix/lib/constants';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -17,7 +17,7 @@ export class SlackController {
     private readonly slackService: SlackService,
     private readonly configService: ConfigService,
     private readonly interactionsService: InteractionsService,
-    private readonly integrationsService: IntegrationsService,
+    private readonly integrationsService: IntegrationsInstallService,
     @Inject(CACHE_MANAGER) private cache: Cache,
   ) { }
 

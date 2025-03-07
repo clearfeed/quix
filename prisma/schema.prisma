@@ -23,4 +23,19 @@ model SlackWorkspace {
   is_enterprise_install Boolean
   scopes String[]
   app_id String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model JiraSites {
+  @@map("jira_sites")
+  id String @id
+  name String
+  url String
+  access_token String
+  refresh_token String
+  expires_at DateTime
+  scopes String[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }

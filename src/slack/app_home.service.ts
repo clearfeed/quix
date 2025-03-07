@@ -20,7 +20,8 @@ export class AppHomeService {
       }
     });
     if (!slackWorkspace) {
-      throw new Error('Slack workspace not found');
+      this.logger.error('Slack workspace not found', { teamId });
+      return;
     }
     return slackWorkspace;
   }
@@ -29,14 +30,10 @@ export class AppHomeService {
     if (event.tab !== 'home') return;
 
     const slackWorkspace = await this.getSlackWorkspace(teamId);
-
-    if (!slackWorkspace) {
-      this.logger.error('Slack workspace not found', { teamId });
-      return;
-    }
+    if (!slackWorkspace) return;
 
     const webClient = new WebClient(slackWorkspace.bot_access_token);
-    const result = await webClient.views.publish({
+    await webClient.views.publish({
       user_id: event.user,
       view: getHomeView({ teamId })
     });
@@ -50,6 +47,7 @@ export class AppHomeService {
 
   async handleConnectTool(action: StaticSelectAction, teamId: string, userId: string) {
     const slackWorkspace = await this.getSlackWorkspace(teamId);
+    if (!slackWorkspace) return;
     const selectedTool = action.selected_option?.value;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     this.logger.log('Publishing home view', { selectedTool });

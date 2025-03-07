@@ -88,7 +88,7 @@ const getIntegrationInfo = (selectedTool: typeof INTEGRATIONS[number]['value'], 
         },
         "style": "primary",
         "value": "connect_now",
-        "url": getInstallUrl(selectedTool),
+        "url": getInstallUrl(selectedTool, teamId),
         "action_id": SLACK_ACTIONS.INSTALL_TOOL
       },
     }

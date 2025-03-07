@@ -2,6 +2,8 @@ import { Injectable, OnModuleInit, Global, Module } from '@nestjs/common';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { EncryptionService } from '../lib/utils/encryption';
 import { slackWorkspaceExtension } from './extensions/slack-workspace.extension';
+import { jiraSitesExtension } from './extensions/jira-sites.extension';
+
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
 
@@ -9,7 +11,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     super();
 
     // Use client extensions as recommended by Prisma
-    Object.assign(this, this.$extends(slackWorkspaceExtension(encryptionService)));
+    Object.assign(this, this.$extends(slackWorkspaceExtension(encryptionService))
+      .$extends(jiraSitesExtension(encryptionService)));
   }
 
   async onModuleInit() {

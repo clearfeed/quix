@@ -1,16 +1,15 @@
 import { Controller, Get, Query, HttpStatus } from '@nestjs/common';
-import { IntegrationsService } from './integrations.service';
+import { IntegrationsInstallService } from './integrations-install.service';
 
 @Controller('integrations')
 export class IntegrationsController {
-  constructor(private readonly integrationsService: IntegrationsService) {}
+  constructor(private readonly integrationsInstallService: IntegrationsInstallService) { }
 
-  @Get('connect/atlassian')
-  async atlassian(@Query('code') code: string, @Query('state') state: string) {
+  @Get('connect/jira')
+  async jira(@Query('code') code: string, @Query('state') state: string) {
     if (!code || !state) {
       return HttpStatus.BAD_REQUEST;
     }
-    await this.integrationsService.atlassian(code, state);
-
+    await this.integrationsInstallService.jira(code, state);
   }
 }
