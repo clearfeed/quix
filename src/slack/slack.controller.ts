@@ -58,7 +58,7 @@ export class SlackController {
     const result = await this.slackService.install(code, tool);
     if (result) {
       const state = Math.random().toString(36).substring(2, 15);
-      await this.cache.set(`install_${tool}_state`, state, 60 * 2);
+      await this.cache.set(`install_${tool}`, { state }, 60 * 2);
       return {
         url: this.integrationsService.getInstallUrl(tool, state),
         statusCode: 302

@@ -17,7 +17,7 @@ model SlackWorkspace {
   @@map("slack_workspaces")
   team_id String @id
   name String
-  bot_access_token String
+  bot_access_token String // This field is encrypted/decrypted by PrismaService middleware
   authed_user_id String
   bot_user_id String
   is_enterprise_install Boolean
