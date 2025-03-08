@@ -9,12 +9,14 @@ import * as redisStore from 'cache-manager-redis-store';
 import { CacheModule, CacheModuleOptions } from '@nestjs/cache-manager';
 import { EncryptionModule } from './lib/encryption/encryption.module';
 import { PrismaModule } from './prisma/prisma.service';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    EventEmitterModule.forRoot(),
     CacheModule.registerAsync({
       useFactory: (configService: ConfigService): CacheModuleOptions => {
         // Check if Redis config is valid

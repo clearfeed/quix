@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, RawBodyRequest, Query, Get, HttpStatus, Redirect, Param, Inject } from '@nestjs/common';
+import { Controller, Post, Body, Req, RawBodyRequest, Query, Get, HttpStatus, Redirect, Param, Inject, BadRequestException } from '@nestjs/common';
 import { SlackService } from './slack.service';
 import { Request } from 'express';
 import { verifySlackSignature } from '@quix/lib/utils/verifySlackSignature';
@@ -9,7 +9,8 @@ import { IntegrationsInstallService } from '../integrations/integrations-install
 import { INTEGRATIONS } from '@quix/lib/constants';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-
+import { ToolInstallState } from '@quix/lib/types/common';
+import { SlackEventsHandlerService } from './slack-events-handler.service';
 @Controller('slack')
 export class SlackController {
   private readonly logger = new Logger(SlackController.name);
@@ -18,6 +19,7 @@ export class SlackController {
     private readonly configService: ConfigService,
     private readonly interactionsService: InteractionsService,
     private readonly integrationsService: IntegrationsInstallService,
+    private readonly slackEventsHandlerService: SlackEventsHandlerService,
     @Inject(CACHE_MANAGER) private cache: Cache,
   ) { }
 
@@ -30,7 +32,7 @@ export class SlackController {
         message: 'Unauthorized'
       };
     }
-    const response = await this.slackService.handleEvent(req.body);
+    const response = await this.slackEventsHandlerService.handleEvent(req.body);
     return response;
   }
 
@@ -56,14 +58,12 @@ export class SlackController {
   @Redirect()
   async installTool(@Param('tool') tool: typeof INTEGRATIONS[number]['value'], @Query('code') code: string) {
     const result = await this.slackService.install(code, tool);
-    if (result) {
-      const state = Math.random().toString(36).substring(2, 15);
-      await this.cache.set(`install_${tool}`, { state }, 60 * 2);
-      return {
-        url: this.integrationsService.getInstallUrl(tool, state),
-        statusCode: 302
-      };
-    }
-    return HttpStatus.BAD_REQUEST;
+    if (!result) throw new BadRequestException();
+    const state = Math.random().toString(36).substring(2, 15);
+    await this.cache.set<ToolInstallState>(`install_${tool}`, { state, teamId: result.team_id, appId: result.app_id }, 60 * 5);
+    return {
+      url: this.integrationsService.getInstallUrl(tool, state),
+      statusCode: 302
+    };
   }
 }

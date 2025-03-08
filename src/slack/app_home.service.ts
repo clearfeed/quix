@@ -1,35 +1,22 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
-import { PrismaService } from '@quix/prisma/prisma.service';
 import { BlockElementAction, ButtonAction, StaticSelectAction } from '@slack/bolt';
 import { AppHomeOpenedEvent } from '@slack/web-api';
 import { WebClient } from '@slack/web-api';
 import { getHomeView } from './views/app_home';
 import { INTEGRATIONS } from '@quix/lib/constants';
+import { SlackService } from './slack.service';
 @Injectable()
 export class AppHomeService {
   private readonly logger = new Logger(AppHomeService.name);
   constructor(
-    private readonly prisma: PrismaService
+    private readonly slackService: SlackService
   ) { }
-
-  private async getSlackWorkspace(teamId: string) {
-    const slackWorkspace = await this.prisma.slackWorkspace.findUnique({
-      where: {
-        team_id: teamId
-      }
-    });
-    if (!slackWorkspace) {
-      this.logger.error('Slack workspace not found', { teamId });
-      return;
-    }
-    return slackWorkspace;
-  }
 
   async handleAppHomeOpened(event: AppHomeOpenedEvent, teamId: string) {
     if (event.tab !== 'home') return;
 
-    const slackWorkspace = await this.getSlackWorkspace(teamId);
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
 
     const webClient = new WebClient(slackWorkspace.bot_access_token);
@@ -46,7 +33,7 @@ export class AppHomeService {
   }
 
   async handleConnectTool(action: StaticSelectAction, teamId: string, userId: string) {
-    const slackWorkspace = await this.getSlackWorkspace(teamId);
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
     const selectedTool = action.selected_option?.value;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
@@ -56,10 +43,5 @@ export class AppHomeService {
       view: getHomeView({ selectedTool: selectedTool as typeof INTEGRATIONS[number]['value'], teamId })
     });
 
-  }
-
-  async handleInstallTool(action: ButtonAction, teamId: string, userId: string) {
-    const slackWorkspace = await this.getSlackWorkspace(teamId);
-    this.logger.log('Installing tool', { action, teamId, userId });
   }
 }

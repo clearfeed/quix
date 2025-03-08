@@ -1,4 +1,4 @@
-import { INTEGRATIONS } from '@quix/lib/constants';
+import { INTEGRATIONS, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
@@ -6,6 +6,9 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ToolInstallState } from '@quix/lib/types/common';
+import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 @Injectable()
 export class IntegrationsInstallService {
   private readonly logger = new Logger(IntegrationsInstallService.name);
@@ -14,7 +17,8 @@ export class IntegrationsInstallService {
     private readonly configService: ConfigService,
     private httpService: HttpService,
     @Inject(CACHE_MANAGER) private cache: Cache,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
@@ -28,9 +32,9 @@ export class IntegrationsInstallService {
     }
   }
 
-  async jira(code: string, state: string) {
+  async jira(code: string, state: string): Promise<Partial<ToolInstallState>> {
     try {
-      const stateData = await this.cache.get<{ state: string }>(`install_jira`);
+      const stateData = await this.cache.get<ToolInstallState>(`install_jira`);
       if (!stateData) {
         throw new Error('State not found');
       }
@@ -73,6 +77,17 @@ export class IntegrationsInstallService {
           expires_at: new Date(Date.now() + response.data.expires_in * 1000),
         }
       });
+
+      this.eventEmitter.emit(EVENT_NAMES.JIRA_CONNECTED, {
+        teamId: stateData.teamId,
+        appId: stateData.appId,
+        type: SUPPORTED_INTEGRATIONS.JIRA,
+      } satisfies IntegrationConnectedEvent);
+
+      return {
+        appId: stateData.appId,
+        teamId: stateData.teamId,
+      }
     } catch (error) {
       this.logger.error(error);
       throw new BadRequestException('Failed to connect to Jira');
