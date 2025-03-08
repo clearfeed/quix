@@ -16,20 +16,16 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    EventEmitterModule.forRoot(),
+    EventEmitterModule.forRoot({
+      wildcard: true,
+      delimiter: '.',
+      verboseMemoryLeak: true
+    }),
     CacheModule.registerAsync({
       useFactory: (configService: ConfigService): CacheModuleOptions => {
         // Check if Redis config is valid
-        const host = configService.get('REDIS_HOST');
-        const port = configService.get('REDIS_PORT');
-
-        if (!host || !port) {
-          console.error('REDIS CONFIG MISSING - Using memory cache instead');
-          return {
-            // Default to memory cache if Redis config is missing
-            ttl: 60
-          };
-        }
+        const host = configService.get<string>('REDIS_HOST')!;
+        const port = configService.get<number>('REDIS_PORT')!;
 
         return {
           store: redisStore,

@@ -20,7 +20,7 @@ export class ToolClass {
     const jiraUsername = this.config.get('JIRA_USERNAME');
     const jiraApiToken = this.config.get('JIRA_API_TOKEN');
     if (jiraHost && jiraUsername && jiraApiToken) {
-      return createJiraToolsExport({ host: jiraHost, username: jiraUsername, password: jiraApiToken });
+      return createJiraToolsExport({ host: jiraHost, auth: { username: jiraUsername, password: jiraApiToken } });
     }
   }
 

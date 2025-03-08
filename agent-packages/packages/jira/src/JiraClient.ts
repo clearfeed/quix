@@ -7,10 +7,10 @@ export class JiraClient {
   constructor(config: JiraClientConfig) {
     this.axiosInstance = axios.create({
       baseURL: `https://${config.host}/rest/api/${config.apiVersion}`,
-      auth: {
-        username: config.username,
-        password: config.password
-      }
+      ...('username' in config.auth
+        ? { auth: { username: config.auth.username, password: config.auth.password } }
+        : { headers: { Authorization: `Bearer ${config.auth.bearerToken}` } }
+      )
     });
   }
 

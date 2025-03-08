@@ -1,9 +1,15 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 
-export interface JiraConfig extends BaseConfig {
-  host: string;
+export type JiraAuth = {
   username: string;
   password: string;
+} | {
+  bearerToken: string;
+}
+
+export interface JiraConfig extends BaseConfig {
+  host: string;
+  auth: JiraAuth;
 }
 
 export interface JiraIssueResponse {
@@ -97,8 +103,7 @@ export type AssignIssueResponse = BaseResponse<void>;
 
 export type JiraClientConfig = {
   host: string;
-  username: string;
-  password: string;
+  auth: JiraAuth;
   apiVersion: string;
 };
 
