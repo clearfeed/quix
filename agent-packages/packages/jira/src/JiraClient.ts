@@ -17,7 +17,6 @@ export class JiraClient {
       baseURL: `${config.host}/rest/api/${config.apiVersion}`,
       headers
     });
-    console.log('Jira client created', headers);
   }
 
   async makeApiCall(
