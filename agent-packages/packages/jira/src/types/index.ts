@@ -10,6 +10,7 @@ export type JiraAuth = {
 export interface JiraConfig extends BaseConfig {
   host: string;
   auth: JiraAuth;
+  apiHost?: string;
 }
 
 export interface JiraIssueResponse {

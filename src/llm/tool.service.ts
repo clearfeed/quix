@@ -2,7 +2,7 @@ import { createHubspotToolsExport } from '@clearfeed-ai/quix-hubspot-agent';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
 import { createZendeskToolsExport } from '@clearfeed-ai/quix-zendesk-agent';
-import { Tool, ToolConfig } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
@@ -50,7 +50,7 @@ export class ToolService {
     const jiraSite = slackWorkspace.jiraSite;
     if (jiraSite) {
       const updatedJiraSite = await this.integrationsService.updateJiraConfig(jiraSite);
-      tools.jira = createJiraToolsExport({ host: `https://api.atlassian.com/ex/jira/${updatedJiraSite.id}`, auth: { bearerToken: updatedJiraSite.access_token } });
+      tools.jira = createJiraToolsExport({ host: updatedJiraSite.url, apiHost: `https://api.atlassian.com/ex/jira/${updatedJiraSite.id}`, auth: { bearerToken: updatedJiraSite.access_token } });
     }
     return tools;
   }

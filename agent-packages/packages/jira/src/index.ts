@@ -18,7 +18,7 @@ export class JiraService implements BaseService<JiraConfig> {
 
   constructor(private config: JiraConfig) {
     const jiraOpts: JiraClientConfig = {
-      host: config.host,
+      host: config.apiHost ? config.apiHost : config.host,
       apiVersion: '3',
       auth: config.auth
     }
