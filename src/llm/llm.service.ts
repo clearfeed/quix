@@ -1,25 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ToolClass } from './tool';
+import { ToolService } from './tool.service';
 import { LLMContext, SupportedChatModels } from './types';
-import { ConfigService } from '@nestjs/config';
 import { LlmProviderService } from './llm.provider';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts';
 import { RunnableSequence } from '@langchain/core/runnables';
+import { ToolConfig } from 'agent-packages/packages/common';
 
 @Injectable()
 export class LlmService {
-  private readonly tool: ToolClass;
-  private readonly toolPrompts: Record<keyof typeof this.tool.tools, { toolSelection?: string; responseGeneration?: string }>;
   private readonly logger = new Logger(LlmService.name);
   constructor(
-    private readonly config: ConfigService,
-    private readonly llmProvider: LlmProviderService
-  ) {
-    this.tool = new ToolClass(this.config);
-    this.toolPrompts = this.tool.toolPrompts;
-  }
+    private readonly llmProvider: LlmProviderService,
+    private readonly tool: ToolService
+  ) { }
 
   private readonly baseSystemPrompt = `
 You are Quix, a helpful assistant that must use the available tools when relevant to answer the user's queries. These queries are sent to you either directly or by tagging you on Slack.
@@ -28,23 +23,28 @@ You must answer the user's queries in a clear and concise manner.
 You should ask the user to provide more information only if required to answer the question or to perform the task.
 `;
 
-  async processMessage(message: string, previousMessages: LLMContext[]) {
-    this.logger.log(`Processing message: ${message} with tools: ${this.tool.availableCategories.map(c => c.toLowerCase()).join(', ')}`);
-    if (this.tool.availableCategories.length <= 1) {
+  async processMessage(message: string, teamId: string, previousMessages: LLMContext[]) {
+    const tools = await this.tool.getAvailableTools(teamId);
+    if (!tools) {
+      return 'I apologize, but I don\'t have any tools configured to help with your request at the moment.';
+    }
+    const availableCategories = Object.keys(tools);
+    this.logger.log(`Processing message: ${message} with tools: ${availableCategories.join(', ')}`);
+    if (availableCategories.length < 1) {
       this.logger.log('No tool categories available, returning direct response');
       return 'I apologize, but I don\'t have any tools configured to help with your request at the moment.';
     }
 
-    const toolSelection = await this.toolSelection(message, previousMessages);
+    const toolSelection = await this.toolSelection(message, tools, previousMessages);
     this.logger.log(`Selected tool: ${toolSelection.selectedTool}`);
 
     if (toolSelection.selectedTool === 'none') {
       return toolSelection.content;
     }
 
-    const selectedFunctions = this.tool.tools[toolSelection.selectedTool];
+    const availableFunctions: ToolConfig['tools'] = tools[toolSelection.selectedTool].tools;
 
-    if (!selectedFunctions) {
+    if (!availableFunctions) {
       return 'I apologize, but I don\'t have any tools configured to help with your request at the moment.';
     }
 
@@ -60,7 +60,7 @@ You should ask the user to provide more information only if required to answer t
     const llmProvider = this.llmProvider.getProvider(SupportedChatModels.OPENAI);
     let llmProviderWithTools;
     if ('bindTools' in llmProvider && typeof llmProvider.bindTools === 'function') {
-      llmProviderWithTools = llmProvider.bindTools(selectedFunctions);
+      llmProviderWithTools = llmProvider.bindTools(availableFunctions);
     }
 
     const executionChain = RunnableSequence.from([
@@ -77,37 +77,39 @@ You should ask the user to provide more information only if required to answer t
     const toolCall = result.tool_calls?.[0];
 
     if (toolCall) {
-      const toolName = toolCall.name;
-      const toolArgs = toolCall.args;
+      const functionName = toolCall.name;
+      const functionArgs = toolCall.args;
 
-      const tool = selectedFunctions.find(t => t.name === toolName);
+      const selectedFunction = availableFunctions.find(t => t.name === functionName);
 
-      if (tool) {
-        this.logger.log(`Invoking tool: ${toolName} with args: ${JSON.stringify(toolArgs)}`);
-        const result = await tool.func(toolArgs);
-        return this.generateResponse(message, result, toolName, toolSelection.selectedTool, previousMessages);
+      if (selectedFunction) {
+        this.logger.log(`Invoking function: ${functionName} with args: ${JSON.stringify(functionArgs)}`);
+        const result = await selectedFunction.func(functionArgs);
+        const responseGenerationPrompt = tools[toolSelection.selectedTool].prompts?.responseGeneration;
+        return this.generateResponse(message, result, functionName, responseGenerationPrompt ?? '', previousMessages);
       }
 
       return `I apologize, but I don't have any tools configured to help with your request at the moment.`;
     }
 
-    return this.generateResponse(message, result, 'none', toolSelection.selectedTool, previousMessages);
+    return this.generateResponse(message, result, 'none', '', previousMessages);
   }
 
-  private async toolSelection(message: string, previousMessages: LLMContext[]): Promise<{
-    selectedTool: keyof typeof ToolClass.prototype.tools | 'none';
+  private async toolSelection(message: string, tools: Record<string, ToolConfig>, previousMessages: LLMContext[]): Promise<{
+    selectedTool: keyof typeof tools | 'none';
     content: string;
   }> {
     const llmProvider = this.llmProvider.getProvider(SupportedChatModels.OPENAI);
+    const availableCategories = Object.keys(tools);
 
-    const toolSelectionPrompts = this.tool.availableCategories.map(category => this.toolPrompts[category as keyof typeof this.tool.toolPrompts]?.toolSelection).filter(Boolean).join('\n');
+    const toolSelectionPrompts = availableCategories.map(category => tools[category].prompts?.toolSelection).filter(Boolean).join('\n');
     const systemPrompt = `${this.baseSystemPrompt}\n${toolSelectionPrompts}`;
 
     const toolSelectionFunction = new DynamicStructuredTool({
       name: 'selectTool',
       description: 'Select the tool category to use for the query. If no specific tool is needed, respond with "none" and provide a direct answer.',
       schema: z.object({
-        toolCategory: z.enum(this.tool.availableCategories as [string, ...string[]]),
+        toolCategory: z.enum(availableCategories as [string, ...string[]]),
         reason: z.string()
       }),
       func: async ({ toolCategory, reason }) => {
@@ -146,7 +148,7 @@ You should ask the user to provide more information only if required to answer t
   private async generateResponse(message: string,
     result: Record<string, any>,
     functionName: string,
-    toolCategory: keyof typeof ToolClass.prototype.tools,
+    responseGenerationPrompt: string,
     previousMessages: LLMContext[]) {
     const responsePrompt = ChatPromptTemplate.fromMessages([
       SystemMessagePromptTemplate.fromTemplate(`
@@ -158,7 +160,7 @@ You should ask the user to provide more information only if required to answer t
             - Retain code blocks using triple backticks where needed.
             - Ensure all output is correctly formatted to display properly in Slack.
   
-            ${this.toolPrompts[toolCategory]?.responseGeneration}
+            ${responseGenerationPrompt}
           `),
       new MessagesPlaceholder('chat_history'),
       HumanMessagePromptTemplate.fromTemplate('{input}')

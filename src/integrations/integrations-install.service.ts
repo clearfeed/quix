@@ -5,7 +5,8 @@ import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { InjectModel } from '@nestjs/sequelize';
+import { JiraSite } from '../database/models';
 import { ToolInstallState } from '@quix/lib/types/common';
 import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -17,7 +18,8 @@ export class IntegrationsInstallService {
     private readonly configService: ConfigService,
     private httpService: HttpService,
     @Inject(CACHE_MANAGER) private cache: Cache,
-    private readonly prisma: PrismaService,
+    @InjectModel(JiraSite)
+    private readonly jiraSiteModel: typeof JiraSite,
     private readonly eventEmitter: EventEmitter2,
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
@@ -55,29 +57,20 @@ export class IntegrationsInstallService {
         }
       });
       const jiraSite = accessibleResources.data[0];
-      await this.prisma.jiraSites.upsert({
-        where: {
-          id: jiraSite.id,
-        },
-        update: {
-          name: jiraSite.name,
-          url: jiraSite.url,
-          access_token: response.data.access_token,
-          refresh_token: response.data.refresh_token,
-          expires_at: new Date(Date.now() + response.data.expires_in * 1000),
-          scopes: jiraSite.scopes,
-        },
-        create: {
-          id: jiraSite.id,
-          name: jiraSite.name,
-          url: jiraSite.url,
-          scopes: jiraSite.scopes,
-          access_token: response.data.access_token,
-          refresh_token: response.data.refresh_token,
-          expires_at: new Date(Date.now() + response.data.expires_in * 1000),
-        }
+
+      await this.jiraSiteModel.upsert({
+        id: jiraSite.id,
+        name: jiraSite.name,
+        url: jiraSite.url,
+        scopes: jiraSite.scopes,
+        access_token: response.data.access_token,
+        refresh_token: response.data.refresh_token,
+        expires_at: new Date(Date.now() + (response.data.expires_in * 1000)),
+        team_id: stateData.teamId,
       });
 
+      console.log('Access token', response.data.access_token);
+      console.log('Refresh token', response.data.refresh_token);
       this.eventEmitter.emit(EVENT_NAMES.JIRA_CONNECTED, {
         teamId: stateData.teamId,
         appId: stateData.appId,

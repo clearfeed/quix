@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WebClient } from '@slack/web-api';
-import { PrismaService } from '../prisma/prisma.service';
+import { InjectModel } from '@nestjs/sequelize';
+import { SlackWorkspace } from '../database/models';
 import { INTEGRATIONS } from '@quix/lib/constants';
 import { OnEvent } from '@nestjs/event-emitter';
 import { IntegrationConnectedEvent } from '@quix/types/events';
@@ -13,16 +14,15 @@ export class SlackService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly prisma: PrismaService,
+    @InjectModel(SlackWorkspace)
+    private readonly slackWorkspaceModel: typeof SlackWorkspace,
   ) {
     this.webClient = new WebClient(this.configService.get('SLACK_BOT_TOKEN'));
   }
 
   async getSlackWorkspace(teamId: string) {
-    const slackWorkspace = await this.prisma.slackWorkspace.findUnique({
-      where: {
-        team_id: teamId
-      }
+    const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
+      include: ['jiraSite']
     });
     if (!slackWorkspace) {
       this.logger.error('Slack workspace not found', { teamId });
@@ -65,29 +65,15 @@ export class SlackService {
       code
     });
     if (response.ok && response.team?.id) {
-      await this.prisma.slackWorkspace.upsert({
-        where: {
-          team_id: response.team?.id
-        },
-        update: {
-          name: response.team?.name || '',
-          bot_access_token: response.access_token,
-          authed_user_id: response.authed_user?.id,
-          bot_user_id: response.bot_user_id,
-          is_enterprise_install: response.is_enterprise_install,
-          scopes: response.response_metadata?.scopes,
-          app_id: response.app_id || ''
-        },
-        create: {
-          name: response.team?.name || '',
-          team_id: response.team?.id,
-          bot_access_token: response.access_token || '',
-          authed_user_id: response.authed_user?.id || '',
-          bot_user_id: response.bot_user_id || '',
-          is_enterprise_install: response.is_enterprise_install || false,
-          scopes: response.response_metadata?.scopes,
-          app_id: response.app_id || ''
-        }
+      await this.slackWorkspaceModel.upsert({
+        team_id: response.team?.id,
+        name: response.team?.name || '',
+        bot_access_token: response.access_token || '',
+        authed_user_id: response.authed_user?.id || '',
+        bot_user_id: response.bot_user_id || '',
+        is_enterprise_install: response.is_enterprise_install || false,
+        scopes: response.response_metadata?.scopes || [],
+        app_id: response.app_id || ''
       });
     }
     this.logger.log(`Connected to Slack workspace`, { team_id: response.team?.id, app_id: response.app_id });

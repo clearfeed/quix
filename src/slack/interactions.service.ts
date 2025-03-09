@@ -1,12 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '@quix/prisma/prisma.service';
 import { BlockAction, BlockElementAction, BlockOverflowAction, MessageShortcut, SlackShortcut, ViewSubmitAction } from '@slack/bolt';
 import { AppHomeService } from './app_home.service';
 @Injectable()
 export class InteractionsService {
   private readonly logger = new Logger(InteractionsService.name);
   constructor(
-    private readonly prisma: PrismaService,
     private readonly appHomeService: AppHomeService
   ) { }
 

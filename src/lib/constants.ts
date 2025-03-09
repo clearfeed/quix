@@ -32,4 +32,28 @@ export const INTEGRATIONS = [
     helpText: 'Connect Zendesk to create, update, and view tickets.',
     connectedText: 'Zendesk has been successfully connected! You can now query Zendesk by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"'
   }
-]
+];
+
+export const TimeInSeconds = {
+  ONE_MINUTE: 60,
+  THIRTY_MINUTES: 1800,
+  ONE_HOUR: 3600,
+  ONE_DAY: 86400,
+  ONE_WEEK: 604800
+} as const;
+
+export const TimeInMilliSeconds = {
+  ONE_SECOND: 1000,
+  ONE_MINUTE: TimeInSeconds.ONE_MINUTE * 1000,
+  ONE_DAY: TimeInSeconds.ONE_DAY * 1000
+} as const;
+
+export const TimeInMinutes = {
+  ONE_HOUR: 60,
+  ONE_DAY: 1440,
+  ONE_WEEK: 10080,
+  /**
+   * This is considering 365 days in an year
+   */
+  ONE_YEAR: 525600
+};

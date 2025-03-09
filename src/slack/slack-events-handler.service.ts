@@ -96,7 +96,8 @@ export class SlackEventsHandlerService {
 
       if (event.text) {
         const messages = await createLLMContext(event);
-        const response = await this.llmService.processMessage(event.text, messages);
+        if (!event.team) return;
+        const response = await this.llmService.processMessage(event.text, event.team, messages);
         await this.webClient.chat.postMessage({
           channel: event.channel,
           text: response,
@@ -128,7 +129,8 @@ export class SlackEventsHandlerService {
   private async handleAppMention(event: AppMentionEvent) {
     try {
       const messages = await createLLMContext(event);
-      const response = await this.llmService.processMessage(event.text, messages);
+      if (!event.team) return;
+      const response = await this.llmService.processMessage(event.text, event.team, messages);
       await this.webClient.chat.postMessage({
         channel: event.channel,
         text: response,

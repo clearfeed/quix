@@ -8,7 +8,7 @@ import { IntegrationsModule } from './integrations/integrations.module';
 import * as redisStore from 'cache-manager-redis-store';
 import { CacheModule, CacheModuleOptions } from '@nestjs/cache-manager';
 import { EncryptionModule } from './lib/encryption/encryption.module';
-import { PrismaModule } from './prisma/prisma.service';
+import { DatabaseModule } from './database/database.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
@@ -28,7 +28,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
         const port = configService.get<number>('REDIS_PORT')!;
 
         return {
-          store: redisStore,
+          store: redisStore as any,
           host,
           port,
           ttl: 60
@@ -38,7 +38,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       inject: [ConfigService],
     }),
     EncryptionModule,
-    PrismaModule,
+    DatabaseModule,
     SlackModule,
     LlmModule,
     IntegrationsModule,

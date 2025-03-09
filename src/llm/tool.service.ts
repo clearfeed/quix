@@ -4,23 +4,23 @@ import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
 import { createZendeskToolsExport } from '@clearfeed-ai/quix-zendesk-agent';
 import { Tool, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { ConfigService } from '@nestjs/config';
-
-export class ToolClass {
-  constructor(private readonly config: ConfigService) { }
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { SlackWorkspace } from '../database/models';
+import { IntegrationsService } from '../integrations/integrations.service';
+@Injectable()
+export class ToolService {
+  constructor(
+    private readonly config: ConfigService,
+    @InjectModel(SlackWorkspace)
+    private readonly slackWorkspaceModel: typeof SlackWorkspace,
+    private readonly integrationsService: IntegrationsService
+  ) { }
 
   get hubspotTools(): ToolConfig | undefined {
     const hubspotToken = this.config.get('HUBSPOT_ACCESS_TOKEN');
     if (hubspotToken) {
       return createHubspotToolsExport({ apiKey: hubspotToken });
-    }
-  }
-
-  get jiraTools(): ToolConfig | undefined {
-    const jiraHost = this.config.get('JIRA_HOST');
-    const jiraUsername = this.config.get('JIRA_USERNAME');
-    const jiraApiToken = this.config.get('JIRA_API_TOKEN');
-    if (jiraHost && jiraUsername && jiraApiToken) {
-      return createJiraToolsExport({ host: jiraHost, auth: { username: jiraUsername, password: jiraApiToken } });
     }
   }
 
@@ -41,28 +41,17 @@ export class ToolClass {
     }
   }
 
-  get tools(): Record<string, Tool[] | undefined> {
-    return {
-      hubspot: this.hubspotTools?.tools,
-      jira: this.jiraTools?.tools,
-      github: this.githubTools?.tools,
-      zendesk: this.zendeskTools?.tools
-    };
-  }
-
-  get availableCategories(): string[] {
-    return ['none', ...Object.keys(this.toolPrompts).filter(key =>
-      this.toolPrompts[key as keyof typeof this.toolPrompts] &&
-      Object.keys(this.toolPrompts[key as keyof typeof this.toolPrompts]).length > 0
-    )];
-  }
-
-  get toolPrompts(): Record<keyof typeof this.tools, { toolSelection?: string; responseGeneration?: string }> {
-    return {
-      hubspot: this.hubspotTools?.prompts || {},
-      jira: this.jiraTools?.prompts || {},
-      github: this.githubTools?.prompts || {},
-      zendesk: this.zendeskTools?.prompts || {}
-    };
+  async getAvailableTools(teamId: string): Promise<Record<string, ToolConfig> | undefined> {
+    const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
+      include: ['jiraSite']
+    });
+    if (!slackWorkspace) return;
+    const tools: Record<string, ToolConfig> = {};
+    const jiraSite = slackWorkspace.jiraSite;
+    if (jiraSite) {
+      const updatedJiraSite = await this.integrationsService.updateJiraConfig(jiraSite);
+      tools.jira = createJiraToolsExport({ host: `https://api.atlassian.com/ex/jira/${updatedJiraSite.id}`, auth: { bearerToken: updatedJiraSite.access_token } });
+    }
+    return tools;
   }
 }

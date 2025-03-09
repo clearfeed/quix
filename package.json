@@ -20,7 +20,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "db:migrate": "sequelize-cli db:migrate",
+    "db:migrate:undo": "sequelize-cli db:migrate:undo",
+    "db:migrate:undo:all": "sequelize-cli db:migrate:undo:all"
   },
   "dependencies": {
     "@clearfeed-ai/quix-common-agent": "^1.1.0",
@@ -39,13 +42,17 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/event-emitter": "^3.0.1",
     "@nestjs/platform-express": "^11.0.1",
-    "@prisma/client": "^6.4.1",
+    "@nestjs/sequelize": "^11.0.0",
     "@slack/web-api": "^7.8.0",
     "cache-manager": "4.1.0",
     "cache-manager-redis-store": "2.0.0",
+    "pg": "^8.13.3",
+    "pg-hstore": "^2.3.4",
     "redis": "^4.7.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "sequelize": "^6.37.6",
+    "sequelize-typescript": "^2.1.6",
     "tsscmp": "^1.0.6"
   },
   "devDependencies": {
@@ -62,6 +69,7 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.7",
+    "@types/sequelize": "^4.28.20",
     "@types/supertest": "^6.0.2",
     "@types/tsscmp": "^1.0.2",
     "eslint": "^9.18.0",
@@ -70,7 +78,7 @@
     "globals": "^15.14.0",
     "jest": "^29.7.0",
     "prettier": "^3.4.2",
-    "prisma": "^6.4.1",
+    "sequelize-cli": "^6.6.2",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
