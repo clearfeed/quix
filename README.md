@@ -64,6 +64,7 @@ This project is a Nest.js monorepo with:
    - `GITHUB_ACCESS_TOKEN`: Your GitHub access token
    - `SLACK_BOT_TOKEN`: Your Slack bot token
    - `SLACK_SIGNING_SECRET`: Your Slack signing secret
+   - `ENCRYPTION_KEY`: Secret key for encrypting sensitive data (must be at least 32 characters)
    - `LOG_LEVEL`: Logging level (default: info)
 
 6. **Start the Development Server**:

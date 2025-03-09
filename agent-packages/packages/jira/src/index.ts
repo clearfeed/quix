@@ -5,6 +5,7 @@ import {
   GetIssueResponse,
   SearchIssuesResponse,
   AssignIssueResponse,
+  JiraClientConfig
 } from './types';
 import JiraClient from './JiraClient';
 import { AxiosError } from 'axios';
@@ -16,19 +17,19 @@ export class JiraService implements BaseService<JiraConfig> {
   private client: JiraClient;
 
   constructor(private config: JiraConfig) {
-    this.client = new JiraClient({
-      host: config.host,
-      username: config.username,
-      password: config.password,
+    const jiraOpts: JiraClientConfig = {
+      host: config.apiHost ? config.apiHost : config.host,
       apiVersion: '3',
-    });
+      auth: config.auth
+    }
+    this.client = new JiraClient(jiraOpts);
   }
 
   validateConfig(): { isValid: boolean; error?: string } {
-    if (!this.config.host || !this.config.password) {
+    if (!this.config.host) {
       return {
         isValid: false,
-        error: 'JIRA integration is not configured. Please set JIRA_HOST and JIRA_API_TOKEN environment variables.'
+        error: 'JIRA integration is not configured. Please pass in a host and auth object.'
       };
     }
     return { isValid: true };

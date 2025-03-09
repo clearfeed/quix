@@ -5,12 +5,17 @@ export class JiraClient {
   private axiosInstance: AxiosInstance;
 
   constructor(config: JiraClientConfig) {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+    if ('username' in config.auth) {
+      headers.Authorization = `Basic ${Buffer.from(`${config.auth.username}:${config.auth.password}`).toString('base64')}`;
+    } else {
+      headers.Authorization = `Bearer ${config.auth.bearerToken.trim()}`;
+    }
     this.axiosInstance = axios.create({
-      baseURL: `https://${config.host}/rest/api/${config.apiVersion}`,
-      auth: {
-        username: config.username,
-        password: config.password
-      }
+      baseURL: `${config.host}/rest/api/${config.apiVersion}`,
+      headers
     });
   }
 
