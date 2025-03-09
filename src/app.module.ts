@@ -7,7 +7,6 @@ import { LlmModule } from './llm/llm.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import * as redisStore from 'cache-manager-redis-store';
 import { CacheModule, CacheModuleOptions } from '@nestjs/cache-manager';
-import { EncryptionModule } from './lib/encryption/encryption.module';
 import { DatabaseModule } from './database/database.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
@@ -37,7 +36,6 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       isGlobal: true,
       inject: [ConfigService],
     }),
-    EncryptionModule,
     DatabaseModule,
     SlackModule,
     LlmModule,

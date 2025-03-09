@@ -11,7 +11,7 @@ import {
   AllowNull
 } from 'sequelize-typescript';
 import { CreationOptional, InferAttributes, InferCreationAttributes, NonAttribute } from 'sequelize';
-import { encrypt, decrypt } from '../../lib/utils/encryption-util';
+import { encrypt, decrypt } from '../../lib/utils/encryption';
 import { SlackWorkspace } from './slack-workspace.model';
 
 @Table({ tableName: 'jira_sites' })
