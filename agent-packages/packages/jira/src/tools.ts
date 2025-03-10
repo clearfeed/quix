@@ -5,7 +5,10 @@ import {
   GetIssueResponse,
   SearchIssuesResponse,
   AssignIssueResponse,
-  JiraConfig
+  JiraConfig,
+  AddCommentParams,
+  AddCommentResponse,
+  GetCommentsResponse
 } from './types';
 import { BaseResponse, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
@@ -16,6 +19,7 @@ For Jira-related queries, consider using Jira tools when the user wants to:
 - Assign issues to team members
 - Get issue status updates
 - Manage Jira projects and tasks
+- Add or view comments on issues
 `;
 
 const getJiraResponsePrompt = (config: JiraConfig) => `
@@ -69,6 +73,23 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
         assignee: z.string().describe('The username of the person to assign the issue to')
       }),
       func: async ({ issueId, assignee }: { issueId: string, assignee: string }): Promise<AssignIssueResponse> => service.assignIssue(issueId, assignee)
+    }),
+    new DynamicStructuredTool({
+      name: 'add_jira_comment',
+      description: 'Add a comment to a Jira issue',
+      schema: z.object({
+        issueId: z.string().describe('The Jira issue ID (e.g., PROJ-123)'),
+        comment: z.string().describe('The comment text to add to the issue')
+      }),
+      func: async (params: AddCommentParams): Promise<AddCommentResponse> => service.addComment(params)
+    }),
+    new DynamicStructuredTool({
+      name: 'get_jira_comments',
+      description: 'Get comments for a specific Jira issue',
+      schema: z.object({
+        issueId: z.string().describe('The Jira issue ID (e.g., PROJ-123)')
+      }),
+      func: async ({ issueId }: { issueId: string }): Promise<GetCommentsResponse> => service.getComments(issueId)
     })
   ];
 

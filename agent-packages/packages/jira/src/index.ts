@@ -5,7 +5,10 @@ import {
   GetIssueResponse,
   SearchIssuesResponse,
   AssignIssueResponse,
-  JiraClientConfig
+  JiraClientConfig,
+  AddCommentParams,
+  AddCommentResponse,
+  GetCommentsResponse
 } from './types';
 import JiraClient from './JiraClient';
 import { AxiosError } from 'axios';
@@ -143,6 +146,54 @@ export class JiraService implements BaseService<JiraConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to assign Jira issue'
+      };
+    }
+  }
+
+  async addComment(params: AddCommentParams): Promise<AddCommentResponse> {
+    try {
+      const validation = this.validateConfig();
+      if (!validation.isValid) {
+        return { success: false, error: validation.error };
+      }
+
+      const comment = await this.client.addComment(params.issueId, params.comment);
+
+      return {
+        success: true,
+        data: {
+          comment
+        }
+      };
+    } catch (error) {
+      console.error('Error adding comment to Jira issue:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to add comment to Jira issue'
+      };
+    }
+  }
+
+  async getComments(issueId: string): Promise<GetCommentsResponse> {
+    try {
+      const validation = this.validateConfig();
+      if (!validation.isValid) {
+        return { success: false, error: validation.error };
+      }
+
+      const comments = await this.client.getComments(issueId, { maxResults: 20 });
+
+      return {
+        success: true,
+        data: {
+          comments
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching comments for Jira issue:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch comments for Jira issue'
       };
     }
   }

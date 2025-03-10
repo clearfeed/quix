@@ -1,35 +1,43 @@
 display_information:
   name: Quix
-  description: Interact with your business tools from Slack.
-  background_color: "#590088"
+  description: Query your SaaS tools using Quix
+  background_color: "#4f46e5"
 features:
   app_home:
-    home_tab_enabled: false
+    home_tab_enabled: true
     messages_tab_enabled: true
     messages_tab_read_only_enabled: false
   bot_user:
     display_name: Quix
-    always_online: false
+    always_online: true
   assistant_view:
-    assistant_description: Interact with your business tools from Slack.
+    assistant_description: Query your SaaS tools from Slack.
     suggested_prompts: []
 oauth_config:
+  redirect_urls:
+    - <YOUR_REDIRECT_URL>
   scopes:
     bot:
-      - assistant:write
-      - im:history
-      - chat:write
       - app_mentions:read
+      - assistant:write
+      - chat:write
+      - im:history
       - mpim:history
+      - channels:history
+      - groups:history
 settings:
   event_subscriptions:
-    request_url: <EXPRESS_ENDPOINT>
+    request_url: <YOUR_EVENTS_URL>
     bot_events:
+      - app_home_opened
       - app_mention
       - assistant_thread_context_changed
       - assistant_thread_started
       - message.im
       - message.mpim
+  interactivity:
+    is_enabled: true
+    request_url: <YOUR_INTERACTIONS_URL>
   org_deploy_enabled: false
   socket_mode_enabled: false
   token_rotation_enabled: false

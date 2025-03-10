@@ -1,4 +1,4 @@
-import { CreateIssueParams, JiraClientConfig, JiraIssueResponse, SearchIssuesResponse, JiraProjectResponse, JiraUserResponse } from "./types";
+import { CreateIssueParams, JiraClientConfig, JiraIssueResponse, SearchIssuesResponse, JiraProjectResponse, JiraUserResponse, JiraCommentResponse, JiraIssueComments } from "./types";
 import axios, { AxiosInstance } from "axios";
 
 export class JiraClient {
@@ -116,6 +116,44 @@ export class JiraClient {
   async searchUsers(query: string): Promise<JiraUserResponse[]> {
     const response = await this.makeApiCall('GET', `/user/search`, {
       params: { query }
+    });
+    return response;
+  }
+
+  async addComment(issueId: string, comment: string): Promise<JiraCommentResponse> {
+    const response = await this.makeApiCall('POST', `/issue/${issueId}/comment`, {
+      data: {
+        body: {
+          content: [
+            {
+              content: [
+                {
+                  text: comment,
+                  type: "text"
+                }
+              ],
+              type: "paragraph"
+            }
+          ],
+          type: "doc",
+          version: 1
+        }
+      }
+    });
+    return response;
+  }
+
+  async getComments(issueId: string, options?: { maxResults?: number; startAt?: number }): Promise<JiraIssueComments> {
+    const params: Record<string, any> = {};
+    if (options?.maxResults) {
+      params.maxResults = options.maxResults;
+    }
+    if (options?.startAt) {
+      params.startAt = options.startAt;
+    }
+
+    const response = await this.makeApiCall('GET', `/issue/${issueId}/comment`, {
+      params
     });
     return response;
   }

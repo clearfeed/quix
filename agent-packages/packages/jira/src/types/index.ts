@@ -130,3 +130,50 @@ export interface JiraUserResponse {
   displayName: string;
   active: boolean;
 };
+
+export interface JiraCommentResponse {
+  id: string;
+  self: string;
+  body: {
+    type: string;
+    version: number;
+    content: Array<{
+      type: string;
+      content?: Array<{
+        type: string;
+        text: string;
+        marks?: Array<{
+          type: string;
+          attrs?: Record<string, string>;
+        }>;
+      }>;
+    }>;
+  };
+  author: {
+    accountId: string;
+    displayName: string;
+    emailAddress: string;
+  };
+  created: string;
+  updated: string;
+}
+
+export interface JiraIssueComments {
+  comments: JiraCommentResponse[];
+  total: number;
+  maxResults: number;
+  startAt: number;
+}
+
+export type AddCommentParams = {
+  issueId: string;
+  comment: string;
+};
+
+export type AddCommentResponse = BaseResponse<{
+  comment: JiraCommentResponse;
+}>;
+
+export type GetCommentsResponse = BaseResponse<{
+  comments: JiraIssueComments;
+}>;
