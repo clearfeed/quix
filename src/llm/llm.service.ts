@@ -6,7 +6,7 @@ import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts';
 import { RunnableSequence } from '@langchain/core/runnables';
-import { ToolConfig } from 'agent-packages/packages/common';
+import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 
 @Injectable()
 export class LlmService {
