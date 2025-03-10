@@ -33,6 +33,10 @@ jobs:
           node-version: '20'
           cache: 'yarn'
 
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+
       - name: Login to Amazon ECR
         id: login-ecr
         run: |
@@ -47,7 +51,7 @@ jobs:
 
       - name: Run DB Migrations
         run: |
-          npx sequelize-cli db:migrate
+          yarn db:migrate
 
       - name: Update ECS service with new image
         run: |
