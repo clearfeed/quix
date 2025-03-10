@@ -21,6 +21,7 @@ export const verifySlackSignature = (req: RawBodyRequest<Request>, secret: strin
     if (tsscmp(hash, hmac.digest('hex'))) {
       return true;
     } else {
+      console.log('Slack signature verification failed');
       return false;
     }
   } catch (error) {

@@ -29,21 +29,20 @@ export class SlackWorkspace extends Model<
 
   @AllowNull(false)
   @Column({
-    type: DataType.TEXT,
-    get(): string {
-      const value = this.getDataValue('bot_access_token') as string;
-      if (!value) return value;
-      return decrypt(value);
-    },
-    set(value: string): void {
-      if (!value) {
-        this.setDataValue('bot_access_token', value);
-        return;
-      }
-      this.setDataValue('bot_access_token', encrypt(value));
-    }
+    type: DataType.TEXT
   })
-  bot_access_token: string;
+  get bot_access_token(): string {
+    const value = this.getDataValue('bot_access_token') as string;
+    if (!value) return value;
+    return decrypt(value);
+  }
+  set bot_access_token(value: string) {
+    if (!value) {
+      this.setDataValue('bot_access_token', value);
+      return;
+    }
+    this.setDataValue('bot_access_token', encrypt(value));
+  }
 
   @AllowNull(false)
   @Column(DataType.STRING)

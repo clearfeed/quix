@@ -36,39 +36,37 @@ export class JiraSite extends Model<
 
   @AllowNull(false)
   @Column({
-    type: DataType.TEXT,
-    get(): string {
-      const value = this.getDataValue('access_token') as string;
-      if (!value) return value;
-      return decrypt(value);
-    },
-    set(value: string): void {
-      if (!value) {
-        this.setDataValue('access_token', value);
-        return;
-      }
-      this.setDataValue('access_token', encrypt(value));
-    }
+    type: DataType.TEXT
   })
-  access_token: string;
+  get access_token(): string {
+    const value = this.getDataValue('access_token') as string;
+    if (!value) return value;
+    return decrypt(value);
+  }
+  set access_token(value: string) {
+    if (!value) {
+      this.setDataValue('access_token', value);
+      return;
+    }
+    this.setDataValue('access_token', encrypt(value));
+  }
 
   @AllowNull(false)
   @Column({
-    type: DataType.TEXT,
-    get(): string {
-      const value = this.getDataValue('refresh_token') as string;
-      if (!value) return value;
-      return decrypt(value);
-    },
-    set(value: string): void {
-      if (!value) {
-        this.setDataValue('refresh_token', value);
-        return;
-      }
-      this.setDataValue('refresh_token', encrypt(value));
-    }
+    type: DataType.TEXT
   })
-  refresh_token: string;
+  get refresh_token(): string {
+    const value = this.getDataValue('refresh_token') as string;
+    if (!value) return value;
+    return decrypt(value);
+  }
+  set refresh_token(value: string) {
+    if (!value) {
+      this.setDataValue('refresh_token', value);
+      return;
+      }
+    this.setDataValue('refresh_token', encrypt(value));
+  }
 
   @AllowNull(false)
   @Column(DataType.DATE)
