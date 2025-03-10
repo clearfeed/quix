@@ -3,7 +3,7 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - gh-action
+      - main
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
