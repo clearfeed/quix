@@ -1,0 +1,62 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - gh-action
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+  ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+  ECR_HOST: ${{ vars.ECR_HOST }}
+  NODE_ENV: production
+  DB_HOST: ${{ vars.DB_HOST }}
+  DB_PORT: ${{ vars.DB_PORT }}
+  DB_USER: ${{ vars.DB_USER }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  DB_NAME: ${{ vars.DB_NAME }}
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: [runs-on, runner=2cpu-linux-x64, 'run-id=${{ github.run_id }}']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        run: |
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_HOST
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        run: |
+          # Build a docker container and push it to ECR
+          docker build -t $ECR_HOST/$ECR_REPOSITORY:latest .
+          docker push $ECR_HOST/$ECR_REPOSITORY:latest
+
+      - name: Run DB Migrations
+        run: |
+          npx sequelize-cli db:migrate
+
+      - name: Update ECS service with new image
+        run: |
+          aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
+
+      - name: Wait for service to stabilize
+        run: |
+          aws ecs wait services-stable --cluster $ECS_CLUSTER --services $ECS_SERVICE
+
+      - name: Deployment status
+        run: |
+          echo "Deployment completed successfully!"

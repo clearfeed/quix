@@ -30,7 +30,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
           store: redisStore as any,
           host,
           port,
-          ttl: 60
+          ttl: 60,
+          prefix: 'quix:',
         };
       },
       isGlobal: true,
