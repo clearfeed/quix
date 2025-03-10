@@ -32,6 +32,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
           port,
           ttl: 60,
           prefix: 'quix:',
+          tls: process.env.NODE_ENV === 'production'
         };
       },
       isGlobal: true,
