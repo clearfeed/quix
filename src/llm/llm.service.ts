@@ -32,7 +32,8 @@ You should ask the user to provide more information only if required to answer t
     this.logger.log(`Processing message: ${message} with tools: ${availableCategories.join(', ')}`);
     if (availableCategories.length < 1) {
       this.logger.log('No tool categories available, returning direct response');
-      return 'I apologize, but I don\'t have any tools configured to help with your request at the moment.';
+      const response = await this.generateResponse(message, {}, 'none', '', previousMessages);
+      return response;
     }
 
     const toolSelection = await this.toolSelection(message, tools, previousMessages);
