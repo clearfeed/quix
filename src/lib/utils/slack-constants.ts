@@ -10,5 +10,7 @@ export const SLACK_SCOPES = [
   'im:history',
   'mpim:history',
   'channels:history',
-  'groups:history'
+  'groups:history',
+  'users:read',
+  'users:read.email'
 ] as const;

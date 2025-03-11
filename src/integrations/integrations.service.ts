@@ -24,7 +24,6 @@ export class IntegrationsService {
         refresh_token: jiraSite.refresh_token
       });
       const data = response.data;
-      this.logger.log('Refreshed Jira token', { data });
 
       await jiraSite.update({
         access_token: data.access_token,
