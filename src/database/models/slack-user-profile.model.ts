@@ -1,4 +1,4 @@
-import { CreationOptional } from 'sequelize';
+import { CreationOptional, NonAttribute } from 'sequelize';
 import {
   Table,
   Column,
@@ -8,7 +8,8 @@ import {
   UpdatedAt,
   PrimaryKey,
   AllowNull,
-  ForeignKey
+  ForeignKey,
+  BelongsTo
 } from 'sequelize-typescript';
 import { InferAttributes, InferCreationAttributes } from 'sequelize';
 import { SlackWorkspace } from './slack-workspace.model';
@@ -23,32 +24,37 @@ export class SlackUserProfile extends Model<
     type: DataType.UUID,
     defaultValue: DataType.UUIDV4
   })
-  id: CreationOptional<string>;
+  declare id: CreationOptional<string>;
 
   @AllowNull(false)
   @ForeignKey(() => SlackWorkspace)
   @Column(DataType.STRING)
-  team_id: string;
+  declare team_id: string;
+
+  @BelongsTo(() => SlackWorkspace, {
+    foreignKey: 'team_id'
+  })
+  declare workspace: NonAttribute<SlackWorkspace>;
 
   @AllowNull(false)
   @Column(DataType.STRING)
-  user_id: string;
+  declare user_id: string;
 
   @AllowNull(false)
   @Column(DataType.STRING)
-  display_name: string;
+  declare display_name: string;
 
   @AllowNull(false)
   @Column(DataType.STRING)
-  email_address: string;
+  declare email: string;
 
   @AllowNull(true)
   @Column(DataType.STRING)
-  avatar_url: string;
+  declare avatar_url: string;
 
   @CreatedAt
-  created_at: CreationOptional<Date>;
+  declare created_at: CreationOptional<Date>;
 
   @UpdatedAt
-  updated_at: CreationOptional<Date>;
+  declare updated_at: CreationOptional<Date>;
 } 

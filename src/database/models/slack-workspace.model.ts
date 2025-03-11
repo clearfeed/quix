@@ -8,11 +8,13 @@ import {
   CreatedAt,
   UpdatedAt,
   PrimaryKey,
-  AllowNull
+  AllowNull,
+  HasMany
 } from 'sequelize-typescript';
 import { InferAttributes, InferCreationAttributes } from 'sequelize';
 import { encrypt, decrypt } from '../../lib/utils/encryption';
 import { JiraSite } from './jira-site.model';
+import { SlackUserProfile } from './slack-user-profile.model';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -75,4 +77,10 @@ export class SlackWorkspace extends Model<
 
   @UpdatedAt
   updated_at: CreationOptional<Date>;
+
+  @HasMany(() => SlackUserProfile, {
+    foreignKey: 'team_id',
+    as: 'slackUserProfiles'
+  })
+  declare slackUserProfiles: NonAttribute<SlackUserProfile[]>;
 } 
