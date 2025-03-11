@@ -37,7 +37,6 @@ export class SlackService {
   async handleIntegrationConnected(event: IntegrationConnectedEvent) {
     try {
       const slackWorkspace = await this.getSlackWorkspace(event.teamId);
-      console.log('slackWorkspace', slackWorkspace);
       if (!slackWorkspace) {
         this.logger.warn('Slack workspace not found', { teamId: event.teamId });
         return;
@@ -65,7 +64,7 @@ export class SlackService {
       code
     });
     if (response.ok && response.team?.id) {
-      await this.slackWorkspaceModel.upsert({
+      const [slackWorkspace] = await this.slackWorkspaceModel.upsert({
         team_id: response.team?.id,
         name: response.team?.name || '',
         bot_access_token: response.access_token || '',
@@ -77,7 +76,7 @@ export class SlackService {
       });
 
       // Store all Slack users after workspace is connected
-      await this.storeSlackUsers(response.team?.id, response.access_token);
+      this.storeSlackUsers(slackWorkspace);
     }
     this.logger.log(`Connected to Slack workspace`, { team_id: response.team?.id, app_id: response.app_id });
     return {
@@ -91,14 +90,14 @@ export class SlackService {
    * @param teamId The Slack workspace team ID
    * @param accessToken The bot access token for the workspace
    */
-  private async storeSlackUsers(teamId: string, accessToken: string | undefined): Promise<void> {
+  private async storeSlackUsers(slackWorkspace: SlackWorkspace): Promise<void> {
     try {
-      if (!accessToken) {
-        this.logger.error('No access token provided for storing Slack users', { teamId });
+      if (!slackWorkspace.bot_access_token) {
+        this.logger.error('No access token provided for storing Slack users', { teamId: slackWorkspace.team_id });
         return;
       }
 
-      const client = new WebClient(accessToken);
+      const client = new WebClient(slackWorkspace.bot_access_token);
       let cursor: string | undefined;
 
       do {
@@ -109,7 +108,7 @@ export class SlackService {
         });
 
         if (!usersResponse.ok || !usersResponse.members) {
-          this.logger.error('Failed to fetch Slack users', { teamId });
+          this.logger.error('Failed to fetch Slack users', { teamId: slackWorkspace.team_id });
           break;
         }
 
@@ -122,7 +121,7 @@ export class SlackService {
 
           // Skip users without email addresses
           if (!member.profile.email) {
-            this.logger.debug('Skipping user without email', { userId: member.id, teamId });
+            this.logger.debug('Skipping user without email', { userId: member.id, teamId: slackWorkspace.team_id });
             continue;
           }
 
@@ -130,7 +129,7 @@ export class SlackService {
           const avatarUrl = member.profile.image_192 || member.profile.image_72 || '';
 
           await this.slackUserProfileModel.upsert({
-            team_id: teamId,
+            team_id: slackWorkspace.team_id,
             user_id: member.id as string,
             display_name: displayName,
             email: member.profile.email,
@@ -142,16 +141,9 @@ export class SlackService {
         cursor = usersResponse.response_metadata?.next_cursor;
       } while (cursor && cursor.length > 0);
 
-      this.logger.log('Successfully stored Slack users', { teamId });
+      this.logger.log('Successfully stored Slack users', { teamId: slackWorkspace.team_id });
     } catch (error) {
-      this.logger.error('Error storing Slack users', { error, teamId });
-    }
-  }
-
-  async onModuleInit() {
-    const slackWorkspaces = await this.slackWorkspaceModel.findAll();
-    for (const slackWorkspace of slackWorkspaces) {
-      console.log(slackWorkspace.bot_access_token);
+      this.logger.error('Error storing Slack users', { error, teamId: slackWorkspace.team_id });
     }
   }
 }
