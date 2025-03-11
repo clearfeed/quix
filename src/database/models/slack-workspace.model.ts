@@ -21,11 +21,11 @@ export class SlackWorkspace extends Model<
 > {
   @PrimaryKey
   @Column(DataType.STRING)
-  team_id: string;
+  declare team_id: string;
 
   @AllowNull(false)
   @Column(DataType.STRING)
-  name: string;
+  declare name: string;
 
   @AllowNull(false)
   @Column({
@@ -46,23 +46,23 @@ export class SlackWorkspace extends Model<
 
   @AllowNull(false)
   @Column(DataType.STRING)
-  authed_user_id: string;
+  declare authed_user_id: string;
 
   @AllowNull(false)
   @Column(DataType.STRING)
-  bot_user_id: string;
+  declare bot_user_id: string;
 
   @AllowNull(false)
   @Column(DataType.BOOLEAN)
-  is_enterprise_install: boolean;
+  declare is_enterprise_install: boolean;
 
   @AllowNull(false)
   @Column(DataType.ARRAY(DataType.STRING))
-  scopes: string[];
+  declare scopes: string[];
 
   @AllowNull(false)
   @Column(DataType.STRING)
-  app_id: string;
+  declare app_id: string;
 
   @HasOne(() => JiraSite, {
     foreignKey: 'team_id',
@@ -71,8 +71,8 @@ export class SlackWorkspace extends Model<
   jiraSite?: NonAttribute<JiraSite>;
 
   @CreatedAt
-  created_at: CreationOptional<Date>;
+  declare created_at: CreationOptional<Date>;
 
   @UpdatedAt
-  updated_at: CreationOptional<Date>;
+  declare updated_at: CreationOptional<Date>;
 } 
