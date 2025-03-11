@@ -28,11 +28,11 @@ export class JiraSite extends Model<
 
   @AllowNull(false)
   @Column(DataType.STRING)
-  name: string;
+  declare name: string;
 
   @AllowNull(false)
   @Column(DataType.STRING)
-  url: string;
+  declare url: string;
 
   @AllowNull(false)
   @Column({
@@ -64,17 +64,17 @@ export class JiraSite extends Model<
     if (!value) {
       this.setDataValue('refresh_token', value);
       return;
-      }
+    }
     this.setDataValue('refresh_token', encrypt(value));
   }
 
   @AllowNull(false)
   @Column(DataType.DATE)
-  expires_at: Date;
+  declare expires_at: Date;
 
   @AllowNull(false)
   @Column(DataType.ARRAY(DataType.STRING))
-  scopes: string[];
+  declare scopes: string[];
 
   @ForeignKey(() => SlackWorkspace)
   @AllowNull(false)
@@ -82,17 +82,17 @@ export class JiraSite extends Model<
     type: DataType.STRING,
     unique: true
   })
-  team_id: string;
+  declare team_id: string;
 
   @BelongsTo(() => SlackWorkspace, {
     foreignKey: 'team_id',
     as: 'slackWorkspace'
   })
-  slackWorkspace: NonAttribute<SlackWorkspace>;
+  declare slackWorkspace: NonAttribute<SlackWorkspace>;
 
   @CreatedAt
-  created_at: CreationOptional<Date>;
+  declare created_at: CreationOptional<Date>;
 
   @UpdatedAt
-  updated_at: CreationOptional<Date>;
+  declare updated_at: CreationOptional<Date>;
 } 
