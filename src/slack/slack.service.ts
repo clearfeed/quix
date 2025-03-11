@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WebClient } from '@slack/web-api';
 import { InjectModel } from '@nestjs/sequelize';
-import { SlackWorkspace } from '../database/models';
+import { SlackWorkspace, SlackUserProfile } from '../database/models';
 import { INTEGRATIONS } from '@quix/lib/constants';
 import { OnEvent } from '@nestjs/event-emitter';
 import { IntegrationConnectedEvent } from '@quix/types/events';
@@ -16,6 +16,8 @@ export class SlackService {
     private readonly configService: ConfigService,
     @InjectModel(SlackWorkspace)
     private readonly slackWorkspaceModel: typeof SlackWorkspace,
+    @InjectModel(SlackUserProfile)
+    private readonly slackUserProfileModel: typeof SlackUserProfile,
   ) {
     this.webClient = new WebClient(this.configService.get('SLACK_BOT_TOKEN'));
   }
@@ -34,18 +36,19 @@ export class SlackService {
   @OnEvent('connected.*')
   async handleIntegrationConnected(event: IntegrationConnectedEvent) {
     try {
-      this.logger.log('Sending integration connection notification', { event });
       const slackWorkspace = await this.getSlackWorkspace(event.teamId);
       if (!slackWorkspace) {
         this.logger.warn('Slack workspace not found', { teamId: event.teamId });
         return;
       }
+      this.logger.log(`Sending integration connection notification to ${slackWorkspace.authed_user_id}`, { event });
       const text = INTEGRATIONS.find(integration => integration.value === event.type)?.connectedText;
       if (!text) {
         this.logger.warn('No connected text found for integration', { event });
         return;
       }
-      await this.webClient.chat.postMessage({
+      const webClient = new WebClient(slackWorkspace.bot_access_token);
+      await webClient.chat.postMessage({
         channel: slackWorkspace.authed_user_id,
         text
       });
@@ -75,11 +78,83 @@ export class SlackService {
         scopes: response.response_metadata?.scopes || [],
         app_id: response.app_id || ''
       });
+
+      // Store all Slack users after workspace is connected
+      await this.storeSlackUsers(response.team?.id, response.access_token);
     }
     this.logger.log(`Connected to Slack workspace`, { team_id: response.team?.id, app_id: response.app_id });
     return {
       team_id: response.team?.id || '',
       app_id: response.app_id || ''
     };
+  }
+
+  /**
+   * Fetches and stores all users from a Slack workspace
+   * @param teamId The Slack workspace team ID
+   * @param accessToken The bot access token for the workspace
+   */
+  private async storeSlackUsers(teamId: string, accessToken: string | undefined): Promise<void> {
+    try {
+      if (!accessToken) {
+        this.logger.error('No access token provided for storing Slack users', { teamId });
+        return;
+      }
+
+      const client = new WebClient(accessToken);
+      let cursor: string | undefined;
+
+      do {
+        // Fetch users with pagination
+        const usersResponse = await client.users.list({
+          cursor,
+          limit: 100 // Process in batches of 100
+        });
+
+        if (!usersResponse.ok || !usersResponse.members) {
+          this.logger.error('Failed to fetch Slack users', { teamId });
+          break;
+        }
+
+        // Process each user
+        for (const member of usersResponse.members) {
+          // Skip bots, deleted users, and users without profiles
+          if (member.is_bot || member.deleted || !member.profile) {
+            continue;
+          }
+
+          // Skip users without email addresses
+          if (!member.profile.email) {
+            this.logger.debug('Skipping user without email', { userId: member.id, teamId });
+            continue;
+          }
+
+          const displayName = member.profile.display_name || member.real_name || member.name || '';
+          const avatarUrl = member.profile.image_192 || member.profile.image_72 || '';
+
+          await this.slackUserProfileModel.upsert({
+            team_id: teamId,
+            user_id: member.id as string,
+            display_name: displayName,
+            email_address: member.profile.email,
+            avatar_url: avatarUrl
+          });
+        }
+
+        // Update cursor for next page
+        cursor = usersResponse.response_metadata?.next_cursor;
+      } while (cursor && cursor.length > 0);
+
+      this.logger.log('Successfully stored Slack users', { teamId });
+    } catch (error) {
+      this.logger.error('Error storing Slack users', { error, teamId });
+    }
+  }
+
+  async onModuleInit() {
+    const slackWorkspaces = await this.slackWorkspaceModel.findAll();
+    for (const slackWorkspace of slackWorkspaces) {
+      console.log(slackWorkspace.bot_access_token);
+    }
   }
 }
