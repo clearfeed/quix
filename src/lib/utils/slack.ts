@@ -2,10 +2,11 @@ import { AppMentionEvent, GenericMessageEvent } from "@slack/web-api";
 import { LLMContext } from "@quix/llm/types";
 import { WebClient } from "@slack/web-api";
 import { MessageElement } from "@slack/web-api/dist/types/response/ConversationsHistoryResponse";
-import { INTEGRATIONS, OPENAI_CONTEXT_SIZE } from "../constants";
+import { INTEGRATIONS, OPENAI_CONTEXT_SIZE, SlackMessageUserIdRegex } from "../constants";
 import { SLACK_SCOPES } from "./slack-constants";
 import { SlackWorkspace } from "@quix/database/models";
-export const createLLMContext = async (event: GenericMessageEvent | AppMentionEvent) => {
+import { ParseSlackMentionsUserMap } from "../types/slack";
+export const createLLMContext = async (event: GenericMessageEvent | AppMentionEvent, userInfoMap: ParseSlackMentionsUserMap) => {
   const client = new WebClient(process.env.SLACK_BOT_TOKEN);
   let messages: LLMContext[] = [];
   // get previous messages
@@ -20,7 +21,11 @@ export const createLLMContext = async (event: GenericMessageEvent | AppMentionEv
         if (message.subtype === 'assistant_app_thread' || !message.text) return;
         return {
           role: message.bot_id ? 'assistant' : 'user',
-          content: message.text
+          content: replaceSlackUserMentions({
+            message: message.text,
+            userInfoMap: userInfoMap,
+            author: message.user || ''
+          })
         } as LLMContext;
       }).filter((message) => message !== undefined).slice(-OPENAI_CONTEXT_SIZE);
     }
@@ -39,3 +44,19 @@ export const sendMessage = async (slackWorkspace: SlackWorkspace, channel: strin
     text: message
   });
 }
+/**
+ * Create a history of messages with the author of the message.
+ * @param payload 
+ * @returns 
+ */
+export const replaceSlackUserMentions = (payload: {
+  message: string;
+  userInfoMap: ParseSlackMentionsUserMap;
+  author: string;
+}): string => {
+  const { message, userInfoMap, author } = payload;
+  const authorName = author in userInfoMap ? userInfoMap[author].name : author;
+  return `${authorName}: ${message.replace(SlackMessageUserIdRegex, (match: string, slackUserId: string) => {
+    return slackUserId in userInfoMap ? '@' + userInfoMap[slackUserId].name : match;
+  })}`;
+};

@@ -106,7 +106,8 @@ export class SlackEventsHandlerService {
       });
 
       if (event.text) {
-        const messages = await createLLMContext(event);
+        const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
+        const messages = await createLLMContext(event, userInfoMap);
         if (!event.team) return;
         const response = await this.llmService.processMessage(event.text, event.team, messages);
         await webClient.chat.postMessage({
@@ -146,7 +147,8 @@ export class SlackEventsHandlerService {
         return;
       }
       const webClient = new WebClient(slackWorkspace.bot_access_token);
-      const messages = await createLLMContext(event);
+      const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
+      const messages = await createLLMContext(event, userInfoMap);
       if (!event.team) return;
       const response = await this.llmService.processMessage(event.text, event.team, messages);
       await webClient.chat.postMessage({

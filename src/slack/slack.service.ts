@@ -7,6 +7,7 @@ import { INTEGRATIONS } from '@quix/lib/constants';
 import { OnEvent } from '@nestjs/event-emitter';
 import { IntegrationConnectedEvent } from '@quix/types/events';
 import { sendMessage } from '@quix/lib/utils/slack';
+import { ParseSlackMentionsUserMap } from '@quix/lib/types/slack';
 @Injectable()
 export class SlackService {
   private readonly webClient: WebClient;
@@ -145,5 +146,21 @@ export class SlackService {
     } catch (error) {
       this.logger.error('Error storing Slack users', { error, teamId: slackWorkspace.team_id });
     }
+  }
+
+  async getUserInfoMap(slackWorkspace: SlackWorkspace): Promise<ParseSlackMentionsUserMap> {
+    const slackUserProfiles = await this.slackUserProfileModel.findAll({
+      where: {
+        team_id: slackWorkspace.team_id
+      }
+    });
+    return slackUserProfiles.reduce((acc: ParseSlackMentionsUserMap, profile: SlackUserProfile) => {
+      acc[profile.user_id] = {
+        name: profile.display_name,
+        email: profile.email,
+        avatar: profile.avatar_url
+      };
+      return acc;
+    }, {});
   }
 }

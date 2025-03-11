@@ -57,3 +57,5 @@ export const TimeInMinutes = {
    */
   ONE_YEAR: 525600
 };
+
+export const SlackMessageUserIdRegex = new RegExp(/<@([U|W]\w+)>/g);
