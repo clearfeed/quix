@@ -34,12 +34,13 @@ export class SlackService {
   @OnEvent('connected.*')
   async handleIntegrationConnected(event: IntegrationConnectedEvent) {
     try {
-      this.logger.log('Sending integration connection notification', { event });
       const slackWorkspace = await this.getSlackWorkspace(event.teamId);
+      console.log('slackWorkspace', slackWorkspace);
       if (!slackWorkspace) {
         this.logger.warn('Slack workspace not found', { teamId: event.teamId });
         return;
       }
+      this.logger.log(`Sending integration connection notification to ${slackWorkspace.authed_user_id}`, { event });
       const text = INTEGRATIONS.find(integration => integration.value === event.type)?.connectedText;
       if (!text) {
         this.logger.warn('No connected text found for integration', { event });
