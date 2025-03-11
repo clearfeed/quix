@@ -6,7 +6,7 @@ import { SlackWorkspace } from '../database/models';
 import { INTEGRATIONS } from '@quix/lib/constants';
 import { OnEvent } from '@nestjs/event-emitter';
 import { IntegrationConnectedEvent } from '@quix/types/events';
-
+import { sendMessage } from '@quix/lib/utils/slack';
 @Injectable()
 export class SlackService {
   private readonly webClient: WebClient;
@@ -45,10 +45,7 @@ export class SlackService {
         this.logger.warn('No connected text found for integration', { event });
         return;
       }
-      await this.webClient.chat.postMessage({
-        channel: slackWorkspace.authed_user_id,
-        text
-      });
+      await sendMessage(slackWorkspace, slackWorkspace.authed_user_id, text);
     } catch (error) {
       this.logger.error('Failed to send integration connection notification', error);
     }
