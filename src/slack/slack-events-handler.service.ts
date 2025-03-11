@@ -6,18 +6,15 @@ import { AppHomeService } from './app_home.service';
 import { LlmService } from '@quix/llm/llm.service';
 import { WebClient } from '@slack/web-api';
 import { createLLMContext } from '@quix/lib/utils/slack';
-import { ConfigService } from '@nestjs/config';
+import { SlackService } from './slack.service';
 @Injectable()
 export class SlackEventsHandlerService {
   private readonly logger = new Logger(SlackEventsHandlerService.name);
-  private readonly webClient: WebClient;
   constructor(
     private readonly appHomeService: AppHomeService,
     private readonly llmService: LlmService,
-    private readonly configService: ConfigService,
-  ) {
-    this.webClient = new WebClient(this.configService.get('SLACK_BOT_TOKEN'));
-  }
+    private readonly slackService: SlackService,
+  ) { }
 
   async handleEvent(body: AllSlackEvents) {
     switch (body.type) {
@@ -36,10 +33,11 @@ export class SlackEventsHandlerService {
   }
 
   private handleEventCallback(eventBody: EventCallbackEvent) {
-    const innerEvent = eventBody.event;
+    const innerEvent = eventBody.event,
+      teamId = eventBody.team_id;
     switch (innerEvent.type) {
       case 'assistant_thread_started':
-        return this.handleAssistantThreadStarted(innerEvent);
+        return this.handleAssistantThreadStarted(innerEvent, teamId);
       case 'message':
         if (innerEvent.subtype === undefined && !innerEvent.bot_id) {
           return this.handleMessage(innerEvent);
@@ -54,12 +52,18 @@ export class SlackEventsHandlerService {
     }
   }
 
-  private async handleAssistantThreadStarted(event: AssistantThreadStartedEvent) {
+  private async handleAssistantThreadStarted(event: AssistantThreadStartedEvent, teamId: string) {
     const threadId = event.assistant_thread.thread_ts;
     const channelId = event.assistant_thread.channel_id;
 
     try {
-      await this.webClient.apiCall('assistant.threads.setSuggestedPrompts', {
+      const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
+      if (!slackWorkspace) {
+        this.logger.error('Slack workspace not found', { teamId });
+        return;
+      }
+      const webClient = new WebClient(slackWorkspace.bot_access_token);
+      await webClient.apiCall('assistant.threads.setSuggestedPrompts', {
         thread_ts: threadId,
         channel_id: channelId,
         title: "Welcome to ClearFeed Agent. Here are some suggestions to get started:",
@@ -86,19 +90,27 @@ export class SlackEventsHandlerService {
 
   private async handleMessage(event: GenericMessageEvent) {
     this.logger.log('Received message', { event });
+    if (!event.team) return;
 
     try {
-      await this.webClient.apiCall('assistant.threads.setStatus', {
+      const slackWorkspace = await this.slackService.getSlackWorkspace(event.team);
+      if (!slackWorkspace) {
+        this.logger.error('Slack workspace not found', { teamId: event.team });
+        return;
+      }
+      const webClient = new WebClient(slackWorkspace.bot_access_token);
+      await webClient.apiCall('assistant.threads.setStatus', {
         thread_ts: event.thread_ts,
         channel_id: event.channel,
         status: 'Looking up information...'
       });
 
       if (event.text) {
-        const messages = await createLLMContext(event);
+        const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
+        const messages = await createLLMContext(event, userInfoMap, slackWorkspace.app_id);
         if (!event.team) return;
         const response = await this.llmService.processMessage(event.text, event.team, messages);
-        await this.webClient.chat.postMessage({
+        await webClient.chat.postMessage({
           channel: event.channel,
           text: response,
           blocks: [
@@ -114,7 +126,7 @@ export class SlackEventsHandlerService {
         });
         this.logger.log('Sent response to message', { channel: event.channel, response });
       } else {
-        await this.webClient.chat.postMessage({
+        await webClient.chat.postMessage({
           channel: event.channel,
           text: 'Please provide more information...',
           thread_ts: event.thread_ts
@@ -127,11 +139,19 @@ export class SlackEventsHandlerService {
   }
 
   private async handleAppMention(event: AppMentionEvent) {
+    if (!event.team) return;
     try {
-      const messages = await createLLMContext(event);
+      const slackWorkspace = await this.slackService.getSlackWorkspace(event.team);
+      if (!slackWorkspace) {
+        this.logger.error('Slack workspace not found', { teamId: event.team });
+        return;
+      }
+      const webClient = new WebClient(slackWorkspace.bot_access_token);
+      const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
+      const messages = await createLLMContext(event, userInfoMap, slackWorkspace.app_id);
       if (!event.team) return;
       const response = await this.llmService.processMessage(event.text, event.team, messages);
-      await this.webClient.chat.postMessage({
+      await webClient.chat.postMessage({
         channel: event.channel,
         text: response,
         thread_ts: event.thread_ts
