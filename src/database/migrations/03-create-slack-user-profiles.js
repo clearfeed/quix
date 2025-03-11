@@ -30,7 +30,7 @@ module.exports = {
       },
       email: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
       },
       avatar_url: {
         type: Sequelize.STRING,

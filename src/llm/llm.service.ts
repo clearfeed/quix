@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts';
 import { RunnableSequence } from '@langchain/core/runnables';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
-
+import { QuixPrompts } from '../lib/constants';
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);
@@ -15,13 +15,6 @@ export class LlmService {
     private readonly llmProvider: LlmProviderService,
     private readonly tool: ToolService
   ) { }
-
-  private readonly baseSystemPrompt = `
-You are Quix, a helpful assistant that must use the available tools when relevant to answer the user's queries. These queries are sent to you either directly or by tagging you on Slack.
-You must not make up information, you must only use the tools to answer the user's queries.
-You must answer the user's queries in a clear and concise manner.
-You should ask the user to provide more information only if required to answer the question or to perform the task.
-`;
 
   async processMessage(message: string, teamId: string, previousMessages: LLMContext[]) {
     const tools = await this.tool.getAvailableTools(teamId);
@@ -51,7 +44,7 @@ You should ask the user to provide more information only if required to answer t
 
     const executionPrompt = ChatPromptTemplate.fromMessages([
       SystemMessagePromptTemplate.fromTemplate(`
-        ${this.baseSystemPrompt}
+        ${QuixPrompts.basePrompt}
         You are now using the tool ${toolSelection.selectedTool} to respond to the user's query.
       `),
       new MessagesPlaceholder('chat_history'),
@@ -104,7 +97,7 @@ You should ask the user to provide more information only if required to answer t
     const availableCategories = Object.keys(tools);
 
     const toolSelectionPrompts = availableCategories.map(category => tools[category].prompts?.toolSelection).filter(Boolean).join('\n');
-    const systemPrompt = `${this.baseSystemPrompt}\n${toolSelectionPrompts}`;
+    const systemPrompt = `${QuixPrompts.basePrompt}\n${toolSelectionPrompts}`;
 
     const toolSelectionFunction = new DynamicStructuredTool({
       name: 'selectTool',

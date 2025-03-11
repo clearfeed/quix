@@ -2,5 +2,5 @@ import { Nullable } from "./common";
 
 export type ParseSlackMentionsUserMap = Record<
   string,
-  { name: string; email: string; avatar: Nullable<string> }
+  { name: string; email: Nullable<string>; avatar: Nullable<string> }
 >;

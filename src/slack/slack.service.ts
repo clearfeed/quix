@@ -116,13 +116,7 @@ export class SlackService {
         // Process each user
         for (const member of usersResponse.members) {
           // Skip bots, deleted users, and users without profiles
-          if (member.is_bot || member.deleted || !member.profile) {
-            continue;
-          }
-
-          // Skip users without email addresses
-          if (!member.profile.email) {
-            this.logger.debug('Skipping user without email', { userId: member.id, teamId: slackWorkspace.team_id });
+          if (member.deleted || !member.profile) {
             continue;
           }
 
@@ -133,8 +127,10 @@ export class SlackService {
             team_id: slackWorkspace.team_id,
             user_id: member.id as string,
             display_name: displayName,
-            email: member.profile.email,
+            email: member.profile.email || null,
             avatar_url: avatarUrl
+          }, {
+            conflictFields: ['team_id', 'user_id']
           });
         }
 
@@ -157,8 +153,8 @@ export class SlackService {
     return slackUserProfiles.reduce((acc: ParseSlackMentionsUserMap, profile: SlackUserProfile) => {
       acc[profile.user_id] = {
         name: profile.display_name,
-        email: profile.email,
-        avatar: profile.avatar_url
+        email: profile.email || null,
+        avatar: profile.avatar_url || null
       };
       return acc;
     }, {});

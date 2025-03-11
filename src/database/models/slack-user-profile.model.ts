@@ -1,3 +1,4 @@
+import { Nullable } from './../../lib/types/common';
 import { CreationOptional, NonAttribute } from 'sequelize';
 import {
   Table,
@@ -14,7 +15,16 @@ import {
 import { InferAttributes, InferCreationAttributes } from 'sequelize';
 import { SlackWorkspace } from './slack-workspace.model';
 
-@Table({ tableName: 'slack_user_profiles' })
+@Table({
+  tableName: 'slack_user_profiles',
+  indexes: [
+    {
+      unique: true,
+      fields: ['team_id', 'user_id'],
+      name: 'unique_team_user'
+    }
+  ]
+})
 export class SlackUserProfile extends Model<
   InferAttributes<SlackUserProfile>,
   InferCreationAttributes<SlackUserProfile>
@@ -44,13 +54,13 @@ export class SlackUserProfile extends Model<
   @Column(DataType.STRING)
   declare display_name: string;
 
-  @AllowNull(false)
+  @AllowNull(true)
   @Column(DataType.STRING)
-  declare email: string;
+  declare email: Nullable<string>;
 
   @AllowNull(true)
   @Column(DataType.STRING)
-  declare avatar_url: string;
+  declare avatar_url: Nullable<string>;
 
   @CreatedAt
   declare created_at: CreationOptional<Date>;
