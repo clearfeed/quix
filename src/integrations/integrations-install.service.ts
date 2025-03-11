@@ -69,8 +69,6 @@ export class IntegrationsInstallService {
         team_id: stateData.teamId,
       });
 
-      console.log('Access token', response.data.access_token);
-      console.log('Refresh token', response.data.refresh_token);
       this.eventEmitter.emit(EVENT_NAMES.JIRA_CONNECTED, {
         teamId: stateData.teamId,
         appId: stateData.appId,

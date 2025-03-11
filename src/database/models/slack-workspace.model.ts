@@ -68,7 +68,7 @@ export class SlackWorkspace extends Model<
     foreignKey: 'team_id',
     as: 'jiraSite'
   })
-  jiraSite?: NonAttribute<JiraSite>;
+  declare jiraSite?: NonAttribute<JiraSite>;
 
   @CreatedAt
   declare created_at: CreationOptional<Date>;

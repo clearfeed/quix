@@ -88,7 +88,7 @@ export class JiraSite extends Model<
     foreignKey: 'team_id',
     as: 'slackWorkspace'
   })
-  slackWorkspace: NonAttribute<SlackWorkspace>;
+  declare slackWorkspace: NonAttribute<SlackWorkspace>;
 
   @CreatedAt
   declare created_at: CreationOptional<Date>;
