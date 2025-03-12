@@ -3,7 +3,7 @@ import { SLACK_ACTIONS } from "@quix/lib/utils/slack-constants";
 import { HomeViewArgs } from "./types";
 import { INTEGRATIONS } from "@quix/lib/constants";
 import { getInstallUrl } from "@quix/lib/utils/slack";
-import { JiraConfig } from "@quix/database/models";
+import { HubspotConfig, JiraConfig } from "@quix/database/models";
 
 export const getHomeView = (args: HomeViewArgs): HomeView => {
   const { selectedTool, teamId, connection } = args;
@@ -75,6 +75,8 @@ const getConnectionInfo = (connection: HomeViewArgs['connection']): string => {
   switch (true) {
     case connection instanceof JiraConfig:
       return `Connected to ${connection.url}`;
+    case connection instanceof HubspotConfig:
+      return `Connected to ${connection.hub_domain}`;
     default:
       return '';
   }
