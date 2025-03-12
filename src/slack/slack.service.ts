@@ -8,6 +8,8 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { IntegrationConnectedEvent } from '@quix/types/events';
 import { sendMessage } from '@quix/lib/utils/slack';
 import { ParseSlackMentionsUserMap } from '@quix/lib/types/slack';
+import { Cron, CronExpression } from '@nestjs/schedule';
+
 @Injectable()
 export class SlackService {
   private readonly webClient: WebClient;
@@ -159,4 +161,35 @@ export class SlackService {
       return acc;
     }, {});
   }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async refreshAllWorkspaceUsers() {
+    try {
+      this.logger.log('Starting daily refresh of all Slack workspace users');
+
+      // Get all workspaces
+      const workspaces = await this.slackWorkspaceModel.findAll();
+
+      // Loop through each workspace
+      for (const workspace of workspaces) {
+        try {
+          // Store all users of a particular workspace
+          await this.storeSlackUsers(workspace);
+          this.logger.log(`Successfully refreshed users for workspace ${workspace.team_id}`);
+
+          // 500ms delay before the next API call
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (error) {
+          this.logger.error(`Failed to refresh users for workspace ${workspace.team_id}`, error);
+          // Continue with the next workspace even if one fails
+          continue;
+        }
+      }
+
+      this.logger.log('Completed daily refresh of all Slack workspace users');
+    } catch (error) {
+      this.logger.error('Failed to refresh workspace users', error);
+    }
+  }
+
 }
