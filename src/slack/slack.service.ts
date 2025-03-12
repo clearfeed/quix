@@ -25,6 +25,15 @@ export class SlackService {
     this.webClient = new WebClient(this.configService.get('SLACK_BOT_TOKEN'));
   }
 
+  // Function to shuffle an array.
+  private shuffleArray(array: any[]): any[] {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
   async getSlackWorkspace(teamId: string, include?: string[]) {
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
       include
@@ -168,7 +177,10 @@ export class SlackService {
       this.logger.log('Starting daily refresh of all Slack workspace users');
 
       // Get all workspaces
-      const workspaces = await this.slackWorkspaceModel.findAll();
+      let workspaces = await this.slackWorkspaceModel.findAll();
+
+      // Shuffle the workspaces array
+      workspaces = this.shuffleArray(workspaces);
 
       // Loop through each workspace
       for (const workspace of workspaces) {
