@@ -1,3 +1,3 @@
 export { SlackWorkspace } from './slack-workspace.model';
-export { JiraSite } from './jira-site.model';
+export { JiraConfig } from './jira-config.model';
 export { SlackUserProfile } from './slack-user-profile.model'; 

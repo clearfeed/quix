@@ -13,7 +13,7 @@ import {
 } from 'sequelize-typescript';
 import { InferAttributes, InferCreationAttributes } from 'sequelize';
 import { encrypt, decrypt } from '../../lib/utils/encryption';
-import { JiraSite } from './jira-site.model';
+import { JiraConfig } from './jira-config.model';
 import { SlackUserProfile } from './slack-user-profile.model';
 
 @Table({ tableName: 'slack_workspaces' })
@@ -66,11 +66,11 @@ export class SlackWorkspace extends Model<
   @Column(DataType.STRING)
   declare app_id: string;
 
-  @HasOne(() => JiraSite, {
+  @HasOne(() => JiraConfig, {
     foreignKey: 'team_id',
-    as: 'jiraSite'
+    as: 'jiraConfig'
   })
-  declare jiraSite?: NonAttribute<JiraSite>;
+  declare jiraConfig?: NonAttribute<JiraConfig>;
 
   @CreatedAt
   declare created_at: CreationOptional<Date>;
