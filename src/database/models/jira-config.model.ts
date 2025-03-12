@@ -15,10 +15,10 @@ import { encrypt, decrypt } from '../../lib/utils/encryption';
 import { SlackWorkspace } from './slack-workspace.model';
 import { Nullable } from '@quix/lib/types/common';
 
-@Table({ tableName: 'jira_sites' })
-export class JiraSite extends Model<
-  InferAttributes<JiraSite>,
-  InferCreationAttributes<JiraSite>
+@Table({ tableName: 'jira_configs' })
+export class JiraConfig extends Model<
+  InferAttributes<JiraConfig>,
+  InferCreationAttributes<JiraConfig>
 > {
   @PrimaryKey
   @Column({

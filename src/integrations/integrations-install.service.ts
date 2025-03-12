@@ -6,7 +6,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { JiraSite } from '../database/models';
+import { JiraConfig } from '../database/models';
 import { ToolInstallState } from '@quix/lib/types/common';
 import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -18,8 +18,8 @@ export class IntegrationsInstallService {
     private readonly configService: ConfigService,
     private httpService: HttpService,
     @Inject(CACHE_MANAGER) private cache: Cache,
-    @InjectModel(JiraSite)
-    private readonly jiraSiteModel: typeof JiraSite,
+    @InjectModel(JiraConfig)
+    private readonly jiraConfigModel: typeof JiraConfig,
     private readonly eventEmitter: EventEmitter2,
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
@@ -58,7 +58,7 @@ export class IntegrationsInstallService {
       });
       const jiraSite = accessibleResources.data[0];
 
-      await this.jiraSiteModel.upsert({
+      await this.jiraConfigModel.upsert({
         id: jiraSite.id,
         name: jiraSite.name,
         url: jiraSite.url,

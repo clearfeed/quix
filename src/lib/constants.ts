@@ -19,7 +19,7 @@ export const INTEGRATIONS: {
       value: SUPPORTED_INTEGRATIONS.JIRA,
       helpText: 'Connect JIRA to create, update, and view issues.',
       connectedText: 'Jira has been successfully connected! You can now query Jira by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"',
-      relation: 'jiraSite'
+      relation: 'jiraConfig'
     },
     // {
     //   name: 'GitHub',
