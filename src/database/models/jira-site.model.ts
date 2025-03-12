@@ -13,6 +13,7 @@ import {
 import { CreationOptional, InferAttributes, InferCreationAttributes, NonAttribute } from 'sequelize';
 import { encrypt, decrypt } from '../../lib/utils/encryption';
 import { SlackWorkspace } from './slack-workspace.model';
+import { Nullable } from '@quix/lib/types/common';
 
 @Table({ tableName: 'jira_sites' })
 export class JiraSite extends Model<
@@ -75,6 +76,14 @@ export class JiraSite extends Model<
   @AllowNull(false)
   @Column(DataType.ARRAY(DataType.STRING))
   declare scopes: string[];
+
+  @Column({
+    type: DataType.JSON,
+    allowNull: true
+  })
+  declare default_config: Nullable<{
+    projectKey?: string;
+  }>;
 
   @ForeignKey(() => SlackWorkspace)
   @AllowNull(false)

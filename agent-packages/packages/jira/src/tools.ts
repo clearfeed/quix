@@ -34,6 +34,7 @@ When formatting Jira responses:
 
 export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
   const service = new JiraService(config);
+  console.log('config', config);
 
   const tools: DynamicStructuredTool<any>[] = [
     new DynamicStructuredTool({
@@ -56,7 +57,9 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
       name: 'create_jira_issue',
       description: 'Create a new JIRA issue',
       schema: z.object({
-        projectKey: z.string().describe('The project key where the issue will be created'),
+        projectKey: config.defaultConfig?.projectKey
+          ? z.string().describe('The project key where the issue will be created').optional().default(config.defaultConfig.projectKey)
+          : z.string().describe('The project key where the issue will be created (required)'),
         summary: z.string().describe('The summary/title of the issue'),
         description: z.string().describe('The description of the issue').optional(),
         issueType: z.string().describe('The type of issue (e.g., Bug, Task, Story)'),
