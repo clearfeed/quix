@@ -1,7 +1,7 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 
 export interface HubspotConfig extends BaseConfig {
-  apiKey: string;
+  accessToken: string;
 }
 
 export interface Deal {
