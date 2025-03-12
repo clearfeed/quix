@@ -8,7 +8,10 @@ import {
   JiraClientConfig,
   AddCommentParams,
   AddCommentResponse,
-  GetCommentsResponse
+  GetCommentsResponse,
+  UpdateIssueFields,
+  UpdateIssueResponse,
+  SearchUsersResponse
 } from './types';
 import JiraClient from './JiraClient';
 import { AxiosError } from 'axios';
@@ -127,6 +130,23 @@ export class JiraService implements BaseService<JiraConfig> {
     }
   }
 
+  async searchUsers(query: string): Promise<SearchUsersResponse> {
+    try {
+      const users = await this.client.searchUsers(query);
+
+      return {
+        success: true,
+        data: { users }
+      };
+    } catch (error) {
+      console.error('Error searching Jira users:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to search Jira users'
+      };
+    }
+  }
+
   async assignIssue(issueId: string, assignee: string): Promise<AssignIssueResponse> {
     try {
       const validation = this.validateConfig();
@@ -202,6 +222,30 @@ export class JiraService implements BaseService<JiraConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch comments for Jira issue'
+      };
+    }
+  }
+
+  async updateIssue(params: {
+    issueId: string;
+    fields: UpdateIssueFields;
+  }): Promise<UpdateIssueResponse> {
+    try {
+      const validation = this.validateConfig();
+      if (!validation.isValid) {
+        return { success: false, error: validation.error };
+      }
+
+      await this.client.updateIssue(params.issueId, params.fields);
+
+      return {
+        success: true
+      };
+    } catch (error) {
+      console.error('Error updating Jira issue:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update Jira issue'
       };
     }
   }

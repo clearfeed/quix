@@ -1,4 +1,4 @@
-import { CreateIssueParams, JiraClientConfig, JiraIssueResponse, SearchIssuesResponse, JiraProjectResponse, JiraUserResponse, JiraCommentResponse, JiraIssueComments } from "./types";
+import { CreateIssueParams, JiraClientConfig, JiraIssueResponse, SearchIssuesResponse, JiraProjectResponse, JiraUserResponse, JiraCommentResponse, JiraIssueComments, UpdateIssueFields, UpdateIssueResponse } from "./types";
 import axios, { AxiosInstance } from "axios";
 
 export class JiraClient {
@@ -142,6 +142,29 @@ export class JiraClient {
 
     const response = await this.makeApiCall('GET', `/issue/${issueId}/comment`, {
       params
+    });
+    return response;
+  }
+
+  async updateIssue(issueId: string, fields: UpdateIssueFields): Promise<UpdateIssueResponse> {
+    let description;
+    if (fields.description) {
+      description = {
+        type: 'doc',
+        version: 1,
+        content: [{ type: 'paragraph', content: [{ type: 'text', text: fields.description }] }]
+      };
+    }
+    const response = await this.makeApiCall('PUT', `/issue/${issueId}`, {
+      data: {
+        fields: {
+          ...fields,
+          ...(description ? { description } : {}),
+          ...(fields.assigneeId ? { assignee: { id: fields.assigneeId } } : {}),
+          ...(fields.labels ? { labels: fields.labels } : {}),
+          ...(fields.priority ? { priority: { name: fields.priority.charAt(0).toUpperCase() + fields.priority.slice(1) } } : {})
+        }
+      }
     });
     return response;
   }

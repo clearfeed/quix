@@ -8,7 +8,10 @@ import {
   JiraConfig,
   AddCommentParams,
   AddCommentResponse,
-  GetCommentsResponse
+  GetCommentsResponse,
+  UpdateIssueResponse,
+  UpdateIssueFields,
+  SearchUsersResponse
 } from './types';
 import { BaseResponse, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
@@ -92,6 +95,32 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
         issueId: z.string().describe('The Jira issue ID (e.g., PROJ-123)')
       }),
       func: async ({ issueId }: { issueId: string }): Promise<GetCommentsResponse> => service.getComments(issueId)
+    }),
+    new DynamicStructuredTool({
+      name: 'update_jira_issue',
+      description: 'Update a Jira issue',
+      schema: z.object({
+        issueId: z.string().describe('The Jira issue key or ID (e.g., 10083 or PROJ-123)'),
+        fields: z.object({
+          summary: z.string().describe('The summary of the issue').optional(),
+          description: z.string().describe('The description of the issue').optional(),
+          priority: z.string().describe('The priority of the issue').optional(),
+          assigneeId: z.string().describe('The ID of the user to assign the issue to').optional(),
+          labels: z.array(z.string()).describe('The labels of the issue').optional(),
+        })
+      }),
+      func: async (params: {
+        issueId: string;
+        fields: UpdateIssueFields;
+      }): Promise<UpdateIssueResponse> => service.updateIssue(params)
+    }),
+    new DynamicStructuredTool({
+      name: 'search_jira_users',
+      description: 'Search for Jira users by name or email',
+      schema: z.object({
+        query: z.string().describe('The query to search for in Jira users')
+      }),
+      func: async ({ query }: { query: string }): Promise<SearchUsersResponse> => service.searchUsers(query)
     })
   ];
 

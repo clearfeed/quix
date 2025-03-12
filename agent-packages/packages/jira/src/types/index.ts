@@ -180,3 +180,17 @@ export type AddCommentResponse = BaseResponse<{
 export type GetCommentsResponse = BaseResponse<{
   comments: JiraIssueComments;
 }>;
+
+export interface UpdateIssueFields {
+  summary?: string;
+  description?: string;
+  priority?: string;
+  assigneeId?: string;
+  labels?: string[];
+}
+
+export type UpdateIssueResponse = BaseResponse<void>;
+
+export type SearchUsersResponse = BaseResponse<{
+  users: JiraUserResponse[];
+}>;
