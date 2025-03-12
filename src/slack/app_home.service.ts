@@ -4,8 +4,9 @@ import { BlockElementAction, ButtonAction, StaticSelectAction } from '@slack/bol
 import { AppHomeOpenedEvent } from '@slack/web-api';
 import { WebClient } from '@slack/web-api';
 import { getHomeView } from './views/app_home';
-import { INTEGRATIONS } from '@quix/lib/constants';
+import { INTEGRATIONS, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
+import { SlackWorkspace } from '@quix/database/models';
 @Injectable()
 export class AppHomeService {
   private readonly logger = new Logger(AppHomeService.name);
@@ -33,14 +34,20 @@ export class AppHomeService {
   }
 
   async handleConnectTool(action: StaticSelectAction, teamId: string, userId: string) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
+    const selectedTool = action.selected_option?.value as SUPPORTED_INTEGRATIONS | undefined;
+    const integration = INTEGRATIONS.find(integration => integration.value === selectedTool);
+    if (!selectedTool || !integration) return;
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, [integration.relation]);
     if (!slackWorkspace) return;
-    const selectedTool = action.selected_option?.value;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     this.logger.log('Publishing home view', { selectedTool });
     await webClient.views.publish({
       user_id: userId,
-      view: getHomeView({ selectedTool: selectedTool as typeof INTEGRATIONS[number]['value'], teamId })
+      view: getHomeView({
+        selectedTool,
+        teamId,
+        connection: slackWorkspace[integration.relation as keyof SlackWorkspace]
+      })
     });
 
   }

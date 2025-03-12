@@ -3,9 +3,10 @@ import { SLACK_ACTIONS } from "@quix/lib/utils/slack-constants";
 import { HomeViewArgs } from "./types";
 import { INTEGRATIONS } from "@quix/lib/constants";
 import { getInstallUrl } from "@quix/lib/utils/slack";
+import { JiraSite } from "@quix/database/models";
 
 export const getHomeView = (args: HomeViewArgs): HomeView => {
-  const { selectedTool, teamId } = args;
+  const { selectedTool, teamId, connection } = args;
   return {
     type: 'home',
     blocks: [
@@ -64,12 +65,22 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
         },
         "dispatch_action": true
       },
-      ...(selectedTool ? getIntegrationInfo(selectedTool, teamId) : [])
+      ...(selectedTool ? getIntegrationInfo(selectedTool, teamId, connection) : [])
     ]
   }
 }
 
-const getIntegrationInfo = (selectedTool: typeof INTEGRATIONS[number]['value'], teamId: string): SectionBlock[] => {
+const getConnectionInfo = (connection: HomeViewArgs['connection']): string => {
+  if (!connection) return '';
+  switch (true) {
+    case connection instanceof JiraSite:
+      return `Connected to ${connection.url}`;
+    default:
+      return '';
+  }
+}
+
+const getIntegrationInfo = (selectedTool: typeof INTEGRATIONS[number]['value'], teamId: string, connection?: HomeViewArgs['connection']): SectionBlock[] => {
   const integration = INTEGRATIONS.find(integration => integration.value === selectedTool);
   if (!integration) return [];
   return [
@@ -77,16 +88,16 @@ const getIntegrationInfo = (selectedTool: typeof INTEGRATIONS[number]['value'], 
       "type": "section",
       "text": {
         "type": "mrkdwn",
-        "text": integration.helpText
+        "text": `${connection ? getConnectionInfo(connection) : integration.helpText}`
       },
       "accessory": {
         "type": "button",
         "text": {
           "type": "plain_text",
-          "text": `Connect ${integration?.name}`,
+          "text": `${connection ? 'Reconnect' : 'Connect'} ${integration?.name}`,
           "emoji": true
         },
-        "style": "primary",
+        "style": connection ? 'danger' : 'primary',
         "value": "connect_now",
         "url": getInstallUrl(selectedTool, teamId),
         "action_id": SLACK_ACTIONS.INSTALL_TOOL
