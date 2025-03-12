@@ -34,7 +34,6 @@ When formatting Jira responses:
 
 export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
   const service = new JiraService(config);
-  console.log('config', config);
 
   const tools: DynamicStructuredTool<any>[] = [
     new DynamicStructuredTool({
