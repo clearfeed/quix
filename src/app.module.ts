@@ -9,6 +9,7 @@ import * as redisStore from 'cache-manager-redis-store';
 import { CacheModule, CacheModuleOptions } from '@nestjs/cache-manager';
 import { DatabaseModule } from './database/database.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       delimiter: '.',
       verboseMemoryLeak: true
     }),
+    ScheduleModule.forRoot(),
     CacheModule.registerAsync({
       useFactory: (configService: ConfigService): CacheModuleOptions => {
         // Check if Redis config is valid
