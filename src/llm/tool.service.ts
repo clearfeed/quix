@@ -43,19 +43,19 @@ export class ToolService {
 
   async getAvailableTools(teamId: string): Promise<Record<string, ToolConfig> | undefined> {
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
-      include: ['jiraSite']
+      include: ['jiraConfig']
     });
     if (!slackWorkspace) return;
     const tools: Record<string, ToolConfig> = {};
-    const jiraSite = slackWorkspace.jiraSite;
-    if (jiraSite) {
-      const updatedJiraSite = await this.integrationsService.updateJiraConfig(jiraSite);
+    const jiraConfig = slackWorkspace.jiraConfig;
+    if (jiraConfig) {
+      const updatedJiraConfig = await this.integrationsService.updateJiraConfig(jiraConfig);
       tools.jira = createJiraToolsExport({
-        host: updatedJiraSite.url,
-        apiHost: `https://api.atlassian.com/ex/jira/${updatedJiraSite.id}`,
-        auth: { bearerToken: updatedJiraSite.access_token },
-        ...(updatedJiraSite.default_config ? {
-          defaultConfig: updatedJiraSite.default_config
+        host: updatedJiraConfig.url,
+        apiHost: `https://api.atlassian.com/ex/jira/${updatedJiraConfig.id}`,
+        auth: { bearerToken: updatedJiraConfig.access_token },
+        ...(updatedJiraConfig.default_config ? {
+          defaultConfig: updatedJiraConfig.default_config
         } : {})
       });
     }

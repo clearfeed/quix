@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('jira_sites', {
+    await queryInterface.createTable('jira_configs', {
       id: {
         type: Sequelize.STRING,
         primaryKey: true,
@@ -56,6 +56,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('jira_sites');
+    await queryInterface.dropTable('jira_configs');
   }
 }; 
