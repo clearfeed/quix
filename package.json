@@ -34,6 +34,7 @@
     "@google/generative-ai": "^0.21.0",
     "@langchain/core": "^0.3.40",
     "@langchain/google-genai": "^0.1.8",
+    "@langchain/langgraph": "^0.2.55",
     "@langchain/openai": "^0.4.4",
     "@nestjs/axios": "^4.0.0",
     "@nestjs/cache-manager": "^2.3.0",

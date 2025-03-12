@@ -1,7 +1,7 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { HubspotService } from './index';
 import { HubspotConfig } from './types';
-import { DynamicStructuredTool } from '@langchain/core/tools';
+import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
 HubSpot is a CRM platform that manages:
@@ -33,14 +33,26 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
   const service = new HubspotService(config);
 
   const tools: DynamicStructuredTool<any>[] = [
-    new DynamicStructuredTool({
-      name: 'search_hubspot_deals',
-      description: 'Search for deals in HubSpot based on a keyword',
-      schema: z.object({
+    tool(
+      async (args: { keyword: string }) => service.searchDeals(args.keyword),
+      {
+        name: 'search_hubspot_deals',
+        description: 'Search for deals in HubSpot based on a keyword',
+        schema: z.object({
         keyword: z.string().describe('The keyword to search for in HubSpot deals')
       }),
-      func: async (args: { keyword: string }) => service.searchDeals(args.keyword)
-    })
+    }),
+    tool(
+      async (args: { dealId: string; note: string }) => service.addNoteToDeal(args.dealId, args.note),
+      {
+        name: 'add_note_to_deal',
+        description: 'Add a note to a deal in HubSpot',
+        schema: z.object({
+          dealId: z.string().describe('The ID of the deal to add a note to'),
+          note: z.string().describe('The note to add to the deal')
+        }),
+      }
+    )
   ]
 
   return {

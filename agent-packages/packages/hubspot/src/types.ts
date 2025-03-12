@@ -20,3 +20,7 @@ export interface Deal {
 export type SearchDealsResponse = BaseResponse<{
   deals: Deal[];
 }>; 
+
+export type AddNoteToDealResponse = BaseResponse<{
+  noteId: string;
+}>; 
