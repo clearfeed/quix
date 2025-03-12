@@ -9,6 +9,7 @@ import { IntegrationConnectedEvent } from '@quix/types/events';
 import { sendMessage } from '@quix/lib/utils/slack';
 import { ParseSlackMentionsUserMap } from '@quix/lib/types/slack';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import _ from 'lodash';
 
 @Injectable()
 export class SlackService {
@@ -23,15 +24,6 @@ export class SlackService {
     private readonly slackUserProfileModel: typeof SlackUserProfile,
   ) {
     this.webClient = new WebClient(this.configService.get('SLACK_BOT_TOKEN'));
-  }
-
-  // Function to shuffle an array.
-  private shuffleArray(array: any[]): any[] {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
   }
 
   async getSlackWorkspace(teamId: string, include?: string[]) {
@@ -176,11 +168,8 @@ export class SlackService {
     try {
       this.logger.log('Starting daily refresh of all Slack workspace users');
 
-      // Get all workspaces
-      let workspaces = await this.slackWorkspaceModel.findAll();
-
-      // Shuffle the workspaces array
-      workspaces = this.shuffleArray(workspaces);
+      // Get all workspaces and shuffle them using lodash
+      const workspaces = _.shuffle(await this.slackWorkspaceModel.findAll());
 
       // Loop through each workspace
       for (const workspace of workspaces) {
