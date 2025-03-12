@@ -23,9 +23,9 @@ export class SlackService {
     this.webClient = new WebClient(this.configService.get('SLACK_BOT_TOKEN'));
   }
 
-  async getSlackWorkspace(teamId: string) {
+  async getSlackWorkspace(teamId: string, include?: string[]) {
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
-      include: ['jiraSite']
+      include
     });
     if (!slackWorkspace) {
       this.logger.error('Slack workspace not found', { teamId });
