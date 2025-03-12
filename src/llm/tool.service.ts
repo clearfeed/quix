@@ -54,7 +54,7 @@ export class ToolService {
         host: updatedJiraSite.url,
         apiHost: `https://api.atlassian.com/ex/jira/${updatedJiraSite.id}`,
         auth: { bearerToken: updatedJiraSite.access_token },
-        defaultConfig: updatedJiraSite.default_config
+        ...(updatedJiraSite.default_config || {})
       });
     }
     return tools;

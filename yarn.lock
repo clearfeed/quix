@@ -360,10 +360,10 @@
     "@clearfeed-ai/quix-common-agent" "^1.1.0"
     "@hubspot/api-client" "^12.0.1"
 
-"@clearfeed-ai/quix-jira-agent@^1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.2.2.tgz#54f9b86dea730c4666811419ae09746915fe334a"
-  integrity sha512-JvCJ6pTlThRmIVHcXNhUctfsVp8wHCO9Uv+wPmneT72ZPvaMiJzbXyD0g1gkmGuEpHbwealOOgyNCsn2eNAMtg==
+"@clearfeed-ai/quix-jira-agent@1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.2.3.tgz#ab03a5d95fbbe67c25f9f4192311e671dcb2c9ac"
+  integrity sha512-tdFR0kZALtngq12fz6ddx00vaXetU7lfybO7c8gebhHISqd6LO4Tj+L5oAPB3bnE9DmbKxbEs1ALOX3me4SewA==
   dependencies:
     "@clearfeed-ai/quix-common-agent" "^1.1.0"
     axios "^1.7.9"
