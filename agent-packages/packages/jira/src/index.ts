@@ -94,10 +94,18 @@ export class JiraService implements BaseService<JiraConfig> {
         return { success: false, error: validation.error };
       }
 
+      const projectKey = params.projectKey || this.config.defaultConfig?.projectKey;
+      if (!projectKey) {
+        return {
+          success: false,
+          error: 'Project key must be provided when no default project is configured'
+        };
+      }
+
       const issueData = {
         summary: params.summary,
         description: params.description,
-        projectKey: params.projectKey,
+        projectKey,
         issueType: params.issueType,
         priority: params.priority,
         assignee: params.assignee

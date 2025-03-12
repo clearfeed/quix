@@ -66,42 +66,30 @@ export class JiraClient {
     return response;
   }
 
-  async createIssue(issue: CreateIssueParams): Promise<JiraIssueResponse> {
-    const project = await this.getProject(issue.projectKey);
-    if (!project) {
-      throw new Error(`Project ${issue.projectKey} not found`);
+  async createIssue(params: CreateIssueParams): Promise<JiraIssueResponse> {
+    const { projectKey, summary, description, issueType, priority, assignee } = params;
+    if (!projectKey) {
+      throw new Error('Project key is required');
     }
 
-    const issueType = project.issueTypes.find(type => type.name === issue.issueType);
-    if (!issueType) {
-      throw new Error(`Issue type ${issue.issueType} not found in project ${issue.projectKey}`);
+    const project = await this.getProject(projectKey);
+    if (!project) {
+      throw new Error(`Project ${projectKey} not found`);
+    }
+
+    // Validate issue type exists in project
+    const issueTypeObj = project.issueTypes.find(type => type.name === issueType);
+    if (!issueTypeObj) {
+      throw new Error(`Issue type ${issueType} not found in project ${projectKey}`);
     }
 
     const response = await this.makeApiCall('POST', '/issue', {
       data: {
         fields: {
-          project: {
-            id: project.id
-          },
-          issuetype: {
-            id: issueType.id
-          },
-          summary: issue.summary,
-          description: {
-            content: [
-              {
-                content: [
-                  {
-                    text: issue.description,
-                    type: "text"
-                  }
-                ],
-                type: "paragraph"
-              }
-            ],
-            type: "doc",
-            version: 1
-          }
+          project: { id: project.id },
+          summary,
+          description: description ? { type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text: description }] }] } : undefined,
+          issuetype: { id: issueTypeObj.id }
         }
       }
     });

@@ -50,7 +50,12 @@ export class ToolService {
     const jiraSite = slackWorkspace.jiraSite;
     if (jiraSite) {
       const updatedJiraSite = await this.integrationsService.updateJiraConfig(jiraSite);
-      tools.jira = createJiraToolsExport({ host: updatedJiraSite.url, apiHost: `https://api.atlassian.com/ex/jira/${updatedJiraSite.id}`, auth: { bearerToken: updatedJiraSite.access_token } });
+      tools.jira = createJiraToolsExport({
+        host: updatedJiraSite.url,
+        apiHost: `https://api.atlassian.com/ex/jira/${updatedJiraSite.id}`,
+        auth: { bearerToken: updatedJiraSite.access_token },
+        defaultConfig: updatedJiraSite.default_config
+      });
     }
     return tools;
   }

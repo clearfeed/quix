@@ -9,6 +9,9 @@ export type JiraAuth = {
 
 export interface JiraConfig extends BaseConfig {
   host: string;
+  defaultConfig?: {
+    projectKey?: string;
+  };
   auth: JiraAuth;
   apiHost?: string;
 }
@@ -73,14 +76,14 @@ export interface JiraResponse<T> {
   error?: string;
 }
 
-export type CreateIssueParams = {
-  projectKey: string;
+export interface CreateIssueParams {
+  projectKey?: string;
   summary: string;
   description?: string;
   issueType: string;
   priority?: string;
   assignee?: string;
-};
+}
 
 export type SearchIssuesResponse = {
   issues: {
