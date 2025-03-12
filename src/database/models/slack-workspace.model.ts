@@ -15,6 +15,7 @@ import { InferAttributes, InferCreationAttributes } from 'sequelize';
 import { encrypt, decrypt } from '../../lib/utils/encryption';
 import { JiraConfig } from './jira-config.model';
 import { SlackUserProfile } from './slack-user-profile.model';
+import { HubspotConfig } from './hubspot-config.model';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -71,6 +72,12 @@ export class SlackWorkspace extends Model<
     as: 'jiraConfig'
   })
   declare jiraConfig?: NonAttribute<JiraConfig>;
+
+  @HasOne(() => HubspotConfig, {
+    foreignKey: 'team_id',
+    as: 'hubspotConfig'
+  })
+  declare hubspotConfig?: NonAttribute<HubspotConfig>;
 
   @CreatedAt
   declare created_at: CreationOptional<Date>;

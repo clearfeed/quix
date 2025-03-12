@@ -7,6 +7,16 @@ export enum SUPPORTED_INTEGRATIONS {
   ZENDESK = 'zendesk'
 }
 
+export const HUBSPOT_SCOPES = [
+  'crm.objects.contacts.read',
+  'crm.objects.contacts.write',
+  'crm.objects.companies.read',
+  'crm.objects.companies.write',
+  'crm.objects.deals.read',
+  'crm.objects.deals.write',
+  'tickets'
+] as const;
+
 export const INTEGRATIONS: {
   name: string;
   value: SUPPORTED_INTEGRATIONS;
@@ -28,13 +38,13 @@ export const INTEGRATIONS: {
     //   connectedText: 'GitHub has been successfully connected! You can now query GitHub by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"',
     //   relation: 'githubConfig'
     // },
-    // {
-    //   name: 'Hubspot',
-    //   value: SUPPORTED_INTEGRATIONS.HUBSPOT,
-    //   helpText: 'Connect Hubspot to create, update, and view contacts, deals, and companies.',
-    //   connectedText: 'Hubspot has been successfully connected! You can now query Hubspot by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"',
-    //   relation: 'hubspotConfig'
-    // },
+    {
+      name: 'Hubspot',
+      value: SUPPORTED_INTEGRATIONS.HUBSPOT,
+      helpText: 'Connect Hubspot to create, update, and view contacts, deals, and companies.',
+      connectedText: 'Hubspot has been successfully connected! You can now query Hubspot by chatting with me or mentioning me in any channel. Try asking me things like "What is the deal status for "Quix" or "What is the contact name for "Quix"',
+      relation: 'hubspotConfig'
+    },
     // {
     //   name: 'Zendesk',
     //   value: SUPPORTED_INTEGRATIONS.ZENDESK,
