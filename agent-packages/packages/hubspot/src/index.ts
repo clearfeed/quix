@@ -22,26 +22,22 @@ export class HubspotService implements BaseService<HubspotConfig> {
   private client: Client;
 
   constructor(private config: HubspotConfig) {
-    this.client = new Client({ accessToken: config.apiKey });
+    const validation = this.validateConfig();
+    if (!validation.isValid) {
+      throw new Error(validation.error);
+    }
+    this.client = new Client({ accessToken: config.accessToken });
   }
 
   validateConfig(): { isValid: boolean; error?: string } {
-    if (!this.config.apiKey) {
-      return {
-        isValid: false,
-        error: 'HubSpot integration is not configured. Please set HUBSPOT_API_KEY environment variable.'
-      };
+    if (!this.config.accessToken) {
+      return { isValid: false, error: 'HubSpot access token is not configured' };
     }
     return { isValid: true };
   }
 
   async searchDeals(keyword: string): Promise<SearchDealsResponse> {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return { success: false, error: validation.error };
-      }
-
       const response = await this.client.crm.deals.searchApi.doSearch({
         filterGroups: [
           {

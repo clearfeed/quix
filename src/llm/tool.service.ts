@@ -20,7 +20,7 @@ export class ToolService {
   get hubspotTools(): ToolConfig | undefined {
     const hubspotToken = this.config.get('HUBSPOT_ACCESS_TOKEN');
     if (hubspotToken) {
-      return createHubspotToolsExport({ apiKey: hubspotToken });
+      return createHubspotToolsExport({ accessToken: hubspotToken });
     }
   }
 
@@ -43,7 +43,7 @@ export class ToolService {
 
   async getAvailableTools(teamId: string): Promise<Record<string, ToolConfig> | undefined> {
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
-      include: ['jiraConfig']
+      include: ['jiraConfig', 'hubspotConfig']
     });
     if (!slackWorkspace) return;
     const tools: Record<string, ToolConfig> = {};
@@ -58,6 +58,11 @@ export class ToolService {
           defaultConfig: updatedJiraConfig.default_config
         } : {})
       });
+    }
+    const hubspotConfig = slackWorkspace.hubspotConfig;
+    if (hubspotConfig) {
+      const updatedHubspotConfig = await this.integrationsService.updateHubspotConfig(hubspotConfig);
+      tools.hubspot = createHubspotToolsExport({ accessToken: updatedHubspotConfig.access_token });
     }
     return tools;
   }

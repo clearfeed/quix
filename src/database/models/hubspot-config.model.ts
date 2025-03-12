@@ -8,7 +8,8 @@ import {
   CreatedAt,
   UpdatedAt,
   PrimaryKey,
-  AllowNull
+  AllowNull,
+  Unique
 } from 'sequelize-typescript';
 import { CreationOptional, InferAttributes, InferCreationAttributes, NonAttribute } from 'sequelize';
 import { encrypt, decrypt } from '../../lib/utils/encryption';
@@ -21,10 +22,9 @@ export class HubspotConfig extends Model<
 > {
   @PrimaryKey
   @Column({
-    type: DataType.UUID,
-    defaultValue: DataType.UUIDV4
+    type: DataType.BIGINT
   })
-  declare id: CreationOptional<string>;
+  declare hub_id: number;
 
   @AllowNull(false)
   @Column({
@@ -69,13 +69,10 @@ export class HubspotConfig extends Model<
   declare hub_domain: string;
 
   @AllowNull(false)
-  @Column(DataType.BIGINT)
-  declare hub_id: number;
-
-  @AllowNull(false)
   @Column(DataType.ARRAY(DataType.STRING))
   declare scopes: string[];
 
+  @Unique
   @ForeignKey(() => SlackWorkspace)
   @AllowNull(false)
   @Column(DataType.STRING)

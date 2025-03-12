@@ -4,9 +4,8 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('hubspot_configs', {
-      id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+      hub_id: {
+        type: Sequelize.BIGINT,
         primaryKey: true,
         allowNull: false
       },
@@ -26,10 +25,6 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false
       },
-      hub_id: {
-        type: Sequelize.BIGINT,
-        allowNull: false
-      },
       scopes: {
         type: Sequelize.ARRAY(Sequelize.STRING),
         allowNull: false
@@ -41,6 +36,7 @@ module.exports = {
           model: 'slack_workspaces',
           key: 'team_id'
         },
+        unique: true,
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },

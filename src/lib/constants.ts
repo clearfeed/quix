@@ -14,6 +14,7 @@ export const HUBSPOT_SCOPES = [
   'crm.objects.companies.write',
   'crm.objects.deals.read',
   'crm.objects.deals.write',
+  'crm.objects.owners.read',
   'tickets'
 ] as const;
 
