@@ -19,7 +19,7 @@ export class LlmService {
     private readonly tool: ToolService
   ) { }
 
-  async processMessage(message: string, teamId: string, previousMessages: LLMContext[]) {
+  async processMessage(message: string, teamId: string, previousMessages: LLMContext[]): Promise<string> {
     const tools = await this.tool.getAvailableTools(teamId);
     if (!tools) {
       return 'I apologize, but I don\'t have any tools configured to help with your request at the moment.';
@@ -77,7 +77,9 @@ export class LlmService {
 
     this.logger.log(`Token usage: ${totalTokens}, Tool calls made: ${toolCallCount}, Tools used: ${toolNames.join(', ')}`);
 
-    return result.messages[result.messages.length - 1].content;
+    const llmResponse = result.messages[result.messages.length - 1].content;
+
+    return Array.isArray(llmResponse) ? llmResponse.join(' ') : llmResponse;
   }
 
   private async toolSelection(message: string, tools: Record<string, ToolConfig>, previousMessages: LLMContext[]): Promise<{
