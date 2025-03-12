@@ -1,7 +1,8 @@
 import { Client } from '@hubspot/api-client';
 import { FilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/deals';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
-import { HubspotConfig, SearchDealsResponse, Deal } from './types';
+import { HubspotConfig, SearchDealsResponse, Deal, AddNoteToDealResponse } from './types';
+import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 
 export * from './types';
 export * from './tools';
@@ -102,6 +103,37 @@ export class HubspotService implements BaseService<HubspotConfig> {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to search HubSpot deals'
       };
+    }
+  }
+
+  async addNoteToDeal(dealId: string, note: string): Promise<AddNoteToDealResponse> {
+    try {
+      const response = await this.client.crm.objects.notes.basicApi.create({
+        "properties": {
+          "hs_note_body": note,
+          "hs_timestamp": new Date().toISOString()
+        },
+        "associations": [
+          {
+            "to": {
+              "id": dealId
+            },
+            "types": [
+              {
+                "associationCategory": AssociationSpecAssociationCategoryEnum.HubspotDefined,
+                "associationTypeId": 214
+              }
+            ]
+          }
+        ]
+      });
+      return {
+        success: true,
+        data: { noteId: response.id }
+      };
+    } catch (error) {
+      console.error('Error adding note to deal:', error);
+      throw error;
     }
   }
 } 

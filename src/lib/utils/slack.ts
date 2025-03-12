@@ -9,12 +9,13 @@ import { ParseSlackMentionsUserMap } from "../types/slack";
 
 /**
  * Sanitizes a name to match OpenAI's requirements (alphanumeric, underscore, hyphen only)
+ * Takes only the first name if the name contains spaces
  */
 const sanitizeName = (name: string): string => {
-  // First trim any whitespace
-  const trimmed = name.trim();
-  // Replace spaces with underscores and remove any other invalid characters
-  return trimmed.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
+  // First trim any whitespace and get first name
+  const firstName = name.trim().split(' ')[0];
+  // Remove any invalid characters
+  return firstName.replace(/[^a-zA-Z0-9_-]/g, '');
 };
 
 export const createLLMContext = async (event: GenericMessageEvent | AppMentionEvent, userInfoMap: ParseSlackMentionsUserMap, selfAppId: string) => {

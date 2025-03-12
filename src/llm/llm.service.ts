@@ -8,6 +8,9 @@ import { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemp
 import { RunnableSequence } from '@langchain/core/runnables';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { QuixPrompts } from '../lib/constants';
+import { createReactAgent } from '@langchain/langgraph/prebuilt';
+import { AIMessage } from '@langchain/core/messages';
+
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);
@@ -42,51 +45,39 @@ export class LlmService {
       return 'I apologize, but I don\'t have any tools configured to help with your request at the moment.';
     }
 
-    const executionPrompt = ChatPromptTemplate.fromMessages([
-      SystemMessagePromptTemplate.fromTemplate(`
-        ${QuixPrompts.basePrompt}
-        You are now using the tool ${toolSelection.selectedTool} to respond to the user's query.
-      `),
-      new MessagesPlaceholder('chat_history'),
-      HumanMessagePromptTemplate.fromTemplate('{input}')
-    ]);
-
-    const llmProvider = this.llmProvider.getProvider(SupportedChatModels.OPENAI);
-    let llmProviderWithTools;
-    if ('bindTools' in llmProvider && typeof llmProvider.bindTools === 'function') {
-      llmProviderWithTools = llmProvider.bindTools(availableFunctions);
-    }
-
-    const executionChain = RunnableSequence.from([
-      executionPrompt,
-      llmProviderWithTools ?? llmProvider
-    ]);
-
-    const result = await executionChain.invoke({
-      chat_history: previousMessages,
-      input: message,
-      tool_choice: 'auto'
+    const agent = createReactAgent({
+      llm: this.llmProvider.getProvider(SupportedChatModels.OPENAI),
+      tools: availableFunctions,
+      prompt: QuixPrompts.basePrompt
     });
 
-    const toolCall = result.tool_calls?.[0];
+    const result = await agent.invoke({
+      messages: previousMessages
+    });
 
-    if (toolCall) {
-      const functionName = toolCall.name;
-      const functionArgs = toolCall.args;
+    const { totalTokens, toolCallCount, toolNames } = result.messages.reduce((acc, msg) => {
+      // Add token usage
+      const tokens = msg.response_metadata?.tokenUsage?.totalTokens || 0;
 
-      const selectedFunction = availableFunctions.find(t => t.name === functionName);
-
-      if (selectedFunction) {
-        this.logger.log(`Invoking function: ${functionName} with args: ${JSON.stringify(functionArgs)}`);
-        const result = await selectedFunction.func(functionArgs);
-        const responseGenerationPrompt = tools[toolSelection.selectedTool].prompts?.responseGeneration;
-        return this.generateResponse(message, result, functionName, responseGenerationPrompt ?? '', previousMessages);
+      // Add tool calls and names if it's an AIMessage with tool calls
+      if (msg instanceof AIMessage && msg.tool_calls) {
+        const toolsInMessage = msg.tool_calls.map(call => call.name);
+        return {
+          totalTokens: acc.totalTokens + tokens,
+          toolCallCount: acc.toolCallCount + msg.tool_calls.length,
+          toolNames: [...acc.toolNames, ...toolsInMessage]
+        };
       }
 
-      return `I apologize, but I don't have any tools configured to help with your request at the moment.`;
-    }
+      return {
+        ...acc,
+        totalTokens: acc.totalTokens + tokens
+      };
+    }, { totalTokens: 0, toolCallCount: 0, toolNames: [] as string[] });
 
-    return this.generateResponse(message, result, 'none', '', previousMessages);
+    this.logger.log(`Token usage: ${totalTokens}, Tool calls made: ${toolCallCount}, Tools used: ${toolNames.join(', ')}`);
+
+    return result.messages[result.messages.length - 1].content;
   }
 
   private async toolSelection(message: string, tools: Record<string, ToolConfig>, previousMessages: LLMContext[]): Promise<{
