@@ -30,7 +30,7 @@ export class InteractionsService {
       return;
     }
     if (eventAction.view?.type === 'home') {
-      this.appHomeService.handleAppHomeInteractions(action, teamId, eventAction.user.id);
+      this.appHomeService.handleAppHomeInteractions(action, teamId, eventAction.user.id, eventAction.trigger_id);
     }
   }
 }

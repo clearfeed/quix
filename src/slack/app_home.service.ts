@@ -3,7 +3,7 @@ import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { BlockElementAction, ButtonAction, StaticSelectAction } from '@slack/bolt';
 import { AppHomeOpenedEvent } from '@slack/web-api';
 import { WebClient } from '@slack/web-api';
-import { getHomeView } from './views/app_home';
+import { getHomeView, getPostgresConnectionModal, publishPostgresConnectionModal } from './views/app_home';
 import { INTEGRATIONS, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
 import { SlackWorkspace } from '@quix/database/models';
@@ -27,9 +27,20 @@ export class AppHomeService {
     });
   }
 
-  async handleAppHomeInteractions(action: BlockElementAction, teamId: string, userId: string) {
-    if (action.action_id === SLACK_ACTIONS.CONNECT_TOOL && action.type === 'static_select') {
-      this.handleConnectTool(action, teamId, userId);
+  async handleAppHomeInteractions(action: BlockElementAction, teamId: string, userId: string, triggerId: string) {
+    switch (action.action_id) {
+      case SLACK_ACTIONS.INSTALL_TOOL:
+        if (action.type !== 'button') return;
+        this.handleInstallTool(action, teamId, userId, triggerId);
+        break;
+      case SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION:
+        console.log('handleSubmitPostgresConnection', action);
+        // this.handleSubmitPostgresConnection(action, teamId, userId);
+        break;
+      case SLACK_ACTIONS.CONNECT_TOOL:
+        if (action.type !== 'static_select') return;
+        this.handleConnectTool(action, teamId, userId);
+        break;
     }
   }
 
@@ -50,5 +61,20 @@ export class AppHomeService {
       })
     });
 
+  }
+
+  async handleInstallTool(action: ButtonAction, teamId: string, userId: string, triggerId: string) {
+    const selectedTool = action.value as SUPPORTED_INTEGRATIONS | undefined;
+    const integration = INTEGRATIONS.find(integration => integration.value === selectedTool);
+    if (!selectedTool || !integration) return;
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, [integration.relation]);
+    if (!slackWorkspace) return;
+    const webClient = new WebClient(slackWorkspace.bot_access_token);
+    if (selectedTool === SUPPORTED_INTEGRATIONS.POSTGRES) {
+      await publishPostgresConnectionModal(webClient, {
+        triggerId,
+        teamId
+      });
+    }
   }
 }

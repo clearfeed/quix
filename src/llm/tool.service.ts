@@ -8,6 +8,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { SlackWorkspace } from '../database/models';
 import { IntegrationsService } from '../integrations/integrations.service';
+import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 @Injectable()
 export class ToolService {
   constructor(
@@ -64,6 +65,13 @@ export class ToolService {
       const updatedHubspotConfig = await this.integrationsService.updateHubspotConfig(hubspotConfig);
       tools.hubspot = createHubspotToolsExport({ accessToken: updatedHubspotConfig.access_token });
     }
+    tools.postgres = createPostgresToolsExport({
+      host: 'localhost',
+      port: 5432,
+      user: 'postgres',
+      password: 'postgres',
+      database: 'quix'
+    });
     return tools;
   }
 }

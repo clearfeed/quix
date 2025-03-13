@@ -4,7 +4,7 @@ import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { ToolConfig } from "@clearfeed-ai/quix-common-agent";
 
-export function createPostgresTools(config: PostgresConfig): ToolConfig {
+export function createPostgresTools(config: PostgresConfig): ToolConfig['tools'] {
   const service = new PostgresService(config);
 
   const tools: DynamicStructuredTool<any>[] = [
@@ -37,11 +37,14 @@ export function createPostgresTools(config: PostgresConfig): ToolConfig {
       }
     )
   ];
+  return tools;
+}
 
+export function createPostgresToolsExport(config: PostgresConfig): ToolConfig {
   return {
+    tools: createPostgresTools(config),
     prompts: {
-      toolSelection: 'You can use this tool to query the database',
+      toolSelection: 'You can use this tool to query the database. Always hide sensitive information when querying the database.',
     },
-    tools
   };
 }
