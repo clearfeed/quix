@@ -38,14 +38,11 @@ export class IntegrationsController {
   @Get('connect/github')
   @Redirect()
   async github(@Query('code') code: string, @Query('state') state: string) {
-    console.log(code, state)
     if (!code || !state) {
       return HttpStatus.BAD_REQUEST;
     }
 
     const result = await this.integrationsInstallService.github(code, state);
-
-    console.log("RESULT", result)
 
     return {
       url: `slack://app?team=${result.teamId}&id=${result.appId}&tab=messages`,
