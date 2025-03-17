@@ -211,7 +211,7 @@ export class IntegrationsInstallService {
       this.eventEmitter.emit(EVENT_NAMES.GITHUB_CONNECTED, {
         teamId: stateData.teamId,
         appId: stateData.appId,
-        type: SUPPORTED_INTEGRATIONS.HUBSPOT,
+        type: SUPPORTED_INTEGRATIONS.GITHUB,
       } satisfies IntegrationConnectedEvent);
 
       return {
