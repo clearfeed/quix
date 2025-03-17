@@ -16,6 +16,7 @@ import { encrypt, decrypt } from '../../lib/utils/encryption';
 import { JiraConfig } from './jira-config.model';
 import { SlackUserProfile } from './slack-user-profile.model';
 import { HubspotConfig } from './hubspot-config.model';
+import { GithubConfig } from './github-config.model';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -78,6 +79,12 @@ export class SlackWorkspace extends Model<
     as: 'hubspotConfig'
   })
   declare hubspotConfig?: NonAttribute<HubspotConfig>;
+
+  @HasOne(() => GithubConfig, {
+    foreignKey: 'team_id',
+    as: 'githubConfig'
+  })
+  declare githubConfig?: NonAttribute<GithubConfig>;
 
   @CreatedAt
   declare created_at: CreationOptional<Date>;
