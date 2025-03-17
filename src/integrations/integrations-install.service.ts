@@ -1,4 +1,4 @@
-import { INTEGRATIONS, SUPPORTED_INTEGRATIONS, HUBSPOT_SCOPES } from '@quix/lib/constants';
+import { INTEGRATIONS, SUPPORTED_INTEGRATIONS, HUBSPOT_SCOPES, GITHUB_SCOPES } from '@quix/lib/constants';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
@@ -6,11 +6,11 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { JiraConfig, HubspotConfig } from '../database/models';
+import { JiraConfig, HubspotConfig, GithubConfig } from '../database/models';
 import { ToolInstallState } from '@quix/lib/types/common';
 import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { HubspotTokenResponse, HubspotHubInfo } from './types';
+import { HubspotTokenResponse, HubspotHubInfo, GithubTokenResponse, GitHubInfo } from './types';
 
 @Injectable()
 export class IntegrationsInstallService {
@@ -24,6 +24,8 @@ export class IntegrationsInstallService {
     private readonly jiraConfigModel: typeof JiraConfig,
     @InjectModel(HubspotConfig)
     private readonly hubspotConfigModel: typeof HubspotConfig,
+    @InjectModel(GithubConfig)
+    private readonly githubConfigModel: typeof GithubConfig,
     private readonly eventEmitter: EventEmitter2,
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
@@ -31,12 +33,14 @@ export class IntegrationsInstallService {
 
   getInstallUrl(tool: typeof INTEGRATIONS[number]['value'], state: string): string {
     switch (tool) {
-      case 'jira':
-        return `https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=${this.configService.get<string>('JIRA_CLIENT_ID')}&scope=${encodeURIComponent('read:jira-work read:jira-user write:jira-work offline_access')}&redirect_uri=${this.configService.get<string>('SELFSERVER_URL')}/integrations/connect/jira&response_type=code&prompt=consent&state=${state}`;
-      case 'hubspot':
-        return `https://app.hubspot.com/oauth/authorize?client_id=${this.configService.get<string>('HUBSPOT_CLIENT_ID')}&redirect_uri=${encodeURIComponent(this.configService.get<string>('SELFSERVER_URL') + '/integrations/connect/hubspot')}&scope=${encodeURIComponent(HUBSPOT_SCOPES.join(' '))}&state=${state}`;
-      default:
-        throw new BadRequestException('Integration not found');
+    case 'jira':
+      return `https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=${this.configService.get<string>('JIRA_CLIENT_ID')}&scope=${encodeURIComponent('read:jira-work read:jira-user write:jira-work offline_access')}&redirect_uri=${this.configService.get<string>('SELFSERVER_URL')}/integrations/connect/jira&response_type=code&prompt=consent&state=${state}`;
+    case 'hubspot':
+      return `https://app.hubspot.com/oauth/authorize?client_id=${this.configService.get<string>('HUBSPOT_CLIENT_ID')}&redirect_uri=${encodeURIComponent(this.configService.get<string>('SELFSERVER_URL') + '/integrations/connect/hubspot')}&scope=${encodeURIComponent(HUBSPOT_SCOPES.join(' '))}&state=${state}`;
+    case 'github':
+      return `https://github.com/login/oauth/authorize?client_id=${this.configService.get<string>('GITHUB_CLIENT_ID')}&scope=${encodeURIComponent(GITHUB_SCOPES.join(','))}&redirect_uri=${encodeURIComponent(this.configService.get<string>('SELFSERVER_URL') + '/integrations/connect/github')}&state=${state}`;
+    default:
+      throw new BadRequestException('Integration not found');
     }
   }
 
@@ -158,4 +162,66 @@ export class IntegrationsInstallService {
       throw new BadRequestException('Failed to connect to HubSpot');
     }
   }
+
+  async github(code: string, state: string): Promise<Partial<ToolInstallState>> {
+    try {
+      // Step 0: Retrieve state from cache
+      const stateData = await this.cache.get<ToolInstallState>('install_github');
+      if (!stateData) {
+        throw new BadRequestException('State not found');
+      }
+      if (stateData.state !== state) {
+        throw new BadRequestException('Invalid state');
+      }
+      await this.cache.del('install_github');
+
+      // Step 1: Get GitHub credentials from config
+      const clientId = this.configService.get<string>('GITHUB_CLIENT_ID');
+      const clientSecret = this.configService.get<string>('GITHUB_CLIENT_SECRET');
+      if (!clientId || !clientSecret) {
+        throw new BadRequestException('Missing GitHub client configuration');
+      }
+
+      // Step 2: Exchange code for an access token
+      const response = await this.httpService.axiosRef.post<GithubTokenResponse>(
+        "https://github.com/login/oauth/access_token",
+        { client_id: clientId, client_secret: clientSecret, code },
+        { headers: { Accept: "application/json" } }
+      );
+      const access_token = response.data.access_token as string;
+      const scopes = response.data.scope?.split(",");
+
+      // Step 3: Fetch user details from GitHub
+      const userResponse = await this.httpService.axiosRef.get<GitHubInfo>('https://api.github.com/user', {
+        headers: { Authorization: `token ${access_token}` },
+      });
+      const { id, login, avatar_url, name } = userResponse.data;
+
+      // Store GitHub authentication details
+      await GithubConfig.upsert({
+        github_id: id,
+        access_token,
+        full_name: name,
+        avatar: avatar_url,
+        username: login,
+        team_id: stateData?.teamId,
+        scopes
+      });
+
+      this.eventEmitter.emit(EVENT_NAMES.GITHUB_CONNECTED, {
+        teamId: stateData.teamId,
+        appId: stateData.appId,
+        type: SUPPORTED_INTEGRATIONS.HUBSPOT,
+      } satisfies IntegrationConnectedEvent);
+
+      return {
+        appId: stateData.appId,
+        teamId: stateData.teamId
+      };
+    } catch (error) {
+      this.logger.error('Failed to connect to GitHub:', error);
+      throw new BadRequestException('Failed to connect to GitHub');
+    }
+  }
+
 }

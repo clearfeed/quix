@@ -22,51 +22,39 @@ export class GithubConfig extends Model<
 > {
   @PrimaryKey
   @Column({
-    type: DataType.BIGINT,
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4
   })
+  declare id: CreationOptional<string>;
+
+  @AllowNull(false)
+  @Column(DataType.BIGINT)
   declare github_id: number;
 
   @AllowNull(false)
-  @Column({
-    type: DataType.TEXT
-  })
+  @Column(DataType.TEXT)
   get access_token(): string {
     const value = this.getDataValue('access_token') as string;
-    if (!value) return value;
-    return decrypt(value);
+    return value ? decrypt(value) : value;
   }
   set access_token(value: string) {
-    if (!value) {
-      this.setDataValue('access_token', value);
-      return;
-    }
-    this.setDataValue('access_token', encrypt(value));
+    this.setDataValue('access_token', value ? encrypt(value) : value);
   }
-
-  @AllowNull(false)
-  @Column({
-    type: DataType.TEXT
-  })
-  get refresh_token(): string {
-    const value = this.getDataValue('refresh_token') as string;
-    if (!value) return value;
-    return decrypt(value);
-  }
-  set refresh_token(value: string) {
-    if (!value) {
-      this.setDataValue('refresh_token', value);
-      return;
-    }
-    this.setDataValue('refresh_token', encrypt(value));
-  }
-
-  @AllowNull(false)
-  @Column(DataType.DATE)
-  declare expires_at: Date;
 
   @AllowNull(false)
   @Column(DataType.STRING)
-  declare organization: string;
+  declare full_name: string;
+
+  @Column(DataType.TEXT)
+  declare avatar: string | null;
+
+  @AllowNull(false)
+  @Column(DataType.STRING)
+  declare username: string;
+
+  @AllowNull(false)
+  @Column(DataType.ARRAY(DataType.STRING))
+  declare scopes: string[];
 
   @Unique
   @ForeignKey(() => SlackWorkspace)
@@ -85,4 +73,4 @@ export class GithubConfig extends Model<
 
   @UpdatedAt
   declare updated_at: CreationOptional<Date>;
-} 
+}
