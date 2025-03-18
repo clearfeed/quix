@@ -189,7 +189,10 @@ export class IntegrationsInstallService {
         { headers: { Accept: "application/json" } }
       );
       const access_token = response.data.access_token as string;
-      const scopes = response.data.scope?.split(",");
+      if (!response.data.scope) {
+        throw new BadRequestException('No scopes provided. Please ensure the app has necessary permissions.');
+      }
+      const scopes = response.data.scope.split(",");
 
       // Step 3: Fetch user details from GitHub
       const userResponse = await this.httpService.axiosRef.get<GitHubInfo>('https://api.github.com/user', {
@@ -198,13 +201,13 @@ export class IntegrationsInstallService {
       const { id, login, avatar_url, name } = userResponse.data;
 
       // Store GitHub authentication details
-      await GithubConfig.upsert({
+      await this.githubConfigModel.upsert({
         github_id: id,
         access_token,
         full_name: name,
         avatar: avatar_url,
         username: login,
-        team_id: stateData?.teamId,
+        team_id: stateData.teamId,
         scopes
       });
 
