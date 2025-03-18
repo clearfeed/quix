@@ -21,13 +21,6 @@ export class GithubConfig extends Model<
   InferCreationAttributes<GithubConfig>
 > {
   @PrimaryKey
-  @Column({
-    type: DataType.UUID,
-    defaultValue: DataType.UUIDV4
-  })
-  declare id: CreationOptional<string>;
-
-  @AllowNull(false)
   @Column(DataType.BIGINT)
   declare github_id: number;
 
@@ -40,10 +33,6 @@ export class GithubConfig extends Model<
   set access_token(value: string) {
     this.setDataValue('access_token', value ? encrypt(value) : value);
   }
-
-  @AllowNull(false)
-  @Column(DataType.STRING)
-  declare full_name: string;
 
   @Column(DataType.TEXT)
   declare avatar: string | null;

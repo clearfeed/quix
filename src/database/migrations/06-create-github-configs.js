@@ -4,22 +4,13 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('github_configs', {
-      id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
-        primaryKey: true,
-        allowNull: false
-      },
       github_id: {
         type: Sequelize.BIGINT,
+        primaryKey: true,
         allowNull: false
       },
       access_token: {
         type: Sequelize.TEXT,
-        allowNull: false
-      },
-      full_name: {
-        type: Sequelize.STRING,
         allowNull: false
       },
       avatar: {

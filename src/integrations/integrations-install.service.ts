@@ -198,13 +198,12 @@ export class IntegrationsInstallService {
       const userResponse = await this.httpService.axiosRef.get<GitHubInfo>('https://api.github.com/user', {
         headers: { Authorization: `token ${access_token}` },
       });
-      const { id, login, avatar_url, name } = userResponse.data;
+      const { id, login, avatar_url } = userResponse.data;
 
       // Store GitHub authentication details
       await this.githubConfigModel.upsert({
         github_id: id,
         access_token,
-        full_name: name,
         avatar: avatar_url,
         username: login,
         team_id: stateData.teamId,
