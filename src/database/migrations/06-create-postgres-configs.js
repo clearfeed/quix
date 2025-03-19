@@ -34,6 +34,11 @@ module.exports = {
         type: Sequelize.JSON,
         allowNull: true
       },
+      ssl: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      },
       team_id: {
         type: Sequelize.STRING,
         allowNull: false,

@@ -120,37 +120,44 @@ export const getPostgresConnectionModal = (args: PostgresConnectionModalArgs): B
       label: 'Host',
       blockId: 'postgres_host',
     }).element(Elements.TextInput({
-      placeholder: 'e.g., localhost or db.example.com'
+      placeholder: 'e.g., localhost or db.example.com',
+      actionId: SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.HOST
     }).initialValue(initialValues?.host || '')),
     Input({
       label: 'Port',
       blockId: 'postgres_port',
     }).element(Elements.TextInput({
-      placeholder: 'e.g., 5432'
+      placeholder: 'e.g., 5432',
+      actionId: SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PORT
     }).initialValue(initialValues?.port || '5432')),
     Input({
       label: 'Database',
       blockId: 'postgres_database',
     }).element(Elements.TextInput({
-      placeholder: 'e.g., mydb'
+      placeholder: 'e.g., mydb',
+      actionId: SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DATABASE
     }).initialValue(initialValues?.database || '')),
     Input({
       label: 'Username',
       blockId: 'postgres_username',
     }).element(Elements.TextInput({
-      placeholder: 'e.g., postgres'
+      placeholder: 'e.g., postgres',
+      actionId: SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.USER
     }).initialValue(initialValues?.username || '')),
     Input({
       label: 'Password',
       blockId: 'postgres_password',
     }).element(Elements.TextInput({
-      placeholder: 'Your database password'
+      placeholder: 'Your database password',
+      actionId: SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PASSWORD
     }).initialValue(initialValues?.password || '')),
     Input({
       label: 'SSL',
       blockId: 'postgres_ssl',
     }).element(
-      Elements.Checkboxes({})
+      Elements.Checkboxes({
+        actionId: SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.SSL
+      })
         .initialOptions(
           initialValues?.ssl ? [Bits.Option({
             text: 'Use SSL connection',

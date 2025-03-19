@@ -9,11 +9,13 @@ import {
   UpdatedAt,
   PrimaryKey,
   AllowNull,
-  Unique
+  Unique,
+  Default
 } from 'sequelize-typescript';
 import { CreationOptional, InferAttributes, InferCreationAttributes, NonAttribute } from 'sequelize';
 import { encrypt, decrypt } from '../../lib/utils/encryption';
 import { SlackWorkspace } from './slack-workspace.model';
+import { Nullable } from '@quix/lib/types/common';
 
 @Table({ tableName: 'postgres_configs' })
 export class PostgresConfig extends Model<
@@ -23,9 +25,10 @@ export class PostgresConfig extends Model<
   @PrimaryKey
   @Column({
     type: DataType.UUID,
+    field: 'id',
     defaultValue: DataType.UUIDV4
   })
-  declare id: string;
+  declare id: CreationOptional<string>;
 
   @AllowNull(false)
   @Column(DataType.STRING)
@@ -61,9 +64,14 @@ export class PostgresConfig extends Model<
     type: DataType.JSON,
     allowNull: true
   })
-  declare default_config: {
+  declare default_config: Nullable<{
     schema?: string;
-  };
+  }>;
+
+  @AllowNull(false)
+  @Default(false)
+  @Column(DataType.BOOLEAN)
+  declare ssl: boolean;
 
   @Unique
   @ForeignKey(() => SlackWorkspace)

@@ -6,7 +6,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { JiraConfig, HubspotConfig } from '../database/models';
+import { JiraConfig, HubspotConfig, PostgresConfig } from '../database/models';
 import { ToolInstallState } from '@quix/lib/types/common';
 import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -14,6 +14,8 @@ import { HubspotTokenResponse, HubspotHubInfo } from './types';
 import { ViewSubmitAction } from '@slack/bolt';
 import { parseInputBlocksSubmission } from '@quix/lib/utils/slack';
 import { KnownBlock } from '@slack/web-api';
+import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
+
 @Injectable()
 export class IntegrationsInstallService {
   private readonly logger = new Logger(IntegrationsInstallService.name);
@@ -27,6 +29,8 @@ export class IntegrationsInstallService {
     @InjectModel(HubspotConfig)
     private readonly hubspotConfigModel: typeof HubspotConfig,
     private readonly eventEmitter: EventEmitter2,
+    @InjectModel(PostgresConfig)
+    private readonly postgresConfigModel: typeof PostgresConfig
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
@@ -167,5 +171,24 @@ export class IntegrationsInstallService {
       payload.view.state.values
     );
     console.log(parsedResponse);
+    // validate the response
+    if (![
+      SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.HOST,
+      SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PORT,
+      SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.USER,
+      SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PASSWORD,
+      SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DATABASE].every(field => parsedResponse[field].selectedValue)) {
+      throw new BadRequestException('Invalid response');
+    }
+    const sslResponse = parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.SSL].selectedValue;
+    await this.postgresConfigModel.create({
+      host: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.HOST].selectedValue as string,
+      port: parseInt(parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PORT].selectedValue as string),
+      user: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.USER].selectedValue as string,
+      password: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PASSWORD].selectedValue as string,
+      database: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DATABASE].selectedValue as string,
+      team_id: payload.view.team_id,
+      ssl: sslResponse ? Boolean(sslResponse.length > 0) : false,
+    });
   }
 }
