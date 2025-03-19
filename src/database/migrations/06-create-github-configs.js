@@ -36,6 +36,11 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
+      default_config: {
+        type: Sequelize.JSON,
+        allowNull: true,
+        description: 'Default configuration for GitHub repositories (e.g., { repo: "default-repo", owner: "default-owner" })'
+      },
       created_at: {
         type: Sequelize.DATE,
         allowNull: false
