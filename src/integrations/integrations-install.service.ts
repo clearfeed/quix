@@ -11,7 +11,9 @@ import { ToolInstallState } from '@quix/lib/types/common';
 import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { HubspotTokenResponse, HubspotHubInfo } from './types';
-
+import { ViewSubmitAction } from '@slack/bolt';
+import { parseInputBlocksSubmission } from '@quix/lib/utils/slack';
+import { KnownBlock } from '@slack/web-api';
 @Injectable()
 export class IntegrationsInstallService {
   private readonly logger = new Logger(IntegrationsInstallService.name);
@@ -157,5 +159,13 @@ export class IntegrationsInstallService {
       this.logger.error('Failed to connect to HubSpot:', error);
       throw new BadRequestException('Failed to connect to HubSpot');
     }
+  }
+
+  async postgres(payload: ViewSubmitAction) {
+    const parsedResponse = parseInputBlocksSubmission(
+      payload.view.blocks as KnownBlock[],
+      payload.view.state.values
+    );
+    console.log(parsedResponse);
   }
 }

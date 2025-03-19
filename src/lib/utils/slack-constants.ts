@@ -1,7 +1,10 @@
 export const SLACK_ACTIONS = {
   CONNECT_TOOL: 'connect-tool-action',
   INSTALL_TOOL: 'install-tool-action',
-  SUBMIT_POSTGRES_CONNECTION: 'submit-postgres-connection'
+  SUBMIT_POSTGRES_CONNECTION: 'submit-postgres-connection',
+  POSTGRES_CONNECTION_MODAL: {
+    HOST: 'postgres_host',
+  }
 } as const;
 
 export const SLACK_SCOPES = [
