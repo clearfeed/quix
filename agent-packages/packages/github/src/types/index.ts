@@ -67,3 +67,10 @@ export interface CreateIssueParams {
   title: string,
   description?: string,
 }
+
+// Search interfaces
+export interface CodeSearchParams {
+  owner?: string,
+  repo?: string,
+  query: string,
+}

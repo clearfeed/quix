@@ -6,7 +6,7 @@ import {
   SearchIssuesResponse,
   GetPRResponse,
 } from './types';
-import { CreateIssueParams } from './types/index';
+import { CodeSearchParams, CreateIssueParams } from './types/index';
 
 export * from './types';
 export * from './tools';
@@ -218,6 +218,44 @@ export class GitHubService implements BaseService<GitHubConfig> {
     } catch (error) {
       console.error('Error creating GitHub issue:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Failed to create GitHub issue' };
+    }
+  }
+
+  async searchCode(params: CodeSearchParams): Promise<BaseResponse<RestEndpointMethodTypes['search']['code']['response']['data']['items']>> {
+    try {
+      const owner = params?.owner || this.config.owner;
+      const repo = params?.repo || this.config.repo;
+      const query = params.query;
+
+      if (!owner) {
+        return {
+          success: false,
+          error: 'Owner must be provided when no default owner is configured.'
+        };
+      }
+
+      if (!repo) {
+        return {
+          success: false,
+          error: 'Repository name must be provided when no default repository is configured.'
+        };
+      }
+
+      const response = await this.client.search.code({
+        q: `${query} repo:${owner}/${repo}`,
+        per_page: 10
+      });
+
+      return {
+        success: true,
+        data: response.data.items
+      };
+    } catch (error) {
+      console.error('Error searching GitHub code:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to search GitHub code'
+      };
     }
   }
 } 
