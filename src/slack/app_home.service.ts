@@ -92,8 +92,7 @@ export class AppHomeService {
   private async handleConnectionOverflowMenu(action: OverflowAction, teamId: string, userId: string, triggerId: string) {
     const selectedOption = action.selected_option?.value as 'edit' | 'disconnect' | undefined;
     const connectionInfo: {
-      type: SUPPORTED_INTEGRATIONS,
-      id: string
+      type: SUPPORTED_INTEGRATIONS
     } = JSON.parse(action.block_id);
     const integration = INTEGRATIONS.find(integration => integration.value === connectionInfo.type);
     if (!integration) return;
@@ -102,26 +101,42 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     switch (selectedOption) {
       case 'edit':
-        if (connectionInfo.type === SUPPORTED_INTEGRATIONS.POSTGRES) {
-          const { postgresConfig } = slackWorkspace;
-          if (!postgresConfig) return;
-          await publishPostgresConnectionModal(webClient, {
-            triggerId,
-            teamId,
-            initialValues: {
-              id: postgresConfig.id,
-              host: postgresConfig.host,
-              port: postgresConfig.port.toString(),
-              username: postgresConfig.user,
-              password: postgresConfig.password,
-              database: postgresConfig.database,
-              ssl: postgresConfig.ssl
-            }
-          });
+        switch (connectionInfo.type) {
+          case SUPPORTED_INTEGRATIONS.POSTGRES:
+            const { postgresConfig } = slackWorkspace;
+            if (!postgresConfig) return;
+            await publishPostgresConnectionModal(webClient, {
+              triggerId,
+              teamId,
+              initialValues: {
+                id: postgresConfig.id,
+                host: postgresConfig.host,
+                port: postgresConfig.port.toString(),
+                username: postgresConfig.user,
+                password: postgresConfig.password,
+                database: postgresConfig.database,
+                ssl: postgresConfig.ssl
+              }
+            });
+            break;
+          default:
+            break;
         }
         break;
       case 'disconnect':
-        await this.integrationsService.removePostgresConfig(connectionInfo.id);
+        switch (connectionInfo.type) {
+          case SUPPORTED_INTEGRATIONS.POSTGRES:
+            await this.integrationsService.removePostgresConfig(teamId);
+            break;
+          case SUPPORTED_INTEGRATIONS.HUBSPOT:
+            await this.integrationsService.removeHubspotConfig(teamId);
+            break;
+          case SUPPORTED_INTEGRATIONS.JIRA:
+            await this.integrationsService.removeJiraConfig(teamId);
+            break;
+          default:
+            break;
+        }
         await webClient.views.publish({
           user_id: userId,
           view: getHomeView({

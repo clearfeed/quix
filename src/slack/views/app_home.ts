@@ -111,7 +111,6 @@ const getIntegrationInfo = (selectedTool: typeof INTEGRATIONS[number]['value'], 
   return BlockCollection([
     Blocks.Section({ blockId: JSON.stringify({
       type: integration.value,
-      id: connection?.id
     }) })
       .text(connection ? getConnectionInfo(connection) : integration.helpText)
       .accessory(
