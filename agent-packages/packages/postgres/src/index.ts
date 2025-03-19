@@ -19,7 +19,6 @@ export class PostgresService implements BaseService<PostgresConfig> {
   async listTables(): Promise<BaseResponse<string[]>> {
     const client = await this.pool.connect();
     try {
-      console.log('Listing tables');
       const res = await client.query(`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'`);
       return { success: true, data: res.rows.map((row: { table_name: string }) => row.table_name) };
     } catch (error) {
@@ -32,7 +31,6 @@ export class PostgresService implements BaseService<PostgresConfig> {
   async getTableSchema(tableName: string): Promise<BaseResponse<string[]>> {
     const client = await this.pool.connect();
     try {
-      console.log('Getting table schema for table:', tableName);
       const res = await client.query(`SELECT column_name, data_type FROM information_schema.columns WHERE table_name = $1`, [tableName]);
       return { success: true, data: res.rows };
     } catch (error) {
@@ -46,7 +44,6 @@ export class PostgresService implements BaseService<PostgresConfig> {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN TRANSACTION READ ONLY");
-      console.log('Querying database:', query);
       const res = await client.query(query);
       await client.query("COMMIT");
       return { success: true, data: res.rows };
