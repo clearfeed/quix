@@ -3,7 +3,7 @@ import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { BlockElementAction, ButtonAction, StaticSelectAction } from '@slack/bolt';
 import { AppHomeOpenedEvent } from '@slack/web-api';
 import { WebClient } from '@slack/web-api';
-import { getHomeView, getPostgresConnectionModal, publishPostgresConnectionModal } from './views/app_home';
+import { getHomeView, publishPostgresConnectionModal } from './views/app_home';
 import { INTEGRATIONS, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
 import { SlackWorkspace } from '@quix/database/models';
@@ -32,10 +32,6 @@ export class AppHomeService {
       case SLACK_ACTIONS.INSTALL_TOOL:
         if (action.type !== 'button') return;
         this.handleInstallTool(action, teamId, userId, triggerId);
-        break;
-      case SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION:
-        console.log('handleSubmitPostgresConnection', action);
-        // this.handleSubmitPostgresConnection(action, teamId, userId);
         break;
       case SLACK_ACTIONS.CONNECT_TOOL:
         if (action.type !== 'static_select') return;
@@ -71,9 +67,18 @@ export class AppHomeService {
     if (!slackWorkspace) return;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     if (selectedTool === SUPPORTED_INTEGRATIONS.POSTGRES) {
+      const initialValues = slackWorkspace.postgresConfig ? {
+        host: slackWorkspace.postgresConfig.host,
+        port: slackWorkspace.postgresConfig.port?.toString(),
+        username: slackWorkspace.postgresConfig.user,
+        password: slackWorkspace.postgresConfig.password,
+        database: slackWorkspace.postgresConfig.database,
+        ssl: slackWorkspace.postgresConfig.ssl ? 'true' : 'false'
+      } : undefined;
       await publishPostgresConnectionModal(webClient, {
         triggerId,
-        teamId
+        teamId,
+        initialValues
       });
     }
   }

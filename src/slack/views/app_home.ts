@@ -3,9 +3,9 @@ import { SLACK_ACTIONS } from "@quix/lib/utils/slack-constants";
 import { HomeViewArgs, PostgresConnectionModalArgs } from "./types";
 import { INTEGRATIONS } from "@quix/lib/constants";
 import { getInstallUrl } from "@quix/lib/utils/slack";
-import { HubspotConfig, JiraConfig } from "@quix/database/models";
+import { HubspotConfig, JiraConfig, PostgresConfig } from "@quix/database/models";
 import { BlockCollection, Button, Input, Modal, Section, Surfaces, Elements, Bits } from "slack-block-builder";
-
+import { WebClient } from "@slack/web-api";
 export const getHomeView = (args: HomeViewArgs): HomeView => {
   const { selectedTool, teamId, connection } = args;
   return {
@@ -78,6 +78,8 @@ const getConnectionInfo = (connection: HomeViewArgs['connection']): string => {
       return `Connected to ${connection.url}`;
     case connection instanceof HubspotConfig:
       return `Connected to ${connection.hub_domain}`;
+    case connection instanceof PostgresConfig:
+      return `Connected to ${connection.host}`;
     default:
       return '';
   }
@@ -180,7 +182,7 @@ export const getPostgresConnectionModal = (args: PostgresConnectionModalArgs): B
  * Publishes a modal to collect PostgreSQL connection details
  */
 export const publishPostgresConnectionModal = async (
-  client: any, // Use your Slack WebClient type here
+  client: WebClient,
   args: PostgresConnectionModalArgs
 ): Promise<void> => {
   try {
