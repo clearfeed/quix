@@ -1,11 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BlockAction, BlockElementAction, BlockOverflowAction, MessageShortcut, SlackShortcut, ViewSubmitAction } from '@slack/bolt';
 import { AppHomeService } from './app_home.service';
+import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
+import { IntegrationsInstallService } from '../integrations/integrations-install.service';
 @Injectable()
 export class InteractionsService {
   private readonly logger = new Logger(InteractionsService.name);
   constructor(
-    private readonly appHomeService: AppHomeService
+    private readonly appHomeService: AppHomeService,
+    private readonly integrationsInstallService: IntegrationsInstallService
   ) { }
 
   async handleInteraction(
@@ -14,7 +17,7 @@ export class InteractionsService {
     if (payload.type === 'block_actions') {
       return this.handleBlockAction(payload);
     } else if (payload.type === 'view_submission') {
-      // return this.handleViewSubmission(payload);
+      return this.handleViewSubmission(payload);
     } else if (payload.type === 'message_action') {
       // return this.handleMessageAction(payload);
     } else if (payload.type === 'shortcut') {
@@ -30,7 +33,16 @@ export class InteractionsService {
       return;
     }
     if (eventAction.view?.type === 'home') {
-      this.appHomeService.handleAppHomeInteractions(action, teamId, eventAction.user.id);
+      this.appHomeService.handleAppHomeInteractions(action, teamId, eventAction.user.id, eventAction.trigger_id);
+    }
+  }
+
+  async handleViewSubmission(payload: ViewSubmitAction) {
+    switch (payload.view.callback_id) {
+      case SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION:
+        return this.integrationsInstallService.postgres(payload);
+      default:
+        return;
     }
   }
 }
