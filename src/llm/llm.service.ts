@@ -35,8 +35,6 @@ export class LlmService {
     const toolSelection = await this.toolSelection(message, tools, previousMessages);
     this.logger.log(`Selected tool: ${toolSelection.selectedTool}`);
 
-    console.log(toolSelection)
-
     if (toolSelection.selectedTool === 'none') {
       return toolSelection.content;
     }

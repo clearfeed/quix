@@ -62,7 +62,7 @@ export class IntegrationsService {
   }
 
   async updateGithubConfig(githubConfig: GithubConfig): Promise<GithubConfig> {
-    // Write the expiry code like hubspot and jira - according to github's expiry
+    // Token expiry logic.
     return githubConfig;
   }
 }

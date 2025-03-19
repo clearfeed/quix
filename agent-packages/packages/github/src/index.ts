@@ -23,10 +23,6 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   constructor(private config: GitHubConfig) {
     this.client = new Octokit({ auth: config.token });
-    // if (!config.token || !config.owner) {
-    //   throw new Error('GitHub integration is not configured. Please set GITHUB_TOKEN and GITHUB_OWNER environment variables.');
-    // }
-    console.log(config)
     if (!config.token) {
       throw new Error('GitHub integration is not configured. Please install Github in your app.');
     }
@@ -34,6 +30,18 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async searchIssues(params: SearchIssuesParams): Promise<SearchIssuesResponse> {
     try {
+      if (!this.config.owner) {
+        return {
+          success: false,
+          error: 'Owner must be provided when no default owner is configured.'
+        }
+      }
+      if (!params.repo) {
+        return {
+          success: false,
+          error: 'Repository name must be provided to search issues.'
+        }
+      }
 
       let query = `repo:${this.config.owner}/${params.repo} is:${params.type}`;
       if (params.keyword) query += ` in:title,body ${params.keyword}`;
@@ -64,14 +72,6 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async getIssue(issueNumber: number, repo: string): Promise<BaseResponse<RestEndpointMethodTypes['issues']['get']['response']['data']>> {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return {
-          success: false,
-          error: validation.error
-        }
-      }
-
       if (!this.config.owner) {
         return {
           success: false,
@@ -102,15 +102,6 @@ export class GitHubService implements BaseService<GitHubConfig> {
     BaseResponse<RestEndpointMethodTypes['issues']['addAssignees']['response']['data']>
   > {
     try {
-
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return {
-          success: false,
-          error: validation.error
-        }
-      }
-
       if (!this.config.owner) {
         return {
           success: false,
@@ -143,15 +134,6 @@ export class GitHubService implements BaseService<GitHubConfig> {
     BaseResponse<RestEndpointMethodTypes['issues']['removeAssignees']['response']['data']>
   > {
     try {
-
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return {
-          success: false,
-          error: validation.error
-        }
-      }
-
       if (!this.config.owner) {
         return {
           success: false,
@@ -182,14 +164,6 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async getUsers(): Promise<BaseResponse<RestEndpointMethodTypes['orgs']['listMembers']['response']['data']>> {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return {
-          success: false,
-          error: validation.error
-        }
-      }
-
       if (!this.config.owner) {
         return {
           success: false,
@@ -213,11 +187,6 @@ export class GitHubService implements BaseService<GitHubConfig> {
       const repo = params?.repo || this.config.repo;
       const title = params.title;
       const description = params?.description;
-
-      console.log("Owner", owner);
-      console.log("Repo", repo);
-      console.log("Title", title);
-      console.log("Description", description);
 
       if (!owner) {
         return {
