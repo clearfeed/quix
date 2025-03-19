@@ -165,7 +165,7 @@ export class IntegrationsInstallService {
     }
   }
 
-  async postgres(payload: ViewSubmitAction) {
+  async postgres(payload: ViewSubmitAction): Promise<PostgresConfig> {
     const parsedResponse = parseInputBlocksSubmission(
       payload.view.blocks as KnownBlock[],
       payload.view.state.values
@@ -180,7 +180,7 @@ export class IntegrationsInstallService {
       throw new BadRequestException('Invalid response');
     }
     const sslResponse = parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.SSL].selectedValue;
-    await this.postgresConfigModel.upsert({
+    const [postgresConfig] = await this.postgresConfigModel.upsert({
       id,
       host: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.HOST].selectedValue as string,
       port: parseInt(parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PORT].selectedValue as string),
@@ -190,5 +190,12 @@ export class IntegrationsInstallService {
       team_id: payload.view.team_id,
       ssl: sslResponse ? Boolean(sslResponse.length > 0) : false,
     });
+    this.eventEmitter.emit(EVENT_NAMES.POSTGRES_CONNECTED, {
+      teamId: payload.view.team_id,
+      appId: payload.view.app_id!,
+      type: SUPPORTED_INTEGRATIONS.POSTGRES,
+      userId: payload.user.id,
+    } satisfies IntegrationConnectedEvent);
+    return postgresConfig;
   }
 }

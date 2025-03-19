@@ -3,6 +3,7 @@ import { BlockAction, BlockElementAction, BlockOverflowAction, MessageShortcut, 
 import { AppHomeService } from './app_home.service';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { IntegrationsInstallService } from '../integrations/integrations-install.service';
+import { SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 @Injectable()
 export class InteractionsService {
   private readonly logger = new Logger(InteractionsService.name);
@@ -40,7 +41,9 @@ export class InteractionsService {
   async handleViewSubmission(payload: ViewSubmitAction) {
     switch (payload.view.callback_id) {
       case SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION:
-        return this.integrationsInstallService.postgres(payload);
+        const postgresConfig = await this.integrationsInstallService.postgres(payload);
+        this.appHomeService.handlePostgresConnected(payload.user.id, payload.view.team_id, postgresConfig);
+        break;
       default:
         return;
     }

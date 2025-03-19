@@ -1,14 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { JiraConfig, HubspotConfig } from '../database/models';
+import { JiraConfig, HubspotConfig, PostgresConfig } from '../database/models';
 import { TimeInMilliSeconds } from '@quix/lib/constants';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
+import { InjectModel } from '@nestjs/sequelize';
 @Injectable()
 export class IntegrationsService {
   private readonly logger = new Logger(IntegrationsService.name);
   constructor(
     private readonly httpService: HttpService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    @InjectModel(PostgresConfig)
+    private readonly postgresConfigModel: typeof PostgresConfig
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
@@ -59,5 +62,9 @@ export class IntegrationsService {
       return hubspotConfig;
     }
     return hubspotConfig;
+  }
+
+  async removePostgresConfig(id: string) {
+    await this.postgresConfigModel.destroy({ where: { id } });
   }
 }

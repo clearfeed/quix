@@ -9,7 +9,8 @@ export const SLACK_ACTIONS = {
     PASSWORD: 'postgres_password',
     DATABASE: 'postgres_database',
     SSL: 'postgres_ssl'
-  }
+  },
+  CONNECTION_OVERFLOW_MENU: 'connection-overflow-menu'
 } as const;
 
 export const SLACK_SCOPES = [

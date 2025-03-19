@@ -4,7 +4,7 @@ import { HomeViewArgs, PostgresConnectionModalArgs } from "./types";
 import { INTEGRATIONS } from "@quix/lib/constants";
 import { getInstallUrl } from "@quix/lib/utils/slack";
 import { HubspotConfig, JiraConfig, PostgresConfig } from "@quix/database/models";
-import { BlockCollection, Button, Input, Modal, Section, Surfaces, Elements, Bits } from "slack-block-builder";
+import { BlockCollection, Button, Input, Modal, Section, Surfaces, Elements, Bits, Blocks, Md } from "slack-block-builder";
 import { WebClient } from "@slack/web-api";
 export const getHomeView = (args: HomeViewArgs): HomeView => {
   const { selectedTool, teamId, connection } = args;
@@ -85,30 +85,39 @@ const getConnectionInfo = (connection: HomeViewArgs['connection']): string => {
   }
 }
 
-const getIntegrationInfo = (selectedTool: typeof INTEGRATIONS[number]['value'], teamId: string, connection?: HomeViewArgs['connection']): SectionBlock[] => {
+const getIntegrationInfo = (selectedTool: typeof INTEGRATIONS[number]['value'], teamId: string, connection?: HomeViewArgs['connection']): ReturnType<typeof BlockCollection> => {
   const integration = INTEGRATIONS.find(integration => integration.value === selectedTool);
   if (!integration) return [];
-  return [
-    {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": `${connection ? getConnectionInfo(connection) : integration.helpText}`
-      },
-      "accessory": {
-        "type": "button",
-        "text": {
-          "type": "plain_text",
-          "text": `${connection ? 'Reconnect' : 'Connect'} ${integration?.name}`,
-          "emoji": true
-        },
-        "style": connection ? 'danger' : 'primary',
-        "value": selectedTool,
-        "url": integration.oauth ? getInstallUrl(selectedTool, teamId) : undefined,
-        "action_id": SLACK_ACTIONS.INSTALL_TOOL
-      },
-    }
-  ]
+  const overflowMenuOptions = [
+    Bits.Option({
+      text: `${Md.emoji('no_entry')} Disconnect`,
+      value: 'disconnect',
+    })
+  ];
+  if (connection instanceof PostgresConfig) {
+    overflowMenuOptions.unshift(
+      Bits.Option({
+        text: `${Md.emoji('pencil')} Edit`,
+        value: 'edit',
+      })
+    )
+  }
+  const accessory = connection ? Elements.OverflowMenu({ actionId: SLACK_ACTIONS.CONNECTION_OVERFLOW_MENU }).options(overflowMenuOptions) : Elements.Button({
+    text: 'Connect',
+    actionId: SLACK_ACTIONS.INSTALL_TOOL,
+    value: selectedTool,
+    url: integration.oauth ? getInstallUrl(selectedTool, teamId) : undefined,
+  }).primary();
+  return BlockCollection([
+    Blocks.Section({ blockId: JSON.stringify({
+      type: integration.value,
+      id: connection?.id
+    }) })
+      .text(connection ? getConnectionInfo(connection) : integration.helpText)
+      .accessory(
+        accessory
+      )
+  ]);
 }
 
 export const getPostgresConnectionModal = (args: PostgresConnectionModalArgs): Block[] => {

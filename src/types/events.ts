@@ -7,6 +7,7 @@ export type IntegrationConnectedEvent = {
   teamId: string;
   appId: string;
   type: SUPPORTED_INTEGRATIONS;
+  userId?: string;
 };
 
 // Event name constants to avoid string literals

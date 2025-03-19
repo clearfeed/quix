@@ -16,6 +16,7 @@ import { CreationOptional, InferAttributes, InferCreationAttributes, NonAttribut
 import { encrypt, decrypt } from '../../lib/utils/encryption';
 import { SlackWorkspace } from './slack-workspace.model';
 import { Nullable } from '@quix/lib/types/common';
+import { isEmpty } from 'lodash';
 
 @Table({ tableName: 'postgres_configs' })
 export class PostgresConfig extends Model<
