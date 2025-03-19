@@ -6,6 +6,7 @@ import {
   SearchIssuesResponse,
   GetPRResponse,
 } from './types';
+import { CreateIssueParams } from './types/index';
 
 export * from './types';
 export * from './tools';
@@ -14,16 +15,20 @@ export class GitHubService implements BaseService<GitHubConfig> {
   private client: Octokit;
 
   validateConfig() {
-    if (!this.config.token || !this.config.owner) {
-      return { isValid: false, error: 'GitHub integration is not configured. Please set GITHUB_TOKEN and GITHUB_OWNER environment variables.' };
+    if (!this.config.token || !this.config.owner || !this.config.repo) {
+      return { isValid: false, error: 'GitHub integration is not configured. Please pass in a token, owner and a repo.' };
     }
     return { isValid: true };
   }
 
   constructor(private config: GitHubConfig) {
     this.client = new Octokit({ auth: config.token });
-    if (!config.token || !config.owner) {
-      throw new Error('GitHub integration is not configured. Please set GITHUB_TOKEN and GITHUB_OWNER environment variables.');
+    // if (!config.token || !config.owner) {
+    //   throw new Error('GitHub integration is not configured. Please set GITHUB_TOKEN and GITHUB_OWNER environment variables.');
+    // }
+    console.log(config)
+    if (!config.token) {
+      throw new Error('GitHub integration is not configured. Please install Github in your app.');
     }
   }
 
@@ -59,6 +64,28 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async getIssue(issueNumber: number, repo: string): Promise<BaseResponse<RestEndpointMethodTypes['issues']['get']['response']['data']>> {
     try {
+      const validation = this.validateConfig();
+      if (!validation.isValid) {
+        return {
+          success: false,
+          error: validation.error
+        }
+      }
+
+      if (!this.config.owner) {
+        return {
+          success: false,
+          error: 'Owner must be provided when no default owner is configured.'
+        }
+      }
+
+      if (!repo && !this.config.repo) {
+        return {
+          success: false,
+          error: 'Repository name must be provided when no default Repository is configured.'
+        }
+      }
+
       const response = await this.client.issues.get({
         owner: this.config.owner,
         repo,
@@ -75,6 +102,29 @@ export class GitHubService implements BaseService<GitHubConfig> {
     BaseResponse<RestEndpointMethodTypes['issues']['addAssignees']['response']['data']>
   > {
     try {
+
+      const validation = this.validateConfig();
+      if (!validation.isValid) {
+        return {
+          success: false,
+          error: validation.error
+        }
+      }
+
+      if (!this.config.owner) {
+        return {
+          success: false,
+          error: 'Owner must be provided when no default owner is configured.'
+        }
+      }
+
+      if (!repo && !this.config.repo) {
+        return {
+          success: false,
+          error: 'Repository name must be provided when no default Repository is configured.'
+        }
+      }
+
       const response = await this.client.issues.addAssignees({
         owner: this.config.owner,
         repo,
@@ -93,6 +143,29 @@ export class GitHubService implements BaseService<GitHubConfig> {
     BaseResponse<RestEndpointMethodTypes['issues']['removeAssignees']['response']['data']>
   > {
     try {
+
+      const validation = this.validateConfig();
+      if (!validation.isValid) {
+        return {
+          success: false,
+          error: validation.error
+        }
+      }
+
+      if (!this.config.owner) {
+        return {
+          success: false,
+          error: 'Owner must be provided when no default owner is configured.'
+        }
+      }
+
+      if (!repo && !this.config.repo) {
+        return {
+          success: false,
+          error: 'Repository name must be provided when no default Repository is configured.'
+        }
+      }
+
       const response = await this.client.issues.removeAssignees({
         owner: this.config.owner,
         repo,
@@ -109,6 +182,21 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async getUsers(): Promise<BaseResponse<RestEndpointMethodTypes['orgs']['listMembers']['response']['data']>> {
     try {
+      const validation = this.validateConfig();
+      if (!validation.isValid) {
+        return {
+          success: false,
+          error: validation.error
+        }
+      }
+
+      if (!this.config.owner) {
+        return {
+          success: false,
+          error: 'Owner must be provided when no default owner is configured.'
+        }
+      }
+
       const response = await this.client.orgs.listMembers({
         org: this.config.owner
       });
@@ -116,6 +204,51 @@ export class GitHubService implements BaseService<GitHubConfig> {
     } catch (error) {
       console.error('Error fetching GitHub users:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch GitHub users' };
+    }
+  }
+
+  async createIssue(params: CreateIssueParams): Promise<BaseResponse<{ issueUrl: string }>> {
+    try {
+      const owner = params?.owner || this.config.owner;
+      const repo = params?.repo || this.config.repo;
+      const title = params.title;
+      const description = params?.description;
+
+      console.log("Owner", owner);
+      console.log("Repo", repo);
+      console.log("Title", title);
+      console.log("Description", description);
+
+      if (!owner) {
+        return {
+          success: false,
+          error: 'Owner must be provided when no default owner is configured'
+        }
+      }
+
+      if (!repo) {
+        return {
+          success: false,
+          error: 'Repository name must be provided when no default repository is configured'
+        }
+      }
+
+      const response = await this.client.issues.create({
+        owner,
+        repo,
+        title,
+        body: description || "No description provided.",
+      });
+
+      return {
+        success: true,
+        data: {
+          issueUrl: response.data.html_url
+        }
+      };
+    } catch (error) {
+      console.error('Error creating GitHub issue:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to create GitHub issue' };
     }
   }
 } 

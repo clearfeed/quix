@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { JiraConfig, HubspotConfig } from '../database/models';
+import { JiraConfig, HubspotConfig, GithubConfig } from '../database/models';
 import { TimeInMilliSeconds } from '@quix/lib/constants';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
@@ -59,5 +59,10 @@ export class IntegrationsService {
       return hubspotConfig;
     }
     return hubspotConfig;
+  }
+
+  async updateGithubConfig(githubConfig: GithubConfig): Promise<GithubConfig> {
+    // Write the expiry code like hubspot and jira - according to github's expiry
+    return githubConfig;
   }
 }

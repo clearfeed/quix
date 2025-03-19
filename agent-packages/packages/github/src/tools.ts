@@ -3,6 +3,7 @@ import { GitHubService } from './index';
 import { GitHubConfig, SearchIssuesParams } from './types';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
+import { CreateIssueParams } from './types/index';
 
 const GITHUB_TOOL_SELECTION_PROMPT = `
 For GitHub-related queries, consider using GitHub tools when the user wants to:
@@ -73,7 +74,23 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
       description: 'Get all users in a GitHub organization',
       schema: {},
       func: async () => service.getUsers()
-    })
+    }),
+    new DynamicStructuredTool({
+      name: 'create_github_issue',
+      description: 'Creates an issue in a GitHub repository',
+      schema: z.object({
+        repo: config?.repo
+          ? z.string().describe('The GitHub repository name where issue will be created').optional().default(config.repo)
+          : z.string().describe('The GitHub repository name where issue will be created (required)'),
+        owner: config?.owner
+          ? z.string().describe('The owner of the repository').optional().default(config.owner)
+          : z.string().describe('The owner of the repository (requied)'),
+        title: z.string().describe('The title of the issue'),
+        description: z.string().optional().describe('The description of the issue'),
+      }),
+      func: async (params: CreateIssueParams) =>
+        service.createIssue(params),
+    }),
   ];
 
 

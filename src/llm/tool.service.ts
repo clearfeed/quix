@@ -43,7 +43,7 @@ export class ToolService {
 
   async getAvailableTools(teamId: string): Promise<Record<string, ToolConfig> | undefined> {
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
-      include: ['jiraConfig', 'hubspotConfig']
+      include: ['jiraConfig', 'hubspotConfig', 'githubConfig']
     });
     if (!slackWorkspace) return;
     const tools: Record<string, ToolConfig> = {};
@@ -63,6 +63,15 @@ export class ToolService {
     if (hubspotConfig) {
       const updatedHubspotConfig = await this.integrationsService.updateHubspotConfig(hubspotConfig);
       tools.hubspot = createHubspotToolsExport({ accessToken: updatedHubspotConfig.access_token });
+    }
+    const githubConfig = slackWorkspace.githubConfig;
+    if (githubConfig) {
+      const updatedGithubConfig = await this.integrationsService.updateGithubConfig(githubConfig);
+      tools.github = createGitHubToolsExport({
+        token: updatedGithubConfig.access_token,
+        owner: updatedGithubConfig.default_config?.owner,
+        repo: updatedGithubConfig.default_config?.repo
+      });
     }
     return tools;
   }

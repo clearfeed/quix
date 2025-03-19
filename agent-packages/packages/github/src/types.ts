@@ -3,7 +3,8 @@ import { RestEndpointMethodTypes } from '@octokit/rest';
 
 export interface GitHubConfig extends BaseConfig {
   token: string;
-  owner: string;
+  owner?: string;
+  repo?: string;
 }
 
 type SearchResultItem = RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'][number];
