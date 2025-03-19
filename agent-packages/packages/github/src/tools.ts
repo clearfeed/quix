@@ -3,7 +3,7 @@ import { GitHubService } from './index';
 import { GitHubConfig, SearchIssuesParams } from './types';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { CreateIssueParams } from './types/index';
+import { CodeSearchParams, CreateIssueParams } from './types/index';
 
 const GITHUB_TOOL_SELECTION_PROMPT = `
 For GitHub-related queries, consider using GitHub tools when the user wants to:
@@ -90,6 +90,20 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
       }),
       func: async (params: CreateIssueParams) =>
         service.createIssue(params),
+    }),
+    new DynamicStructuredTool({
+      name: 'search_github_code',
+      description: 'Search for code snippets in a GitHub repository based on keywords.',
+      schema: z.object({
+        repo: config?.repo
+          ? z.string().describe('The name of the GitHub repository to search in').optional().default(config.repo)
+          : z.string().describe('The name of the GitHub repository to search in (required)'),
+        owner: config?.owner
+          ? z.string().describe('The owner of the GitHub repository').optional().default(config.owner)
+          : z.string().describe('The owner of the GitHub repository (required)'),
+        query: z.string().describe('The keyword to search for in code files within the repository')
+      }),
+      func: async (params: CodeSearchParams) => service.searchCode(params)
     }),
   ];
 
