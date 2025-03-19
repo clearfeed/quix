@@ -14,6 +14,7 @@ import {
 import { CreationOptional, InferAttributes, InferCreationAttributes, NonAttribute } from 'sequelize';
 import { encrypt, decrypt } from '../../lib/utils/encryption';
 import { SlackWorkspace } from './slack-workspace.model';
+import { Nullable } from '@quix/lib/types/common';
 
 @Table({ tableName: 'github_configs' })
 export class GithubConfig extends Model<
@@ -50,6 +51,15 @@ export class GithubConfig extends Model<
   @AllowNull(false)
   @Column(DataType.STRING)
   declare team_id: string;
+
+  @Column({
+    type: DataType.JSON,
+    allowNull: true
+  })
+  declare default_config: Nullable<{
+    repo?: string;
+    owner?: string;
+  }>;
 
   @BelongsTo(() => SlackWorkspace, {
     foreignKey: 'team_id',
