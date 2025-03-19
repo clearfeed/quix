@@ -170,8 +170,7 @@ export class IntegrationsInstallService {
       payload.view.blocks as KnownBlock[],
       payload.view.state.values
     );
-    console.log(parsedResponse);
-    // validate the response
+    const id = JSON.parse(payload.view.private_metadata).id;
     if (![
       SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.HOST,
       SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PORT,
@@ -181,7 +180,8 @@ export class IntegrationsInstallService {
       throw new BadRequestException('Invalid response');
     }
     const sslResponse = parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.SSL].selectedValue;
-    await this.postgresConfigModel.create({
+    await this.postgresConfigModel.upsert({
+      id,
       host: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.HOST].selectedValue as string,
       port: parseInt(parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PORT].selectedValue as string),
       user: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.USER].selectedValue as string,

@@ -197,7 +197,10 @@ export const publishPostgresConnectionModal = async (
           close: 'Cancel',
           callbackId: SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION
         }).buildToObject(),
-        blocks: modal
+        blocks: modal,
+        private_metadata: JSON.stringify({
+          id: args.initialValues?.id
+        })
       }
     });
   } catch (error) {

@@ -68,12 +68,13 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     if (selectedTool === SUPPORTED_INTEGRATIONS.POSTGRES) {
       const initialValues = slackWorkspace.postgresConfig ? {
+        id: slackWorkspace.postgresConfig.id,
         host: slackWorkspace.postgresConfig.host,
         port: slackWorkspace.postgresConfig.port?.toString(),
         username: slackWorkspace.postgresConfig.user,
         password: slackWorkspace.postgresConfig.password,
         database: slackWorkspace.postgresConfig.database,
-        ssl: slackWorkspace.postgresConfig.ssl ? 'true' : 'false'
+        ssl: slackWorkspace.postgresConfig.ssl ? true : false
       } : undefined;
       await publishPostgresConnectionModal(webClient, {
         triggerId,

@@ -12,11 +12,12 @@ export type PostgresConnectionModalArgs = {
   teamId: string;
   callbackId?: string;
   initialValues?: {
+    id?: string;
     host?: string;
     port?: string;
     database?: string;
     username?: string;
     password?: string;
-    ssl?: string;
+    ssl?: boolean;
   };
 }
