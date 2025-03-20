@@ -16,11 +16,15 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
     Blocks.Context().elements('Quix helps you talk to your business tools from Slack.'),
     Blocks.Divider()
   ];
-  blocks.push(...getOpenAIView(slackWorkspace));
-  if (slackWorkspace.openai_key) {
-    blocks.push(Blocks.Divider());
-    blocks.push(...getToolConnectionView(selectedTool));
-    if (selectedTool) blocks.push(...getIntegrationInfo(selectedTool, slackWorkspace.team_id, connection));
+  if (slackWorkspace.isAdmin(args.userId)) {
+    blocks.push(...getOpenAIView(slackWorkspace));
+    if (slackWorkspace.openai_key) {
+      blocks.push(Blocks.Divider());
+      blocks.push(...getToolConnectionView(selectedTool));
+      if (selectedTool) blocks.push(...getIntegrationInfo(selectedTool, slackWorkspace.team_id, connection));
+    }
+  } else {
+    blocks.push(...getNonAdminView(slackWorkspace));
   }
   return {
     type: 'home',
@@ -257,4 +261,16 @@ export const publishOpenaiKeyModal = async (
     }
   });
 };
+
+const getNonAdminView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
+  let warningText = '';
+  if (slackWorkspace.admin_user_ids.length) {
+    warningText += `Please contact one of the admins (${slackWorkspace.admin_user_ids.map(admin => `<@${admin}>`).join(', ')}) to get access.`
+  } else {
+    warningText += 'Please contact support@quixagent.app to get access.'
+  }
+  return [
+    Blocks.Section({ text: `${Md.emoji('warning')} You are not authorized to configure Quix. ${warningText}` })
+  ]
+}
 

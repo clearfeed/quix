@@ -5,6 +5,7 @@ export type HomeViewArgs = {
   slackWorkspace: SlackWorkspace;
   selectedTool?: typeof INTEGRATIONS[number]['value'];
   connection?: JiraConfig | HubspotConfig | PostgresConfig;
+  userId: string;
 }
 
 export type PostgresConnectionModalArgs = {

@@ -25,7 +25,7 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: event.user,
-      view: getHomeView({ slackWorkspace })
+      view: getHomeView({ slackWorkspace, userId: event.user })
     });
   }
 
@@ -66,7 +66,8 @@ export class AppHomeService {
       view: getHomeView({
         selectedTool,
         slackWorkspace,
-        connection: integration ? slackWorkspace[integration.relation as keyof SlackWorkspace] : undefined
+        connection: integration ? slackWorkspace[integration.relation as keyof SlackWorkspace] : undefined,
+        userId
       })
     });
 
@@ -149,7 +150,8 @@ export class AppHomeService {
           user_id: userId,
           view: getHomeView({
             slackWorkspace,
-            connection: undefined
+            connection: undefined,
+            userId
           })
         });
         break;
@@ -165,7 +167,8 @@ export class AppHomeService {
       view: getHomeView({
         slackWorkspace,
         selectedTool: SUPPORTED_INTEGRATIONS.POSTGRES,
-        connection: postgresConfig
+        connection: postgresConfig,
+        userId
       })
     });
   }
@@ -190,7 +193,8 @@ export class AppHomeService {
       user_id: userId,
       view: getHomeView({
         slackWorkspace,
-        connection: undefined
+        connection: undefined,
+        userId
       })
     });
   }
@@ -215,7 +219,8 @@ export class AppHomeService {
           user_id: userId,
           view: getHomeView({
             slackWorkspace,
-            connection: undefined
+            connection: undefined,
+            userId
           })
         });
         break;
