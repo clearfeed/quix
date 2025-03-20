@@ -8,6 +8,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { SlackWorkspace } from '../database/models';
 import { IntegrationsService } from '../integrations/integrations.service';
+import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 @Injectable()
 export class ToolService {
   constructor(
@@ -43,7 +44,7 @@ export class ToolService {
 
   async getAvailableTools(teamId: string): Promise<Record<string, ToolConfig> | undefined> {
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
-      include: ['jiraConfig', 'hubspotConfig']
+      include: ['jiraConfig', 'hubspotConfig', 'postgresConfig']
     });
     if (!slackWorkspace) return;
     const tools: Record<string, ToolConfig> = {};
@@ -63,6 +64,17 @@ export class ToolService {
     if (hubspotConfig) {
       const updatedHubspotConfig = await this.integrationsService.updateHubspotConfig(hubspotConfig);
       tools.hubspot = createHubspotToolsExport({ accessToken: updatedHubspotConfig.access_token });
+    }
+    const postgresConfig = slackWorkspace.postgresConfig;
+    if (postgresConfig) {
+      tools.postgres = createPostgresToolsExport({
+        host: postgresConfig.host,
+        port: postgresConfig.port,
+        user: postgresConfig.user,
+        password: postgresConfig.password,
+        database: postgresConfig.database,
+        ssl: postgresConfig.ssl
+      });
     }
     return tools;
   }

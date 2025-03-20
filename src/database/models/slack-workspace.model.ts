@@ -17,6 +17,7 @@ import { JiraConfig } from './jira-config.model';
 import { SlackUserProfile } from './slack-user-profile.model';
 import { HubspotConfig } from './hubspot-config.model';
 import { GithubConfig } from './github-config.model';
+import { PostgresConfig } from './postgres-config.model';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -85,6 +86,12 @@ export class SlackWorkspace extends Model<
     as: 'githubConfig'
   })
   declare githubConfig?: NonAttribute<GithubConfig>;
+
+  @HasOne(() => PostgresConfig, {
+    foreignKey: 'team_id',
+    as: 'postgresConfig'
+  })
+  declare postgresConfig?: NonAttribute<PostgresConfig>;
 
   @CreatedAt
   declare created_at: CreationOptional<Date>;
