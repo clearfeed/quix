@@ -1,9 +1,9 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { BlockElementAction, ButtonAction, StaticSelectAction, OverflowAction } from '@slack/bolt';
 import { AppHomeOpenedEvent } from '@slack/web-api';
 import { WebClient } from '@slack/web-api';
-import { getHomeView, publishPostgresConnectionModal } from './views/app_home';
+import { getHomeView, publishOpenaiKeyModal, publishPostgresConnectionModal, publishManageAdminsModal } from './views/app_home';
 import { INTEGRATIONS, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
 import { SlackWorkspace, PostgresConfig } from '@quix/database/models';
@@ -25,7 +25,7 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: event.user,
-      view: getHomeView({ teamId })
+      view: getHomeView({ slackWorkspace, userId: event.user })
     });
   }
 
@@ -35,9 +35,21 @@ export class AppHomeService {
         if (action.type !== 'button') return;
         this.handleInstallTool(action, teamId, userId, triggerId);
         break;
+      case SLACK_ACTIONS.ADD_OPENAI_KEY:
+        if (action.type !== 'button') return;
+        this.handleAddOpenaiKey(action, teamId, userId, triggerId);
+        break;
+      case SLACK_ACTIONS.MANAGE_ADMINS:
+        if (action.type !== 'button') return;
+        this.handleManageAdmins(action, teamId, userId, triggerId);
+        break;
       case SLACK_ACTIONS.CONNECTION_OVERFLOW_MENU:
         if (action.type !== 'overflow') return;
         this.handleConnectionOverflowMenu(action, teamId, userId, triggerId);
+        break;
+      case SLACK_ACTIONS.OPENAI_API_KEY_OVERFLOW_MENU:
+        if (action.type !== 'overflow') return;
+        this.handleOpenaiApiKeyOverflowMenu(action, teamId, userId, triggerId);
         break;
       case SLACK_ACTIONS.CONNECT_TOOL:
         if (action.type !== 'static_select') return;
@@ -57,8 +69,9 @@ export class AppHomeService {
       user_id: userId,
       view: getHomeView({
         selectedTool,
-        teamId,
-        connection: integration ? slackWorkspace[integration.relation as keyof SlackWorkspace] : undefined
+        slackWorkspace,
+        connection: integration ? slackWorkspace[integration.relation as keyof SlackWorkspace] : undefined,
+        userId
       })
     });
 
@@ -140,8 +153,9 @@ export class AppHomeService {
         await webClient.views.publish({
           user_id: userId,
           view: getHomeView({
-            teamId,
-            connection: undefined
+            slackWorkspace,
+            connection: undefined,
+            userId
           })
         });
         break;
@@ -155,9 +169,86 @@ export class AppHomeService {
     await webClient.views.publish({
       user_id: userId!,
       view: getHomeView({
-        teamId,
+        slackWorkspace,
         selectedTool: SUPPORTED_INTEGRATIONS.POSTGRES,
-        connection: postgresConfig
+        connection: postgresConfig,
+        userId
+      })
+    });
+  }
+
+  async handleAddOpenaiKey(action: ButtonAction, teamId: string, userId: string, triggerId: string) {
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
+    if (!slackWorkspace) return;
+    const webClient = new WebClient(slackWorkspace.bot_access_token);
+    await publishOpenaiKeyModal(webClient, {
+      triggerId,
+      teamId
+    });
+  }
+
+  async handleOpenaiApiKeySubmitted(userId: string, teamId: string, openaiApiKey: string) {
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
+    if (!slackWorkspace) return;
+    slackWorkspace.openai_key = openaiApiKey;
+    await slackWorkspace.save();
+    const webClient = new WebClient(slackWorkspace.bot_access_token);
+    await webClient.views.publish({
+      user_id: userId,
+      view: getHomeView({
+        slackWorkspace,
+        connection: undefined,
+        userId
+      })
+    });
+  }
+
+  async handleOpenaiApiKeyOverflowMenu(action: OverflowAction, teamId: string, userId: string, triggerId: string) {
+    const selectedOption = action.selected_option?.value as 'edit' | 'remove' | undefined;
+    if (!selectedOption) return;
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
+    if (!slackWorkspace) return;
+    const webClient = new WebClient(slackWorkspace.bot_access_token);
+    switch (selectedOption) {
+      case 'edit':
+        await publishOpenaiKeyModal(webClient, {
+          triggerId,
+          teamId
+        });
+        break;
+      case 'remove':
+        slackWorkspace.openai_key = null;
+        await slackWorkspace.save();
+        await webClient.views.publish({
+          user_id: userId,
+          view: getHomeView({
+            slackWorkspace,
+            connection: undefined,
+            userId
+          })
+        });
+        break;
+    }
+  }
+
+  private async handleManageAdmins(action: ButtonAction, teamId: string, userId: string, triggerId: string) {
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
+    if (!slackWorkspace) return;
+    const webClient = new WebClient(slackWorkspace.bot_access_token);
+    await publishManageAdminsModal(webClient, { triggerId, teamId, initialUsers: slackWorkspace.admin_user_ids });
+  }
+
+  async handleManageAdminsSubmitted(userId: string, teamId: string, adminUserIds: string[]) {
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
+    if (!slackWorkspace) return;
+    slackWorkspace.admin_user_ids = adminUserIds;
+    await slackWorkspace.save();
+    const webClient = new WebClient(slackWorkspace.bot_access_token);
+    await webClient.views.publish({
+      user_id: userId,
+      view: getHomeView({
+        slackWorkspace,
+        userId
       })
     });
   }
