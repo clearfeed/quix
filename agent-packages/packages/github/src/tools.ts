@@ -47,7 +47,7 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
         repo: z.string().describe('The name of the repository containing the issue'),
         issueNumber: z.number().describe('The number of the issue or PR to fetch. PRs and Issues are interchangeable terms in GitHub')
       }),
-      func: async (args: { repo: string; issueNumber: number }) => service.getIssue(args.issueNumber, args.repo)
+      func: async (args: { repo: string; issueNumber: number }) => service.getIssue(args.issueNumber, { repo: args.repo })
     }),
     new DynamicStructuredTool({
       name: 'add_github_assignee',
@@ -57,7 +57,7 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
         issueNumber: z.number().describe('The number of the issue or PR to add the assignee to'),
         assignee: z.string().describe('The GitHub username of the assignee')
       }),
-      func: async (args: { repo: string; issueNumber: number; assignee: string }) => service.addAssigneeToIssue(args.issueNumber, args.repo, args.assignee)
+      func: async (args: { repo: string; issueNumber: number; assignee: string }) => service.addAssigneeToIssue(args.issueNumber, args.assignee, { repo: args.repo })
     }),
     new DynamicStructuredTool({
       name: 'remove_github_assignee',
@@ -67,7 +67,7 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
         issueNumber: z.number().describe('The number of the issue or PR to remove the assignee from'),
         assignee: z.string().describe('The GitHub username of the assignee to remove')
       }),
-      func: async (args: { repo: string; issueNumber: number; assignee: string }) => service.removeAssigneeFromIssue(args.issueNumber, args.repo, args.assignee)
+      func: async (args: { repo: string; issueNumber: number; assignee: string }) => service.removeAssigneeFromIssue(args.issueNumber, args.assignee, { repo: args.repo })
     }),
     new DynamicStructuredTool({
       name: 'get_github_users',
@@ -79,10 +79,10 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
       name: 'create_github_issue',
       description: 'Creates an issue in a GitHub repository',
       schema: z.object({
-        repo: config?.repo
+        repo: config.repo
           ? z.string().describe('The GitHub repository name where issue will be created').optional().default(config.repo)
           : z.string().describe('The GitHub repository name where issue will be created (required)'),
-        owner: config?.owner
+        owner: config.owner
           ? z.string().describe('The owner of the repository').optional().default(config.owner)
           : z.string().describe('The owner of the repository (requied)'),
         title: z.string().describe('The title of the issue'),
