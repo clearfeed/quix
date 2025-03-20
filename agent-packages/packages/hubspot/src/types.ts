@@ -17,9 +17,23 @@ export interface Deal {
   lastModifiedDate: string;
 }
 
+export interface CreateDealParams {
+  name: string;
+  amount?: number;
+  stage: string;
+  closeDate?: string;
+  pipeline?: string;
+  ownerId?: string;
+  companyId?: string;
+}
+
+export type CreateDealResponse = BaseResponse<{
+  dealId: string;
+}>;
+
 export type SearchDealsResponse = BaseResponse<{
   deals: Deal[];
-}>; 
+}>;
 
 export type AddNoteToDealResponse = BaseResponse<{
   noteId: string;

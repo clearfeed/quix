@@ -1,7 +1,7 @@
 import { Client } from '@hubspot/api-client';
 import { FilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/deals';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
-import { HubspotConfig, SearchDealsResponse, Deal, AddNoteToDealResponse } from './types';
+import { HubspotConfig, SearchDealsResponse, Deal, AddNoteToDealResponse, CreateDealParams, CreateDealResponse } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 
 export * from './types';
@@ -136,4 +136,49 @@ export class HubspotService implements BaseService<HubspotConfig> {
       throw error;
     }
   }
+
+  async createDeal(params: CreateDealParams): Promise<CreateDealResponse> {
+    try {
+      const properties: Record<string, string> = {
+        dealname: params.name,
+        dealstage: params.stage,
+        pipeline: params.pipeline || 'default',
+      };
+
+      if (params.amount !== undefined) {
+        properties.amount = params.amount.toString();
+      }
+      if (params.closeDate) {
+        properties.closedate = params.closeDate;
+      }
+      if (params.ownerId) {
+        properties.hubspot_owner_id = params.ownerId.toString();
+      }
+
+      const associations = [];
+      if (params.companyId) {
+        associations.push({
+          to: { id: params.companyId },
+          types: [{ associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined, associationTypeId: 5 }],
+        });
+      }
+
+      const response = await this.client.crm.deals.basicApi.create({
+        properties,
+        associations,
+      });
+
+      return {
+        success: true,
+        data: { dealId: response.id },
+      };
+    } catch (error) {
+      console.error("Error creating HubSpot deal:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to create HubSpot deal",
+      };
+    }
+  }
+
 } 

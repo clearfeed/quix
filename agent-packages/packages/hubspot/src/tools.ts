@@ -1,6 +1,6 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { HubspotService } from './index';
-import { HubspotConfig } from './types';
+import { CreateDealParams, HubspotConfig } from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
@@ -39,9 +39,9 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         name: 'search_hubspot_deals',
         description: 'Search for deals in HubSpot based on a keyword',
         schema: z.object({
-        keyword: z.string().describe('The keyword to search for in HubSpot deals')
+          keyword: z.string().describe('The keyword to search for in HubSpot deals')
+        }),
       }),
-    }),
     tool(
       async (args: { dealId: string; note: string }) => service.addNoteToDeal(args.dealId, args.note),
       {
@@ -51,8 +51,24 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
           dealId: z.string().describe('The ID of the deal to add a note to'),
           note: z.string().describe('The note to add to the deal')
         }),
+      }),
+    tool(
+      async (args: CreateDealParams) => service.createDeal(args),
+      {
+        name: "create_hubspot_deal",
+        description: "Create a new deal in HubSpot",
+        schema: z.object({
+          name: z.string().describe("The name of the deal"),
+          amount: z.number().optional().describe("The deal amount"),
+          stage: z.string().describe("The deal stage"),
+          closeDate: z.string().optional().describe("The close date (YYYY-MM-DD)"),
+          pipeline: z.string().optional().describe("The pipeline ID"),
+          ownerId: z.string().optional().describe("The owner ID"),
+          companyId: z.string().optional().describe("The associated company ID"),
+        }),
       }
-    )
+    ),
+
   ]
 
   return {
