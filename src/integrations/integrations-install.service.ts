@@ -6,11 +6,15 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { JiraConfig, HubspotConfig, GithubConfig } from '../database/models';
-import { ToolInstallState } from '@quix/lib/types/common';
-import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { HubspotTokenResponse, HubspotHubInfo, GithubTokenResponse, GitHubInfo } from './types';
+import { JiraConfig, HubspotConfig, PostgresConfig, GithubConfig } from '../database/models';
+import { ToolInstallState } from '@quix/lib/types/common';
+import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
+import { ViewSubmitAction } from '@slack/bolt';
+import { parseInputBlocksSubmission } from '@quix/lib/utils/slack';
+import { KnownBlock } from '@slack/web-api';
+import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 
 @Injectable()
 export class IntegrationsInstallService {
@@ -27,6 +31,8 @@ export class IntegrationsInstallService {
     @InjectModel(GithubConfig)
     private readonly githubConfigModel: typeof GithubConfig,
     private readonly eventEmitter: EventEmitter2,
+    @InjectModel(PostgresConfig)
+    private readonly postgresConfigModel: typeof PostgresConfig
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
@@ -226,4 +232,37 @@ export class IntegrationsInstallService {
     }
   }
 
+  async postgres(payload: ViewSubmitAction): Promise<PostgresConfig> {
+    const parsedResponse = parseInputBlocksSubmission(
+      payload.view.blocks as KnownBlock[],
+      payload.view.state.values
+    );
+    const id = JSON.parse(payload.view.private_metadata).id;
+    if (![
+      SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.HOST,
+      SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PORT,
+      SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.USER,
+      SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PASSWORD,
+      SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DATABASE].every(field => parsedResponse[field].selectedValue)) {
+      throw new BadRequestException('Invalid response');
+    }
+    const sslResponse = parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.SSL].selectedValue;
+    const [postgresConfig] = await this.postgresConfigModel.upsert({
+      id,
+      host: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.HOST].selectedValue as string,
+      port: parseInt(parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PORT].selectedValue as string),
+      user: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.USER].selectedValue as string,
+      password: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PASSWORD].selectedValue as string,
+      database: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DATABASE].selectedValue as string,
+      team_id: payload.view.team_id,
+      ssl: sslResponse ? Boolean(sslResponse.length > 0) : false,
+    });
+    this.eventEmitter.emit(EVENT_NAMES.POSTGRES_CONNECTED, {
+      teamId: payload.view.team_id,
+      appId: payload.view.app_id!,
+      type: SUPPORTED_INTEGRATIONS.POSTGRES,
+      userId: payload.user.id,
+    } satisfies IntegrationConnectedEvent);
+    return postgresConfig;
+  }
 }

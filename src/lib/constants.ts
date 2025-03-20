@@ -4,7 +4,8 @@ export enum SUPPORTED_INTEGRATIONS {
   JIRA = 'jira',
   GITHUB = 'github',
   HUBSPOT = 'hubspot',
-  ZENDESK = 'zendesk'
+  ZENDESK = 'zendesk',
+  POSTGRES = 'postgres'
 }
 
 export const HUBSPOT_SCOPES = [
@@ -29,13 +30,15 @@ export const INTEGRATIONS: {
   helpText: string;
   connectedText: string;
   relation: string;
+  oauth: boolean;
 }[] = [
     {
       name: 'JIRA',
       value: SUPPORTED_INTEGRATIONS.JIRA,
       helpText: 'Connect JIRA to create, update, and view issues.',
       connectedText: 'Jira has been successfully connected! You can now query Jira by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"',
-      relation: 'jiraConfig'
+      relation: 'jiraConfig',
+      oauth: true
     },
     {
       name: 'GitHub',
@@ -49,7 +52,8 @@ export const INTEGRATIONS: {
       value: SUPPORTED_INTEGRATIONS.HUBSPOT,
       helpText: 'Connect Hubspot to create, update, and view contacts, deals, and companies.',
       connectedText: 'Hubspot has been successfully connected! You can now query Hubspot by chatting with me or mentioning me in any channel. Try asking me things like "What is the deal status for "Quix" or "What is the contact name for "Quix"',
-      relation: 'hubspotConfig'
+      relation: 'hubspotConfig',
+      oauth: true
     },
     // {
     //   name: 'Zendesk',
@@ -58,6 +62,14 @@ export const INTEGRATIONS: {
     //   connectedText: 'Zendesk has been successfully connected! You can now query Zendesk by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"',
     //   relation: 'zendeskConfig'
     // }
+    {
+      name: 'Postgres',
+      value: SUPPORTED_INTEGRATIONS.POSTGRES,
+      helpText: 'Connect Postgres to query a database.',
+      connectedText: 'Postgres has been successfully connected! You can now query Postgres by chatting with me or mentioning me in any channel. Try asking me things like "Query the accounts table and return the first 10 rows"',
+      relation: 'postgresConfig',
+      oauth: false
+    }
   ];
 
 export const TimeInSeconds = {

@@ -1,7 +1,7 @@
 import { Module, Global } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { SlackWorkspace, JiraConfig, SlackUserProfile, HubspotConfig, GithubConfig } from './models';
+import { SlackWorkspace, JiraConfig, SlackUserProfile, HubspotConfig, GithubConfig, PostgresConfig } from './models';
 
 @Global()
 @Module({
@@ -16,13 +16,13 @@ import { SlackWorkspace, JiraConfig, SlackUserProfile, HubspotConfig, GithubConf
         username: configService.get<string>('DB_USER'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
-        models: [SlackWorkspace, JiraConfig, SlackUserProfile, HubspotConfig, GithubConfig],
+        models: [SlackWorkspace, JiraConfig, SlackUserProfile, HubspotConfig, GithubConfig, PostgresConfig],
         autoLoadModels: true,
         synchronize: false,
         logging: process.env.NODE_ENV === 'production' ? false : console.log,
       }),
     }),
-    SequelizeModule.forFeature([SlackWorkspace, JiraConfig, SlackUserProfile, HubspotConfig, GithubConfig]),
+    SequelizeModule.forFeature([SlackWorkspace, JiraConfig, SlackUserProfile, HubspotConfig, GithubConfig, PostgresConfig]),
   ],
   exports: [SequelizeModule],
 })

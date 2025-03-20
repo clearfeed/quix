@@ -10,6 +10,7 @@ import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { QuixPrompts } from '../lib/constants';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { AIMessage } from '@langchain/core/messages';
+import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 
 @Injectable()
 export class LlmService {
@@ -25,14 +26,15 @@ export class LlmService {
       return 'I apologize, but I don\'t have any tools configured to help with your request at the moment.';
     }
     const availableCategories = Object.keys(tools);
+    const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, teamId);
     this.logger.log(`Processing message: ${message} with tools: ${availableCategories.join(', ')}`);
     if (availableCategories.length < 1) {
       this.logger.log('No tool categories available, returning direct response');
-      const response = await this.generateResponse(message, {}, 'none', '', previousMessages);
+      const response = await this.generateResponse(message, {}, 'none', '', previousMessages, llm);
       return response;
     }
 
-    const toolSelection = await this.toolSelection(message, tools, previousMessages);
+    const toolSelection = await this.toolSelection(message, tools, previousMessages, llm);
     this.logger.log(`Selected tool: ${toolSelection.selectedTool}`);
 
     if (toolSelection.selectedTool === 'none') {
@@ -46,7 +48,7 @@ export class LlmService {
     }
 
     const agent = createReactAgent({
-      llm: this.llmProvider.getProvider(SupportedChatModels.OPENAI),
+      llm,
       tools: availableFunctions,
       prompt: QuixPrompts.basePrompt
     });
@@ -82,11 +84,10 @@ export class LlmService {
     return Array.isArray(llmResponse) ? llmResponse.join(' ') : llmResponse;
   }
 
-  private async toolSelection(message: string, tools: Record<string, ToolConfig>, previousMessages: LLMContext[]): Promise<{
+  private async toolSelection(message: string, tools: Record<string, ToolConfig>, previousMessages: LLMContext[], llm: BaseChatModel): Promise<{
     selectedTool: keyof typeof tools | 'none';
     content: string;
   }> {
-    const llmProvider = this.llmProvider.getProvider(SupportedChatModels.OPENAI);
     const availableCategories = Object.keys(tools);
 
     const toolSelectionPrompts = availableCategories.map(category => tools[category].prompts?.toolSelection).filter(Boolean).join('\n');
@@ -105,8 +106,8 @@ export class LlmService {
     });
 
     let llmProviderWithTools;
-    if ('bindTools' in llmProvider && typeof llmProvider.bindTools === 'function') {
-      llmProviderWithTools = llmProvider.bindTools([toolSelectionFunction]);
+    if ('bindTools' in llm && typeof llm.bindTools === 'function') {
+      llmProviderWithTools = llm.bindTools([toolSelectionFunction]);
     }
 
     const promptTemplate = ChatPromptTemplate.fromMessages([
@@ -117,7 +118,7 @@ export class LlmService {
 
     const agentChain = RunnableSequence.from([
       promptTemplate,
-      llmProviderWithTools ?? llmProvider
+      llmProviderWithTools ?? llm
     ]);
 
     const result = await agentChain.invoke({
@@ -136,7 +137,8 @@ export class LlmService {
     result: Record<string, any>,
     functionName: string,
     responseGenerationPrompt: string,
-    previousMessages: LLMContext[]) {
+    previousMessages: LLMContext[],
+    llm: BaseChatModel) {
     const responsePrompt = ChatPromptTemplate.fromMessages([
       SystemMessagePromptTemplate.fromTemplate(`
               You are a business assistant. Given a user's query and structured API data, generate a response that directly answers the user's question in a clear and concise manner. Format the response as a Slack message using Slack's supported markdown syntax:
@@ -153,11 +155,9 @@ export class LlmService {
       HumanMessagePromptTemplate.fromTemplate('{input}')
     ]);
 
-    const llmProvider = this.llmProvider.getProvider(SupportedChatModels.OPENAI);
-
     const responseChain = RunnableSequence.from([
       responsePrompt,
-      llmProvider
+      llm
     ]);
 
     const response = await responseChain.invoke({
