@@ -1,6 +1,6 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { HubspotService } from './index';
-import { HubspotConfig } from './types';
+import { CreateContactParams, HubspotConfig } from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
@@ -39,9 +39,9 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         name: 'search_hubspot_deals',
         description: 'Search for deals in HubSpot based on a keyword',
         schema: z.object({
-        keyword: z.string().describe('The keyword to search for in HubSpot deals')
+          keyword: z.string().describe('The keyword to search for in HubSpot deals')
+        }),
       }),
-    }),
     tool(
       async (args: { dealId: string; note: string }) => service.addNoteToDeal(args.dealId, args.note),
       {
@@ -51,8 +51,22 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
           dealId: z.string().describe('The ID of the deal to add a note to'),
           note: z.string().describe('The note to add to the deal')
         }),
+      }),
+    tool(
+      async (args: CreateContactParams) => service.createContact(args),
+      {
+        name: "create_hubspot_contact",
+        description: "Create a new contact in HubSpot",
+        schema: z.object({
+          firstName: z.string().describe("The first name of the contact"),
+          lastName: z.string().describe("The last name of the contact"),
+          email: z.string().describe("The email address of the contact"),
+          phone: z.string().optional().describe("The phone number of the contact"),
+          company: z.string().optional().describe("The company associated with the contact"),
+        }),
       }
-    )
+    ),
+
   ]
 
   return {
