@@ -17,6 +17,7 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
     Blocks.Divider()
   ];
   if (slackWorkspace.isAdmin(args.userId)) {
+    blocks.push(...getPreferencesView());
     blocks.push(...getOpenAIView(slackWorkspace));
     if (slackWorkspace.openai_key) {
       blocks.push(Blocks.Divider());
@@ -274,3 +275,54 @@ const getNonAdminView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
   ]
 }
 
+const getPreferencesView = (): BlockBuilder[] => {
+  return [
+    Blocks.Section({
+      text: 'Allow team members to configure tools that Quix uses.',
+    }).accessory(
+      Elements.Button({
+        text: 'Manage Admins',
+        actionId: SLACK_ACTIONS.MANAGE_ADMINS
+      })
+    ),
+    Blocks.Divider()
+  ]
+}
+
+export const publishManageAdminsModal = async (
+  client: WebClient,
+  args: {
+    triggerId: string,
+    teamId: string,
+    initialUsers?: string[]
+  }
+): Promise<void> => {
+  await client.views.open({
+    trigger_id: args.triggerId,
+    view: {
+      ...Surfaces.Modal({
+        title: 'Manage Admins',
+        submit: 'Submit',
+        close: 'Cancel',
+        callbackId: SLACK_ACTIONS.MANAGE_ADMINS
+      }).buildToObject(),
+      blocks: BlockCollection([
+        Section({
+          text: 'Please enter a list of users you want to add as admins:'
+        }),
+        Input({
+          label: 'Users',
+          blockId: 'admin_user_ids',
+        }).element(Elements.ConversationMultiSelect({
+          placeholder: 'e.g., @john.doe, @jane.doe',
+          actionId: SLACK_ACTIONS.MANAGE_ADMINS_INPUT,
+        })
+          .filter('im')
+          .excludeBotUsers(true)
+          .excludeExternalSharedChannels(true)
+          .maxSelectedItems(10)
+          .initialConversations(args.initialUsers || []))
+      ])
+    }
+  });
+};

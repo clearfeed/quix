@@ -2,6 +2,8 @@ export const SLACK_ACTIONS = {
   CONNECT_TOOL: 'connect-tool-action',
   INSTALL_TOOL: 'install-tool-action',
   ADD_OPENAI_KEY: 'add-openai-key',
+  MANAGE_ADMINS: 'manage-admins',
+  MANAGE_ADMINS_INPUT: 'manage-admins-input',
   OPENAI_API_KEY_OVERFLOW_MENU: 'openai-api-key-overflow-menu',
   OPENAI_API_KEY_MODAL: {
     SUBMIT: 'submit-openai-key',
