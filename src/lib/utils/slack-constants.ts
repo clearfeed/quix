@@ -1,6 +1,12 @@
 export const SLACK_ACTIONS = {
   CONNECT_TOOL: 'connect-tool-action',
   INSTALL_TOOL: 'install-tool-action',
+  ADD_OPENAI_KEY: 'add-openai-key',
+  OPENAI_API_KEY_OVERFLOW_MENU: 'openai-api-key-overflow-menu',
+  OPENAI_API_KEY_MODAL: {
+    SUBMIT: 'submit-openai-key',
+    OPENAI_API_KEY_INPUT: 'openai_api_key_input'
+  },
   SUBMIT_POSTGRES_CONNECTION: 'submit-postgres-connection',
   POSTGRES_CONNECTION_ACTIONS: {
     HOST: 'postgres_host',
