@@ -3,7 +3,7 @@ import { SLACK_ACTIONS } from "@quix/lib/utils/slack-constants";
 import { HomeViewArgs, PostgresConnectionModalArgs } from "./types";
 import { INTEGRATIONS } from "@quix/lib/constants";
 import { getInstallUrl } from "@quix/lib/utils/slack";
-import { HubspotConfig, JiraConfig, PostgresConfig, SlackWorkspace } from "@quix/database/models";
+import { HubspotConfig, JiraConfig, PostgresConfig, SlackWorkspace, GithubConfig } from "@quix/database/models";
 import { BlockCollection, Input, Section, Surfaces, Elements, Bits, Blocks, Md, BlockBuilder } from "slack-block-builder";
 import { WebClient } from "@slack/web-api";
 
@@ -82,14 +82,16 @@ const getOpenAIView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
 const getConnectionInfo = (connection: HomeViewArgs['connection']): string => {
   if (!connection) return '';
   switch (true) {
-    case connection instanceof JiraConfig:
-      return `Connected to ${connection.url}`;
-    case connection instanceof HubspotConfig:
-      return `Connected to ${connection.hub_domain}`;
-    case connection instanceof PostgresConfig:
-      return `Connected to ${connection.host}`;
-    default:
-      return '';
+  case connection instanceof JiraConfig:
+    return `Connected to ${connection.url}`;
+  case connection instanceof HubspotConfig:
+    return `Connected to ${connection.hub_domain}`;
+  case connection instanceof PostgresConfig:
+    return `Connected to ${connection.host}`;
+  case connection instanceof GithubConfig:
+    return `Connected to ${connection.username}`
+  default:
+    return '';
   }
 }
 

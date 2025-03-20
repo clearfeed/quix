@@ -19,6 +19,11 @@ export const HUBSPOT_SCOPES = [
   'tickets'
 ] as const;
 
+export const GITHUB_SCOPES = [
+  'repo',
+  'user'
+]
+
 export const INTEGRATIONS: {
   name: string;
   value: SUPPORTED_INTEGRATIONS;
@@ -35,13 +40,13 @@ export const INTEGRATIONS: {
       relation: 'jiraConfig',
       oauth: true
     },
-    // {
-    //   name: 'GitHub',
-    //   value: SUPPORTED_INTEGRATIONS.GITHUB,
-    //   helpText: 'Connect GitHub to interat with issues and pull requests.',
-    //   connectedText: 'GitHub has been successfully connected! You can now query GitHub by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"',
-    //   relation: 'githubConfig'
-    // },
+    {
+      name: 'GitHub',
+      value: SUPPORTED_INTEGRATIONS.GITHUB,
+      helpText: 'Connect GitHub to interact with issues and pull requests.',
+      connectedText: 'GitHub has been successfully connected! You can now query GitHub by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"',
+      relation: 'githubConfig'
+    },
     {
       name: 'Hubspot',
       value: SUPPORTED_INTEGRATIONS.HUBSPOT,
