@@ -60,9 +60,4 @@ export class IntegrationsService {
     }
     return hubspotConfig;
   }
-
-  async updateGithubConfig(githubConfig: GithubConfig): Promise<GithubConfig> {
-    // Token expiry logic.
-    return githubConfig;
-  }
 }

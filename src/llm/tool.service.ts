@@ -66,11 +66,10 @@ export class ToolService {
     }
     const githubConfig = slackWorkspace.githubConfig;
     if (githubConfig) {
-      const updatedGithubConfig = await this.integrationsService.updateGithubConfig(githubConfig);
       tools.github = createGitHubToolsExport({
-        token: updatedGithubConfig.access_token,
-        owner: updatedGithubConfig.default_config?.owner,
-        repo: updatedGithubConfig.default_config?.repo
+        token: githubConfig.access_token,
+        owner: githubConfig.default_config?.owner,
+        repo: githubConfig.default_config?.repo
       });
     }
     return tools;
