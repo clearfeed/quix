@@ -139,6 +139,13 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async createDeal(params: CreateDealParams): Promise<CreateDealResponse> {
     try {
+      if (!params.name) {
+        throw new Error("Missing required field: name");
+      }
+      if (!params.stage) {
+        throw new Error("Missing required field: stage");
+      }
+
       const properties: Record<string, string> = {
         dealname: params.name,
         dealstage: params.stage,
@@ -159,7 +166,12 @@ export class HubspotService implements BaseService<HubspotConfig> {
       if (params.companyId) {
         associations.push({
           to: { id: params.companyId },
-          types: [{ associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined, associationTypeId: 5 }],
+          types: [
+            {
+              associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
+              associationTypeId: 5,
+            },
+          ],
         });
       }
 
@@ -180,5 +192,4 @@ export class HubspotService implements BaseService<HubspotConfig> {
       };
     }
   }
-
 } 
