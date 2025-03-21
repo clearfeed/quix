@@ -139,6 +139,15 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async createContact(params: CreateContactParams): Promise<CreateContactResponse> {
     try {
+      if (!params.firstName) {
+        throw new Error("Missing required field: firstname");
+      }
+      if (!params.lastName) {
+        throw new Error("Missing required field: lastname");
+      }
+      if (!params.email) {
+        throw new Error("Missing required field: email");
+      }
       const properties: Record<string, string> = {
         firstname: params.firstName,
         lastname: params.lastName,

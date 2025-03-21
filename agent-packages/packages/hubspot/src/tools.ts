@@ -18,6 +18,7 @@ Consider using HubSpot tools when the user wants to:
 - View deal status, amount, pipeline stage, close date
 - Access ticket details, support history, resolutions
 - Get marketing campaign performance and engagement metrics
+- View or manage contacts
 `;
 
 const HUBSPOT_RESPONSE_GENERATION_PROMPT = `
