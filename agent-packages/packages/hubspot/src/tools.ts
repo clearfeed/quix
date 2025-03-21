@@ -18,8 +18,7 @@ Consider using HubSpot tools when the user wants to:
 - View deal status, amount, pipeline stage, close date
 - Access ticket details, support history, resolutions
 - Get marketing campaign performance and engagement metrics
-- Create a new deal with specific details like name, amount, stage, close date, etc.
-- Add a note or comment to an existing deal.
+- View and manage deal.
 `;
 
 const HUBSPOT_RESPONSE_GENERATION_PROMPT = `
