@@ -35,7 +35,9 @@ export class GitHubService implements BaseService<GitHubConfig> {
       const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
       const repo = validation.repoName;
       const owner = validation.repoOwner;
+
       let query = `repo:${owner}/${repo} is:${params.type}`;
+
       if (params.keyword) query += ` in:title,body ${params.keyword}`;
       if (params.reporter) query += ` author:${params.reporter}`;
 
@@ -50,7 +52,6 @@ export class GitHubService implements BaseService<GitHubConfig> {
         success: true,
         data: {
           issues: response.data.items
-            .filter(item => 'pull_request' in item)
         }
       };
     } catch (error) {
@@ -119,12 +120,12 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  async getUsers(): Promise<BaseResponse<RestEndpointMethodTypes['orgs']['listMembers']['response']['data']>> {
+  async getUsers(owner: string): Promise<BaseResponse<RestEndpointMethodTypes['orgs']['listMembers']['response']['data']>> {
     try {
-      const owner = this.config.owner;
-      if (!owner) throw new Error('Owner must be provided when no default owner is configured.');
+      const orgOwner = owner || this.config.owner;
+      if (!orgOwner) throw new Error('Owner must be provided when no default owner is configured.');
       const response = await this.client.orgs.listMembers({
-        org: owner
+        org: orgOwner
       });
       return { success: true, data: response.data };
     } catch (error) {

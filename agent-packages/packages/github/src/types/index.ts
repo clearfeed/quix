@@ -62,8 +62,8 @@ export interface GitHubIssue {
   html_url: string;
 }
 export interface CreateIssueParams {
-  owner?: string,
-  repo?: string,
+  owner: string,
+  repo: string,
   title: string,
   description?: string,
 }

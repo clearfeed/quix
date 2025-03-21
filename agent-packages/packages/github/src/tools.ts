@@ -33,8 +33,12 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
       name: 'search_github_issues',
       description: 'Search GitHub issues or PRs based on status, keywords, and reporter. PRs and Issues are interchangeable terms in GitHub',
       schema: z.object({
-        repo: z.string().describe('The name of the repository to search in'),
-        owner: z.string().describe('The owner of the repository').optional(),
+        repo: config.repo
+          ? z.string().describe('Repository name to search issues or PRs in').optional().default(config.repo)
+          : z.string().describe('Repository name to search issues or PRs in (required)'),
+        owner: config.owner
+          ? z.string().describe('Owner of the repository to search issues or PRs in').optional().default(config.owner)
+          : z.string().describe('Owner of the repository to search issues or PRs in (required)'),
         type: z.enum(['issue', 'pull-request']).describe('The type of issue or PR to search for'),
         keyword: z.string().describe('The keyword to search for in issue or PR titles and descriptions'),
         reporter: z.string().describe('The GitHub username of the issue or PR author').optional(),
@@ -45,36 +49,55 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
       name: 'get_github_issue',
       description: 'Get detailed information about a specific GitHub issue or PR by number. PRs and Issues are interchangeable terms in GitHub',
       schema: z.object({
-        repo: z.string().describe('The name of the repository containing the issue'),
+        repo: config.repo
+          ? z.string().describe('Repository name from which the issue or PR should be retrieved').optional().default(config.repo)
+          : z.string().describe('Repository name from which the issue or PR should be retrieved (required)'),
+        owner: config.owner
+          ? z.string().describe('Owner of the repository containing the issue or PR').optional().default(config.owner)
+          : z.string().describe('Owner of the repository containing the issue or PR (required)'),
         issueNumber: z.number().describe('The number of the issue or PR to fetch. PRs and Issues are interchangeable terms in GitHub')
       }),
-      func: async (args: { repo: string; issueNumber: number }) => service.getIssue(args.issueNumber, { repo: args.repo })
+      func: async (args: { repo: string; owner: string, issueNumber: number }) => service.getIssue(args.issueNumber, { repo: args.repo, owner: args.owner })
     }),
     new DynamicStructuredTool({
       name: 'add_github_assignee',
       description: 'Add an assignee or assign someone to a GitHub issue or PR. PRs and Issues are interchangeable terms in GitHub',
       schema: z.object({
-        repo: z.string().describe('The name of the repository containing the issue or PR'),
+        repo: config.repo
+          ? z.string().describe('Repository where the issue or PR exists for assigning a user').optional().default(config.repo)
+          : z.string().describe('Repository where the issue or PR exists for assigning a user (required)'),
+        owner: config.owner
+          ? z.string().describe('Owner of the repository where the issue or PR exists').optional().default(config.owner)
+          : z.string().describe('Owner of the repository where the issue or PR exists (required)'),
         issueNumber: z.number().describe('The number of the issue or PR to add the assignee to'),
         assignee: z.string().describe('The GitHub username of the assignee')
       }),
-      func: async (args: { repo: string; issueNumber: number; assignee: string }) => service.addAssigneeToIssue(args.issueNumber, args.assignee, { repo: args.repo })
+      func: async (args: { repo: string; owner: string; issueNumber: number; assignee: string }) => service.addAssigneeToIssue(args.issueNumber, args.assignee, { repo: args.repo, owner: args.owner })
     }),
     new DynamicStructuredTool({
       name: 'remove_github_assignee',
       description: 'Remove an assignee or unassign someone from a GitHub issue or PR. PRs and Issues are interchangeable terms in GitHub',
       schema: z.object({
-        repo: z.string().describe('The name of the repository containing the issue or PR'),
+        repo: config.repo
+          ? z.string().describe('Repository where the issue or PR exists for removing an assignee').optional().default(config.repo)
+          : z.string().describe('Repository where the issue or PR exists for removing an assignee (required)'),
+        owner: config.owner
+          ? z.string().describe('Owner of the repository where the issue or PR exists').optional().default(config.owner)
+          : z.string().describe('Owner of the repository where the issue or PR exists (required)'),
         issueNumber: z.number().describe('The number of the issue or PR to remove the assignee from'),
         assignee: z.string().describe('The GitHub username of the assignee to remove')
       }),
-      func: async (args: { repo: string; issueNumber: number; assignee: string }) => service.removeAssigneeFromIssue(args.issueNumber, args.assignee, { repo: args.repo })
+      func: async (args: { repo: string; owner: string; issueNumber: number; assignee: string }) => service.removeAssigneeFromIssue(args.issueNumber, args.assignee, { repo: args.repo, owner: args.owner })
     }),
     new DynamicStructuredTool({
       name: 'get_github_users',
       description: 'Get all users in a GitHub organization',
-      schema: {},
-      func: async () => service.getUsers()
+      schema: z.object({
+        owner: config.owner
+          ? z.string().describe('Github Organizarion name').optional().default(config.owner)
+          : z.string().describe('Github Organizarion name (required)'),
+      }),
+      func: async (args: { owner: string }) => service.getUsers(args.owner)
     }),
     new DynamicStructuredTool({
       name: 'create_github_issue',
@@ -94,7 +117,6 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
     }),
   ];
 
-
   return {
     tools,
     prompts: {
@@ -102,4 +124,4 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
       responseGeneration: GITHUB_RESPONSE_GENERATION_PROMPT
     }
   };
-} 
+}
