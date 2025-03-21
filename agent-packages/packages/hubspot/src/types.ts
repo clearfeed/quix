@@ -17,9 +17,21 @@ export interface Deal {
   lastModifiedDate: string;
 }
 
+export interface CreateContactParams {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  company?: string;
+}
+
+export type CreateContactResponse = BaseResponse<{
+  contactId: string;
+}>;
+
 export type SearchDealsResponse = BaseResponse<{
   deals: Deal[];
-}>; 
+}>;
 
 export type AddNoteToDealResponse = BaseResponse<{
   noteId: string;
