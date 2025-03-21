@@ -139,7 +139,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
         owner,
         repo,
         title: params.title,
-        body: params.description || 'No description provided.'
+        body: params.description || ''
       });
       return {
         success: true,
