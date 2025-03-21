@@ -34,6 +34,7 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
       description: 'Search GitHub issues or PRs based on status, keywords, and reporter. PRs and Issues are interchangeable terms in GitHub',
       schema: z.object({
         repo: z.string().describe('The name of the repository to search in'),
+        owner: z.string().describe('The owner of the repository').optional(),
         type: z.enum(['issue', 'pull-request']).describe('The type of issue or PR to search for'),
         keyword: z.string().describe('The keyword to search for in issue or PR titles and descriptions'),
         reporter: z.string().describe('The GitHub username of the issue or PR author').optional(),

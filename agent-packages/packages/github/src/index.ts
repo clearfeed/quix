@@ -30,19 +30,11 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  private getOwnerAndRepo(params: { owner?: string; repo?: string }): { owner: string; repo: string } {
-    const owner = params.owner || this.config.owner;
-    const repo = params.repo || this.config.repo;
-
-    if (!owner) throw new Error('Owner must be provided or configured.');
-    if (!repo) throw new Error('Repository name must be provided or configured.');
-
-    return { owner, repo };
-  }
-
   async searchIssues(params: SearchIssuesParams): Promise<SearchIssuesResponse> {
     try {
-      const { owner, repo } = this.getOwnerAndRepo(params);
+      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
+      const repo = validation.repoName;
+      const owner = validation.repoOwner;
       let query = `repo:${owner}/${repo} is:${params.type}`;
       if (params.keyword) query += ` in:title,body ${params.keyword}`;
       if (params.reporter) query += ` author:${params.reporter}`;
@@ -72,7 +64,9 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async getIssue(issueNumber: number, params: { owner?: string; repo?: string }): Promise<BaseResponse<RestEndpointMethodTypes['issues']['get']['response']['data']>> {
     try {
-      const { owner, repo } = this.getOwnerAndRepo(params);
+      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
+      const repo = validation.repoName;
+      const owner = validation.repoOwner;
       const response = await this.client.issues.get({
         owner,
         repo,
@@ -89,7 +83,9 @@ export class GitHubService implements BaseService<GitHubConfig> {
     BaseResponse<RestEndpointMethodTypes['issues']['addAssignees']['response']['data']>
   > {
     try {
-      const { owner, repo } = this.getOwnerAndRepo(params);
+      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
+      const repo = validation.repoName;
+      const owner = validation.repoOwner;
       const response = await this.client.issues.addAssignees({
         owner,
         repo,
@@ -107,7 +103,9 @@ export class GitHubService implements BaseService<GitHubConfig> {
     BaseResponse<RestEndpointMethodTypes['issues']['removeAssignees']['response']['data']>
   > {
     try {
-      const { owner, repo } = this.getOwnerAndRepo(params);
+      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
+      const repo = validation.repoName;
+      const owner = validation.repoOwner;
       const response = await this.client.issues.removeAssignees({
         owner,
         repo,
@@ -137,7 +135,9 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async createIssue(params: CreateIssueParams): Promise<BaseResponse<{ issueUrl: string }>> {
     try {
-      const { owner, repo } = this.getOwnerAndRepo(params);
+      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
+      const repo = validation.repoName;
+      const owner = validation.repoOwner;
       const response = await this.client.issues.create({
         owner,
         repo,

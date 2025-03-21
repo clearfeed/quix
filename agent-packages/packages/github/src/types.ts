@@ -12,6 +12,7 @@ export type PullRequest = SearchResultItem;
 
 export type SearchIssuesParams = {
   repo: string;
+  owner?: string;
   keyword?: string;
   reporter?: string;
   type: 'issue' | 'pull-request';
