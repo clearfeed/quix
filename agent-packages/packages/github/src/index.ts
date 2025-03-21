@@ -13,11 +13,14 @@ export * from './tools';
 export class GitHubService implements BaseService<GitHubConfig> {
   private client: Octokit;
 
-  validateConfig() {
-    if (!this.config.token || !this.config.owner || !this.config.repo) {
-      return { isValid: false, error: 'GitHub integration is not configured. Please pass in a token, owner, and a repo.' };
-    }
-    return { isValid: true };
+  validateConfig({ owner, repo }: { owner?: string, repo?: string }) {
+    const repoOwner = owner || this.config.owner;
+    const repoName = repo || this.config.repo;
+
+    if (!repoOwner) throw new Error('Owner must be provided or configured.');
+    if (!repoName) throw new Error('Repository name must be provided or configured.');
+
+    return { isValid: true, repoOwner, repoName };
   }
 
   constructor(private config: GitHubConfig) {
