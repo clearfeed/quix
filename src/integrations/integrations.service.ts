@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { JiraConfig, HubspotConfig, PostgresConfig, GithubConfig } from '../database/models';
+import { JiraConfig, HubspotConfig, PostgresConfig } from '../database/models';
 import { TimeInMilliSeconds } from '@quix/lib/constants';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
