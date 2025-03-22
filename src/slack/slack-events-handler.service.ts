@@ -107,7 +107,7 @@ export class SlackEventsHandlerService {
 
       if (event.text) {
         const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
-        const messages = await createLLMContext(event, userInfoMap, slackWorkspace.app_id);
+        const messages = await createLLMContext(event, userInfoMap, slackWorkspace);
         if (!event.team) return;
         const response = await this.llmService.processMessage(event.text, event.team, messages);
         await webClient.chat.postMessage({
