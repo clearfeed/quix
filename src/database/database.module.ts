@@ -20,7 +20,12 @@ import { SlackWorkspace, JiraConfig, SlackUserProfile, HubspotConfig, GithubConf
         autoLoadModels: true,
         synchronize: false,
         logging: process.env.NODE_ENV === 'production' ? false : console.log,
-        ssl: process.env.NODE_ENV === 'production' ? true : false,
+        dialectOptions: {
+          ssl: {
+            require: process.env.NODE_ENV === 'production' ? true : false,
+            rejectUnauthorized: false,
+          }
+        },
       }),
     }),
     SequelizeModule.forFeature([SlackWorkspace, JiraConfig, SlackUserProfile, HubspotConfig, GithubConfig, PostgresConfig]),
