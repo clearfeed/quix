@@ -48,4 +48,22 @@ export interface SearchPRsResponse extends GitHubResponse<{
 
 export interface GetPRResponse extends GitHubResponse<{
   pr: GitHubPRResponse;
-}> { } 
+}> { }
+
+// Issue interfaces
+export interface GitHubIssue {
+  number: number;
+  title: string;
+  body: string;
+  state: string;
+  user: { login: string };
+  created_at: string;
+  updated_at: string;
+  html_url: string;
+}
+export interface CreateIssueParams {
+  owner: string,
+  repo: string,
+  title: string,
+  description?: string,
+}

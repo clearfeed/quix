@@ -12,7 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^1.1.0",
+    "@clearfeed-ai/quix-common-agent": "^1.1.2",
     "@octokit/rest": "^19.0.13"
   },
   "devDependencies": {
