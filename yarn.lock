@@ -344,12 +344,20 @@
     "@langchain/core" "^0.3.40"
     zod "^3.24.2"
 
-"@clearfeed-ai/quix-github-agent@1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.2.2.tgz#1a839a08d8a2fe402fdc37bff67f48e7be6a5c5c"
-  integrity sha512-pCjxy+mvFDONTW9NfQZji7qlg98aj2puirExRfKEGAPXLtuBGu1PwqmIGTnMT2n+ugGq+zNPq+ArVP/Sf9kOUQ==
+"@clearfeed-ai/quix-common-agent@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.1.2.tgz#392a19e330ad18f526ba7ed815f34b7fce594882"
+  integrity sha512-D8FbBRmOfoZCwmwWI13kQJi/xLdRV7kvm/4o8duHEwqK9CzdE/68nf8EU9minO8B86+Go9Ys2BtLXjAf42H5YQ==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "^1.1.0"
+    "@langchain/core" "^0.3.40"
+    zod "^3.24.2"
+
+"@clearfeed-ai/quix-github-agent@1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.2.3.tgz#abc9df0f90e35b84533894558c558a18b2c777bb"
+  integrity sha512-gyDisF7tzr27oQNwHs58dS5jySCRFrDa3fn20NmJlyjCt0i/kO9eXHCtc7zv4XDRko1IVgL0mXFoX0VQu0otog==
+  dependencies:
+    "@clearfeed-ai/quix-common-agent" "^1.1.2"
     "@octokit/rest" "^19.0.13"
 
 "@clearfeed-ai/quix-hubspot-agent@1.1.3":
