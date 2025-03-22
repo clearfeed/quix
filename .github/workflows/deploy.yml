@@ -3,7 +3,7 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - main
+      - test-cb
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
@@ -20,8 +20,8 @@ env:
 
 concurrency:
   group: ${{ github.ref }} # Use the branch or pull request reference as the group identifier
-  cancel-in-progress: true # Cancel any in-progress runs in the same group 
-  
+  cancel-in-progress: true # Cancel any in-progress runs in the same group
+
 jobs:
   build-and-deploy:
     name: Build and Deploy
