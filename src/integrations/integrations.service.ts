@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { JiraConfig, HubspotConfig, PostgresConfig } from '../database/models';
+import { JiraConfig, HubspotConfig, PostgresConfig, SalesforceConfig } from '../database/models';
 import { TimeInMilliSeconds } from '@quix/lib/constants';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
@@ -15,7 +15,9 @@ export class IntegrationsService {
     @InjectModel(JiraConfig)
     private readonly jiraConfigModel: typeof JiraConfig,
     @InjectModel(HubspotConfig)
-    private readonly hubspotConfigModel: typeof HubspotConfig
+    private readonly hubspotConfigModel: typeof HubspotConfig,
+    @InjectModel(SalesforceConfig)
+    private readonly salesforceConfigModel: typeof SalesforceConfig
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
@@ -69,15 +71,19 @@ export class IntegrationsService {
   }
 
   async removePostgresConfig(teamId: string) {
-    await this.postgresConfigModel.destroy({ where: { team_id: teamId } });
+    await this.postgresConfigModel.destroy({ where: { team_id: teamId }, force: true });
   }
 
   async removeJiraConfig(teamId: string) {
-    await this.jiraConfigModel.destroy({ where: { team_id: teamId } });
+    await this.jiraConfigModel.destroy({ where: { team_id: teamId }, force: true });
   }
 
   async removeHubspotConfig(teamId: string) {
-    await this.hubspotConfigModel.destroy({ where: { team_id: teamId } });
+    await this.hubspotConfigModel.destroy({ where: { team_id: teamId }, force: true });
+  }
+
+  async removeSalesforceConfig(teamId: string) {
+    await this.salesforceConfigModel.destroy({ where: { team_id: teamId }, force: true });
   }
 
 }

@@ -7,8 +7,8 @@ import { Cache } from 'cache-manager';
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { HubspotTokenResponse, HubspotHubInfo, GithubTokenResponse, GitHubInfo } from './types';
-import { JiraConfig, HubspotConfig, PostgresConfig, GithubConfig } from '../database/models';
+import { HubspotTokenResponse, HubspotHubInfo, GithubTokenResponse, GitHubInfo, SalesforceTokenResponse } from './types';
+import { JiraConfig, HubspotConfig, PostgresConfig, GithubConfig, SalesforceConfig } from '../database/models';
 import { ToolInstallState } from '@quix/lib/types/common';
 import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
 import { ViewSubmitAction } from '@slack/bolt';
@@ -30,6 +30,8 @@ export class IntegrationsInstallService {
     private readonly hubspotConfigModel: typeof HubspotConfig,
     @InjectModel(GithubConfig)
     private readonly githubConfigModel: typeof GithubConfig,
+    @InjectModel(SalesforceConfig)
+    private readonly salesforceConfigModel: typeof SalesforceConfig,
     private readonly eventEmitter: EventEmitter2,
     @InjectModel(PostgresConfig)
     private readonly postgresConfigModel: typeof PostgresConfig
@@ -39,14 +41,16 @@ export class IntegrationsInstallService {
 
   getInstallUrl(tool: typeof INTEGRATIONS[number]['value'], state: string): string {
     switch (tool) {
-    case 'jira':
-      return `https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=${this.configService.get<string>('JIRA_CLIENT_ID')}&scope=${encodeURIComponent('read:jira-work read:jira-user write:jira-work offline_access')}&redirect_uri=${this.configService.get<string>('SELFSERVER_URL')}/integrations/connect/jira&response_type=code&prompt=consent&state=${state}`;
-    case 'hubspot':
-      return `https://app.hubspot.com/oauth/authorize?client_id=${this.configService.get<string>('HUBSPOT_CLIENT_ID')}&redirect_uri=${encodeURIComponent(this.configService.get<string>('SELFSERVER_URL') + '/integrations/connect/hubspot')}&scope=${encodeURIComponent(HUBSPOT_SCOPES.join(' '))}&state=${state}`;
-    case 'github':
-      return `https://github.com/login/oauth/authorize?client_id=${this.configService.get<string>('GITHUB_CLIENT_ID')}&scope=${encodeURIComponent(GITHUB_SCOPES.join(','))}&redirect_uri=${encodeURIComponent(this.configService.get<string>('SELFSERVER_URL') + '/integrations/connect/github')}&state=${state}`;
-    default:
-      throw new BadRequestException('Integration not found');
+      case 'jira':
+        return `https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=${this.configService.get<string>('JIRA_CLIENT_ID')}&scope=${encodeURIComponent('read:jira-work read:jira-user write:jira-work offline_access')}&redirect_uri=${this.configService.get<string>('SELFSERVER_URL')}/integrations/connect/jira&response_type=code&prompt=consent&state=${state}`;
+      case 'hubspot':
+        return `https://app.hubspot.com/oauth/authorize?client_id=${this.configService.get<string>('HUBSPOT_CLIENT_ID')}&redirect_uri=${encodeURIComponent(this.configService.get<string>('SELFSERVER_URL') + '/integrations/connect/hubspot')}&scope=${encodeURIComponent(HUBSPOT_SCOPES.join(' '))}&state=${state}`;
+      case 'github':
+        return `https://github.com/login/oauth/authorize?client_id=${this.configService.get<string>('GITHUB_CLIENT_ID')}&scope=${encodeURIComponent(GITHUB_SCOPES.join(','))}&redirect_uri=${encodeURIComponent(this.configService.get<string>('SELFSERVER_URL') + '/integrations/connect/github')}&state=${state}`;
+      case 'salesforce':
+        return `https://login.salesforce.com/services/oauth2/authorize?client_id=${this.configService.get<string>('SALESFORCE_CONSUMER_KEY')}&redirect_uri=${encodeURIComponent(this.configService.get<string>('SELFSERVER_URL') + '/integrations/connect/salesforce')}&response_type=code&state=${state}`;
+      default:
+        throw new BadRequestException('Integration not found');
     }
   }
 
@@ -264,5 +268,69 @@ export class IntegrationsInstallService {
       userId: payload.user.id,
     } satisfies IntegrationConnectedEvent);
     return postgresConfig;
+  }
+
+  async salesforce(code: string, state: string): Promise<Partial<ToolInstallState>> {
+    try {
+      const stateData = await this.cache.get<ToolInstallState>('install_salesforce');
+      if (!stateData) {
+        throw new BadRequestException('State not found');
+      }
+      if (stateData.state !== state) {
+        throw new BadRequestException('Invalid state');
+      }
+      await this.cache.del('install_salesforce');
+
+      const clientId = this.configService.get<string>('SALESFORCE_CONSUMER_KEY');
+      const clientSecret = this.configService.get<string>('SALESFORCE_CONSUMER_SECRET');
+      const redirectUri = `${this.configService.get<string>('SELFSERVER_URL')}/integrations/connect/salesforce`;
+
+      if (!clientId || !clientSecret) {
+        throw new BadRequestException('Missing Salesforce client configuration');
+      }
+
+      const params = new URLSearchParams();
+      params.append('grant_type', 'authorization_code');
+      params.append('code', code);
+      params.append('client_id', clientId);
+      params.append('client_secret', clientSecret);
+      params.append('redirect_uri', redirectUri);
+
+      const response = await this.httpService.axiosRef.post<SalesforceTokenResponse>(
+        'https://login.salesforce.com/services/oauth2/token',
+        params,
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }
+      );
+
+      const { access_token, refresh_token, instance_url, token_type, scope } = response.data;
+      const scopes = scope ? scope.split(' ') : [];
+
+      await this.salesforceConfigModel.upsert({
+        team_id: stateData.teamId,
+        access_token,
+        refresh_token,
+        instance_url,
+        token_type,
+        scopes
+      });
+
+      this.eventEmitter.emit(EVENT_NAMES.SALESFORCE_CONNECTED, {
+        teamId: stateData.teamId,
+        appId: stateData.appId,
+        type: SUPPORTED_INTEGRATIONS.SALESFORCE,
+      } satisfies IntegrationConnectedEvent);
+
+      return {
+        appId: stateData.appId,
+        teamId: stateData.teamId
+      };
+    } catch (error) {
+      this.logger.error('Failed to connect to Salesforce:', error);
+      throw new BadRequestException('Failed to connect to Salesforce');
+    }
   }
 }

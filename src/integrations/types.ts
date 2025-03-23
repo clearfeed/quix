@@ -25,3 +25,15 @@ export interface GitHubInfo {
   login: string,
   avatar_url: string,
 }
+
+export interface SalesforceTokenResponse {
+  access_token: string;
+  refresh_token: string;
+  instance_url: string;
+  id: string;
+  token_type: string;
+  issued_at: string;
+  signature: string;
+  scope?: string;
+  expires_in: number;
+}
