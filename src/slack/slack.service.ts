@@ -76,7 +76,8 @@ export class SlackService {
         bot_user_id: response.bot_user_id || '',
         is_enterprise_install: response.is_enterprise_install || false,
         scopes: response.response_metadata?.scopes || [],
-        app_id: response.app_id || ''
+        app_id: response.app_id || '',
+        admin_user_ids: response.authed_user?.id ? [response.authed_user?.id] : []
       });
 
       // Store all Slack users after workspace is connected

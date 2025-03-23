@@ -1,0 +1,23 @@
+{
+  "name": "@clearfeed-ai/quix-postgres-agent",
+  "version": "1.0.0",
+  "description": "Quix Postgres Agent",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "yarn build"
+  },
+  "dependencies": {
+    "@clearfeed-ai/quix-common-agent": "^1.1.0",
+    "pg": "^8.14.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/pg": "^8.11.11",
+    "typescript": "^5.7.3"
+  },
+  "license": "Apache-2.0"
+}

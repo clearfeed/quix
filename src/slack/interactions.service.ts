@@ -1,11 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BlockAction, BlockElementAction, BlockOverflowAction, MessageShortcut, SlackShortcut, ViewSubmitAction } from '@slack/bolt';
 import { AppHomeService } from './app_home.service';
+import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
+import { IntegrationsInstallService } from '../integrations/integrations-install.service';
+import { parseInputBlocksSubmission } from '@quix/lib/utils/slack';
+import { KnownBlock } from '@slack/web-api';
 @Injectable()
 export class InteractionsService {
   private readonly logger = new Logger(InteractionsService.name);
   constructor(
-    private readonly appHomeService: AppHomeService
+    private readonly appHomeService: AppHomeService,
+    private readonly integrationsInstallService: IntegrationsInstallService
   ) { }
 
   async handleInteraction(
@@ -14,7 +19,7 @@ export class InteractionsService {
     if (payload.type === 'block_actions') {
       return this.handleBlockAction(payload);
     } else if (payload.type === 'view_submission') {
-      // return this.handleViewSubmission(payload);
+      return this.handleViewSubmission(payload);
     } else if (payload.type === 'message_action') {
       // return this.handleMessageAction(payload);
     } else if (payload.type === 'shortcut') {
@@ -30,7 +35,30 @@ export class InteractionsService {
       return;
     }
     if (eventAction.view?.type === 'home') {
-      this.appHomeService.handleAppHomeInteractions(action, teamId, eventAction.user.id);
+      this.appHomeService.handleAppHomeInteractions(action, teamId, eventAction.user.id, eventAction.trigger_id);
+    }
+  }
+
+  async handleViewSubmission(payload: ViewSubmitAction) {
+    switch (payload.view.callback_id) {
+      case SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION:
+        const postgresConfig = await this.integrationsInstallService.postgres(payload);
+        this.appHomeService.handlePostgresConnected(payload.user.id, payload.view.team_id, postgresConfig);
+        break;
+      case SLACK_ACTIONS.OPENAI_API_KEY_MODAL.SUBMIT:
+        const openaiApiKey = payload.view.state.values.openai_api_key.openai_api_key_input.value;
+        if (!openaiApiKey) {
+          this.logger.error('OpenAI API key not found', { payload });
+          return;
+        }
+        this.appHomeService.handleOpenaiApiKeySubmitted(payload.user.id, payload.view.team_id, openaiApiKey);
+        break;
+      case SLACK_ACTIONS.MANAGE_ADMINS:
+        const adminUserIds = payload.view.state.values.admin_user_ids[SLACK_ACTIONS.MANAGE_ADMINS_INPUT].selected_conversations as string[];
+        this.appHomeService.handleManageAdminsSubmitted(payload.user.id, payload.view.team_id, adminUserIds);
+        break;
+      default:
+        return;
     }
   }
 }

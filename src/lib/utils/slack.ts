@@ -1,11 +1,13 @@
-import { AppMentionEvent, GenericMessageEvent } from "@slack/web-api";
+import { AppMentionEvent, GenericMessageEvent, KnownBlock } from "@slack/web-api";
 import { LLMContext } from "@quix/llm/types";
 import { WebClient } from "@slack/web-api";
 import { MessageElement } from "@slack/web-api/dist/types/response/ConversationsHistoryResponse";
 import { INTEGRATIONS, OPENAI_CONTEXT_SIZE, SlackMessageUserIdRegex } from "../constants";
 import { SLACK_SCOPES } from "./slack-constants";
 import { SlackWorkspace } from "@quix/database/models";
-import { ParseSlackMentionsUserMap } from "../types/slack";
+import { ParseInputBlockResponse, ParseSlackMentionsUserMap, SlackBlockStateValues } from "../types/slack";
+import { isEqual, isEmpty } from "lodash";
+import { Nullable } from "../types/common";
 
 /**
  * Sanitizes a name to match OpenAI's requirements (alphanumeric, underscore, hyphen only)
@@ -71,4 +73,114 @@ export const replaceSlackUserMentions = (payload: {
   return `${message.replace(SlackMessageUserIdRegex, (match: string, slackUserId: string) => {
     return slackUserId in userInfoMap ? '@' + userInfoMap[slackUserId].name : match;
   })}`;
+};
+
+/**
+ * To do: Add support for more input element types.
+ * @returns a record of action_id and its value, along
+ * with a boolean flag to indicate if the value was updated.
+ */
+export const parseInputBlocksSubmission = (
+  blocks: KnownBlock[],
+  stateValues: SlackBlockStateValues
+) => {
+  const submittedValuesRecord: Record<string, ParseInputBlockResponse> = {};
+  function getSanitizedValue(value: unknown): Nullable<string | string[]> {
+    /**
+     * If the value is empty which could be undefined, null or empty string
+     * or empty array we'll return null, so as to keep the isEqual check
+     * consistent. This is because Slack sends undefined for empty initial options
+     * and arrays or nulls for empty selections. We'll convert all of them to null
+     * for consistency.
+     */
+    if (isEmpty(value)) return null;
+    return value as Nullable<string | string[]>;
+  }
+  for (const block of blocks) {
+    if (block.type !== 'input' || !block.block_id) continue;
+    const element = block.element;
+    if (!element.action_id) continue;
+    switch (element.type) {
+      case 'users_select':
+        {
+          const initialValue = getSanitizedValue(element.initial_user);
+          const selectedValue = getSanitizedValue(
+            stateValues[block.block_id]?.[element.action_id]?.selected_user
+          );
+          submittedValuesRecord[element.action_id] = {
+            initialValue,
+            selectedValue,
+            isUpdated: !isEqual(initialValue, selectedValue),
+            inputFieldType: element.type
+          };
+        }
+        break;
+      case 'static_select':
+      case 'external_select':
+        {
+          const initialValue = getSanitizedValue(element.initial_option?.value);
+          const selectedValue = getSanitizedValue(
+            stateValues[block.block_id]?.[element.action_id]?.selected_option?.value
+          );
+          submittedValuesRecord[element.action_id] = {
+            initialValue,
+            selectedValue,
+            isUpdated: !isEqual(initialValue, selectedValue),
+            inputFieldType: element.type
+          };
+        }
+        break;
+      case 'multi_static_select':
+      case 'multi_external_select':
+      case 'checkboxes':
+        {
+          const initialValue = getSanitizedValue(
+            element.initial_options?.map((option) => option.value)
+          );
+          const selectedValue = getSanitizedValue(
+            stateValues[block.block_id]?.[element.action_id]?.selected_options?.map(
+              (option) => option.value
+            )
+          );
+          submittedValuesRecord[element.action_id] = {
+            initialValue,
+            selectedValue,
+            isUpdated: !isEqual(initialValue, selectedValue),
+            inputFieldType: element.type
+          };
+        }
+        break;
+      case 'number_input':
+      case 'email_text_input':
+      case 'plain_text_input':
+        {
+          const initialValue = getSanitizedValue(element.initial_value);
+          const selectedValue = getSanitizedValue(
+            stateValues[block.block_id]?.[element.action_id]?.value
+          );
+          submittedValuesRecord[element.action_id] = {
+            initialValue,
+            selectedValue,
+            isUpdated: !isEqual(initialValue, selectedValue),
+            inputFieldType: element.type
+          };
+        }
+        break;
+      case 'datepicker':
+        {
+          const initialValue = getSanitizedValue(element.initial_date);
+          const selectedValue = getSanitizedValue(
+            stateValues[block.block_id]?.[element.action_id]?.selected_date
+          );
+          submittedValuesRecord[element.action_id] = {
+            initialValue,
+            selectedValue,
+            isUpdated: !isEqual(initialValue, selectedValue),
+            inputFieldType: element.type
+          };
+        }
+        break;
+    }
+  }
+  return submittedValuesRecord;
 };

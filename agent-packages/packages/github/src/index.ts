@@ -4,7 +4,6 @@ import {
   GitHubConfig,
   SearchIssuesParams,
   SearchIssuesResponse,
-  GetPRResponse,
 } from './types';
 import { CodeSearchParams, CreateIssueParams } from './types/index';
 
@@ -14,38 +13,33 @@ export * from './tools';
 export class GitHubService implements BaseService<GitHubConfig> {
   private client: Octokit;
 
-  validateConfig() {
-    if (!this.config.token || !this.config.owner || !this.config.repo) {
-      return { isValid: false, error: 'GitHub integration is not configured. Please pass in a token, owner and a repo.' };
-    }
-    return { isValid: true };
+  validateConfig({ owner, repo }: { owner?: string, repo?: string }) {
+    const repoOwner = owner || this.config.owner;
+    const repoName = repo || this.config.repo;
+
+    if (!repoOwner) throw new Error('Owner must be provided or configured.');
+    if (!repoName) throw new Error('Repository name must be provided or configured.');
+
+    return { isValid: true, repoOwner, repoName };
   }
 
   constructor(private config: GitHubConfig) {
     this.client = new Octokit({ auth: config.token });
     if (!config.token) {
-      throw new Error('GitHub integration is not configured. Please install Github in your app.');
+      throw new Error('GitHub integration is not configured. Please pass in a token.');
     }
   }
 
   async searchIssues(params: SearchIssuesParams): Promise<SearchIssuesResponse> {
     try {
-      if (!this.config.owner) {
-        return {
-          success: false,
-          error: 'Owner must be provided when no default owner is configured.'
-        }
-      }
-      if (!params.repo) {
-        return {
-          success: false,
-          error: 'Repository name must be provided to search issues.'
-        }
-      }
+      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
+      const repo = validation.repoName;
+      const owner = validation.repoOwner;
 
-      let query = `repo:${this.config.owner}/${params.repo} is:${params.type}`;
+      let query = `repo:${owner}/${repo} is:${params.type}`;
+
       if (params.keyword) query += ` in:title,body ${params.keyword}`;
-      if (params.reporter && params.reporter !== '') query += ` author:${params.reporter}`;
+      if (params.reporter) query += ` author:${params.reporter}`;
 
       const response = await this.client.search.issuesAndPullRequests({
         q: query,
@@ -58,7 +52,6 @@ export class GitHubService implements BaseService<GitHubConfig> {
         success: true,
         data: {
           issues: response.data.items
-            .filter(item => 'pull_request' in item)
         }
       };
     } catch (error) {
@@ -70,24 +63,13 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  async getIssue(issueNumber: number, repo: string): Promise<BaseResponse<RestEndpointMethodTypes['issues']['get']['response']['data']>> {
+  async getIssue(issueNumber: number, params: { owner?: string; repo?: string }): Promise<BaseResponse<RestEndpointMethodTypes['issues']['get']['response']['data']>> {
     try {
-      if (!this.config.owner) {
-        return {
-          success: false,
-          error: 'Owner must be provided when no default owner is configured.'
-        }
-      }
-
-      if (!repo && !this.config.repo) {
-        return {
-          success: false,
-          error: 'Repository name must be provided when no default Repository is configured.'
-        }
-      }
-
+      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
+      const repo = validation.repoName;
+      const owner = validation.repoOwner;
       const response = await this.client.issues.get({
-        owner: this.config.owner,
+        owner,
         repo,
         issue_number: issueNumber
       });
@@ -98,63 +80,39 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  async addAssigneeToIssue(issueNumber: number, repo: string, assignee: string): Promise<
+  async addAssigneeToIssue(issueNumber: number, assignee: string, params: { owner?: string; repo?: string }): Promise<
     BaseResponse<RestEndpointMethodTypes['issues']['addAssignees']['response']['data']>
   > {
     try {
-      if (!this.config.owner) {
-        return {
-          success: false,
-          error: 'Owner must be provided when no default owner is configured.'
-        }
-      }
-
-      if (!repo && !this.config.repo) {
-        return {
-          success: false,
-          error: 'Repository name must be provided when no default Repository is configured.'
-        }
-      }
-
+      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
+      const repo = validation.repoName;
+      const owner = validation.repoOwner;
       const response = await this.client.issues.addAssignees({
-        owner: this.config.owner,
+        owner,
         repo,
         issue_number: issueNumber,
         assignees: [assignee]
       });
-
       return { success: true, data: response.data };
     } catch (error) {
-      console.error('Error assigning GitHub PR:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to assign GitHub PR' };
+      console.error('Error assigning GitHub issue:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Failed to assign GitHub issue' };
     }
   }
 
-  async removeAssigneeFromIssue(issueNumber: number, repo: string, assignee: string): Promise<
+  async removeAssigneeFromIssue(issueNumber: number, assignee: string, params: { owner?: string; repo?: string }): Promise<
     BaseResponse<RestEndpointMethodTypes['issues']['removeAssignees']['response']['data']>
   > {
     try {
-      if (!this.config.owner) {
-        return {
-          success: false,
-          error: 'Owner must be provided when no default owner is configured.'
-        }
-      }
-
-      if (!repo && !this.config.repo) {
-        return {
-          success: false,
-          error: 'Repository name must be provided when no default Repository is configured.'
-        }
-      }
-
+      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
+      const repo = validation.repoName;
+      const owner = validation.repoOwner;
       const response = await this.client.issues.removeAssignees({
-        owner: this.config.owner,
+        owner,
         repo,
         issue_number: issueNumber,
         assignees: [assignee]
       });
-
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error removing assignee from GitHub issue:', error);
@@ -162,17 +120,12 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  async getUsers(): Promise<BaseResponse<RestEndpointMethodTypes['orgs']['listMembers']['response']['data']>> {
+  async getUsers(owner: string): Promise<BaseResponse<RestEndpointMethodTypes['orgs']['listMembers']['response']['data']>> {
     try {
-      if (!this.config.owner) {
-        return {
-          success: false,
-          error: 'Owner must be provided when no default owner is configured.'
-        }
-      }
-
+      const orgOwner = owner || this.config.owner;
+      if (!orgOwner) throw new Error('Owner must be provided when no default owner is configured.');
       const response = await this.client.orgs.listMembers({
-        org: this.config.owner
+        org: orgOwner
       });
       return { success: true, data: response.data };
     } catch (error) {
@@ -183,32 +136,15 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async createIssue(params: CreateIssueParams): Promise<BaseResponse<{ issueUrl: string }>> {
     try {
-      const owner = params?.owner || this.config.owner;
-      const repo = params?.repo || this.config.repo;
-      const title = params.title;
-      const description = params?.description;
-
-      if (!owner) {
-        return {
-          success: false,
-          error: 'Owner must be provided when no default owner is configured'
-        }
-      }
-
-      if (!repo) {
-        return {
-          success: false,
-          error: 'Repository name must be provided when no default repository is configured'
-        }
-      }
-
+      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
+      const repo = validation.repoName;
+      const owner = validation.repoOwner;
       const response = await this.client.issues.create({
         owner,
         repo,
-        title,
-        body: description || "No description provided.",
+        title: params.title,
+        body: params.description || ''
       });
-
       return {
         success: true,
         data: {
@@ -223,23 +159,10 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async searchCode(params: CodeSearchParams): Promise<BaseResponse<RestEndpointMethodTypes['search']['code']['response']['data']['items']>> {
     try {
-      const owner = params?.owner || this.config.owner;
-      const repo = params?.repo || this.config.repo;
       const query = params.query;
-
-      if (!owner) {
-        return {
-          success: false,
-          error: 'Owner must be provided when no default owner is configured.'
-        };
-      }
-
-      if (!repo) {
-        return {
-          success: false,
-          error: 'Repository name must be provided when no default repository is configured.'
-        };
-      }
+      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
+      const repo = validation.repoName;
+      const owner = validation.repoOwner;
 
       const response = await this.client.search.code({
         q: `${query} repo:${owner}/${repo}`,

@@ -1,14 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { JiraConfig, HubspotConfig, GithubConfig } from '../database/models';
+import { JiraConfig, HubspotConfig, PostgresConfig, GithubConfig } from '../database/models';
 import { TimeInMilliSeconds } from '@quix/lib/constants';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
+import { InjectModel } from '@nestjs/sequelize';
 @Injectable()
 export class IntegrationsService {
   private readonly logger = new Logger(IntegrationsService.name);
   constructor(
     private readonly httpService: HttpService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    @InjectModel(PostgresConfig)
+    private readonly postgresConfigModel: typeof PostgresConfig,
+    @InjectModel(JiraConfig)
+    private readonly jiraConfigModel: typeof JiraConfig,
+    @InjectModel(HubspotConfig)
+    private readonly hubspotConfigModel: typeof HubspotConfig
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
@@ -61,8 +68,16 @@ export class IntegrationsService {
     return hubspotConfig;
   }
 
-  async updateGithubConfig(githubConfig: GithubConfig): Promise<GithubConfig> {
-    // Token expiry logic.
-    return githubConfig;
+  async removePostgresConfig(teamId: string) {
+    await this.postgresConfigModel.destroy({ where: { team_id: teamId } });
   }
+
+  async removeJiraConfig(teamId: string) {
+    await this.jiraConfigModel.destroy({ where: { team_id: teamId } });
+  }
+
+  async removeHubspotConfig(teamId: string) {
+    await this.hubspotConfigModel.destroy({ where: { team_id: teamId } });
+  }
+
 }

@@ -17,6 +17,7 @@ import { JiraConfig } from './jira-config.model';
 import { SlackUserProfile } from './slack-user-profile.model';
 import { HubspotConfig } from './hubspot-config.model';
 import { GithubConfig } from './github-config.model';
+import { PostgresConfig } from './postgres-config.model';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -85,6 +86,53 @@ export class SlackWorkspace extends Model<
     as: 'githubConfig'
   })
   declare githubConfig?: NonAttribute<GithubConfig>;
+
+  @HasOne(() => PostgresConfig, {
+    foreignKey: 'team_id',
+    as: 'postgresConfig'
+  })
+  declare postgresConfig?: NonAttribute<PostgresConfig>;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true
+  })
+  get openai_key(): string | null {
+    const value = this.getDataValue('openai_key') as string;
+    if (!value) return null;
+    return decrypt(value);
+  }
+  set openai_key(value: string | null) {
+    if (!value) {
+      this.setDataValue('openai_key', null);
+      return;
+    }
+    this.setDataValue('openai_key', encrypt(value));
+  }
+
+  @AllowNull(false)
+  @Column({
+    type: DataType.ARRAY(DataType.STRING),
+    defaultValue: []
+  })
+  declare admin_user_ids: string[];
+
+  // Helper method to check if a user is an admin
+  isAdmin(userId: string): boolean {
+    return this.admin_user_ids.includes(userId);
+  }
+
+  // Helper method to add an admin
+  addAdmin(userId: string): void {
+    if (!this.admin_user_ids.includes(userId)) {
+      this.admin_user_ids = [...this.admin_user_ids, userId];
+    }
+  }
+
+  // Helper method to remove an admin
+  removeAdmin(userId: string): void {
+    this.admin_user_ids = this.admin_user_ids.filter(id => id !== userId);
+  }
 
   @CreatedAt
   declare created_at: CreationOptional<Date>;
