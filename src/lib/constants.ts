@@ -5,7 +5,8 @@ export enum SUPPORTED_INTEGRATIONS {
   GITHUB = 'github',
   HUBSPOT = 'hubspot',
   ZENDESK = 'zendesk',
-  POSTGRES = 'postgres'
+  POSTGRES = 'postgres',
+  SALESFORCE = 'salesforce',
 }
 
 export const HUBSPOT_SCOPES = [
@@ -71,6 +72,14 @@ export const INTEGRATIONS: {
       connectedText: 'Postgres has been successfully connected! You can now query Postgres by chatting with me or mentioning me in any channel. Try asking me things like "Query the accounts table and return the first 10 rows"',
       relation: 'postgresConfig',
       oauth: false
+    },
+    {
+      name: 'Salesforce',
+      value: SUPPORTED_INTEGRATIONS.SALESFORCE,
+      helpText: 'Connect Salesforce to interact with your CRM.',
+      connectedText: 'Salesforce has been successfully connected! You can now query Salesforce by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of the deal for "Quix" or "What is the contact name for "Quix"',
+      relation: 'salesforceConfig',
+      oauth: true
     }
   ];
 
