@@ -22,7 +22,8 @@ export const HUBSPOT_SCOPES = [
 
 export const GITHUB_SCOPES = [
   'repo',
-  'user'
+  'user',
+  'read:org'
 ]
 
 export const INTEGRATIONS: {

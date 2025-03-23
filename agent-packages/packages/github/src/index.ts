@@ -5,7 +5,7 @@ import {
   SearchIssuesParams,
   SearchIssuesResponse,
 } from './types';
-import { CreateIssueParams } from './types/index';
+import { CodeSearchParams, CreateIssueParams } from './types/index';
 
 export * from './types';
 export * from './tools';
@@ -156,4 +156,29 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: false, error: error instanceof Error ? error.message : 'Failed to create GitHub issue' };
     }
   }
-}
+
+  async searchCode(params: CodeSearchParams): Promise<BaseResponse<RestEndpointMethodTypes['search']['code']['response']['data']['items']>> {
+    try {
+      const query = params.query;
+      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
+      const repo = validation.repoName;
+      const owner = validation.repoOwner;
+
+      const response = await this.client.search.code({
+        q: `${query} repo:${owner}/${repo}`,
+        per_page: 10
+      });
+
+      return {
+        success: true,
+        data: response.data.items
+      };
+    } catch (error) {
+      console.error('Error searching GitHub code:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to search GitHub code'
+      };
+    }
+  }
+} 
