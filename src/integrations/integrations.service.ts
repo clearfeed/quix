@@ -74,8 +74,8 @@ export class IntegrationsService {
 
   async updateSalesforceConfig(salesforceConfig: SalesforceConfig): Promise<SalesforceConfig> {
     const expiresAt = new Date(salesforceConfig.expires_at);
-    const clientId = this.configService.get<string>('SALESFORCE_CLIENT_ID')!;
-    const clientSecret = this.configService.get<string>('SALESFORCE_CLIENT_SECRET')!;
+    const clientId = this.configService.get<string>('SALESFORCE_CONSUMER_KEY')!;
+    const clientSecret = this.configService.get<string>('SALESFORCE_CONSUMER_SECRET')!;
     if (expiresAt < new Date(Date.now() + (TimeInMilliSeconds.ONE_MINUTE * 10))) {
       const params = new URLSearchParams();
       params.set('grant_type', 'refresh_token');

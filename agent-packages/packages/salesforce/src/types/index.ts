@@ -17,8 +17,17 @@ export interface SalesforceOpportunity {
   LastModifiedDate: string;
 }
 
+export interface SalesforceTask {
+  Subject: string;
+  Description?: string;
+  Status?: string;
+  Priority?: string;
+  OwnerId?: string;
+  WhatId?: string;
+}
+
 export interface SalesforceNote {
-  Title?: string;
+  Title: string;
   Body: string;
   ParentId: string;
   OwnerId: string;
@@ -28,4 +37,13 @@ export interface SalesforceResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
+}
+
+export type CreateTaskParams = {
+  opportunityId: string;
+  subject: string;
+  description?: string;
+  status?: string;
+  priority?: string;
+  ownerId?: string;
 }

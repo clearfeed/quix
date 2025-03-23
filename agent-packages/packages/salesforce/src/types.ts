@@ -16,6 +16,7 @@ export interface Opportunity {
   owner: string;
   createdDate: string;
   lastModifiedDate: string;
+  url: string;
 }
 
 export type SearchOpportunitiesResponse = BaseResponse<{
@@ -24,4 +25,5 @@ export type SearchOpportunitiesResponse = BaseResponse<{
 
 export type AddNoteToOpportunityResponse = BaseResponse<{
   noteId: string;
+  opportunityUrl: string;
 }>; 
