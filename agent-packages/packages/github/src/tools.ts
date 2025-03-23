@@ -117,7 +117,7 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
     }),
     new DynamicStructuredTool({
       name: 'search_github_code',
-      description: 'Search for code snippets in a GitHub repository based on keywords.',
+      description: 'Find implementation details, function definitions, or code snippets in a GitHub repository by searching with natural language or keywords.',
       schema: z.object({
         repo: config?.repo
           ? z.string().describe('The name of the GitHub repository to search in').optional().default(config.repo)
