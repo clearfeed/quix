@@ -9,6 +9,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { SlackWorkspace } from '../database/models';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
+import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
 @Injectable()
 export class ToolService {
   constructor(
@@ -25,14 +26,6 @@ export class ToolService {
     }
   }
 
-  get githubTools(): ToolConfig | undefined {
-    const githubToken = this.config.get('GITHUB_TOKEN');
-    const githubOwner = this.config.get('GITHUB_OWNER');
-    if (githubToken && githubOwner) {
-      return createGitHubToolsExport({ token: githubToken, owner: githubOwner });
-    }
-  }
-
   get zendeskTools(): ToolConfig | undefined {
     const zendeskSubdomain = this.config.get('ZENDESK_SUBDOMAIN');
     const zendeskEmail = this.config.get('ZENDESK_EMAIL');
@@ -44,7 +37,7 @@ export class ToolService {
 
   async getAvailableTools(teamId: string): Promise<Record<string, ToolConfig> | undefined> {
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
-      include: ['jiraConfig', 'hubspotConfig', 'postgresConfig', 'githubConfig']
+      include: ['jiraConfig', 'hubspotConfig', 'postgresConfig', 'githubConfig', 'salesforceConfig']
     });
     if (!slackWorkspace) return;
     const tools: Record<string, ToolConfig> = {};
@@ -82,6 +75,14 @@ export class ToolService {
         password: postgresConfig.password,
         database: postgresConfig.database,
         ssl: postgresConfig.ssl
+      });
+    }
+    const salesforceConfig = slackWorkspace.salesforceConfig;
+    if (salesforceConfig) {
+      const updatedSalesforceConfig = await this.integrationsService.updateSalesforceConfig(salesforceConfig);
+      tools.salesforce = createSalesforceToolsExport({
+        instanceUrl: updatedSalesforceConfig.instance_url,
+        accessToken: updatedSalesforceConfig.access_token
       });
     }
     return tools;

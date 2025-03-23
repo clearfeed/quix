@@ -26,39 +26,45 @@ import { NonAttribute } from 'sequelize';
 })
 export class SalesforceConfig extends Model {
   @Column({
-    type: DataType.UUID,
-    defaultValue: DataType.UUIDV4,
+    type: DataType.STRING,
     primaryKey: true,
     allowNull: false,
-    field: 'id',
   })
-  declare id: string;
+  declare organization_id: string;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    field: 'access_token',
   })
   access_token: string;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    field: 'refresh_token',
   })
   refresh_token: string;
 
   @Column({
+    type: DataType.DATE,
+    allowNull: false,
+  })
+  expires_at: Date;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  authed_user_email: string;
+
+  @Column({
     type: DataType.STRING,
     allowNull: true,
-    field: 'instance_url',
   })
   instance_url: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
-    field: 'token_type',
   })
   token_type: string;
 
@@ -66,7 +72,6 @@ export class SalesforceConfig extends Model {
     type: DataType.ARRAY(DataType.STRING),
     allowNull: true,
     defaultValue: null,
-    field: 'scopes',
   })
   scopes: string[];
 
@@ -83,15 +88,11 @@ export class SalesforceConfig extends Model {
   declare slackWorkspace: NonAttribute<SlackWorkspace>;
 
   @CreatedAt
-  @Column({
-    field: 'created_at',
-  })
+  @Column
   created_at: Date;
 
   @UpdatedAt
-  @Column({
-    field: 'updated_at',
-  })
+  @Column
   updated_at: Date;
 
 } 

@@ -37,3 +37,14 @@ export interface SalesforceTokenResponse {
   scope?: string;
   expires_in: number;
 }
+
+export type SalesforceTokenIntrospectionResponse = {
+  exp: number;
+  sub: string;
+  username: string;
+  active: boolean;
+  client_id: string;
+  iat: number;
+  nbf: number;
+  scope: string;
+};

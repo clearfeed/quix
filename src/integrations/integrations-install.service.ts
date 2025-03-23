@@ -7,7 +7,7 @@ import { Cache } from 'cache-manager';
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { HubspotTokenResponse, HubspotHubInfo, GithubTokenResponse, GitHubInfo, SalesforceTokenResponse } from './types';
+import { HubspotTokenResponse, HubspotHubInfo, GithubTokenResponse, GitHubInfo, SalesforceTokenResponse, SalesforceTokenIntrospectionResponse } from './types';
 import { JiraConfig, HubspotConfig, PostgresConfig, GithubConfig, SalesforceConfig } from '../database/models';
 import { ToolInstallState } from '@quix/lib/types/common';
 import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
@@ -309,13 +309,53 @@ export class IntegrationsInstallService {
       const { access_token, refresh_token, instance_url, token_type, scope } = response.data;
       const scopes = scope ? scope.split(' ') : [];
 
+      const tokenIntrospectionResponse = await this.httpService.axiosRef.post<SalesforceTokenIntrospectionResponse>(
+        `${instance_url}/services/oauth2/introspect`,
+        new URLSearchParams({
+          token: access_token,
+          token_type_hint: 'access_token',
+          client_id: clientId,
+          client_secret: clientSecret
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          }
+        }
+      );
+
+      const userInfoResponse = await this.httpService.axiosRef.get<{
+        organization_id: string;
+        is_app_installed: boolean;
+        email: string;
+        active: boolean;
+      }>(
+        `https://login.salesforce.com/services/oauth2/userinfo`,
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`
+          }
+        }
+      );
+
+      if (!userInfoResponse.data.is_app_installed) {
+        throw new BadRequestException('Salesforce app is not installed');
+      }
+
+      if (!userInfoResponse.data.active) {
+        throw new BadRequestException('Salesforce user is not active');
+      }
+
       await this.salesforceConfigModel.upsert({
+        organization_id: userInfoResponse.data.organization_id,
         team_id: stateData.teamId,
         access_token,
         refresh_token,
         instance_url,
         token_type,
-        scopes
+        scopes,
+        authed_user_email: userInfoResponse.data.email,
+        expires_at: new Date(tokenIntrospectionResponse.data.exp * 1000)
       });
 
       this.eventEmitter.emit(EVENT_NAMES.SALESFORCE_CONNECTED, {

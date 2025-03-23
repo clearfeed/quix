@@ -4,9 +4,8 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('salesforce_configs', {
-      id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
+      organization_id: {
+        type: Sequelize.STRING,
         primaryKey: true,
         allowNull: false,
       },
@@ -30,6 +29,14 @@ module.exports = {
         type: Sequelize.ARRAY(Sequelize.STRING),
         allowNull: true,
         defaultValue: [],
+      },
+      expires_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+      },
+      authed_user_email: {
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       team_id: {
         type: Sequelize.STRING,
