@@ -36,44 +36,44 @@ export class SalesforceConfig extends Model {
     type: DataType.TEXT,
     allowNull: true,
   })
-  access_token: string;
+  declare access_token: string;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
   })
-  refresh_token: string;
+  declare refresh_token: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
   })
-  expires_at: Date;
+  declare expires_at: Date;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  authed_user_email: string;
+  declare authed_user_email: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
   })
-  instance_url: string;
+  declare instance_url: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: true,
   })
-  token_type: string;
+  declare token_type: string;
 
   @Column({
     type: DataType.ARRAY(DataType.STRING),
     allowNull: true,
     defaultValue: null,
   })
-  scopes: string[];
+  declare scopes: string[];
 
   @Unique
   @ForeignKey(() => SlackWorkspace)
@@ -89,10 +89,10 @@ export class SalesforceConfig extends Model {
 
   @CreatedAt
   @Column
-  created_at: Date;
+  declare created_at: Date;
 
   @UpdatedAt
   @Column
-  updated_at: Date;
+  declare updated_at: Date;
 
 } 
