@@ -26,6 +26,108 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
   } else {
     blocks.push(...getNonAdminView(slackWorkspace));
   }
+
+  blocks.push(Blocks.Divider());
+
+  if (selectedTool) {
+    const tool = INTEGRATIONS.find(integration => integration.value === selectedTool);
+    if (tool) {
+      const connectionInfo = getConnectionInfo(connection);
+      const capabilitiesMap: Record<string, { metadata: string[], examples: string[] }> = {
+        github: {
+          metadata: [
+            `👤 *Username:* ${(connection as GithubConfig).username}`,
+            `🔧 *Scopes:* ${(connection as GithubConfig).scopes?.join(', ') || 'N/A'}`
+          ],
+          examples: [
+            'Create an issue in repo `my-repo`',
+            'List all open PRs assigned to me',
+            'Get details of issue `#123`'
+          ]
+        },
+        jira: {
+          metadata: [
+            `🌐 *Jira URL:* ${(connection as JiraConfig).url}`,
+            `📁 *Project Key:* ${(connection as JiraConfig).default_config?.projectKey || 'Not set'}`
+          ],
+          examples: [
+            'Search for all open issues assigned to me',
+            'Get details for issue `JIRA-101`',
+            'List issues in project `ABC`'
+          ]
+        },
+        hubspot: {
+          metadata: [
+            `🌐 *Hub Domain:* ${(connection as HubspotConfig).hub_domain}`,
+            `🔐 *Scopes:* ${(connection as HubspotConfig).scopes?.join(', ') || 'N/A'}`
+          ],
+          examples: [
+            'Find contact with email `john@doe.com`',
+            'Get details of deal with ID `12345`',
+            'List all recently modified companies'
+          ]
+        },
+        postgres: {
+          metadata: [
+            `🛠️ *Host:* ${(connection as PostgresConfig).host}`,
+            `🗄️ *Database:* ${(connection as PostgresConfig).database}`,
+            `🔐 *User:* ${(connection as PostgresConfig).user}`,
+            `🔒 *SSL Enabled:* ${(connection as PostgresConfig).ssl ? 'Yes' : 'No'}`
+          ],
+          examples: [
+            'Get the top 5 customers by revenue',
+            'Show orders placed in the last 7 days',
+            'List employees in the Sales department'
+          ]
+        }
+      };
+
+      const toolData = capabilitiesMap[selectedTool];
+      if (toolData) {
+        blocks.push(
+          Blocks.Section({ text: `*You're connected to ${tool.name}!*` }),
+          Blocks.Context().elements(toolData.metadata),
+          Blocks.Section({
+            text: `*Here are some things you can ask Quix:*`
+          }),
+          Blocks.Section({
+            text: toolData.examples.map(e => `• *${e}*`).join('\n')
+          })
+        );
+      }
+    }
+  } else {
+    blocks.push(
+      Blocks.Section({
+        text: '*Welcome to Quix Integrations!*'
+      }),
+      Blocks.Context().elements(
+        'Quix allows you to talk to your tools in plain English right from Slack. Connect any of your business tools to get started.'
+      ),
+      Blocks.Section({
+        text: [
+          '*🔗 Supported Integrations:*',
+          `• *PostgreSQL:* Query and interact with your postgres database.`,
+          `• *GitHub:* Search code, Create issues, fetch PRs, assign teammates.`,
+          `• *Jira:* Search, view, and manage jira issues easily.`,
+          `• *HubSpot:* Retrieve create hubspot deals, contacts effortlessly.`,
+          '',
+          '',
+          '*💡 Coming Soon:* Zendesk and more.',
+          '',
+          '',
+          '*🚀 Capabilities:*',
+          `• Ask questions like:`,
+          `• “Give first 10 rows of accounts table.”`,
+          `• “Create a GitHub issue titled Bug in Login flow in xyz/pqr repository.”`,
+          `• “Create a deal named Website Upgrade worth $10,000 in stage negotiations.”`,
+          `• “Assign jira issue PROJ-123 to xyz.”`
+        ].join('\n')
+      }),
+      Blocks.Context().elements('Connect a tool from the dropdown above to get started.')
+    );
+  }
+
   return {
     type: 'home',
     blocks: BlockCollection(blocks)
