@@ -56,7 +56,7 @@ export interface BaseResponse<T = any> {
  * Base service interface that all integration services should implement
  */
 export interface BaseService<TConfig extends BaseConfig = BaseConfig> {
-  validateConfig(): { isValid: boolean; error?: string };
+  validateConfig(config?: Record<string, any>): { isValid: boolean; error?: string } & Record<string, any>;
 }
 
 export interface ToolConfig {

@@ -1,10 +1,10 @@
-import { HubspotConfig, JiraConfig, PostgresConfig, SlackWorkspace, GithubConfig } from "@quix/database/models";
+import { HubspotConfig, JiraConfig, PostgresConfig, SlackWorkspace, GithubConfig, SalesforceConfig } from "@quix/database/models";
 import { INTEGRATIONS } from "@quix/lib/constants";
 
 export type HomeViewArgs = {
   slackWorkspace: SlackWorkspace;
   selectedTool?: typeof INTEGRATIONS[number]['value'];
-  connection?: JiraConfig | HubspotConfig | PostgresConfig | GithubConfig;
+  connection?: JiraConfig | HubspotConfig | PostgresConfig | GithubConfig | SalesforceConfig;
   userId: string;
 }
 

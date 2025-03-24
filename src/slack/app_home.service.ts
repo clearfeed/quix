@@ -3,7 +3,8 @@ import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { BlockElementAction, ButtonAction, StaticSelectAction, OverflowAction } from '@slack/bolt';
 import { AppHomeOpenedEvent } from '@slack/web-api';
 import { WebClient } from '@slack/web-api';
-import { getHomeView, publishOpenaiKeyModal, publishPostgresConnectionModal, publishManageAdminsModal } from './views/app_home';
+import { getHomeView } from './views/app_home';
+import { publishPostgresConnectionModal, publishOpenaiKeyModal, publishManageAdminsModal } from './views/modals';
 import { INTEGRATIONS, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
 import { SlackWorkspace, PostgresConfig } from '@quix/database/models';
@@ -146,6 +147,9 @@ export class AppHomeService {
             break;
           case SUPPORTED_INTEGRATIONS.JIRA:
             await this.integrationsService.removeJiraConfig(teamId);
+            break;
+          case SUPPORTED_INTEGRATIONS.SALESFORCE:
+            await this.integrationsService.removeSalesforceConfig(teamId);
             break;
           default:
             break;
