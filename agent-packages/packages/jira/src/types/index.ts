@@ -5,6 +5,9 @@ export type JiraAuth = {
   password: string;
 } | {
   bearerToken: string;
+} | {
+  sharedSecret: string;
+  atlassianConnectAppKey: string;
 }
 
 export interface JiraConfig extends BaseConfig {
