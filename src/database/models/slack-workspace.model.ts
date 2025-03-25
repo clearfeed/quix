@@ -147,7 +147,7 @@ export class SlackWorkspace extends Model<
   @Column({
     type: DataType.JSONB,
     defaultValue: {
-      allowedUsersForInteraction: 'everyone'
+      allowedUsersForDmInteraction: 'everyone'
     }
   })
   declare access_settings: CreationOptional<AccessSettingsType>;
@@ -174,12 +174,12 @@ export class SlackWorkspace extends Model<
 
   // Update access level for interaction
   setAccessLevel(level: QuixUserAccessLevel): void {
-    this.access_settings.allowedUsersForInteraction = level;
+    this.access_settings.allowedUsersForDmInteraction = level;
   }
 
   // Check if a user is allowed based on current access level
   isUserAuthorized(userId: string): boolean {
-    const level = this.access_settings.allowedUsersForInteraction;
+    const level = this.access_settings.allowedUsersForDmInteraction;
     if (level === QuixUserAccessLevel.EVERYONE) return true;
     if (level === QuixUserAccessLevel.ADMINS_ONLY) return this.isAdmin(userId);
     return false;

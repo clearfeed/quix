@@ -2,6 +2,6 @@ import { QuixUserAccessLevel } from "../constants";
 
 //  Type definition for access settings
 export type AccessSettingsType = {
-  allowedUsersForInteraction: QuixUserAccessLevel;
+  allowedUsersForDmInteraction: QuixUserAccessLevel;
   allowedChannelIds?: string[];
 };
