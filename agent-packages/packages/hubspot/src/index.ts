@@ -3,6 +3,7 @@ import { FilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/deals';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import { HubspotConfig, SearchDealsResponse, Deal, AddNoteToDealResponse, CreateContactParams, CreateContactResponse } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
+import { validateRequiredFields } from './utils';
 
 export * from './types';
 export * from './tools';
@@ -139,15 +140,11 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async createContact(params: CreateContactParams): Promise<CreateContactResponse> {
     try {
-      if (!params.firstName) {
-        throw new Error("Missing required field: firstname");
-      }
-      if (!params.lastName) {
-        throw new Error("Missing required field: lastname");
-      }
-      if (!params.email) {
-        throw new Error("Missing required field: email");
-      }
+      await validateRequiredFields({
+        params,
+        requiredFields: ['firstName', 'lastName', 'email'],
+      });
+
       const properties: Record<string, string> = {
         firstname: params.firstName,
         lastname: params.lastName,
