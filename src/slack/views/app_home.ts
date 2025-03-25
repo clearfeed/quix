@@ -1,11 +1,10 @@
 import { HomeView } from "@slack/web-api";
 import { SLACK_ACTIONS } from "@quix/lib/utils/slack-constants";
-import { HomeViewArgs, PostgresConnectionModalArgs } from "./types";
+import { HomeViewArgs } from "./types";
 import { INTEGRATIONS, SUPPORTED_INTEGRATIONS } from "@quix/lib/constants";
 import { getInstallUrl } from "@quix/lib/utils/slack";
 import { HubspotConfig, JiraConfig, PostgresConfig, SlackWorkspace, GithubConfig, SalesforceConfig } from "@quix/database/models";
-import { BlockCollection, Input, Section, Surfaces, Elements, Bits, Blocks, Md, BlockBuilder } from "slack-block-builder";
-import { WebClient } from "@slack/web-api";
+import { BlockCollection, Elements, Bits, Blocks, Md, BlockBuilder } from "slack-block-builder";
 import { createHubspotToolsExport } from "agent-packages/packages/hubspot/dist";
 import { createJiraToolsExport } from "@clearfeed-ai/quix-jira-agent";
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
@@ -131,7 +130,7 @@ const getToolData = (args: HomeViewArgs) => {
   }
 }
 
-const getToolConfigData = (connection: GithubConfig | JiraConfig | HubspotConfig | PostgresConfig) => {
+const getToolConfigData = (connection: GithubConfig | JiraConfig | HubspotConfig | PostgresConfig | SalesforceConfig) => {
   switch (true) {
   case connection instanceof JiraConfig:
     return [
