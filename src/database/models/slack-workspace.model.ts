@@ -20,6 +20,7 @@ import { GithubConfig } from './github-config.model';
 import { PostgresConfig } from './postgres-config.model';
 import { SalesforceConfig } from './salesforce-config.model';
 import { AccessSettingsType } from '@quix/lib/types/slack-workspace';
+import { QuixUserAccessLevel } from '@quix/lib/constants';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -150,6 +151,39 @@ export class SlackWorkspace extends Model<
     }
   })
   declare access_settings: CreationOptional<AccessSettingsType>;
+
+  // Add a channel ID to the whitelist
+  addChannel(channelId: string): void {
+    const currentIds = this.access_settings.allowedChannelIds || [];
+    if (!currentIds.includes(channelId)) {
+      this.access_settings.allowedChannelIds = [...currentIds, channelId];
+    }
+  }
+
+  // Remove a channel ID from the whitelist
+  removeChannel(channelId: string): void {
+    const currentIds = this.access_settings.allowedChannelIds || [];
+    this.access_settings.allowedChannelIds = currentIds.filter(id => id !== channelId);
+  }
+
+  // Check if a channel is authorized
+  isChannelAuthorized(channelId: string): boolean {
+    const allowedIds = this.access_settings.allowedChannelIds;
+    return Array.isArray(allowedIds) ? allowedIds.includes(channelId) : false;
+  }
+
+  // Update access level for interaction
+  setAccessLevel(level: QuixUserAccessLevel): void {
+    this.access_settings.allowedUsersForInteraction = level;
+  }
+
+  // Check if a user is allowed based on current access level
+  isUserAuthorized(userId: string): boolean {
+    const level = this.access_settings.allowedUsersForInteraction;
+    if (level === QuixUserAccessLevel.EVERYONE) return true;
+    if (level === QuixUserAccessLevel.ADMINS_ONLY) return this.isAdmin(userId);
+    return false;
+  }
 
   @CreatedAt
   declare created_at: CreationOptional<Date>;
