@@ -141,6 +141,18 @@ export class SlackWorkspace extends Model<
     this.admin_user_ids = this.admin_user_ids.filter(id => id !== userId);
   }
 
+  @AllowNull(true)
+  @Column({
+    type: DataType.JSONB,
+    defaultValue: {
+      allowedUsersForInteraction: 'everyone'
+    }
+  })
+  declare access_settings: CreationOptional<{
+    allowedUsersForInteraction: 'admins_only' | 'everyone';
+    allowedChannels?: string[];
+  }>;
+
   @CreatedAt
   declare created_at: CreationOptional<Date>;
 
