@@ -147,7 +147,7 @@ export class SlackWorkspace extends Model<
   @Column({
     type: DataType.JSONB,
     defaultValue: {
-      allowedUsersForDmInteraction: 'everyone'
+      allowedUsersForDmInteraction: QuixUserAccessLevel.EVERYONE
     }
   })
   declare access_settings: CreationOptional<AccessSettingsType>;
