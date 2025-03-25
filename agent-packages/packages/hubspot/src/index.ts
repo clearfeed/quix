@@ -159,7 +159,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         properties.closedate = params.closeDate;
       }
       if (params.ownerId) {
-        properties.hubspot_owner_id = params.ownerId.toString();
+        properties.hubspot_owner_id = params.ownerId;
       }
 
       const associations = [];
