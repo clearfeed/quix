@@ -9,6 +9,7 @@ import { createHubspotToolsExport } from "agent-packages/packages/hubspot/dist";
 import { createJiraToolsExport } from "@clearfeed-ai/quix-jira-agent";
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
+import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
 
 export const getHomeView = (args: HomeViewArgs): HomeView => {
   const { selectedTool, slackWorkspace, connection } = args;
@@ -90,10 +91,11 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
           '',
           '*🚀 Capabilities:*',
           `• Ask questions like:`,
-          `• “Give first 10 rows of accounts table.”`,
-          `• “Create a GitHub issue titled Bug in Login flow in xyz/pqr repository.”`,
-          `• “Create a deal named Website Upgrade worth $10,000 in stage negotiations.”`,
-          `• “Assign jira issue PROJ-123 to xyz.”`
+          "• “Give first 10 rows of `accounts` table.”",
+          "• “Create a GitHub issue titled Bug in Login flow in `xyz/pqr` repository.”",
+          "• “Create a deal named Website Upgrade worth $10,000 in stage negotiations.”",
+          "• “Assign jira issue `PROJ-123` to `xyz`.”",
+          "• “Attach a note titled 'Call Summary' to opportunity `0065g00000XyZt2`: 'Call went well, decision expected by next week.”",
         ].join('\n')
       }),
       Blocks.Context().elements('Connect a tool from the dropdown above to get started.')
@@ -151,6 +153,11 @@ const getToolConfigData = (connection: GithubConfig | JiraConfig | HubspotConfig
     return [
       `👤 *Username:* ${connection.username}`
     ];
+  case connection instanceof SalesforceConfig:
+    return [
+      `👤 *User:* ${connection.authed_user_email}`,
+      `🌐 *Instance URL:" ${connection.instance_url}`
+    ]
   default:
     return [
       'No config data.'
@@ -162,11 +169,6 @@ const getAvailableFns = (
   selectedTool: typeof INTEGRATIONS[number]["value"],
   slackWorkspace: SlackWorkspace
 ) => {
-
-  const jiraConfig = slackWorkspace.jiraConfig;
-  const githubConfig = slackWorkspace.githubConfig;
-  const hubspotConfig = slackWorkspace.hubspotConfig;
-  const postgresConfig = slackWorkspace.postgresConfig;
 
   if (selectedTool === SUPPORTED_INTEGRATIONS.JIRA) {
     const tools = createJiraToolsExport({
@@ -191,7 +193,7 @@ const getAvailableFns = (
     ));
   }
 
-  if (selectedTool === SUPPORTED_INTEGRATIONS.HUBSPOT && hubspotConfig) {
+  if (selectedTool === SUPPORTED_INTEGRATIONS.HUBSPOT) {
     const tools = createHubspotToolsExport({
       accessToken: 'test-access-token',
     }).tools;
@@ -201,7 +203,7 @@ const getAvailableFns = (
     ));
   }
 
-  if (selectedTool === SUPPORTED_INTEGRATIONS.POSTGRES && postgresConfig) {
+  if (selectedTool === SUPPORTED_INTEGRATIONS.POSTGRES) {
     const tools = createPostgresToolsExport({
       host: 'test-host',
       port: 8080,
@@ -209,6 +211,17 @@ const getAvailableFns = (
       password: 'test-password',
       database: 'test-db',
       ssl: false,
+    }).tools;
+
+    return tools.map((tool) => (
+      '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description
+    ));
+  }
+
+  if (selectedTool === SUPPORTED_INTEGRATIONS.SALESFORCE) {
+    const tools = createSalesforceToolsExport({
+      instanceUrl: 'test-instance-url',
+      accessToken: 'test-access-token'
     }).tools;
 
     return tools.map((tool) => (
@@ -260,6 +273,14 @@ const getCapabilities = (selectedTool: typeof INTEGRATIONS[number]["value"]) => 
       "Create an issue in the `react/facebook` repo titled 'Crash on launch' with description 'The app crashes immediately after opening on iOS 17.'",
       "Search for the keyword `useEffect` in the `dashboard-ui/imkhateeb` repository"
     ];
+  case SUPPORTED_INTEGRATIONS.SALESFORCE:
+    return [
+      "Find all opportunities related to 'Website Upgrade'",
+      "Add a note to opportunity ID `0065g00000XyZt2` saying 'Client asked for revised proposal'",
+      "Attach a note titled 'Call Summary' to opportunity `0065g00000XyZt2`: 'Call went well, decision expected by next week.'",
+      "Create a task for opportunity ID `0065g00000ABCXz` with subject 'Follow up with client', status 'Not Started', and priority 'High'",
+      "Find Salesforce user with email `emily@company.com`",
+    ]
   default:
     return [
       "Ask questions like:",
