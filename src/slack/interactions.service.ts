@@ -59,9 +59,9 @@ export class InteractionsService {
       this.appHomeService.handleManageAdminsSubmitted(payload.user.id, payload.view.team_id, adminUserIds);
       break;
     case SLACK_ACTIONS.MANAGE_ACCESS_CONTROLS:
-      const allowedChannels = payload.view.state.values.allowed_channel_ids[SLACK_ACTIONS.ALLOWED_CHANNELS_SELECT].selected_conversations as string[];
+      const notAllowedChannels = payload.view.state.values.not_allowed_channel_ids[SLACK_ACTIONS.NOT_ALLOWED_CHANNELS_SELECT].selected_conversations as string[];
       const accessLevel = payload.view.state.values.access_level[SLACK_ACTIONS.ACCESS_LEVEL_SELECT].selected_option?.value as QuixUserAccessLevel;
-      this.appHomeService.handleManageAccessControlsSubmitted(payload.user.id, payload.view.team_id, allowedChannels, accessLevel);
+      this.appHomeService.handleManageAccessControlsSubmitted(payload.user.id, payload.view.team_id, notAllowedChannels, accessLevel);
       break;
     default:
       return;

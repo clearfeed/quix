@@ -196,14 +196,14 @@ export const publishAccessControlModal = async (
       blocks: BlockCollection([
         // Channel selection
         Section({
-          text: 'Select channels where Quix is allowed to respond:',
+          text: 'Select channels where Quix is not allowed to respond:',
         }),
         Input({
-          label: 'Allowed Channels',
-          blockId: 'allowed_channel_ids',
+          label: 'Not Allowed Channels',
+          blockId: 'not_allowed_channel_ids',
         }).element(
           Elements.ConversationMultiSelect({
-            actionId: SLACK_ACTIONS.ALLOWED_CHANNELS_SELECT,
+            actionId: SLACK_ACTIONS.NOT_ALLOWED_CHANNELS_SELECT,
             placeholder: 'Select channels',
           })
             .filter('public')

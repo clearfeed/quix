@@ -20,7 +20,7 @@ export const SLACK_ACTIONS = {
   },
   CONNECTION_OVERFLOW_MENU: 'connection-overflow-menu',
   MANAGE_ACCESS_CONTROLS: 'manage-access-controls',
-  ALLOWED_CHANNELS_SELECT: 'allowed-channels-select',
+  NOT_ALLOWED_CHANNELS_SELECT: 'not-allowed-channels-select',
   ACCESS_LEVEL_SELECT: 'access-level-select'
 } as const;
 
