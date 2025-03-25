@@ -19,6 +19,7 @@ import { HubspotConfig } from './hubspot-config.model';
 import { GithubConfig } from './github-config.model';
 import { PostgresConfig } from './postgres-config.model';
 import { SalesforceConfig } from './salesforce-config.model';
+import { AccessSettingsType } from '@quix/lib/types/slack-workspace';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -141,17 +142,14 @@ export class SlackWorkspace extends Model<
     this.admin_user_ids = this.admin_user_ids.filter(id => id !== userId);
   }
 
-  @AllowNull(true)
+  @AllowNull(false)
   @Column({
     type: DataType.JSONB,
     defaultValue: {
       allowedUsersForInteraction: 'everyone'
     }
   })
-  declare access_settings: CreationOptional<{
-    allowedUsersForInteraction: 'admins_only' | 'everyone';
-    allowedChannels?: string[];
-  }>;
+  declare access_settings: CreationOptional<AccessSettingsType>;
 
   @CreatedAt
   declare created_at: CreationOptional<Date>;

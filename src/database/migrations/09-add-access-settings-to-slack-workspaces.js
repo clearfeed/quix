@@ -4,7 +4,7 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.addColumn('slack_workspaces', 'access_settings', {
       type: Sequelize.JSONB,
-      allowNull: true,
+      allowNull: false,
       defaultValue: {
         allowedUsersForInteraction: 'everyone'
       }
