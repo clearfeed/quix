@@ -154,14 +154,14 @@ export class SlackWorkspace extends Model<
 
   // Add channel IDs to the whitelist
   addChannels(channelIds: string[]): void {
-    this.access_settings.notAllowedChannelIds = channelIds;
+    this.access_settings.allowedChannelIds = channelIds;
     this.changed('access_settings', true);
   }
 
   // Check if a channel is authorized
   isChannelAuthorized(channelId: string): boolean {
-    const notAllowedIds = this.access_settings.notAllowedChannelIds || [];
-    return notAllowedIds.includes(channelId) ? false : true;
+    const allowedIds = this.access_settings.allowedChannelIds || [];
+    return (!allowedIds.length || allowedIds.includes(channelId)) ? true : false;
   }
 
   // Update access level for interaction

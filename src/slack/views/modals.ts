@@ -196,14 +196,14 @@ export const publishAccessControlModal = async (
       blocks: BlockCollection([
         // Channel selection
         Section({
-          text: 'Select channels where Quix is not allowed to respond:',
+          text: 'Select channels where Quix is allowed to respond(If no channel is selected it is allowed to respond in all the channels):',
         }),
         Input({
-          label: 'Not Allowed Channels',
-          blockId: 'not_allowed_channel_ids',
-        }).element(
+          label: 'Allowed Channels',
+          blockId: 'allowed_channel_ids',
+        }).optional(true).element(
           Elements.ConversationMultiSelect({
-            actionId: SLACK_ACTIONS.NOT_ALLOWED_CHANNELS_SELECT,
+            actionId: SLACK_ACTIONS.ALLOWED_CHANNELS_SELECT,
             placeholder: 'Select channels',
           })
             .filter('public')
@@ -213,9 +213,9 @@ export const publishAccessControlModal = async (
 
         // Access Level selection
         Input({
-          label: 'Who can interact with Quix in DMs?',
+          label: 'Who can interact with Quix in DM?',
           blockId: 'access_level',
-        }).element(
+        }).optional(true).element(
           Elements.StaticSelect({
             actionId: SLACK_ACTIONS.ACCESS_LEVEL_SELECT,
             placeholder: 'Select access level',

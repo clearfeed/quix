@@ -67,13 +67,13 @@ export class AppHomeService {
     const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
-    await publishAccessControlModal(webClient, { triggerId, teamId, initialChannels: slackWorkspace.access_settings.notAllowedChannelIds });
+    await publishAccessControlModal(webClient, { triggerId, teamId, initialChannels: slackWorkspace.access_settings.allowedChannelIds });
   }
 
-  async handleManageAccessControlsSubmitted(userId: string, teamId: string, notAllowedChannels: string[], accessLevel: QuixUserAccessLevel) {
+  async handleManageAccessControlsSubmitted(userId: string, teamId: string, allowedChannels: string[], accessLevel: QuixUserAccessLevel) {
     const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
-    slackWorkspace.addChannels(notAllowedChannels);
+    slackWorkspace.addChannels(allowedChannels);
     slackWorkspace.setAccessLevel(accessLevel || 'everyone')
     await slackWorkspace.save();
     const webClient = new WebClient(slackWorkspace.bot_access_token);
