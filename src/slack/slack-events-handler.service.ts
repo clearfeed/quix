@@ -110,27 +110,10 @@ export class SlackEventsHandlerService {
         const messages = await createLLMContext(event, userInfoMap, slackWorkspace);
         if (!event.team) return;
         const response = await this.llmService.processMessage(event.text, event.team, messages);
-        await webClient.chat.postMessage({
-          channel: event.channel,
-          text: response,
-          blocks: [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: response
-              }
-            }
-          ],
-          thread_ts: event.thread_ts
-        });
+        await slackWorkspace.postMessage(response, event.channel, event.thread_ts);
         this.logger.log('Sent response to message', { channel: event.channel, response });
       } else {
-        await webClient.chat.postMessage({
-          channel: event.channel,
-          text: 'Please provide more information...',
-          thread_ts: event.thread_ts
-        });
+        await slackWorkspace.postMessage('Please provide more information...', event.channel, event.thread_ts);
         this.logger.log('No text in message', { event });
       }
     } catch (error) {
@@ -146,16 +129,11 @@ export class SlackEventsHandlerService {
         this.logger.error('Slack workspace not found', { teamId: event.team });
         return;
       }
-      const webClient = new WebClient(slackWorkspace.bot_access_token);
       const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
       const messages = await createLLMContext(event, userInfoMap, slackWorkspace);
       if (!event.team) return;
       const response = await this.llmService.processMessage(event.text, event.team, messages);
-      await webClient.chat.postMessage({
-        channel: event.channel,
-        text: response,
-        thread_ts: event.thread_ts
-      });
+      await slackWorkspace.postMessage(response, event.channel, event.thread_ts);
       this.logger.log('Sent response to app mention', { channel: event.channel, response });
     } catch (error) {
       this.logger.error('Error sending response:', error);
