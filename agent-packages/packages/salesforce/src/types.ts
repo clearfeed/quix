@@ -21,6 +21,7 @@ export interface Opportunity {
 
 export type SearchOpportunitiesResponse = BaseResponse<{
   opportunities: Opportunity[];
+  maxResults: number;
 }>;
 
 export type AddNoteToOpportunityResponse = BaseResponse<{

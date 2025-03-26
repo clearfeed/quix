@@ -1,8 +1,9 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { HubspotService } from './index';
-import { HubspotConfig } from './types';
+import { CreateContactParams, HubspotConfig, CreateDealParams } from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
+
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
 HubSpot is a CRM platform that manages:
 - Contacts: People and leads with properties like name, email, phone, title, etc.
@@ -18,6 +19,8 @@ Consider using HubSpot tools when the user wants to:
 - View deal status, amount, pipeline stage, close date
 - Access ticket details, support history, resolutions
 - Get marketing campaign performance and engagement metrics
+- View and manage deals
+- View or manage contacts
 `;
 
 const HUBSPOT_RESPONSE_GENERATION_PROMPT = `
@@ -39,9 +42,10 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         name: 'search_hubspot_deals',
         description: 'Search for deals in HubSpot based on a keyword',
         schema: z.object({
-        keyword: z.string().describe('The keyword to search for in HubSpot deals')
-      }),
-    }),
+          keyword: z.string().describe('The keyword to search for in HubSpot deals'),
+        }),
+      }
+    ),
     tool(
       async (args: { dealId: string; note: string }) => service.addNoteToDeal(args.dealId, args.note),
       {
@@ -49,17 +53,73 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         description: 'Add a note to a deal in HubSpot',
         schema: z.object({
           dealId: z.string().describe('The ID of the deal to add a note to'),
-          note: z.string().describe('The note to add to the deal')
+          note: z.string().describe('The note to add to the deal'),
         }),
       }
-    )
-  ]
+    ),
+    tool(
+      async (args: CreateDealParams) => service.createDeal(args),
+      {
+        name: "create_hubspot_deal",
+        description: "Create a new deal in HubSpot",
+        schema: z.object({
+          name: z.string().describe("The name of the deal"),
+          amount: z.number().optional().describe("The deal amount"),
+          stage: z.string().describe("The deal stage"),
+          closeDate: z.string().optional().describe("The close date (YYYY-MM-DD)"),
+          pipeline: z.string().optional().describe("The pipeline ID"),
+          ownerId: z.string().optional().describe("The owner ID"),
+          companyId: z.string().optional().describe("The associated company ID"),
+        }),
+      }
+    ),
+    tool(
+      async (args: CreateContactParams) => service.createContact(args),
+      {
+        name: "create_hubspot_contact",
+        description: "Create a new contact in HubSpot",
+        schema: z.object({
+          firstName: z.string().describe("The first name of the contact"),
+          lastName: z.string().describe("The last name of the contact"),
+          email: z.string().describe("The email address of the contact"),
+          phone: z.string().optional().describe("The phone number of the contact"),
+          company: z.string().optional().describe("The company associated with the contact"),
+        }),
+      }
+    ),
+    tool(
+      async () => service.getPipelines(),
+      {
+        name: "get_hubspot_pipelines",
+        description: "Fetch all deal pipelines and their stages from HubSpot",
+        schema: z.object({}),
+      }
+    ),
+    tool(
+      async () => service.getOwners(),
+      {
+        name: "get_hubspot_owners",
+        description: "Fetch all HubSpot owners (users) and their IDs",
+        schema: z.object({}),
+      }
+    ),
+    tool(
+      async (args: { keyword: string }) => service.searchCompanies(args.keyword),
+      {
+        name: "search_hubspot_companies",
+        description: "Search companies in HubSpot based on a keyword (e.g., company name)",
+        schema: z.object({
+          keyword: z.string().describe("The keyword to search for in company names"),
+        }),
+      }
+    ),
+  ];
 
   return {
     tools,
     prompts: {
       toolSelection: HUBSPOT_TOOL_SELECTION_PROMPT,
-      responseGeneration: HUBSPOT_RESPONSE_GENERATION_PROMPT
-    }
+      responseGeneration: HUBSPOT_RESPONSE_GENERATION_PROMPT,
+    },
   };
-} 
+}

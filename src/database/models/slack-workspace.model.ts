@@ -21,6 +21,8 @@ import { PostgresConfig } from './postgres-config.model';
 import { SalesforceConfig } from './salesforce-config.model';
 import { AccessSettingsType } from '@quix/lib/types/slack-workspace';
 import { QuixUserAccessLevel } from '@quix/lib/constants';
+import { WebClient } from '@slack/web-api';
+import { SLACK_MESSAGE_MAX_LENGTH } from '@quix/lib/utils/slack-constants';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -189,4 +191,13 @@ export class SlackWorkspace extends Model<
     as: 'slackUserProfiles'
   })
   declare slackUserProfiles: NonAttribute<SlackUserProfile[]>;
+
+  async postMessage(message: string, channel: string, thread_ts?: string) {
+    const webClient = new WebClient(this.bot_access_token);
+    await webClient.chat.postMessage({
+      channel,
+      text: message.trim().substring(0, SLACK_MESSAGE_MAX_LENGTH),
+      thread_ts
+    });
+  }
 } 

@@ -338,10 +338,6 @@ export class IntegrationsInstallService {
         }
       );
 
-      if (!userInfoResponse.data.is_app_installed) {
-        throw new BadRequestException('Salesforce app is not installed');
-      }
-
       if (!userInfoResponse.data.active) {
         throw new BadRequestException('Salesforce user is not active');
       }
