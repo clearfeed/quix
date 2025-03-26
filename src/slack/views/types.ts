@@ -22,3 +22,15 @@ export type PostgresConnectionModalArgs = {
     ssl?: boolean;
   };
 }
+
+export type GithubDefaultConfig = {
+  repo: string;
+  owner: string;
+}
+
+export type GithubDefaultConfigModalArgs = {
+  triggerId: string;
+  teamId: string;
+  callbackId?: string;
+  initialValues?: GithubDefaultConfig;
+}

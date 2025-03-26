@@ -2,7 +2,7 @@ import { Elements, BlockCollection } from "slack-block-builder";
 import { SLACK_ACTIONS } from "@quix/lib/utils/slack-constants";
 import { Block } from "@slack/web-api";
 import { Bits, Section, Input } from "slack-block-builder";
-import { PostgresConnectionModalArgs } from "./types";
+import { GithubDefaultConfigModalArgs, PostgresConnectionModalArgs } from "./types";
 import { WebClient } from "@slack/web-api";
 import { Surfaces } from "slack-block-builder";
 
@@ -131,6 +131,46 @@ export const publishOpenaiKeyModal = async (
           placeholder: 'sk-...',
           actionId: SLACK_ACTIONS.OPENAI_API_KEY_MODAL.OPENAI_API_KEY_INPUT
         }))
+      ])
+    }
+  });
+};
+
+export const publishGithubConfigModal = async (
+  client: WebClient,
+  args: GithubDefaultConfigModalArgs
+): Promise<void> => {
+  const { triggerId, callbackId, initialValues } = args;
+
+  await client.views.open({
+    trigger_id: triggerId,
+    view: {
+      ...Surfaces.Modal({
+        title: 'GitHub Config',
+        submit: 'Submit',
+        close: 'Cancel',
+        callbackId: SLACK_ACTIONS.GITHUB_CONFIG_MODAL.SUBMIT
+      }).buildToObject(),
+      blocks: BlockCollection([
+        Section({
+          text: 'Please enter your GitHub repository details:'
+        }),
+        Input({
+          label: 'Repository',
+          blockId: 'repo',
+        }).element(Elements.TextInput({
+          placeholder: 'e.g., my-awesome-repo',
+          actionId: SLACK_ACTIONS.GITHUB_CONFIG_MODAL.REPO_INPUT,
+          initialValue: initialValues?.repo || '',
+        })),
+        Input({
+          label: 'Owner',
+          blockId: 'owner',
+        }).element(Elements.TextInput({
+          placeholder: 'e.g., my-username, org-name',
+          actionId: SLACK_ACTIONS.GITHUB_CONFIG_MODAL.OWNER_INPUT,
+          initialValue: initialValues?.owner || '',
+        })),
       ])
     }
   });
