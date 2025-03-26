@@ -31,9 +31,14 @@ When formatting Zendesk responses:
 
 export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
   const client = createClient({
-    username: config.email,
-    token: config.token,
-    subdomain: config.subdomain
+    subdomain: config.subdomain,
+    ...(config.auth.useOAuth ? {
+      token: config.auth.token,
+      useOAuth: true
+    } : {
+      username: config.auth.email,
+      token: config.auth.token
+    })
   });
 
   const tools: DynamicStructuredTool<any>[] = [
