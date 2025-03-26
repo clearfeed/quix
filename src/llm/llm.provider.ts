@@ -18,7 +18,7 @@ export class LlmProviderService {
   ) {
     this.providers = new Map();
     this.providers.set(SupportedChatModels.OPENAI, new ChatOpenAI({
-      model: 'gpt-4-turbo',
+      model: 'gpt-4o',
       temperature: 0.5
     }));
     if (this.config.get('GEMINI_API_KEY')) {

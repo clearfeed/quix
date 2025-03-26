@@ -1,11 +1,8 @@
 {
-  "name": "@clearfeed-ai/quix-github-agent",
-  "version": "1.2.4",
+  "name": "@clearfeed-ai/quix-salesforce-agent",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
     "build": "yarn clean && tsc",
@@ -13,11 +10,15 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^1.1.2",
-    "@octokit/rest": "^19.0.13"
+    "@clearfeed-ai/quix-common-agent": "^1.1.0",
+    "jsforce": "^3.5.0"
   },
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "@types/jsforce": "^1.11.5"
   },
   "license": "Apache-2.0"
 }
