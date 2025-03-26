@@ -5,6 +5,7 @@ import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { IntegrationsInstallService } from '../integrations/integrations-install.service';
 import { parseInputBlocksSubmission } from '@quix/lib/utils/slack';
 import { KnownBlock } from '@slack/web-api';
+import { QuixUserAccessLevel } from '@quix/lib/constants';
 @Injectable()
 export class InteractionsService {
   private readonly logger = new Logger(InteractionsService.name);
@@ -41,24 +42,29 @@ export class InteractionsService {
 
   async handleViewSubmission(payload: ViewSubmitAction) {
     switch (payload.view.callback_id) {
-      case SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION:
-        const postgresConfig = await this.integrationsInstallService.postgres(payload);
-        this.appHomeService.handlePostgresConnected(payload.user.id, payload.view.team_id, postgresConfig);
-        break;
-      case SLACK_ACTIONS.OPENAI_API_KEY_MODAL.SUBMIT:
-        const openaiApiKey = payload.view.state.values.openai_api_key.openai_api_key_input.value;
-        if (!openaiApiKey) {
-          this.logger.error('OpenAI API key not found', { payload });
-          return;
-        }
-        this.appHomeService.handleOpenaiApiKeySubmitted(payload.user.id, payload.view.team_id, openaiApiKey);
-        break;
-      case SLACK_ACTIONS.MANAGE_ADMINS:
-        const adminUserIds = payload.view.state.values.admin_user_ids[SLACK_ACTIONS.MANAGE_ADMINS_INPUT].selected_conversations as string[];
-        this.appHomeService.handleManageAdminsSubmitted(payload.user.id, payload.view.team_id, adminUserIds);
-        break;
-      default:
+    case SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION:
+      const postgresConfig = await this.integrationsInstallService.postgres(payload);
+      this.appHomeService.handlePostgresConnected(payload.user.id, payload.view.team_id, postgresConfig);
+      break;
+    case SLACK_ACTIONS.OPENAI_API_KEY_MODAL.SUBMIT:
+      const openaiApiKey = payload.view.state.values.openai_api_key.openai_api_key_input.value;
+      if (!openaiApiKey) {
+        this.logger.error('OpenAI API key not found', { payload });
         return;
+      }
+      this.appHomeService.handleOpenaiApiKeySubmitted(payload.user.id, payload.view.team_id, openaiApiKey);
+      break;
+    case SLACK_ACTIONS.MANAGE_ADMINS:
+      const adminUserIds = payload.view.state.values.admin_user_ids[SLACK_ACTIONS.MANAGE_ADMINS_INPUT].selected_conversations as string[];
+      this.appHomeService.handleManageAdminsSubmitted(payload.user.id, payload.view.team_id, adminUserIds);
+      break;
+    case SLACK_ACTIONS.MANAGE_ACCESS_CONTROLS:
+      const allowedChannels = payload.view.state.values.allowed_channel_ids[SLACK_ACTIONS.ALLOWED_CHANNELS_SELECT].selected_conversations as string[];
+      const accessLevel = payload.view.state.values.access_level[SLACK_ACTIONS.ACCESS_LEVEL_SELECT].selected_option?.value as QuixUserAccessLevel;
+      this.appHomeService.handleManageAccessControlsSubmitted(payload.user.id, payload.view.team_id, allowedChannels, accessLevel);
+      break;
+    default:
+      return;
     }
   }
 }

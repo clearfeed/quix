@@ -22,6 +22,7 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
     Blocks.Divider()
   ];
   if (slackWorkspace.isAdmin(args.userId)) {
+    blocks.push(...getAccessControlView())
     blocks.push(...getPreferencesView());
     blocks.push(...getOpenAIView(slackWorkspace));
     if (slackWorkspace.openai_key) {
@@ -308,6 +309,20 @@ const getNonAdminView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
   }
   return [
     Blocks.Section({ text: `${Md.emoji('warning')} You are not authorized to configure Quix. ${warningText}` })
+  ]
+}
+
+const getAccessControlView = (): BlockBuilder[] => {
+  return [
+    Blocks.Section({
+      text: 'Allow team members to access Quix across channels and DMs.',
+    }).accessory(
+      Elements.Button({
+        text: 'Manage Access Controls',
+        actionId: SLACK_ACTIONS.MANAGE_ACCESS_CONTROLS
+      })
+    ),
+    Blocks.Divider()
   ]
 }
 

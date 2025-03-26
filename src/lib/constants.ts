@@ -11,6 +11,11 @@ export enum SUPPORTED_INTEGRATIONS {
   SALESFORCE = 'salesforce',
 }
 
+export enum QuixUserAccessLevel {
+  ADMINS_ONLY = 'admins_only',
+  EVERYONE = 'everyone'
+}
+
 export const HUBSPOT_SCOPES = [
   'crm.objects.contacts.read',
   'crm.objects.contacts.write',

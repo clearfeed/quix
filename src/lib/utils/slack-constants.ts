@@ -18,7 +18,10 @@ export const SLACK_ACTIONS = {
     DATABASE: 'postgres_database',
     SSL: 'postgres_ssl'
   },
-  CONNECTION_OVERFLOW_MENU: 'connection-overflow-menu'
+  CONNECTION_OVERFLOW_MENU: 'connection-overflow-menu',
+  MANAGE_ACCESS_CONTROLS: 'manage-access-controls',
+  ALLOWED_CHANNELS_SELECT: 'not-allowed-channels-select',
+  ACCESS_LEVEL_SELECT: 'access-level-select'
 } as const;
 
 export const SLACK_SCOPES = [
