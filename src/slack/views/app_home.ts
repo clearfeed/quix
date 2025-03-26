@@ -1,7 +1,7 @@
 import { HomeView } from "@slack/web-api";
 import { SLACK_ACTIONS } from "@quix/lib/utils/slack-constants";
 import { HomeViewArgs } from "./types";
-import { getToolConfigData, INTEGRATIONS, SUPPORTED_INTEGRATIONS } from "@quix/lib/constants";
+import { INTEGRATIONS, SUPPORTED_INTEGRATIONS } from "@quix/lib/constants";
 import { getInstallUrl } from "@quix/lib/utils/slack";
 import { HubspotConfig, JiraConfig, PostgresConfig, SlackWorkspace, GithubConfig, SalesforceConfig } from "@quix/database/models";
 import { BlockCollection, Elements, Bits, Blocks, Md, BlockBuilder } from "slack-block-builder";
@@ -10,6 +10,7 @@ import { createJiraToolsExport } from "@clearfeed-ai/quix-jira-agent";
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
+import { getToolConfigData } from "@quix/lib/utils/slack-home";
 
 export const getHomeView = (args: HomeViewArgs): HomeView => {
   const { selectedTool, slackWorkspace, connection } = args;
