@@ -140,7 +140,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async createContact(params: CreateContactParams): Promise<CreateContactResponse> {
     try {
-      await validateRequiredFields({
+      validateRequiredFields({
         params,
         requiredFields: ['firstName', 'lastName', 'email'],
       });

@@ -1,4 +1,4 @@
-export async function validateRequiredFields<T extends Record<string, any>>({
+export function validateRequiredFields<T extends Record<string, any>>({
   params,
   requiredFields,
 }: {
