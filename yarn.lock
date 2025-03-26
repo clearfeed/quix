@@ -399,10 +399,10 @@
     "@clearfeed-ai/quix-common-agent" "^1.1.0"
     pg "^8.14.0"
 
-"@clearfeed-ai/quix-salesforce-agent@^1.0.0":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-salesforce-agent/-/quix-salesforce-agent-1.0.1.tgz#cecc7b7cfd622d9334009ef63fb42921a0997ea9"
-  integrity sha512-GAPQlLmlLK66/Cp2rmPrbCoa2THpt8855M34DSSXiR6+9+8yfpX7aI/UBGzQGlxujcnarwwvSyUrgnHf9xxGmw==
+"@clearfeed-ai/quix-salesforce-agent@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-salesforce-agent/-/quix-salesforce-agent-1.0.2.tgz#cc5aed688f63e176c1023c36b83492b8d3c1d964"
+  integrity sha512-Gu/k9h9ZCNrFHglBQODjbb1Ylo6j5QfpLrBkdfbeyacx6HcKillL4bxIQsjOzgvfps5xyOvBFFTbQb55jJGZ1g==
   dependencies:
     "@clearfeed-ai/quix-common-agent" "^1.1.0"
     jsforce "^3.5.0"
