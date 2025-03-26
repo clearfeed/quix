@@ -152,29 +152,22 @@ export class SlackWorkspace extends Model<
   })
   declare access_settings: CreationOptional<AccessSettingsType>;
 
-  // Add a channel ID to the whitelist
-  addChannel(channelId: string): void {
-    const currentIds = this.access_settings.allowedChannelIds || [];
-    if (!currentIds.includes(channelId)) {
-      this.access_settings.allowedChannelIds = [...currentIds, channelId];
-    }
-  }
-
-  // Remove a channel ID from the whitelist
-  removeChannel(channelId: string): void {
-    const currentIds = this.access_settings.allowedChannelIds || [];
-    this.access_settings.allowedChannelIds = currentIds.filter(id => id !== channelId);
+  // Add channel IDs to the whitelist
+  addChannels(channelIds: string[]): void {
+    this.access_settings.allowedChannelIds = channelIds;
+    this.changed('access_settings', true);
   }
 
   // Check if a channel is authorized
   isChannelAuthorized(channelId: string): boolean {
-    const allowedIds = this.access_settings.allowedChannelIds;
-    return Array.isArray(allowedIds) ? allowedIds.includes(channelId) : false;
+    const allowedIds = this.access_settings.allowedChannelIds || [];
+    return (!allowedIds.length || allowedIds.includes(channelId)) ? true : false;
   }
 
   // Update access level for interaction
   setAccessLevel(level: QuixUserAccessLevel): void {
     this.access_settings.allowedUsersForDmInteraction = level;
+    this.changed('access_settings', true);
   }
 
   // Check if a user is allowed based on current access level

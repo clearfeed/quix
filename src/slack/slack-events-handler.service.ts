@@ -18,11 +18,11 @@ export class SlackEventsHandlerService {
 
   async handleEvent(body: AllSlackEvents) {
     switch (body.type) {
-      case 'url_verification':
-        return this.handleUrlVerification(body);
-      case 'event_callback':
-        this.handleEventCallback(body);
-        return;
+    case 'url_verification':
+      return this.handleUrlVerification(body);
+    case 'event_callback':
+      this.handleEventCallback(body);
+      return;
     }
   }
 
@@ -36,19 +36,19 @@ export class SlackEventsHandlerService {
     const innerEvent = eventBody.event,
       teamId = eventBody.team_id;
     switch (innerEvent.type) {
-      case 'assistant_thread_started':
-        return this.handleAssistantThreadStarted(innerEvent, teamId);
-      case 'message':
-        if (innerEvent.subtype === undefined && !innerEvent.bot_id) {
-          return this.handleMessage(innerEvent);
-        }
-        break;
-      case 'app_mention':
-        return this.handleAppMention(innerEvent);
-      case 'app_home_opened':
-        return this.appHomeService.handleAppHomeOpened(innerEvent, eventBody.team_id);
-      default:
-        this.logger.log('Unhandled event', { event: eventBody });
+    case 'assistant_thread_started':
+      return this.handleAssistantThreadStarted(innerEvent, teamId);
+    case 'message':
+      if (innerEvent.subtype === undefined && !innerEvent.bot_id) {
+        return this.handleMessage(innerEvent);
+      }
+      break;
+    case 'app_mention':
+      return this.handleAppMention(innerEvent);
+    case 'app_home_opened':
+      return this.appHomeService.handleAppHomeOpened(innerEvent, eventBody.team_id);
+    default:
+      this.logger.log('Unhandled event', { event: eventBody });
     }
   }
 
@@ -105,6 +105,16 @@ export class SlackEventsHandlerService {
         status: 'Looking up information...'
       });
 
+      if (!slackWorkspace.isUserAuthorized(event.user)) {
+        await webClient.chat.postMessage({
+          channel: event.channel,
+          text: "You don't have permissions to use Quix, please ask an admin to grant you access.",
+          thread_ts: event.thread_ts
+        });
+        this.logger.log('Unauthorized user.', { event: event.user });
+        return;
+      }
+
       if (event.text) {
         const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
         const messages = await createLLMContext(event, userInfoMap, slackWorkspace);
@@ -147,6 +157,17 @@ export class SlackEventsHandlerService {
         return;
       }
       const webClient = new WebClient(slackWorkspace.bot_access_token);
+
+      if (!slackWorkspace.isChannelAuthorized(event.channel)) {
+        await webClient.chat.postMessage({
+          channel: event.channel,
+          text: "I'm not allowed to respond on this channel, please have an admin whitelist this channel if you wish to use Quix here",
+          thread_ts: event.thread_ts
+        });
+        this.logger.log('Unauthorized channel.', { event: event.channel });
+        return;
+      }
+
       const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
       const messages = await createLLMContext(event, userInfoMap, slackWorkspace);
       if (!event.team) return;
