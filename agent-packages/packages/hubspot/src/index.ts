@@ -38,6 +38,69 @@ export class HubspotService implements BaseService<HubspotConfig> {
     return { isValid: true };
   }
 
+  async getPipelines(): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const response = await this.client.crm.pipelines.pipelinesApi.getAll('deals');
+      return { success: true, data: response.results };
+    } catch (error) {
+      console.error("Error fetching pipelines:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to fetch pipelines",
+      };
+    }
+  }
+
+  async getOwners(): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const response = await this.client.crm.owners.ownersApi.getPage();
+      return { success: true, data: response.results };
+    } catch (error) {
+      console.error("Error fetching owners:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to fetch owners",
+      };
+    }
+  }
+
+  async searchCompanies(keyword: string): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const response = await this.client.crm.companies.searchApi.doSearch({
+        filterGroups: [
+          {
+            filters: [
+              {
+                propertyName: 'name',
+                operator: FilterOperatorEnum.ContainsToken,
+                value: keyword,
+              },
+            ],
+          },
+        ],
+        properties: ['name', 'domain', 'industry', 'hs_lastmodifieddate'],
+        limit: 10,
+      });
+
+      return {
+        success: true,
+        data: response.results.map(company => ({
+          id: company.id,
+          name: company.properties.name,
+          domain: company.properties.domain,
+          industry: company.properties.industry,
+          lastModified: company.properties.hs_lastmodifieddate,
+        })),
+      };
+    } catch (error) {
+      console.error("Error searching companies:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to search companies",
+      };
+    }
+  }
+
   async searchDeals(keyword: string): Promise<SearchDealsResponse> {
     try {
       const response = await this.client.crm.deals.searchApi.doSearch({

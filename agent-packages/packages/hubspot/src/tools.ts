@@ -87,6 +87,32 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         }),
       }
     ),
+    tool(
+      async () => service.getPipelines(),
+      {
+        name: "get_hubspot_pipelines",
+        description: "Fetch all deal pipelines and their stages from HubSpot",
+        schema: z.object({}),
+      }
+    ),
+    tool(
+      async () => service.getOwners(),
+      {
+        name: "get_hubspot_owners",
+        description: "Fetch all HubSpot owners (users) and their IDs",
+        schema: z.object({}),
+      }
+    ),
+    tool(
+      async (args: { keyword: string }) => service.searchCompanies(args.keyword),
+      {
+        name: "search_hubspot_companies",
+        description: "Search companies in HubSpot based on a keyword (e.g., company name)",
+        schema: z.object({
+          keyword: z.string().describe("The keyword to search for in company names"),
+        }),
+      }
+    ),
   ];
 
   return {
