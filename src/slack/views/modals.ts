@@ -2,7 +2,7 @@ import { Elements, BlockCollection } from "slack-block-builder";
 import { SLACK_ACTIONS } from "@quix/lib/utils/slack-constants";
 import { Block } from "@slack/web-api";
 import { Bits, Section, Input } from "slack-block-builder";
-import { PostgresConnectionModalArgs } from "./types";
+import { JiraDefaultConfigModalArgs, PostgresConnectionModalArgs } from "./types";
 import { WebClient } from "@slack/web-api";
 import { Surfaces } from "slack-block-builder";
 
@@ -169,6 +169,38 @@ export const publishManageAdminsModal = async (
           .excludeExternalSharedChannels(true)
           .maxSelectedItems(10)
           .initialConversations(args.initialUsers || []))
+      ])
+    }
+  });
+};
+
+export const publishJiraConfigModal = async (
+  client: WebClient,
+  args: JiraDefaultConfigModalArgs
+): Promise<void> => {
+  const { triggerId, initialValues } = args;
+
+  await client.views.open({
+    trigger_id: triggerId,
+    view: {
+      ...Surfaces.Modal({
+        title: 'Jira Config',
+        submit: 'Submit',
+        close: 'Cancel',
+        callbackId: SLACK_ACTIONS.JIRA_CONFIG_MODAL.SUBMIT
+      }).buildToObject(),
+      blocks: BlockCollection([
+        Section({
+          text: 'Please enter your Jira Project details:'
+        }),
+        Input({
+          label: 'Project Key',
+          blockId: 'project-key',
+        }).element(Elements.TextInput({
+          placeholder: 'e.g., PROJ-123',
+          actionId: SLACK_ACTIONS.JIRA_CONFIG_MODAL.PROJECT_KEY_INPUT,
+          initialValue: initialValues?.projectKey || '',
+        })),
       ])
     }
   });

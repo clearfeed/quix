@@ -18,7 +18,11 @@ export const SLACK_ACTIONS = {
     DATABASE: 'postgres_database',
     SSL: 'postgres_ssl'
   },
-  CONNECTION_OVERFLOW_MENU: 'connection-overflow-menu'
+  CONNECTION_OVERFLOW_MENU: 'connection-overflow-menu',
+  JIRA_CONFIG_MODAL: {
+    SUBMIT: 'jira-config-modal-submit',
+    PROJECT_KEY_INPUT: 'jira-config-modal-project-key-input'
+  }
 } as const;
 
 export const SLACK_SCOPES = [
