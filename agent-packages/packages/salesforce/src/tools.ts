@@ -35,11 +35,31 @@ export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfi
 
   const tools: DynamicStructuredTool<any>[] = [
     tool(
-      async (args: { keyword: string }) => service.searchOpportunities(args.keyword),
+      async (args: { stage?: string }) => service.getOpportunityCount(args.stage),
+      {
+        name: 'get_salesforce_opportunity_count',
+        description: 'Get the count of opportunities in Salesforce base on stage.',
+        schema: z.object({
+          stage: z.string().optional().describe('The stage of the opportunity to get the count for')
+        }),
+      }
+    ),
+    tool(async () => {
+      return service.getOpportunityStages();
+    },
+      {
+        name: 'get_salesforce_opportunity_stages',
+        description: 'Get the names of the stages of opportunities in Salesforce',
+        schema: z.object({}),
+      }
+    ),
+    tool(
+      async (args: { keyword: string; stage?: string }) => service.searchOpportunities(args.keyword, args.stage),
       {
         name: 'search_salesforce_opportunities',
-        description: 'Search for opportunities in Salesforce based on a keyword',
+        description: 'Search for opportunities in Salesforce based on keyword or stage',
         schema: z.object({
+          stage: z.string().optional().describe('The stage of the opportunity to search for'),
           keyword: z.string().describe('The keyword to search for in Salesforce opportunities')
         }),
       }

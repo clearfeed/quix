@@ -1,4 +1,4 @@
-import { Connection, IdentityInfo } from 'jsforce';
+import jsforce, { Connection, IdentityInfo } from 'jsforce';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   SalesforceConfig,
@@ -51,18 +51,60 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
     return `${this.config.instanceUrl}/lightning/r/Opportunity/${opportunityId}/view`;
   }
 
-  async searchOpportunities(keyword: string): Promise<SearchOpportunitiesResponse> {
+  async stageQuery(stage: string): Promise<string> {
+    const validStages = await this.getOpportunityStages();
+    const userStage = stage.toLowerCase();
+    // Try exact match ignoring case
+    const exactMatch = validStages.data?.stages.find(
+      (stage) => stage.toLowerCase() === userStage
+    );
+    if (exactMatch) {
+      return `StageName = '${exactMatch}'`;
+    } else {
+      return `StageName LIKE '%${userStage}%'`;
+    }
+  }
+  async getOpportunityCount(stage?: string): Promise<BaseResponse<{ totalOpportunities: number }>> {
     try {
-      const soql = `
-        SELECT Id, Name, StageName, Amount, CloseDate, Probability,
-               Account.Name, Owner.Name, CreatedDate, LastModifiedDate
-        FROM Opportunity
-        WHERE Name LIKE '%${keyword}%'
-        ORDER BY LastModifiedDate DESC
-        LIMIT 10
-      `;
+      let stageQuery = '';
+      let soql = 'SELECT COUNT(Id) totalCount FROM Opportunity';
+      if (stage) {
+        stageQuery = await this.stageQuery(stage);
+      }
+      if (stageQuery) {
+        soql += ` WHERE ${stageQuery}`;
+      }
+      const response = await this.connection.query<{ totalCount: number }>(soql);
+      return {
+        success: true,
+        data: { totalOpportunities: response.records[0].totalCount }
+      };
+    } catch (error) {
+      console.error('Error counting Salesforce opportunities:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to count Salesforce opportunities'
+      };
+    }
+  }
 
-      const response = await this.connection.query<SalesforceOpportunity>(soql);
+  async searchOpportunities(keyword: string, stage?: string): Promise<SearchOpportunitiesResponse> {
+    try {
+      const limit = 10;
+      let soql = this.connection.sobject('Opportunity')
+        .select('Id, Name, StageName, Amount, CloseDate, Probability, Account.Name, Owner.Name, CreatedDate, LastModifiedDate')
+        .where(`Name LIKE '%${keyword}%'`);
+      let stageQuery = '';
+      if (stage) {
+        stageQuery = await this.stageQuery(stage);
+      }
+      if (stageQuery) {
+        soql = soql.where(stageQuery);
+      }
+      soql = soql.orderby('LastModifiedDate', 'DESC').limit(limit);
+      const soqlString = await soql.toSOQL();
+
+      const response = await this.connection.query<SalesforceOpportunity>(soqlString);
 
       const opportunities = response.records.map((opp) => ({
         id: opp.Id,
@@ -80,7 +122,7 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
 
       return {
         success: true,
-        data: { opportunities }
+        data: { opportunities, maxResults: limit }
       };
     } catch (error) {
       console.error('Error searching Salesforce opportunities:', error);
@@ -191,6 +233,15 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
           email: user.Email
         }))
       }
+    };
+  }
+
+  async getOpportunityStages(): Promise<BaseResponse<{ stages: string[] }>> {
+    const response = await this.connection.sobject('Opportunity').describe();
+    const stages = response.fields.filter((field) => field.type === 'picklist').map((field) => field.picklistValues?.map((value) => value.label)).flat();
+    return {
+      success: true,
+      data: { stages }
     };
   }
 }

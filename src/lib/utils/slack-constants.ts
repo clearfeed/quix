@@ -32,3 +32,5 @@ export const SLACK_SCOPES = [
   'users:read',
   'users:read.email'
 ] as const;
+
+export const SLACK_MESSAGE_MAX_LENGTH = 3000;
