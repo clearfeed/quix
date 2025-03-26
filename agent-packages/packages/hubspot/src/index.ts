@@ -1,8 +1,9 @@
 import { Client } from '@hubspot/api-client';
 import { FilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/deals';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
-import { HubspotConfig, SearchDealsResponse, Deal, AddNoteToDealResponse } from './types';
+import { HubspotConfig, SearchDealsResponse, Deal, AddNoteToDealResponse, CreateContactParams, CreateContactResponse } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
+import { validateRequiredFields } from './utils';
 
 export * from './types';
 export * from './tools';
@@ -134,6 +135,43 @@ export class HubspotService implements BaseService<HubspotConfig> {
     } catch (error) {
       console.error('Error adding note to deal:', error);
       throw error;
+    }
+  }
+
+  async createContact(params: CreateContactParams): Promise<CreateContactResponse> {
+    try {
+      validateRequiredFields({
+        params,
+        requiredFields: ['firstName', 'lastName', 'email'],
+      });
+
+      const properties: Record<string, string> = {
+        firstname: params.firstName,
+        lastname: params.lastName,
+        email: params.email,
+      };
+
+      if (params.phone) {
+        properties.phone = params.phone;
+      }
+      if (params.company) {
+        properties.company = params.company;
+      }
+
+      const response = await this.client.crm.contacts.basicApi.create({
+        properties,
+      });
+
+      return {
+        success: true,
+        data: { contactId: response.id },
+      };
+    } catch (error) {
+      console.error("Error creating HubSpot contact:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to create HubSpot contact",
+      };
     }
   }
 } 
