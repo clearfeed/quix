@@ -1,8 +1,9 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { HubspotService } from './index';
-import { CreateDealParams, HubspotConfig } from './types';
+import { CreateContactParams, HubspotConfig, CreateDealParams } from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
+
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
 HubSpot is a CRM platform that manages:
 - Contacts: People and leads with properties like name, email, phone, title, etc.
@@ -18,7 +19,8 @@ Consider using HubSpot tools when the user wants to:
 - View deal status, amount, pipeline stage, close date
 - Access ticket details, support history, resolutions
 - Get marketing campaign performance and engagement metrics
-- View and manage deal.
+- View and manage deals
+- View or manage contacts
 `;
 
 const HUBSPOT_RESPONSE_GENERATION_PROMPT = `
@@ -40,9 +42,10 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         name: 'search_hubspot_deals',
         description: 'Search for deals in HubSpot based on a keyword',
         schema: z.object({
-          keyword: z.string().describe('The keyword to search for in HubSpot deals')
+          keyword: z.string().describe('The keyword to search for in HubSpot deals'),
         }),
-      }),
+      }
+    ),
     tool(
       async (args: { dealId: string; note: string }) => service.addNoteToDeal(args.dealId, args.note),
       {
@@ -50,9 +53,10 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         description: 'Add a note to a deal in HubSpot',
         schema: z.object({
           dealId: z.string().describe('The ID of the deal to add a note to'),
-          note: z.string().describe('The note to add to the deal')
+          note: z.string().describe('The note to add to the deal'),
         }),
-      }),
+      }
+    ),
     tool(
       async (args: CreateDealParams) => service.createDeal(args),
       {
@@ -69,14 +73,27 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         }),
       }
     ),
-
-  ]
+    tool(
+      async (args: CreateContactParams) => service.createContact(args),
+      {
+        name: "create_hubspot_contact",
+        description: "Create a new contact in HubSpot",
+        schema: z.object({
+          firstName: z.string().describe("The first name of the contact"),
+          lastName: z.string().describe("The last name of the contact"),
+          email: z.string().describe("The email address of the contact"),
+          phone: z.string().optional().describe("The phone number of the contact"),
+          company: z.string().optional().describe("The company associated with the contact"),
+        }),
+      }
+    ),
+  ];
 
   return {
     tools,
     prompts: {
       toolSelection: HUBSPOT_TOOL_SELECTION_PROMPT,
-      responseGeneration: HUBSPOT_RESPONSE_GENERATION_PROMPT
-    }
+      responseGeneration: HUBSPOT_RESPONSE_GENERATION_PROMPT,
+    },
   };
-} 
+}

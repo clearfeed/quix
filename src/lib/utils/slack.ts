@@ -20,8 +20,8 @@ const sanitizeName = (name: string): string => {
   return firstName.replace(/[^a-zA-Z0-9_-]/g, '');
 };
 
-export const createLLMContext = async (event: GenericMessageEvent | AppMentionEvent, userInfoMap: ParseSlackMentionsUserMap, selfAppId: string) => {
-  const client = new WebClient(process.env.SLACK_BOT_TOKEN);
+export const createLLMContext = async (event: GenericMessageEvent | AppMentionEvent, userInfoMap: ParseSlackMentionsUserMap, slackWorkspace: SlackWorkspace) => {
+  const client = new WebClient(slackWorkspace.bot_access_token);
   let messages: LLMContext[] = [];
   // get previous messages
   if (event.thread_ts) {
@@ -33,10 +33,10 @@ export const createLLMContext = async (event: GenericMessageEvent | AppMentionEv
     if (messagesResponse.messages && messagesResponse.messages.length > 0) {
       messages = messagesResponse.messages.map((message: MessageElement) => {
         if (message.subtype === 'assistant_app_thread' || !message.text) return;
-        const rawAuthor = message.app_id === selfAppId ? 'Quix' : userInfoMap[message.user || '']?.name;
+        const rawAuthor = message.app_id === slackWorkspace.app_id ? 'Quix' : userInfoMap[message.user || '']?.name;
         const author = rawAuthor ? sanitizeName(rawAuthor) : 'Unknown';
         return {
-          role: message.app_id === selfAppId ? 'assistant' : 'user',
+          role: message.app_id === slackWorkspace.app_id ? 'assistant' : 'user',
           name: author,
           content: replaceSlackUserMentions({
             message: message.text,

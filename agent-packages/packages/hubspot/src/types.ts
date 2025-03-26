@@ -29,6 +29,18 @@ export interface CreateDealParams {
 
 export type CreateDealResponse = BaseResponse<{
   dealId: string;
+}>
+
+export interface CreateContactParams {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  company?: string;
+}
+
+export type CreateContactResponse = BaseResponse<{
+  contactId: string;
 }>;
 
 export type SearchDealsResponse = BaseResponse<{

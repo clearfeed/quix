@@ -18,10 +18,14 @@ env:
   DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
   DB_NAME: ${{ vars.DB_NAME }}
 
+concurrency:
+  group: ${{ github.ref }} # Use the branch or pull request reference as the group identifier
+  cancel-in-progress: true # Cancel any in-progress runs in the same group 
+  
 jobs:
   build-and-deploy:
     name: Build and Deploy
-    runs-on: [runs-on, runner=2cpu-linux-arm64, 'run-id=${{ github.run_id }}']
+    runs-on: codebuild-quix-build-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
       - name: Checkout code

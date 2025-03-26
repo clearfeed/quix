@@ -1,7 +1,7 @@
 import { Module, Global } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { SlackWorkspace, JiraConfig, SlackUserProfile, HubspotConfig, PostgresConfig } from './models';
+import * as models from './models';
 
 @Global()
 @Module({
@@ -9,20 +9,30 @@ import { SlackWorkspace, JiraConfig, SlackUserProfile, HubspotConfig, PostgresCo
     SequelizeModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        dialect: 'postgres',
-        host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        username: configService.get<string>('DB_USER'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_NAME'),
-        models: [SlackWorkspace, JiraConfig, SlackUserProfile, HubspotConfig, PostgresConfig],
-        autoLoadModels: true,
-        synchronize: false,
-        logging: process.env.NODE_ENV === 'production' ? false : console.log,
-      }),
+      useFactory: (configService: ConfigService) => {
+        return {
+          dialect: 'postgres',
+          host: configService.get<string>('DB_HOST'),
+          port: configService.get<number>('DB_PORT'),
+          username: configService.get<string>('DB_USER'),
+          password: configService.get<string>('DB_PASSWORD'),
+          database: configService.get<string>('DB_NAME'),
+          models: Object.values(models),
+          autoLoadModels: true,
+          synchronize: false,
+          logging: process.env.NODE_ENV === 'production' ? false : console.log,
+          ...process.env.NODE_ENV === 'production' ? {
+            dialectOptions: {
+              ssl: {
+                require: true,
+                rejectUnauthorized: false,
+              }
+            },
+          } : {}
+        }
+      },
     }),
-    SequelizeModule.forFeature([SlackWorkspace, JiraConfig, SlackUserProfile, HubspotConfig, PostgresConfig]),
+    SequelizeModule.forFeature(Object.values(models)),
   ],
   exports: [SequelizeModule],
 })
