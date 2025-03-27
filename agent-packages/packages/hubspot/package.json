@@ -10,7 +10,6 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^1.1.0",
     "@hubspot/api-client": "^12.0.1"
   },
   "files": [

@@ -958,6 +958,24 @@
   dependencies:
     buffer "^6.0.3"
 
+"@langchain/core@0.3.40":
+  version "0.3.40"
+  resolved "https://registry.yarnpkg.com/@langchain/core/-/core-0.3.40.tgz#e5f41f8b4288672d73aa98bcdaf6b32df0480db8"
+  integrity sha512-RGhJOTzJv6H+3veBAnDlH2KXuZ68CXMEg6B6DPTzL3IGDyd+vLxXG4FIttzUwjdeQKjrrFBwlXpJDl7bkoApzQ==
+  dependencies:
+    "@cfworker/json-schema" "^4.0.2"
+    ansi-styles "^5.0.0"
+    camelcase "6"
+    decamelize "1.2.0"
+    js-tiktoken "^1.0.12"
+    langsmith ">=0.2.8 <0.4.0"
+    mustache "^4.2.0"
+    p-queue "^6.6.2"
+    p-retry "4"
+    uuid "^10.0.0"
+    zod "^3.22.4"
+    zod-to-json-schema "^3.22.3"
+
 "@langchain/core@^0.3.40":
   version "0.3.42"
   resolved "https://registry.yarnpkg.com/@langchain/core/-/core-0.3.42.tgz#f1fa38425626d8efe9fe2ee51d36c91506632363"
