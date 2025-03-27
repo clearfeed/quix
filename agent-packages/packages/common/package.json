@@ -12,7 +12,11 @@
     "test": "jest"
   },
   "devDependencies": {
+    "@langchain/core": "0.3.40",
     "typescript": "^5.7.3"
+  },
+  "peerDependencies": {
+    "@langchain/core": "0.3.40"
   },
   "license": "Apache-2.0",
   "dependencies": {
