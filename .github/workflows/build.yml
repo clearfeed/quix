@@ -18,7 +18,11 @@ jobs:
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: |
+          yarn install --frozen-lockfile
+          cd agent-packages
+          yarn install --frozen-lockfile
+          cd ..
 
       - name: Build
         run: yarn build
