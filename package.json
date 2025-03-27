@@ -8,6 +8,9 @@
   "moduleNameMapper": {
     "@quix/(.*)": "<rootDir>/src/$1"
   },
+  "resolutions": {
+    "@langchain/core": "0.3.40"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

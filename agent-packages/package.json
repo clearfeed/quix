@@ -6,6 +6,9 @@
   ],
   "version": "1.0.1",
   "description": "Quix Packages",
+  "resolutions": {
+    "@langchain/core": "0.3.40"
+  },
   "scripts": {
     "build": "yarn workspaces run build",
     "test": "yarn workspaces run test"
