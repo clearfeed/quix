@@ -9,7 +9,7 @@ import { IntegrationConnectedEvent } from '@quix/types/events';
 import { sendMessage } from '@quix/lib/utils/slack';
 import { ParseSlackMentionsUserMap } from '@quix/lib/types/slack';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import shuffle from 'lodash/shuffle';
+import shuffle from 'lodash.shuffle';
 
 @Injectable()
 export class SlackService {
