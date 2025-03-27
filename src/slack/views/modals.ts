@@ -198,7 +198,7 @@ export const publishJiraConfigModal = async (
           label: 'Project Key',
           blockId: 'project-key',
         }).element(Elements.TextInput({
-          placeholder: 'e.g., PROJ-123',
+          placeholder: 'e.g., PROJ',
           actionId: SLACK_ACTIONS.JIRA_CONFIG_MODAL.PROJECT_KEY_INPUT,
           initialValue: initialValues?.projectKey || '',
         })),

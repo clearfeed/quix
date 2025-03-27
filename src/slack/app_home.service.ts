@@ -7,7 +7,7 @@ import { getHomeView } from './views/app_home';
 import { publishPostgresConnectionModal, publishOpenaiKeyModal, publishManageAdminsModal, publishAccessControlModal, publishJiraConfigModal } from './views/modals';
 import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
-import { SlackWorkspace, PostgresConfig } from '@quix/database/models';
+import { SlackWorkspace, PostgresConfig, JiraConfig } from '@quix/database/models';
 import { IntegrationsService } from 'src/integrations/integrations.service';
 import { JiraDefaultConfigModalArgs } from './views/types';
 @Injectable()
@@ -299,11 +299,9 @@ export class AppHomeService {
     });
   }
 
-  async handleJiraConfigurationSubmitted(userId: string, teamId: string, defaultConfig: JiraDefaultConfigModalArgs['initialValues']) {
+  async handleJiraConfigurationSubmitted(userId: string, teamId: string, defaultConfig: JiraDefaultConfigModalArgs['initialValues'], jiraConfig: JiraConfig) {
     const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
-    const jiraConfig = await this.integrationsService.getJiraConfigByTeamId(teamId);
-    if (!jiraConfig) return;
     jiraConfig.default_config = defaultConfig;
     await jiraConfig.save();
     const webClient = new WebClient(slackWorkspace.bot_access_token);
