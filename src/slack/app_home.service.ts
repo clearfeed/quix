@@ -4,8 +4,8 @@ import { BlockElementAction, ButtonAction, StaticSelectAction, OverflowAction } 
 import { AppHomeOpenedEvent } from '@slack/web-api';
 import { WebClient } from '@slack/web-api';
 import { getHomeView } from './views/app_home';
-import { publishPostgresConnectionModal, publishOpenaiKeyModal, publishManageAdminsModal, publishJiraConfigModal } from './views/modals';
-import { INTEGRATIONS, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
+import { publishPostgresConnectionModal, publishOpenaiKeyModal, publishManageAdminsModal, publishAccessControlModal, publishJiraConfigModal } from './views/modals';
+import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
 import { SlackWorkspace, PostgresConfig } from '@quix/database/models';
 import { IntegrationsService } from 'src/integrations/integrations.service';
@@ -57,7 +57,34 @@ export class AppHomeService {
       if (action.type !== 'static_select') return;
       this.handleConnectTool(action, teamId, userId);
       break;
+    case SLACK_ACTIONS.MANAGE_ACCESS_CONTROLS:
+      if (action.type !== 'button') return;
+      this.handleManageAccessControls(action, teamId, userId, triggerId);
+      break;
     }
+  }
+
+  async handleManageAccessControls(action: ButtonAction, teamId: string, userId: string, triggerId: string) {
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
+    if (!slackWorkspace) return;
+    const webClient = new WebClient(slackWorkspace.bot_access_token);
+    await publishAccessControlModal(webClient, { triggerId, teamId, initialChannels: slackWorkspace.access_settings.allowedChannelIds });
+  }
+
+  async handleManageAccessControlsSubmitted(userId: string, teamId: string, allowedChannels: string[], accessLevel: QuixUserAccessLevel) {
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
+    if (!slackWorkspace) return;
+    slackWorkspace.addChannels(allowedChannels);
+    slackWorkspace.setAccessLevel(accessLevel || 'everyone')
+    await slackWorkspace.save();
+    const webClient = new WebClient(slackWorkspace.bot_access_token);
+    await webClient.views.publish({
+      user_id: userId,
+      view: getHomeView({
+        slackWorkspace,
+        userId
+      })
+    });
   }
 
   async handleConnectTool(action: StaticSelectAction, teamId: string, userId: string) {
@@ -162,6 +189,9 @@ export class AppHomeService {
         break;
       case SUPPORTED_INTEGRATIONS.SALESFORCE:
         await this.integrationsService.removeSalesforceConfig(teamId);
+        break;
+      case SUPPORTED_INTEGRATIONS.GITHUB:
+        await this.integrationsService.removeGithubConfig(teamId);
         break;
       default:
         break;
