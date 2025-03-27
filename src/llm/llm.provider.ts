@@ -39,9 +39,10 @@ export class LlmProviderService {
           throw new Error('OpenAI key not found');
         }
         return new ChatOpenAI({
-          model: 'gpt-4-turbo',
+          model: 'gpt-4o',
           temperature: 0.5,
           apiKey: slackWorkspace.openai_key
+
         });
       case SupportedChatModels.GEMINI:
         return new ChatGoogleGenerativeAI({
