@@ -31,7 +31,14 @@ export class ToolService {
     const zendeskEmail = this.config.get('ZENDESK_EMAIL');
     const zendeskToken = this.config.get('ZENDESK_API_TOKEN');
     if (zendeskSubdomain && zendeskEmail && zendeskToken) {
-      return createZendeskToolsExport({ subdomain: zendeskSubdomain, email: zendeskEmail, token: zendeskToken });
+      return createZendeskToolsExport({
+        subdomain: zendeskSubdomain,
+        auth: {
+          useOAuth: false,
+          email: zendeskEmail,
+          token: zendeskToken
+        }
+      });
     }
   }
 
