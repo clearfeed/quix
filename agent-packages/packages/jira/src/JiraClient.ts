@@ -1,22 +1,45 @@
 import { CreateIssueParams, JiraClientConfig, JiraIssueResponse, SearchIssuesResponse, JiraProjectResponse, JiraUserResponse, JiraCommentResponse, JiraIssueComments, UpdateIssueFields, UpdateIssueResponse } from "./types";
 import axios, { AxiosInstance } from "axios";
+import * as jwt from 'atlassian-jwt';
 
 export class JiraClient {
   private axiosInstance: AxiosInstance;
+  private config: JiraClientConfig;
 
   constructor(config: JiraClientConfig) {
+    this.config = config;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json'
     };
     if ('username' in config.auth) {
       headers.Authorization = `Basic ${Buffer.from(`${config.auth.username}:${config.auth.password}`).toString('base64')}`;
-    } else {
+    } else if ('bearerToken' in config.auth) {
       headers.Authorization = `Bearer ${config.auth.bearerToken.trim()}`;
     }
     this.axiosInstance = axios.create({
       baseURL: `${config.host}/rest/api/${config.apiVersion}`,
       headers
     });
+  }
+
+  private async getToken(payload: {
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+    path: string,
+    sharedSecret: string,
+    atlassianConnectAppKey: string
+  }): Promise<string> {
+    const { method, path, sharedSecret, atlassianConnectAppKey } = payload;
+    const now = new Date();
+    const tokenData: Record<string, any> = {
+      iat: Math.floor(now.getTime() / 1000),
+      exp: Math.floor((now.getTime() + 120000) / 1000),
+      iss: atlassianConnectAppKey,
+      qsh: jwt.createQueryStringHash(
+        jwt.fromMethodAndUrl(method, this.axiosInstance.defaults.baseURL + path)
+      )
+    };
+    const token = jwt.encodeSymmetric(tokenData, sharedSecret);
+    return token;
   }
 
   async makeApiCall(
@@ -34,6 +57,16 @@ export class JiraClient {
     let headers: Record<string, any> = {};
     if (metadata?.headers) {
       headers = { ...metadata.headers };
+    }
+
+    if ('sharedSecret' in this.config.auth) {
+      const token = await this.getToken({
+        method,
+        path,
+        sharedSecret: this.config.auth.sharedSecret,
+        atlassianConnectAppKey: this.config.auth.atlassianConnectAppKey
+      });
+      headers.Authorization = `JWT ${token}`;
     }
 
     const response = await this.axiosInstance.request({

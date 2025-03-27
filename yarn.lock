@@ -399,10 +399,10 @@
     "@clearfeed-ai/quix-common-agent" "^1.1.0"
     pg "^8.14.0"
 
-"@clearfeed-ai/quix-salesforce-agent@^1.0.0":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-salesforce-agent/-/quix-salesforce-agent-1.0.1.tgz#cecc7b7cfd622d9334009ef63fb42921a0997ea9"
-  integrity sha512-GAPQlLmlLK66/Cp2rmPrbCoa2THpt8855M34DSSXiR6+9+8yfpX7aI/UBGzQGlxujcnarwwvSyUrgnHf9xxGmw==
+"@clearfeed-ai/quix-salesforce-agent@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-salesforce-agent/-/quix-salesforce-agent-1.0.2.tgz#cc5aed688f63e176c1023c36b83492b8d3c1d964"
+  integrity sha512-Gu/k9h9ZCNrFHglBQODjbb1Ylo6j5QfpLrBkdfbeyacx6HcKillL4bxIQsjOzgvfps5xyOvBFFTbQb55jJGZ1g==
   dependencies:
     "@clearfeed-ai/quix-common-agent" "^1.1.0"
     jsforce "^3.5.0"
@@ -957,6 +957,24 @@
   integrity sha512-qnEovoOp5Np2JDGonIDL6Ayihw0RhnRh6vxPuHo4RDn1UOzwEo4AeIfpL6UGIrsceWrCMiVPgwRjbHu4vYFc3g==
   dependencies:
     buffer "^6.0.3"
+
+"@langchain/core@0.3.40":
+  version "0.3.40"
+  resolved "https://registry.yarnpkg.com/@langchain/core/-/core-0.3.40.tgz#e5f41f8b4288672d73aa98bcdaf6b32df0480db8"
+  integrity sha512-RGhJOTzJv6H+3veBAnDlH2KXuZ68CXMEg6B6DPTzL3IGDyd+vLxXG4FIttzUwjdeQKjrrFBwlXpJDl7bkoApzQ==
+  dependencies:
+    "@cfworker/json-schema" "^4.0.2"
+    ansi-styles "^5.0.0"
+    camelcase "6"
+    decamelize "1.2.0"
+    js-tiktoken "^1.0.12"
+    langsmith ">=0.2.8 <0.4.0"
+    mustache "^4.2.0"
+    p-queue "^6.6.2"
+    p-retry "4"
+    uuid "^10.0.0"
+    zod "^3.22.4"
+    zod-to-json-schema "^3.22.3"
 
 "@langchain/core@^0.3.40":
   version "0.3.42"

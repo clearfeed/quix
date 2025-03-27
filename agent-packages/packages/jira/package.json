@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-jira-agent",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -13,7 +13,7 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^1.1.0",
+    "atlassian-jwt": "^2.0.3",
     "axios": "^1.7.9"
   },
   "devDependencies": {

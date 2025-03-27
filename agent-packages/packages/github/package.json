@@ -13,10 +13,13 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^1.1.2",
     "@octokit/rest": "^19.0.13"
   },
+  "peerDependencies": {
+    "@langchain/core": "0.3.40"
+  },
   "devDependencies": {
+    "@langchain/core": "0.3.40",
     "typescript": "^5.7.3"
   },
   "license": "Apache-2.0"

@@ -5,6 +5,7 @@ import { Bits, Section, Input } from "slack-block-builder";
 import { PostgresConnectionModalArgs } from "./types";
 import { WebClient } from "@slack/web-api";
 import { Surfaces } from "slack-block-builder";
+import { QuixUserAccessLevel } from "@quix/lib/constants";
 
 export const getPostgresConnectionModal = (args: PostgresConnectionModalArgs): Block[] => {
   const { initialValues } = args;
@@ -171,5 +172,72 @@ export const publishManageAdminsModal = async (
           .initialConversations(args.initialUsers || []))
       ])
     }
+  });
+};
+
+export const publishAccessControlModal = async (
+  client: WebClient,
+  args: {
+    triggerId: string;
+    teamId: string;
+    initialChannels?: string[];
+    initialAccessLevel?: QuixUserAccessLevel;
+  }
+): Promise<void> => {
+  await client.views.open({
+    trigger_id: args.triggerId,
+    view: {
+      ...Surfaces.Modal({
+        title: 'Access Controls',
+        submit: 'Save',
+        close: 'Cancel',
+        callbackId: SLACK_ACTIONS.MANAGE_ACCESS_CONTROLS,
+      }).buildToObject(),
+      blocks: BlockCollection([
+        // Channel selection
+        Section({
+          text: 'Select channels where Quix is allowed to respond(If no channel is selected it is allowed to respond in all the channels):',
+        }),
+        Input({
+          label: 'Allowed Channels',
+          blockId: 'allowed_channel_ids',
+        }).optional(true).element(
+          Elements.ConversationMultiSelect({
+            actionId: SLACK_ACTIONS.ALLOWED_CHANNELS_SELECT,
+            placeholder: 'Select channels',
+          })
+            .filter('public')
+            .excludeBotUsers(true)
+            .initialConversations(args.initialChannels || [])
+        ),
+
+        // Access Level selection
+        Input({
+          label: 'Who can interact with Quix in DM?',
+          blockId: 'access_level',
+        }).optional(true).element(
+          Elements.StaticSelect({
+            actionId: SLACK_ACTIONS.ACCESS_LEVEL_SELECT,
+            placeholder: 'Select access level',
+          })
+            .options([
+              Bits.Option({
+                text: 'Everyone',
+                value: QuixUserAccessLevel.EVERYONE,
+              }),
+              Bits.Option({
+                text: 'Admins Only',
+                value: QuixUserAccessLevel.ADMINS_ONLY,
+              }),
+            ])
+            .initialOption(args.initialAccessLevel
+              ? Bits.Option({
+                text: args.initialAccessLevel === QuixUserAccessLevel.EVERYONE ? 'Everyone' : 'Admins Only',
+                value: args.initialAccessLevel,
+              })
+              : undefined)
+        ),
+      ]),
+    },
   });
 };
