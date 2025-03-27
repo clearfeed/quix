@@ -13,7 +13,6 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^1.1.0",
     "atlassian-jwt": "^2.0.3",
     "axios": "^1.7.9"
   },

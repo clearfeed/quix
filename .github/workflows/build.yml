@@ -1,0 +1,27 @@
+name: Build
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: [runs-on, runner=1cpu-linux-x64, 'run-id=${{ github.run_id }}']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile;
+          cd agent-packages;
+          yarn install --frozen-lockfile;
+          cd ..
+
+      - name: Build
+        run: yarn build
