@@ -5,6 +5,7 @@ import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { IntegrationsInstallService } from '../integrations/integrations-install.service';
 import { parseInputBlocksSubmission } from '@quix/lib/utils/slack';
 import { KnownBlock } from '@slack/web-api';
+import { QuixUserAccessLevel } from '@quix/lib/constants';
 @Injectable()
 export class InteractionsService {
   private readonly logger = new Logger(InteractionsService.name);
@@ -65,6 +66,11 @@ export class InteractionsService {
         owner: defaultOwner
       }
       this.appHomeService.handleGithubConfigurationSubmitted(payload.user.id, payload.view.team_id, default_config);
+      break;
+    case SLACK_ACTIONS.MANAGE_ACCESS_CONTROLS:
+      const allowedChannels = payload.view.state.values.allowed_channel_ids[SLACK_ACTIONS.ALLOWED_CHANNELS_SELECT].selected_conversations as string[];
+      const accessLevel = payload.view.state.values.access_level[SLACK_ACTIONS.ACCESS_LEVEL_SELECT].selected_option?.value as QuixUserAccessLevel;
+      this.appHomeService.handleManageAccessControlsSubmitted(payload.user.id, payload.view.team_id, allowedChannels, accessLevel);
       break;
     default:
       return;

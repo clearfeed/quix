@@ -132,6 +132,10 @@ export class IntegrationsService {
     await this.salesforceConfigModel.destroy({ where: { team_id: teamId }, force: true });
   }
 
+  async removeGithubConfig(teamId: string) {
+    await this.githubConfigModel.destroy({ where: { team_id: teamId }, force: true });
+  }
+
   async getGithubConfigByTeamId(teamId: string) {
     const githubConfig = await this.githubConfigModel.findOne({ where: { team_id: teamId } })
     if (!githubConfig) {
@@ -140,5 +144,4 @@ export class IntegrationsService {
     }
     return githubConfig;
   }
-
 }
