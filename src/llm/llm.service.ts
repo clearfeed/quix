@@ -50,7 +50,7 @@ export class LlmService {
 
     const agent = createReactAgent({
       llm,
-      tools: availableFunctions,
+      tools: availableFunctions as any,
       prompt: QuixPrompts.basePrompt
     });
 

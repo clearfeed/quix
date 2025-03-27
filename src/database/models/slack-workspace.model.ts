@@ -19,6 +19,10 @@ import { HubspotConfig } from './hubspot-config.model';
 import { GithubConfig } from './github-config.model';
 import { PostgresConfig } from './postgres-config.model';
 import { SalesforceConfig } from './salesforce-config.model';
+import { AccessSettingsType } from '@quix/lib/types/slack-workspace';
+import { QuixUserAccessLevel } from '@quix/lib/constants';
+import { WebClient } from '@slack/web-api';
+import { SLACK_MESSAGE_MAX_LENGTH } from '@quix/lib/utils/slack-constants';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -141,6 +145,41 @@ export class SlackWorkspace extends Model<
     this.admin_user_ids = this.admin_user_ids.filter(id => id !== userId);
   }
 
+  @AllowNull(false)
+  @Column({
+    type: DataType.JSONB,
+    defaultValue: {
+      allowedUsersForDmInteraction: QuixUserAccessLevel.EVERYONE
+    }
+  })
+  declare access_settings: CreationOptional<AccessSettingsType>;
+
+  // Add channel IDs to the whitelist
+  addChannels(channelIds: string[]): void {
+    this.access_settings.allowedChannelIds = channelIds;
+    this.changed('access_settings', true);
+  }
+
+  // Check if a channel is authorized
+  isChannelAuthorized(channelId: string): boolean {
+    const allowedIds = this.access_settings.allowedChannelIds || [];
+    return (!allowedIds.length || allowedIds.includes(channelId)) ? true : false;
+  }
+
+  // Update access level for interaction
+  setAccessLevel(level: QuixUserAccessLevel): void {
+    this.access_settings.allowedUsersForDmInteraction = level;
+    this.changed('access_settings', true);
+  }
+
+  // Check if a user is allowed based on current access level
+  isUserAuthorized(userId: string): boolean {
+    const level = this.access_settings.allowedUsersForDmInteraction;
+    if (level === QuixUserAccessLevel.EVERYONE) return true;
+    if (level === QuixUserAccessLevel.ADMINS_ONLY) return this.isAdmin(userId);
+    return false;
+  }
+
   @CreatedAt
   declare created_at: CreationOptional<Date>;
 
@@ -152,4 +191,13 @@ export class SlackWorkspace extends Model<
     as: 'slackUserProfiles'
   })
   declare slackUserProfiles: NonAttribute<SlackUserProfile[]>;
+
+  async postMessage(message: string, channel: string, thread_ts?: string) {
+    const webClient = new WebClient(this.bot_access_token);
+    await webClient.chat.postMessage({
+      channel,
+      text: message.trim().substring(0, SLACK_MESSAGE_MAX_LENGTH),
+      thread_ts
+    });
+  }
 } 

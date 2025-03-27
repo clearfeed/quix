@@ -8,7 +8,16 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "node_modules/*"
+      ]
+    }
   },
-  "exclude": ["node_modules", "dist"]
-} 
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
