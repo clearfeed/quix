@@ -20,6 +20,5 @@
     "paths": {
       "@quix/*": ["./src/*"]
     }
-  },
-  "exclude": ["agent-packages"]
+  }
 }
