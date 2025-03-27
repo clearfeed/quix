@@ -178,6 +178,9 @@ export class AppHomeService {
       case SUPPORTED_INTEGRATIONS.SALESFORCE:
         await this.integrationsService.removeSalesforceConfig(teamId);
         break;
+      case SUPPORTED_INTEGRATIONS.GITHUB:
+        await this.integrationsService.removeGithubConfig(teamId);
+        break;
       default:
         break;
       }
