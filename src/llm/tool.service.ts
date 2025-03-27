@@ -33,11 +33,8 @@ export class ToolService {
     if (zendeskSubdomain && zendeskEmail && zendeskToken) {
       return createZendeskToolsExport({
         subdomain: zendeskSubdomain,
-        auth: {
-          useOAuth: false,
-          email: zendeskEmail,
-          token: zendeskToken
-        }
+        email: zendeskEmail,
+        token: zendeskToken
       });
     }
   }
