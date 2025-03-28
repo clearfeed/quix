@@ -136,12 +136,4 @@ export class IntegrationsService {
     await this.githubConfigModel.destroy({ where: { team_id: teamId }, force: true });
   }
 
-  async getGithubConfigByTeamId(teamId: string) {
-    const githubConfig = await this.githubConfigModel.findOne({ where: { team_id: teamId } })
-    if (!githubConfig) {
-      this.logger.error('Github configuration not found', { teamId });
-      return;
-    }
-    return githubConfig;
-  }
 }

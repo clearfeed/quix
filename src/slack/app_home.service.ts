@@ -168,8 +168,8 @@ export class AppHomeService {
           triggerId,
           teamId,
           initialValues: {
-            repo: githubConfig.default_config?.owner || '',
-            owner: githubConfig.default_config?.repo || ''
+            repo: githubConfig.default_config?.repo || '',
+            owner: githubConfig.default_config?.owner || ''
           }
         })
         break;
@@ -251,10 +251,9 @@ export class AppHomeService {
   }
 
   async handleGithubConfigurationSubmitted(userId: string, teamId: string, defaultConfig: GithubDefaultConfig) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
-    if (!slackWorkspace) return;
-    const githubConfig = await this.integrationsService.getGithubConfigByTeamId(teamId);
-    if (!githubConfig) return;
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['githubConfig']);
+    if (!slackWorkspace?.githubConfig) return;
+    const githubConfig = slackWorkspace.githubConfig;
     githubConfig.default_config = defaultConfig;
     await githubConfig.save();
     const webClient = new WebClient(slackWorkspace.bot_access_token);

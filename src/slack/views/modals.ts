@@ -141,7 +141,7 @@ export const publishGithubConfigModal = async (
   client: WebClient,
   args: GithubDefaultConfigModalArgs
 ): Promise<void> => {
-  const { triggerId, callbackId, initialValues } = args;
+  const { triggerId, initialValues } = args;
 
   await client.views.open({
     trigger_id: triggerId,
