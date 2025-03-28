@@ -131,6 +131,7 @@ export class IntegrationsService {
   async removeSalesforceConfig(teamId: string) {
     await this.salesforceConfigModel.destroy({ where: { team_id: teamId }, force: true });
   }
+
   async removeGithubConfig(teamId: string) {
     await this.githubConfigModel.destroy({ where: { team_id: teamId }, force: true });
   }
