@@ -27,4 +27,5 @@ export type JiraDefaultConfigModalArgs = {
   triggerId: string;
   teamId: string;
   callbackId?: string;
+  projectKey: string;
 }

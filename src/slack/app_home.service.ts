@@ -167,6 +167,7 @@ export class AppHomeService {
         await publishJiraConfigModal(webClient, {
           triggerId,
           teamId,
+          projectKey: jiraConfig.default_config?.projectKey || '',
         })
         break;
       default:

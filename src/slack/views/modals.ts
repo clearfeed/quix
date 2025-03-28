@@ -179,7 +179,7 @@ export const publishJiraConfigModal = async (
   client: WebClient,
   args: JiraDefaultConfigModalArgs
 ): Promise<void> => {
-  const { triggerId } = args;
+  const { triggerId, projectKey } = args;
 
   await client.views.open({
     trigger_id: triggerId,
@@ -201,6 +201,7 @@ export const publishJiraConfigModal = async (
         }).optional(true).element(Elements.TextInput({
           placeholder: 'e.g., PROJ',
           actionId: SLACK_ACTIONS.JIRA_CONFIG_MODAL.PROJECT_KEY_INPUT,
+          initialValue: projectKey,
         })),
       ])
     }
