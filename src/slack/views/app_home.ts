@@ -281,6 +281,14 @@ const getIntegrationInfo = (
       })
     )
   }
+  if (connection instanceof GithubConfig) {
+    overflowMenuOptions.unshift(
+      Bits.Option({
+        text: `${Md.emoji('pencil')} Edit`,
+        value: 'edit',
+      })
+    )
+  }
   if (connection instanceof JiraConfig) {
     overflowMenuOptions.unshift(
       Bits.Option({

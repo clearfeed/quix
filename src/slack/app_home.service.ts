@@ -4,12 +4,13 @@ import { BlockElementAction, ButtonAction, StaticSelectAction, OverflowAction } 
 import { AppHomeOpenedEvent } from '@slack/web-api';
 import { WebClient } from '@slack/web-api';
 import { getHomeView } from './views/app_home';
-import { publishPostgresConnectionModal, publishOpenaiKeyModal, publishManageAdminsModal, publishAccessControlModal, publishJiraConfigModal } from './views/modals';
+import { publishPostgresConnectionModal, publishOpenaiKeyModal, publishManageAdminsModal, publishAccessControlModal, publishJiraConfigModal, publishGithubConfigModal } from './views/modals';
 import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
-import { SlackWorkspace, PostgresConfig, JiraConfig } from '@quix/database/models';
+import { SlackWorkspace, PostgresConfig } from '@quix/database/models';
 import { IntegrationsService } from 'src/integrations/integrations.service';
-import { JiraDefaultConfigModalArgs } from './views/types';
+import { GithubDefaultConfig } from './views/types';
+
 @Injectable()
 export class AppHomeService {
   private readonly logger = new Logger(AppHomeService.name);
@@ -161,6 +162,18 @@ export class AppHomeService {
           }
         });
         break;
+      case SUPPORTED_INTEGRATIONS.GITHUB:
+        const { githubConfig } = slackWorkspace;
+        if (!githubConfig) return;
+        await publishGithubConfigModal(webClient, {
+          triggerId,
+          teamId,
+          initialValues: {
+            repo: githubConfig.default_config?.repo || '',
+            owner: githubConfig.default_config?.owner || ''
+          }
+        })
+        break;
       case SUPPORTED_INTEGRATIONS.JIRA:
         const { jiraConfig } = slackWorkspace;
         if (!jiraConfig) return;
@@ -242,6 +255,22 @@ export class AppHomeService {
       view: getHomeView({
         slackWorkspace,
         connection: undefined,
+        userId
+      })
+    });
+  }
+
+  async handleGithubConfigurationSubmitted(userId: string, teamId: string, defaultConfig: GithubDefaultConfig) {
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['githubConfig']);
+    if (!slackWorkspace?.githubConfig) return;
+    const githubConfig = slackWorkspace.githubConfig;
+    githubConfig.default_config = defaultConfig;
+    await githubConfig.save();
+    const webClient = new WebClient(slackWorkspace.bot_access_token);
+    await webClient.views.publish({
+      user_id: userId,
+      view: getHomeView({
+        slackWorkspace,
         userId
       })
     });

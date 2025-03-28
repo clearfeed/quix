@@ -19,6 +19,11 @@ export const SLACK_ACTIONS = {
     SSL: 'postgres_ssl'
   },
   CONNECTION_OVERFLOW_MENU: 'connection-overflow-menu',
+  GITHUB_CONFIG_MODAL: {
+    SUBMIT: 'github-config-modal-submit',
+    REPO_INPUT: 'github-config-modal-repo-input',
+    OWNER_INPUT: 'github-config-modal-owner-input',
+  },
   JIRA_CONFIG_MODAL: {
     SUBMIT: 'jira-config-modal-submit',
     PROJECT_KEY_INPUT: 'jira-config-modal-project-key-input'

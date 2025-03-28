@@ -56,6 +56,15 @@ export class InteractionsService {
       const adminUserIds = payload.view.state.values.admin_user_ids[SLACK_ACTIONS.MANAGE_ADMINS_INPUT].selected_conversations as string[];
       this.appHomeService.handleManageAdminsSubmitted(payload.user.id, payload.view.team_id, adminUserIds);
       break;
+    case SLACK_ACTIONS.GITHUB_CONFIG_MODAL.SUBMIT:
+      const defaultRepo = payload.view.state.values.repo[SLACK_ACTIONS.GITHUB_CONFIG_MODAL.REPO_INPUT].value as string;
+      const defaultOwner = payload.view.state.values.owner[SLACK_ACTIONS.GITHUB_CONFIG_MODAL.OWNER_INPUT].value as string;
+      const default_config = {
+        repo: defaultRepo,
+        owner: defaultOwner
+      }
+      this.appHomeService.handleGithubConfigurationSubmitted(payload.user.id, payload.view.team_id, default_config);
+      break;
     case SLACK_ACTIONS.JIRA_CONFIG_MODAL.SUBMIT:
       const defaultProjectKey = payload.view.state.values.project_key[SLACK_ACTIONS.JIRA_CONFIG_MODAL.PROJECT_KEY_INPUT].value as string;
       this.appHomeService.handleJiraConfigurationSubmitted(payload.user.id, payload.view.team_id, defaultProjectKey);

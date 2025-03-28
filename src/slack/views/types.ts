@@ -23,6 +23,18 @@ export type PostgresConnectionModalArgs = {
   };
 }
 
+export type GithubDefaultConfig = {
+  repo: string;
+  owner: string;
+}
+
+export type GithubDefaultConfigModalArgs = {
+  triggerId: string;
+  teamId: string;
+  callbackId?: string;
+  initialValues?: GithubDefaultConfig;
+}
+
 export type JiraDefaultConfigModalArgs = {
   triggerId: string;
   teamId: string;
