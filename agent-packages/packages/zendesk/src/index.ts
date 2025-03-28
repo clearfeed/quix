@@ -7,7 +7,7 @@ import {
   SearchTicketsResponse
 } from './types';
 import { BaseService, BaseResponse } from '@clearfeed-ai/quix-common-agent';
-import { validateRequiredFields } from './utils';
+import _ from 'lodash'
 
 export * from './tools';
 export * from './types';
@@ -39,10 +39,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
 
   async searchTickets(params: SearchTicketsParams): Promise<BaseResponse<SearchTicketsResponse['data']>> {
     try {
-      validateRequiredFields({
-        params,
-        requiredFields: ['query']
-      })
+      _.every(['query'], (field) => _.has(params, field));
       const response = await this.client.search.query(`type:ticket ${params.query}`);
       const tickets = Array.isArray(response.result) ? response.result.slice(0, params.limit || 10) : [];
       return {
@@ -60,10 +57,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
 
   async getTicket(params: GetTicketParams): Promise<BaseResponse<GetTicketResponse['data']>> {
     try {
-      validateRequiredFields({
-        params,
-        requiredFields: ['ticketId']
-      })
+      _.every(['ticketId'], (field) => _.has(params, field));
       const response = await this.client.tickets.show(params.ticketId);
       return {
         success: true,
