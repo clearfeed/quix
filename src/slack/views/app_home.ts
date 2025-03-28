@@ -10,7 +10,6 @@ import { createJiraToolsExport } from "@clearfeed-ai/quix-jira-agent";
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
-import { getToolConfigData } from "@quix/lib/utils/slack-home";
 import { Tool } from "@clearfeed-ai/quix-common-agent";
 
 export const getHomeView = (args: HomeViewArgs): HomeView => {
@@ -49,14 +48,6 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
         Blocks.Section({ text: '\n\n\n' })
       );
     }
-
-    if (toolData.tool) {
-      blocks.push(
-        Blocks.Section({
-          text: `🚀 *What you can ask Quix:*\n\n${toolData.tool.capabilities?.map(item => `• ${item}`).join('\n\n')}`
-        })
-      );
-    }
   }
 
   return {
@@ -75,7 +66,6 @@ const getToolData = (selectedTool: typeof INTEGRATIONS[number]['value']) => {
   }
 
   return {
-    tool,
     availableFns,
   }
 }
