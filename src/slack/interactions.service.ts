@@ -57,7 +57,7 @@ export class InteractionsService {
       this.appHomeService.handleManageAdminsSubmitted(payload.user.id, payload.view.team_id, adminUserIds);
       break;
     case SLACK_ACTIONS.JIRA_CONFIG_MODAL.SUBMIT:
-      const defaultProjectKey = payload.view.state.values.repo[SLACK_ACTIONS.JIRA_CONFIG_MODAL.PROJECT_KEY_INPUT].value as string;
+      const defaultProjectKey = payload.view.state.values.project_key[SLACK_ACTIONS.JIRA_CONFIG_MODAL.PROJECT_KEY_INPUT].value as string;
       this.appHomeService.handleJiraConfigurationSubmitted(payload.user.id, payload.view.team_id, defaultProjectKey);
       break;
     case SLACK_ACTIONS.MANAGE_ACCESS_CONTROLS:
