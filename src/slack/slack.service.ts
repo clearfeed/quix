@@ -9,7 +9,7 @@ import { IntegrationConnectedEvent } from '@quix/types/events';
 import { sendMessage } from '@quix/lib/utils/slack';
 import { ParseSlackMentionsUserMap } from '@quix/lib/types/slack';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import _ from 'lodash';
+import { shuffle } from 'lodash';
 
 @Injectable()
 export class SlackService {
@@ -170,7 +170,7 @@ export class SlackService {
       this.logger.log('Starting daily refresh of all Slack workspace users');
 
       // Get all workspaces and shuffle them using lodash
-      const workspaces = _.shuffle(await this.slackWorkspaceModel.findAll());
+      const workspaces = shuffle(await this.slackWorkspaceModel.findAll());
 
       // Loop through each workspace
       for (const workspace of workspaces) {
