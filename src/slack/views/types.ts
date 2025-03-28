@@ -22,3 +22,10 @@ export type PostgresConnectionModalArgs = {
     ssl?: boolean;
   };
 }
+
+export type JiraDefaultConfigModalArgs = {
+  triggerId: string;
+  teamId: string;
+  callbackId?: string;
+  projectKey: string;
+}

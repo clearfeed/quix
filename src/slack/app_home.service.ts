@@ -4,11 +4,12 @@ import { BlockElementAction, ButtonAction, StaticSelectAction, OverflowAction } 
 import { AppHomeOpenedEvent } from '@slack/web-api';
 import { WebClient } from '@slack/web-api';
 import { getHomeView } from './views/app_home';
-import { publishPostgresConnectionModal, publishOpenaiKeyModal, publishManageAdminsModal, publishAccessControlModal } from './views/modals';
+import { publishPostgresConnectionModal, publishOpenaiKeyModal, publishManageAdminsModal, publishAccessControlModal, publishJiraConfigModal } from './views/modals';
 import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
-import { SlackWorkspace, PostgresConfig } from '@quix/database/models';
+import { SlackWorkspace, PostgresConfig, JiraConfig } from '@quix/database/models';
 import { IntegrationsService } from 'src/integrations/integrations.service';
+import { JiraDefaultConfigModalArgs } from './views/types';
 @Injectable()
 export class AppHomeService {
   private readonly logger = new Logger(AppHomeService.name);
@@ -160,6 +161,15 @@ export class AppHomeService {
           }
         });
         break;
+      case SUPPORTED_INTEGRATIONS.JIRA:
+        const { jiraConfig } = slackWorkspace;
+        if (!jiraConfig) return;
+        await publishJiraConfigModal(webClient, {
+          triggerId,
+          teamId,
+          projectKey: jiraConfig.default_config?.projectKey || '',
+        })
+        break;
       default:
         break;
       }
@@ -277,6 +287,24 @@ export class AppHomeService {
     if (!slackWorkspace) return;
     slackWorkspace.admin_user_ids = adminUserIds;
     await slackWorkspace.save();
+    const webClient = new WebClient(slackWorkspace.bot_access_token);
+    await webClient.views.publish({
+      user_id: userId,
+      view: getHomeView({
+        slackWorkspace,
+        userId
+      })
+    });
+  }
+
+  async handleJiraConfigurationSubmitted(userId: string, teamId: string, defaultProjectKey: string) {
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['jiraConfig']);
+    if (!slackWorkspace?.jiraConfig) return;
+    const jiraConfig = slackWorkspace.jiraConfig;
+    jiraConfig.default_config = {
+      projectKey: defaultProjectKey
+    };
+    await jiraConfig.save();
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
