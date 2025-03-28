@@ -78,6 +78,7 @@ export class LlmService {
     }, { totalTokens: 0, toolCallCount: 0, toolNames: [] as string[] });
 
     this.logger.log(`Token usage: ${totalTokens}, Tool calls made: ${toolCallCount}, Tools used: ${toolNames.join(', ')}`);
+    await this.tool.shutDownMcpServers();
 
     const llmResponse = result.messages[result.messages.length - 1].content;
 

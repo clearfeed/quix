@@ -41,6 +41,8 @@
     "@langchain/google-genai": "^0.1.8",
     "@langchain/langgraph": "^0.2.55",
     "@langchain/openai": "^0.4.4",
+    "@modelcontextprotocol/sdk": "^1.8.0",
+    "@n8n/json-schema-to-zod": "^1.1.0",
     "@nestjs/axios": "^4.0.0",
     "@nestjs/cache-manager": "^2.3.0",
     "@nestjs/common": "^11.0.1",
@@ -60,7 +62,8 @@
     "sequelize": "^6.37.6",
     "sequelize-typescript": "^2.1.6",
     "slack-block-builder": "^2.8.0",
-    "tsscmp": "^1.0.6"
+    "tsscmp": "^1.0.6",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

@@ -10,34 +10,19 @@ import { SlackWorkspace } from '../database/models';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
+import { McpServerCleanupFn, McpService } from './mcp.service';
+
 @Injectable()
 export class ToolService {
   constructor(
     private readonly config: ConfigService,
     @InjectModel(SlackWorkspace)
     private readonly slackWorkspaceModel: typeof SlackWorkspace,
-    private readonly integrationsService: IntegrationsService
+    private readonly integrationsService: IntegrationsService,
+    private readonly mcpService: McpService
   ) { }
 
-  get hubspotTools(): ToolConfig | undefined {
-    const hubspotToken = this.config.get('HUBSPOT_ACCESS_TOKEN');
-    if (hubspotToken) {
-      return createHubspotToolsExport({ accessToken: hubspotToken });
-    }
-  }
-
-  get zendeskTools(): ToolConfig | undefined {
-    const zendeskSubdomain = this.config.get('ZENDESK_SUBDOMAIN');
-    const zendeskEmail = this.config.get('ZENDESK_EMAIL');
-    const zendeskToken = this.config.get('ZENDESK_API_TOKEN');
-    if (zendeskSubdomain && zendeskEmail && zendeskToken) {
-      return createZendeskToolsExport({
-        subdomain: zendeskSubdomain,
-        email: zendeskEmail,
-        token: zendeskToken
-      });
-    }
-  }
+  private runningTools: McpServerCleanupFn[] = [];
 
   async getAvailableTools(teamId: string): Promise<Record<string, ToolConfig> | undefined> {
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
@@ -89,6 +74,20 @@ export class ToolService {
         accessToken: updatedSalesforceConfig.access_token
       });
     }
+
+    // Handle MCP-based integrations
+    try {
+      // Call MCP service to get tools for all integrations
+    } catch (error) {
+      // Log error but continue with other tools
+      console.error("Failed to load MCP tools:", error);
+    }
+
     return tools;
+  }
+
+  async shutDownMcpServers() {
+    await Promise.all(this.runningTools.map(cleanup => cleanup()));
+    this.runningTools = [];
   }
 }
