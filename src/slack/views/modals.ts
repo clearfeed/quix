@@ -198,7 +198,7 @@ export const publishJiraConfigModal = async (
           label: 'Project Key',
           blockId: 'project_key',
           hint: 'Quix will create JIRAs under this project by default',
-        }).element(Elements.TextInput({
+        }).optional(true).element(Elements.TextInput({
           placeholder: 'e.g., PROJ',
           actionId: SLACK_ACTIONS.JIRA_CONFIG_MODAL.PROJECT_KEY_INPUT,
         })),
