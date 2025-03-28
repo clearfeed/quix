@@ -1,12 +1,10 @@
-import { createClient } from 'node-zendesk';
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import {
-  GetTicketParams,
-  SearchTicketsParams,
   ZendeskConfig,
-  GetTicketResponse,
-  SearchTicketsResponse
+  SearchTicketsParams,
+  GetTicketParams
 } from './types';
+import { ZendeskService } from './index';
+import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 
@@ -30,65 +28,25 @@ When formatting Zendesk responses:
 `;
 
 export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
-  const client = createClient({
-    subdomain: config.subdomain,
-    ...(config.auth.useOAuth ? {
-      token: config.auth.token,
-      useOAuth: true
-    } : {
-      username: config.auth.email,
-      token: config.auth.token
-    })
-  });
+  const service = new ZendeskService(config);
 
   const tools: DynamicStructuredTool<any>[] = [
     new DynamicStructuredTool({
       name: 'search_zendesk_tickets',
       description: 'Search Zendesk tickets using a query string',
       schema: z.object({
-        query: z.string().describe('The search query'),
-        limit: z.number().describe('Maximum number of tickets to return').optional()
+        query: z.string().describe('Search keywords or phrases to filter Zendesk tickets by title, description, or metadata'),
+        limit: z.number().optional().describe('Optional limit on the number of tickets to return (default: 10)')
       }),
-      func: async (args: SearchTicketsParams) => {
-        try {
-          const searchQuery = args.query;
-          const limit = args.limit || 10;
-  
-          const response = await client.search.query(`type:ticket ${searchQuery}`);
-  
-          const tickets = Array.isArray(response.result) ? response.result.slice(0, limit) : [];
-          return {
-            success: true,
-            data: tickets
-          };
-        } catch (error: any) {
-          return {
-            success: false,
-            error: `Failed to search tickets: ${error.message}`
-          };
-        }
-      }
+      func: async (args: SearchTicketsParams) => service.searchTickets(args)
     }),
     new DynamicStructuredTool({
       name: 'get_zendesk_ticket',
       description: 'Retrieve a specific Zendesk ticket by ID',
       schema: z.object({
-        ticketId: z.number().describe('The ID of the ticket to retrieve')
+        ticketId: z.number().describe('The unique ID of the Zendesk ticket to retrieve')
       }),
-      func: async (args: GetTicketParams) => {
-        try {
-          const response = await client.tickets.show(args.ticketId);
-          return {
-            success: true,
-            data: response.result
-          };
-        } catch (error: any) {
-          return {
-            success: false,
-            error: `Failed to get ticket: ${error.message}`
-          };
-        }
-      }
+      func: async (args: GetTicketParams) => service.getTicket(args)
     })
   ];
 
@@ -99,4 +57,4 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
       responseGeneration: ZENDESK_RESPONSE_GENERATION_PROMPT
     }
   };
-} 
+}
