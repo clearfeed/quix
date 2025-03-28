@@ -34,3 +34,10 @@ export type GithubDefaultConfigModalArgs = {
   callbackId?: string;
   initialValues?: GithubDefaultConfig;
 }
+
+export type JiraDefaultConfigModalArgs = {
+  triggerId: string;
+  teamId: string;
+  callbackId?: string;
+  projectKey: string;
+}

@@ -289,6 +289,14 @@ const getIntegrationInfo = (
       })
     )
   }
+  if (connection instanceof JiraConfig) {
+    overflowMenuOptions.unshift(
+      Bits.Option({
+        text: `${Md.emoji('pencil')} Edit`,
+        value: 'edit',
+      })
+    )
+  }
   const accessory = connection ?
     Elements.OverflowMenu({ actionId: SLACK_ACTIONS.CONNECTION_OVERFLOW_MENU }).options(overflowMenuOptions)
     : Elements.Button({
