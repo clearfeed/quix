@@ -11,6 +11,7 @@ import { IntegrationsService } from '../integrations/integrations.service';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
 import { McpServerCleanupFn, McpService } from './mcp.service';
+import { SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 
 @Injectable()
 export class ToolService {
@@ -78,6 +79,14 @@ export class ToolService {
     // Handle MCP-based integrations
     try {
       // Call MCP service to get tools for all integrations
+      const mcpTools = await this.mcpService.getMcpServerTools(SUPPORTED_INTEGRATIONS.SLACK, {
+        SLACK_BOT_TOKEN: slackWorkspace.bot_access_token,
+        SLACK_TEAM_ID: slackWorkspace.team_id
+      });
+      if (mcpTools && mcpTools.tools.length > 0) {
+        this.runningTools.push(mcpTools.cleanup);
+        tools.slack = mcpTools;
+      }
     } catch (error) {
       // Log error but continue with other tools
       console.error("Failed to load MCP tools:", error);

@@ -75,6 +75,7 @@ export class McpService {
    */
   static readonly INTEGRATION_TO_MCP_SERVER: Partial<Record<SUPPORTED_INTEGRATIONS, string>> = {
     // Add new mappings as new MCP servers are installed
+    [SUPPORTED_INTEGRATIONS.SLACK]: '@modelcontextprotocol/server-slack'
   };
 
   constructor(private readonly configService: ConfigService) { }
@@ -128,7 +129,7 @@ export class McpService {
 
     const config: StdioServerParameters = {
       command: 'npx',
-      args: ['-y', `@roychri/${serverName}`], // Use the package name from package.json
+      args: ['-y', `${serverName}`], // Use the package name from package.json
       env: envVars || {}
     };
 
