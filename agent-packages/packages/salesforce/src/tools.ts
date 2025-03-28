@@ -35,12 +35,14 @@ export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfi
 
   const tools: DynamicStructuredTool<any>[] = [
     tool(
-      async (args: { stage?: string }) => service.getOpportunityCount(args.stage),
+      async (args: SearchOpportunitiesParams) => service.getOpportunityCount(args),
       {
         name: 'get_salesforce_opportunity_count',
-        description: 'Get the count of opportunities in Salesforce base on stage.',
+        description: 'Get the count of opportunities in Salesforce based on stage.',
         schema: z.object({
-          stage: z.string().optional().describe('The stage of the opportunity to get the count for')
+          stage: z.string().optional().describe('The stage of the opportunity to get the count for'),
+          keyword: z.string().optional().describe('The keyword to search for in Salesforce opportunities'),
+          ownerId: z.string().optional().describe('Salesforce user ID of the opportunity owner. If you have a name or email, use the find_user tool to get the user ID first.')
         }),
       }
     ),

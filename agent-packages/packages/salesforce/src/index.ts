@@ -14,7 +14,7 @@ import {
   CreateTaskParams,
   SalesforceTask
 } from './types/index';
-
+import { filterOpportunities } from './utils';
 // Export all types
 export * from './types';
 
@@ -65,17 +65,35 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
       return `StageName LIKE '%${userStage}%'`;
     }
   }
-  async getOpportunityCount(stage?: string): Promise<BaseResponse<{ totalOpportunities: number }>> {
+
+  async getOpportunityCount(args: SearchOpportunitiesParams): Promise<BaseResponse<{ totalOpportunities: number }>> {
     try {
+      // Create a query builder
+      let queryBuilder = this.connection.sobject('Opportunity')
+        .select('COUNT(Id) totalCount');
+
+      // Get stage query if provided
       let stageQuery = '';
-      let soql = 'SELECT COUNT(Id) totalCount FROM Opportunity';
-      if (stage) {
-        stageQuery = await this.stageQuery(stage);
+      if (args.stage) {
+        stageQuery = await this.stageQuery(args.stage);
       }
-      if (stageQuery) {
-        soql += ` WHERE ${stageQuery}`;
+
+      // Use the filterOpportunities utility to build conditions
+      const conditions = filterOpportunities({
+        keyword: args.keyword,
+        stageQuery,
+        ownerId: args.ownerId
+      });
+
+      // Add conditions to query
+      if (conditions.length > 0) {
+        queryBuilder = queryBuilder.where(conditions.join(' AND '));
       }
-      const response = await this.connection.query<{ totalCount: number }>(soql);
+
+      // Convert to SOQL and execute
+      const soqlString = await queryBuilder.toSOQL();
+      const response = await this.connection.query<{ totalCount: number }>(soqlString);
+
       return {
         success: true,
         data: { totalOpportunities: response.records[0].totalCount }
@@ -91,28 +109,20 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
 
   async searchOpportunities({ keyword, stage, ownerId }: SearchOpportunitiesParams): Promise<SearchOpportunitiesResponse> {
     try {
-      console.log(...arguments);
       const limit = 10;
       let soql = this.connection.sobject('Opportunity')
         .select('Id, Name, StageName, Amount, CloseDate, Probability, Account.Name, Owner.Name, CreatedDate, LastModifiedDate');
 
-      // Build conditions array for where clauses
-      const conditions: string[] = [];
-
-      if (keyword) {
-        conditions.push(`Name LIKE '%${keyword}%'`);
-      }
-
+      let stageQuery = '';
       if (stage) {
-        const stageQuery = await this.stageQuery(stage);
-        if (stageQuery) {
-          conditions.push(stageQuery);
-        }
+        stageQuery = await this.stageQuery(stage);
       }
 
-      if (ownerId) {
-        conditions.push(`OwnerId = '${ownerId}'`);
-      }
+      const conditions = filterOpportunities({
+        keyword,
+        stageQuery,
+        ownerId
+      });
 
       if (conditions.length > 0) {
         soql = soql.where(conditions.join(' AND '));
@@ -120,7 +130,6 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
 
       soql = soql.orderby('LastModifiedDate', 'DESC').limit(limit);
       const soqlString = await soql.toSOQL();
-      console.log('soqlString', soqlString);
 
       const response = await this.connection.query<SalesforceOpportunity>(soqlString);
 
