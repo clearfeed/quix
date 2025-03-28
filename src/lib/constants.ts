@@ -7,6 +7,7 @@ export enum SUPPORTED_INTEGRATIONS {
   ZENDESK = 'zendesk',
   POSTGRES = 'postgres',
   SALESFORCE = 'salesforce',
+  ASANA = 'asana',
 }
 
 export enum QuixUserAccessLevel {
