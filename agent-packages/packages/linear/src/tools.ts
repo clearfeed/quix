@@ -13,9 +13,9 @@ import { PaginationOrderBy } from '@linear/sdk/dist/_generated_documents';
 
 const LINEAR_TOOL_SELECTION_PROMPT = `
 For Linear-related queries, consider using Linear tools when the user wants to:
-- Search for issues or tasks
+- Search for issues 
 - View issue status and details
-- Create new issues or tasks
+- Create new issues 
 - Add comments to issues
 - Track project progress
 `;
@@ -27,7 +27,7 @@ When formatting Linear responses:
 - Include relevant assignee information
 - Show issue creation and update times in human-readable format
 - Format issue descriptions maintaining proper markdown
-- List comments and activity clearly
+- List comments clearly
 `;
 
 export function createLinearToolsExport(config: LinearConfig): ToolConfig {
@@ -45,11 +45,22 @@ export function createLinearToolsExport(config: LinearConfig): ToolConfig {
           .optional(),
       }),
       func: async (args: SearchIssuesParams) => {
-        const limit = args.limit || 10;
-        return client.searchIssues(args.query, {
-          orderBy: PaginationOrderBy.UpdatedAt,
-          first: limit,
-        });
+        try {
+          const limit = args.limit || 10;
+          const { nodes: issues } = await client.searchIssues(args.query, {
+            orderBy: PaginationOrderBy.UpdatedAt,
+            first: limit,
+          });
+          return {
+            success: true,
+            data: issues,
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: `Failed to search Linear issues`,
+          };
+        }
       },
     }),
     new DynamicStructuredTool({
@@ -113,33 +124,44 @@ export function createLinearToolsExport(config: LinearConfig): ToolConfig {
           .optional(),
       }),
       func: async (args: CreateIssueParams) => {
-        let teamId: string | undefined;
-        if (args.teamKey) {
-          const team = await client.teams({
-            filter: {
-              key: {
-                eq: args.teamKey,
+        try {
+          let teamId: string | undefined;
+          if (args.teamKey) {
+            const team = await client.teams({
+              filter: {
+                key: {
+                  eq: args.teamKey,
+                },
               },
-            },
+            });
+            teamId = team.nodes[0].id;
+          } else if (config.defaultConfig?.teamId) {
+            teamId = config.defaultConfig.teamId;
+          }
+          if (!teamId) {
+            return {
+              success: false,
+              error:
+                'Team identifier must be provided when no default team is configured',
+            };
+          }
+          const issue = await client.createIssue({
+            teamId,
+            title: args.title,
+            description: args.description,
+            priority: args.priority,
+            assigneeId: args.assigneeId,
           });
-          teamId = team.nodes[0].id;
-        } else if (config.defaultConfig?.teamId) {
-          teamId = config.defaultConfig.teamId;
-        }
-        if (!teamId) {
+          return {
+            success: true,
+            data: issue,
+          };
+        } catch (error) {
           return {
             success: false,
-            error:
-              'Team identifier must be provided when no default team is configured',
+            error: `Failed to create Linear issue`,
           };
         }
-        return client.createIssue({
-          teamId,
-          title: args.title,
-          description: args.description,
-          priority: args.priority,
-          assigneeId: args.assigneeId,
-        });
       },
     }),
   ];

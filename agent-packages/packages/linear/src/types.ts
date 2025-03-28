@@ -11,7 +11,7 @@ export interface LinearConfig {
     /**
      * The ID of the team to create the issue in
      */
-    teamId?: string;
+    teamId: string;
   };
 }
 
