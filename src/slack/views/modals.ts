@@ -179,7 +179,7 @@ export const publishJiraConfigModal = async (
   client: WebClient,
   args: JiraDefaultConfigModalArgs
 ): Promise<void> => {
-  const { triggerId, initialValues } = args;
+  const { triggerId } = args;
 
   await client.views.open({
     trigger_id: triggerId,
@@ -197,10 +197,10 @@ export const publishJiraConfigModal = async (
         Input({
           label: 'Project Key',
           blockId: 'project-key',
+          hint: 'Quix will create JIRAs under this project by default',
         }).element(Elements.TextInput({
           placeholder: 'e.g., PROJ',
           actionId: SLACK_ACTIONS.JIRA_CONFIG_MODAL.PROJECT_KEY_INPUT,
-          initialValue: initialValues?.projectKey || '',
         })),
       ])
     }

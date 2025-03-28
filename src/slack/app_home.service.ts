@@ -167,9 +167,6 @@ export class AppHomeService {
         await publishJiraConfigModal(webClient, {
           triggerId,
           teamId,
-          initialValues: {
-            projectKey: jiraConfig.default_config?.projectKey || '',
-          }
         })
         break;
       default:
@@ -299,11 +296,13 @@ export class AppHomeService {
     });
   }
 
-  async handleJiraConfigurationSubmitted(userId: string, teamId: string, defaultConfig: JiraDefaultConfigModalArgs['initialValues']) {
+  async handleJiraConfigurationSubmitted(userId: string, teamId: string, defaultProjectKey: string) {
     const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['jiraConfig']);
     if (!slackWorkspace?.jiraConfig) return;
     const jiraConfig = slackWorkspace.jiraConfig;
-    jiraConfig.default_config = defaultConfig;
+    jiraConfig.default_config = {
+      projectKey: defaultProjectKey
+    };
     await jiraConfig.save();
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({

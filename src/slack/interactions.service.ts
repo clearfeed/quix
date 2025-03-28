@@ -58,10 +58,7 @@ export class InteractionsService {
       break;
     case SLACK_ACTIONS.JIRA_CONFIG_MODAL.SUBMIT:
       const defaultProjectKey = payload.view.state.values.repo[SLACK_ACTIONS.JIRA_CONFIG_MODAL.PROJECT_KEY_INPUT].value as string;
-      const default_config = {
-        projectKey: defaultProjectKey
-      }
-      this.appHomeService.handleJiraConfigurationSubmitted(payload.user.id, payload.view.team_id, default_config);
+      this.appHomeService.handleJiraConfigurationSubmitted(payload.user.id, payload.view.team_id, defaultProjectKey);
       break;
     case SLACK_ACTIONS.MANAGE_ACCESS_CONTROLS:
       const allowedChannels = payload.view.state.values.allowed_channel_ids[SLACK_ACTIONS.ALLOWED_CHANNELS_SELECT].selected_conversations as string[];
