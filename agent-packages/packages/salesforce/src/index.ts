@@ -4,6 +4,7 @@ import {
   SalesforceConfig,
   SearchOpportunitiesResponse,
   AddNoteToOpportunityResponse,
+  SearchOpportunitiesParams
 } from './types';
 import { BaseResponse } from '@clearfeed-ai/quix-common-agent';
 
@@ -88,21 +89,38 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
     }
   }
 
-  async searchOpportunities(keyword: string, stage?: string): Promise<SearchOpportunitiesResponse> {
+  async searchOpportunities({ keyword, stage, ownerId }: SearchOpportunitiesParams): Promise<SearchOpportunitiesResponse> {
     try {
+      console.log(...arguments);
       const limit = 10;
       let soql = this.connection.sobject('Opportunity')
-        .select('Id, Name, StageName, Amount, CloseDate, Probability, Account.Name, Owner.Name, CreatedDate, LastModifiedDate')
-        .where(`Name LIKE '%${keyword}%'`);
-      let stageQuery = '';
+        .select('Id, Name, StageName, Amount, CloseDate, Probability, Account.Name, Owner.Name, CreatedDate, LastModifiedDate');
+
+      // Build conditions array for where clauses
+      const conditions: string[] = [];
+
+      if (keyword) {
+        conditions.push(`Name LIKE '%${keyword}%'`);
+      }
+
       if (stage) {
-        stageQuery = await this.stageQuery(stage);
+        const stageQuery = await this.stageQuery(stage);
+        if (stageQuery) {
+          conditions.push(stageQuery);
+        }
       }
-      if (stageQuery) {
-        soql = soql.where(stageQuery);
+
+      if (ownerId) {
+        conditions.push(`OwnerId = '${ownerId}'`);
       }
+
+      if (conditions.length > 0) {
+        soql = soql.where(conditions.join(' AND '));
+      }
+
       soql = soql.orderby('LastModifiedDate', 'DESC').limit(limit);
       const soqlString = await soql.toSOQL();
+      console.log('soqlString', soqlString);
 
       const response = await this.connection.query<SalesforceOpportunity>(soqlString);
 
