@@ -18,11 +18,10 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
   constructor(private config: ZendeskConfig) {
     this.client = createClient({
       subdomain: config.subdomain,
-      ...(config.auth.useOAuth
-        ? { token: config.auth.token, useOAuth: true }
-        : { username: config.auth.email, token: config.auth.token })
+      token: config.token,
+      username: config.username
     });
-    if (!config.subdomain || !config.auth.token) {
+    if (!config.subdomain || !config.token || !config.username) {
       throw new Error('Zendesk integration is not configured. Please pass in a token.');
     }
   }
