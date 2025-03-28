@@ -299,9 +299,10 @@ export class AppHomeService {
     });
   }
 
-  async handleJiraConfigurationSubmitted(userId: string, teamId: string, defaultConfig: JiraDefaultConfigModalArgs['initialValues'], jiraConfig: JiraConfig) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
-    if (!slackWorkspace) return;
+  async handleJiraConfigurationSubmitted(userId: string, teamId: string, defaultConfig: JiraDefaultConfigModalArgs['initialValues']) {
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['jiraConfig']);
+    if (!slackWorkspace?.jiraConfig) return;
+    const jiraConfig = slackWorkspace.jiraConfig;
     jiraConfig.default_config = defaultConfig;
     await jiraConfig.save();
     const webClient = new WebClient(slackWorkspace.bot_access_token);

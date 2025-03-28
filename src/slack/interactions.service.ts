@@ -3,9 +3,6 @@ import { BlockAction, BlockElementAction, BlockOverflowAction, MessageShortcut, 
 import { AppHomeService } from './app_home.service';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { IntegrationsInstallService } from '../integrations/integrations-install.service';
-import { IntegrationsService } from '../integrations/integrations.service';
-import { parseInputBlocksSubmission } from '@quix/lib/utils/slack';
-import { KnownBlock } from '@slack/web-api';
 import { QuixUserAccessLevel } from '@quix/lib/constants';
 @Injectable()
 export class InteractionsService {
@@ -13,7 +10,6 @@ export class InteractionsService {
   constructor(
     private readonly appHomeService: AppHomeService,
     private readonly integrationsInstallService: IntegrationsInstallService,
-    private readonly integrationsService: IntegrationsService
   ) { }
 
   async handleInteraction(
@@ -65,12 +61,7 @@ export class InteractionsService {
       const default_config = {
         projectKey: defaultProjectKey
       }
-      const jiraConfig = await this.integrationsService.getJiraConfigByTeamId(payload.view.team_id);
-      if (!jiraConfig) {
-        this.logger.error('Jira config not found', { payload });
-        return;
-      }
-      this.appHomeService.handleJiraConfigurationSubmitted(payload.user.id, payload.view.team_id, default_config, jiraConfig);
+      this.appHomeService.handleJiraConfigurationSubmitted(payload.user.id, payload.view.team_id, default_config);
       break;
     case SLACK_ACTIONS.MANAGE_ACCESS_CONTROLS:
       const allowedChannels = payload.view.state.values.allowed_channel_ids[SLACK_ACTIONS.ALLOWED_CHANNELS_SELECT].selected_conversations as string[];
