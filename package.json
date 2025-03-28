@@ -52,7 +52,6 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/schedule": "^5.0.1",
     "@nestjs/sequelize": "^11.0.0",
-    "@roychri/mcp-server-asana": "^1.6.0",
     "@slack/web-api": "^7.8.0",
     "cache-manager": "4.1.0",
     "cache-manager-redis-store": "2.0.0",
