@@ -10,7 +10,6 @@ import { createJiraToolsExport } from "@clearfeed-ai/quix-jira-agent";
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
-import { getToolConfigData } from "@quix/lib/utils/slack-home";
 import { Tool } from "@clearfeed-ai/quix-common-agent";
 
 export const getHomeView = (args: HomeViewArgs): HomeView => {
@@ -39,22 +38,7 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
 
   if (selectedTool) {
 
-    const toolData = getToolData({
-      slackWorkspace,
-      connection,
-      selectedTool,
-      userId: args.userId,
-    });
-
-    if (toolData.tool && toolData.configData) {
-      blocks.push(
-        Blocks.Section({
-          text: `🔗 *${toolData.tool.name} Connection Details:*`
-        }),
-        Blocks.Context().elements(toolData.configData),
-        Blocks.Section({ text: '\n\n\n' })
-      );
-    }
+    const toolData = getToolData(selectedTool);
 
     if (toolData.availableFns) {
       blocks.push(
@@ -64,45 +48,6 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
         Blocks.Section({ text: '\n\n\n' })
       );
     }
-
-    if (toolData.tool) {
-      blocks.push(
-        Blocks.Section({
-          text: `🚀 *What you can ask Quix:*\n\n${toolData.tool.capabilities?.map(item => `• ${item}`).join('\n\n')}`
-        })
-      );
-    }
-  } else {
-    blocks.push(
-      Blocks.Section({
-        text: '*Welcome to Quix Integrations!*'
-      }),
-      Blocks.Context().elements(
-        'Quix allows you to talk to your tools in plain English right from Slack. Connect any of your business tools to get started.'
-      ),
-      Blocks.Section({
-        text: [
-          '*🔗 Supported Integrations:*',
-          `• *PostgreSQL:* Query and interact with your postgres database.`,
-          `• *GitHub:* Search code, Create issues, fetch PRs, assign teammates.`,
-          `• *Jira:* Search, view, and manage jira issues easily.`,
-          `• *HubSpot:* Retrieve create hubspot deals, contacts effortlessly.`,
-          '',
-          '',
-          '*💡 Coming Soon:* Zendesk, Salesforce and more.',
-          '',
-          '',
-          '*🚀 Capabilities:*',
-          `• Ask questions like:`,
-          "• “Give first 10 rows of `accounts` table.”",
-          "• “Create a GitHub issue titled Bug in Login flow in `xyz/pqr` repository.”",
-          "• “Create a deal named Website Upgrade worth $10,000 in stage negotiations.”",
-          "• “Assign jira issue `PROJ-123` to `xyz`.”",
-          "• “Attach a note titled 'Call Summary' to opportunity `0065g00000XyZt2`: 'Call went well, decision expected by next week.”",
-        ].join('\n')
-      }),
-      Blocks.Context().elements('Connect a tool from the dropdown above to get started.')
-    );
   }
 
   return {
@@ -111,22 +56,16 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
   }
 }
 
-const getToolData = (args: HomeViewArgs) => {
-  const { selectedTool, connection } = args;
-  let tool, configData, availableFns;
+const getToolData = (selectedTool: typeof INTEGRATIONS[number]['value']) => {
+  let tool, availableFns;
   if (selectedTool) {
     tool = INTEGRATIONS.find(integration => integration.value === selectedTool);
-  }
-  if (connection) {
-    configData = getToolConfigData(connection);
   }
   if (selectedTool) {
     availableFns = getAvailableFns(selectedTool);
   }
 
   return {
-    tool,
-    configData,
     availableFns,
   }
 }

@@ -1,5 +1,3 @@
-import { getCapabilities } from "./utils/slack-home";
-
 export const OPENAI_CONTEXT_SIZE = 30;
 
 export enum SUPPORTED_INTEGRATIONS {
@@ -40,7 +38,6 @@ export const INTEGRATIONS: {
   connectedText: string;
   relation: string;
   oauth: boolean;
-  capabilities: string[];
 }[] = [
     {
       name: 'JIRA',
@@ -49,7 +46,6 @@ export const INTEGRATIONS: {
       connectedText: 'Jira has been successfully connected! You can now query Jira by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"',
       relation: 'jiraConfig',
       oauth: true,
-      capabilities: getCapabilities(SUPPORTED_INTEGRATIONS.JIRA)
     },
     {
       name: 'GitHub',
@@ -58,7 +54,6 @@ export const INTEGRATIONS: {
       connectedText: 'GitHub has been successfully connected! You can now query GitHub by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of issue #123?" or "List all open PRs in the auth-service repo."',
       relation: 'githubConfig',
       oauth: true,
-      capabilities: getCapabilities(SUPPORTED_INTEGRATIONS.GITHUB)
     },
     {
       name: 'Hubspot',
@@ -67,7 +62,6 @@ export const INTEGRATIONS: {
       connectedText: 'Hubspot has been successfully connected! You can now query Hubspot by chatting with me or mentioning me in any channel. Try asking me things like "What is the deal status for Quix" or "What is the contact name for Quix"',
       relation: 'hubspotConfig',
       oauth: true,
-      capabilities: getCapabilities(SUPPORTED_INTEGRATIONS.HUBSPOT)
     },
     // {
     //   name: 'Zendesk',
@@ -75,7 +69,6 @@ export const INTEGRATIONS: {
     //   helpText: 'Connect Zendesk to create, update, and view tickets.',
     //   connectedText: 'Zendesk has been successfully connected! You can now query Zendesk by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"',
     //   relation: 'zendeskConfig',
-    //   capabilities: getCapabilities(SUPPORTED_INTEGRATIONS.ZENDESK)
     // }
     {
       name: 'Postgres',
@@ -84,7 +77,6 @@ export const INTEGRATIONS: {
       connectedText: 'Postgres has been successfully connected! You can now query Postgres by chatting with me or mentioning me in any channel. Try asking me things like "Query the accounts table and return the first 10 rows"',
       relation: 'postgresConfig',
       oauth: false,
-      capabilities: getCapabilities(SUPPORTED_INTEGRATIONS.POSTGRES)
     },
     {
       name: 'Salesforce',
@@ -93,7 +85,6 @@ export const INTEGRATIONS: {
       connectedText: 'Salesforce has been successfully connected! You can now query Salesforce by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of the deal for Quix" or "What is the contact name for Quix"',
       relation: 'salesforceConfig',
       oauth: true,
-      capabilities: getCapabilities(SUPPORTED_INTEGRATIONS.SALESFORCE)
     }
   ];
 
