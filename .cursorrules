@@ -24,6 +24,9 @@
 3. Leverage the common package for shared types and utilities
 4. Use proper type imports from @types packages when available
 5. Follow Nest.js decorators and typing conventions for dependency injection
+6. DO NOT use the any type
+7. Import types from packages whenever possible before declaring your own types
+8. Avoid type casting as much as possible
 
 ## Package Dependencies
 1. Each integration package should have its own `package.json`
