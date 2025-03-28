@@ -11,7 +11,6 @@ import { QuixPrompts } from '../lib/constants';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { AIMessage } from '@langchain/core/messages';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { formatToSlackMarkdown } from '@quix/lib/utils/slack-markdown';
 import slackifyMarkdown from 'slackify-markdown';
 
 @Injectable()
