@@ -40,10 +40,10 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
 
     const toolData = getToolData(selectedTool);
 
-    if (toolData.availableFns) {
+    if (toolData.availableFns && toolData.availableFns.length) {
       blocks.push(
         Blocks.Section({
-          text: `💡 *Available Functions:*\n\n${toolData.availableFns?.join('\n\n')}`
+          text: `${Md.emoji('bulb')} *Available Functions:*\n\n${toolData.availableFns?.join('\n\n')}`
         }),
         Blocks.Section({ text: '\n\n\n' })
       );
@@ -133,7 +133,7 @@ const getAvailableFns = (
     ));
   }
 
-  return ['No Available functions.'];
+  return [];
 };
 
 const getToolConnectionView = (selectedTool: typeof INTEGRATIONS[number]['value'] | undefined): BlockBuilder[] => {
