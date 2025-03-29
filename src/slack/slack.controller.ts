@@ -51,7 +51,12 @@ export class SlackController {
 
   @Post('interactions')
   async handleInteraction(@Body() { payload }: { payload: string }) {
-    this.interactionsService.handleInteraction(JSON.parse(payload));
+    try {
+      return await this.interactionsService.handleInteraction(JSON.parse(payload));
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
   }
 
   @Get('install/:tool')

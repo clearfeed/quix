@@ -8,6 +8,7 @@ export enum SUPPORTED_INTEGRATIONS {
   POSTGRES = 'postgres',
   SALESFORCE = 'salesforce',
   SLACK = 'slack',
+  NOTION = 'notion',
 }
 
 export enum QuixUserAccessLevel {
@@ -86,6 +87,14 @@ export const INTEGRATIONS: {
       connectedText: 'Salesforce has been successfully connected! You can now query Salesforce by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of the deal for Quix" or "What is the contact name for Quix"',
       relation: 'salesforceConfig',
       oauth: true,
+    },
+    {
+      name: 'Notion',
+      value: SUPPORTED_INTEGRATIONS.NOTION,
+      helpText: 'Connect Notion to interact with your workspace.',
+      connectedText: 'Notion has been successfully connected! You can now query Notion by chatting with me or mentioning me in any channel. Try asking me things like "Show me my recent pages", "Search for documents about marketing", or "Get the content of page X".',
+      relation: 'notionConfig',
+      oauth: false,
     }
   ];
 

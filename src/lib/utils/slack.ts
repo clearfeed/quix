@@ -1,4 +1,4 @@
-import { AppMentionEvent, GenericMessageEvent, KnownBlock } from "@slack/web-api";
+import { AppMentionEvent, ErrorCode, GenericMessageEvent, KnownBlock } from "@slack/web-api";
 import { LLMContext } from "@quix/llm/types";
 import { WebClient } from "@slack/web-api";
 import { MessageElement } from "@slack/web-api/dist/types/response/ConversationsHistoryResponse";
@@ -184,3 +184,7 @@ export const parseInputBlocksSubmission = (
   }
   return submittedValuesRecord;
 };
+
+export function isSlackWebClientError(error: any): boolean {
+  return Object.values(ErrorCode).includes(error.code);
+}

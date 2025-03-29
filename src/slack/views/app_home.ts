@@ -3,7 +3,7 @@ import { SLACK_ACTIONS } from "@quix/lib/utils/slack-constants";
 import { HomeViewArgs } from "./types";
 import { INTEGRATIONS, SUPPORTED_INTEGRATIONS } from "@quix/lib/constants";
 import { getInstallUrl } from "@quix/lib/utils/slack";
-import { HubspotConfig, JiraConfig, PostgresConfig, SlackWorkspace, GithubConfig, SalesforceConfig } from "@quix/database/models";
+import { HubspotConfig, JiraConfig, PostgresConfig, SlackWorkspace, GithubConfig, SalesforceConfig, NotionConfig } from "@quix/database/models";
 import { BlockCollection, Elements, Bits, Blocks, Md, BlockBuilder } from "slack-block-builder";
 import { createHubspotToolsExport } from "@clearfeed-ai/quix-hubspot-agent";
 import { createJiraToolsExport } from "@clearfeed-ai/quix-jira-agent";
@@ -185,18 +185,20 @@ const getOpenAIView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
 const getConnectionInfo = (connection: HomeViewArgs['connection']): string => {
   if (!connection) return '';
   switch (true) {
-  case connection instanceof JiraConfig:
-    return `Connected to ${connection.url}`;
-  case connection instanceof HubspotConfig:
-    return `Connected to ${connection.hub_domain}`;
-  case connection instanceof PostgresConfig:
-    return `Connected to ${connection.host}`;
-  case connection instanceof GithubConfig:
-    return `Connected to ${connection.username}`
-  case connection instanceof SalesforceConfig:
-    return `Connected to ${connection.instance_url}`
-  default:
-    return '';
+    case connection instanceof JiraConfig:
+      return `Connected to ${connection.url}`;
+    case connection instanceof HubspotConfig:
+      return `Connected to ${connection.hub_domain}`;
+    case connection instanceof PostgresConfig:
+      return `Connected to ${connection.host}`;
+    case connection instanceof GithubConfig:
+      return `Connected to ${connection.username}`
+    case connection instanceof SalesforceConfig:
+      return `Connected to ${connection.instance_url}`
+    case connection instanceof NotionConfig:
+      return `Connected to ${connection.workspace_name}`
+    default:
+      return '';
   }
 }
 
