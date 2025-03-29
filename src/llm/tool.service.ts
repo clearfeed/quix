@@ -1,7 +1,6 @@
 import { createHubspotToolsExport } from '@clearfeed-ai/quix-hubspot-agent';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
-import { createZendeskToolsExport } from '@clearfeed-ai/quix-zendesk-agent';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
@@ -11,7 +10,7 @@ import { IntegrationsService } from '../integrations/integrations.service';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
 import { McpServerCleanupFn, McpService } from './mcp.service';
-import { SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
+import { QuixPrompts, SUPPORTED_INTEGRATIONS } from '../lib/constants';
 
 @Injectable()
 export class ToolService {
@@ -27,7 +26,7 @@ export class ToolService {
 
   async getAvailableTools(teamId: string): Promise<Record<string, ToolConfig> | undefined> {
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
-      include: ['jiraConfig', 'hubspotConfig', 'postgresConfig', 'githubConfig', 'salesforceConfig']
+      include: ['jiraConfig', 'hubspotConfig', 'postgresConfig', 'githubConfig', 'salesforceConfig', 'notionConfig']
     });
     if (!slackWorkspace) return;
     const tools: Record<string, ToolConfig> = {};
@@ -79,13 +78,35 @@ export class ToolService {
     // Handle MCP-based integrations
     try {
       // Call MCP service to get tools for all integrations
-      const mcpTools = await this.mcpService.getMcpServerTools(SUPPORTED_INTEGRATIONS.SLACK, {
+      const slackMcpTools = await this.mcpService.getMcpServerTools(SUPPORTED_INTEGRATIONS.SLACK, {
         SLACK_BOT_TOKEN: slackWorkspace.bot_access_token,
         SLACK_TEAM_ID: slackWorkspace.team_id
       });
-      if (mcpTools && mcpTools.tools.length > 0) {
-        this.runningTools.push(mcpTools.cleanup);
-        tools.slack = mcpTools;
+      if (slackMcpTools && slackMcpTools.tools.length > 0) {
+        this.runningTools.push(slackMcpTools.cleanup);
+        tools.slack = {
+          tools: slackMcpTools.tools,
+          prompts: {
+            toolSelection: QuixPrompts.SLACK.toolSelection,
+            responseGeneration: QuixPrompts.SLACK.responseGeneration
+          }
+        };
+      }
+
+      if (slackWorkspace.notionConfig) {
+        const notionMcpTools = await this.mcpService.getMcpServerTools(SUPPORTED_INTEGRATIONS.NOTION, {
+          NOTION_API_TOKEN: slackWorkspace.notionConfig.access_token
+        });
+        if (notionMcpTools && notionMcpTools.tools.length > 0) {
+          this.runningTools.push(notionMcpTools.cleanup);
+          tools.notion = {
+            tools: notionMcpTools.tools,
+            prompts: {
+              toolSelection: QuixPrompts.NOTION.toolSelection,
+              responseGeneration: QuixPrompts.NOTION.responseGeneration
+            }
+          };
+        }
       }
     } catch (error) {
       // Log error but continue with other tools

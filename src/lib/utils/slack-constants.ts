@@ -25,7 +25,11 @@ export const SLACK_ACTIONS = {
   },
   MANAGE_ACCESS_CONTROLS: 'manage-access-controls',
   ALLOWED_CHANNELS_SELECT: 'allowed-channels-select',
-  ACCESS_LEVEL_SELECT: 'access-level-select'
+  ACCESS_LEVEL_SELECT: 'access-level-select',
+  SUBMIT_NOTION_CONNECTION: 'submit-notion-connection',
+  NOTION_CONNECTION_ACTIONS: {
+    API_TOKEN: 'notion-api-token',
+  },
 } as const;
 
 export const SLACK_SCOPES = [

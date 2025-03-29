@@ -7,7 +7,7 @@ import { jsonSchemaToZod, JsonSchema } from '@n8n/json-schema-to-zod';
 import { z } from 'zod';
 import { SUPPORTED_INTEGRATIONS } from '../lib/constants';
 import { ConfigService } from '@nestjs/config';
-
+import * as _ from 'lodash';
 /**
  * Interface for MCP servers configuration
  */
@@ -75,7 +75,8 @@ export class McpService {
    */
   static readonly INTEGRATION_TO_MCP_SERVER: Partial<Record<SUPPORTED_INTEGRATIONS, string>> = {
     // Add new mappings as new MCP servers are installed
-    [SUPPORTED_INTEGRATIONS.SLACK]: '@modelcontextprotocol/server-slack'
+    [SUPPORTED_INTEGRATIONS.SLACK]: '@modelcontextprotocol/server-slack',
+    [SUPPORTED_INTEGRATIONS.NOTION]: '@suekou/mcp-notion-server'
   };
 
   constructor(private readonly configService: ConfigService) { }
@@ -194,6 +195,51 @@ export class McpService {
     return { tools: allTools, cleanup };
   }
 
+  private convertJsonToZod(schema: JsonSchema): z.ZodObject<any> {
+    // Fix schema to ensure arrays have items property
+    const fixedSchema = this.fixArraySchemas(schema);
+    return jsonSchemaToZod(fixedSchema) as z.ZodObject<any>;
+  }
+
+  /**
+   * Recursively fixes JSON Schema by adding items property to arrays that don't have one
+   * This ensures proper conversion to Zod schema
+   * 
+   * @param schema JSON Schema to fix
+   * @returns Fixed JSON Schema
+   */
+  private fixArraySchemas(schema: JsonSchema): JsonSchema {
+    if (!schema || typeof schema !== 'object') {
+      return schema;
+    }
+
+    // Clone the schema to avoid modifying the original
+    const fixedSchema = { ...schema };
+
+    // If it's an array type without items, add a default items property
+    if (fixedSchema.type === 'array' && !fixedSchema.items) {
+      fixedSchema.items = { type: 'object' };
+    }
+
+    // Recursively process nested properties in objects
+    if (fixedSchema.properties && typeof fixedSchema.properties === 'object') {
+      fixedSchema.properties = Object.entries(fixedSchema.properties).reduce(
+        (acc, [key, value]) => ({
+          ...acc,
+          [key]: this.fixArraySchemas(value as JsonSchema),
+        }),
+        {}
+      );
+    }
+
+    // Process items in arrays
+    if (fixedSchema.items) {
+      fixedSchema.items = this.fixArraySchemas(fixedSchema.items as JsonSchema);
+    }
+
+    return fixedSchema;
+  }
+
   /**
    * Initializes a single MCP server and converts its capabilities into LangChain tools
    * 
@@ -213,7 +259,7 @@ export class McpService {
     let transport: StdioClientTransport | null = null;
     let client: Client | null = null;
 
-    logger.log(`MCP server "${serverName}": initializing with: ${JSON.stringify(config)}`);
+    logger.debug(`MCP server "${serverName}": initializing with: ${JSON.stringify(config)}`);
 
     // Merge provided env with PATH to ensure commands work properly
     const env = { ...config.env };
@@ -251,7 +297,7 @@ export class McpService {
         new DynamicStructuredTool({
           name: tool.name,
           description: tool.description || '',
-          schema: jsonSchemaToZod(tool.inputSchema as JsonSchema) as z.ZodObject<any>,
+          schema: this.convertJsonToZod(tool.inputSchema as JsonSchema),
           func: async function (input) {
             logger.log(`MCP tool "${serverName}"/"${tool.name}" received input:`, input);
 

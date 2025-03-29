@@ -11,6 +11,7 @@ import { QuixPrompts } from '../lib/constants';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { AIMessage } from '@langchain/core/messages';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import { QuixCallBackManager } from './callback-manager';
 
 @Injectable()
 export class LlmService {
@@ -55,6 +56,8 @@ export class LlmService {
 
     const result = await agent.invoke({
       messages: previousMessages
+    }, {
+      callbacks: [new QuixCallBackManager()]
     });
 
     const { totalTokens, toolCallCount, toolNames } = result.messages.reduce((acc, msg) => {

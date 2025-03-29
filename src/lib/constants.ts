@@ -8,6 +8,7 @@ export enum SUPPORTED_INTEGRATIONS {
   POSTGRES = 'postgres',
   SALESFORCE = 'salesforce',
   SLACK = 'slack',
+  NOTION = 'notion',
 }
 
 export enum QuixUserAccessLevel {
@@ -86,6 +87,14 @@ export const INTEGRATIONS: {
       connectedText: 'Salesforce has been successfully connected! You can now query Salesforce by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of the deal for Quix" or "What is the contact name for Quix"',
       relation: 'salesforceConfig',
       oauth: true,
+    },
+    {
+      name: 'Notion',
+      value: SUPPORTED_INTEGRATIONS.NOTION,
+      helpText: 'Connect Notion to interact with your workspace.',
+      connectedText: 'Notion has been successfully connected! You can now query Notion by chatting with me or mentioning me in any channel. Try asking me things like "Show me my recent pages", "Search for documents about marketing", or "Get the content of page X".',
+      relation: 'notionConfig',
+      oauth: false,
     }
   ];
 
@@ -123,4 +132,45 @@ You must not make up information, you must only use the tools to answer the user
 You must answer the user's queries in a clear and concise manner.
 You should ask the user to provide more information only if required to answer the question or to perform the task.
   `,
+  NOTION: {
+    toolSelection: `
+    Notion is a workspace tool that manages:
+    - Pages: Documents, wikis, notes, meeting notes, etc.
+    - Databases: Tables, kanban boards, calendars, and lists to manage structured data like tasks, projects, content, goals, etc.
+    - Blocks: Rich content like text, headings, checkboxes, tables, and embeds inside pages.
+
+    Consider using Notion tools when the user wants to:
+    - Search for or retrieve pages, wikis, or documents by title or content
+    - Look up project plans, team docs, meeting notes, or internal guides
+    - Access structured information stored in databases (e.g. tasks, roadmaps, OKRs)
+    - Create new pages or database entries
+    - Update existing content, notes, or checklist items
+    - Append content like comments or bullet points to a Notion page
+    - Get child blocks (e.g., contents of a page)
+
+    You must not use any outsidde knowledge to answer the user's queries when using the Notion tool.
+    `,
+    responseGeneration: `
+    When formatting Notion responses:
+    - Include page/database IDs when referencing specific records
+    - Format important contact details in bold
+    - Present deal values and stages clearly
+    - Include relevant contact properties and custom fields
+    - Format dates in a human-readable format
+    `
+  },
+  SLACK: {
+    toolSelection: `
+    Slack is a messaging tool that manages:
+    - Messages: Text, images, videos, and files in channels and direct messages.
+    - Channels: Public and private spaces for team communication.
+    - Users: Individuals with profiles, roles, and settings.
+    `,
+    responseGeneration: `
+    When formatting Slack responses:
+    - Include channel/user IDs when referencing specific records
+    - Format important contact details in bold
+    - Present deal values and stages clearly
+    `
+  }
 }
