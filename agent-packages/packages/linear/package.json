@@ -1,0 +1,23 @@
+{
+  "name": "@clearfeed-ai/quix-linear-agent",
+  "version": "1.1.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
+    "build": "yarn clean && tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@clearfeed-ai/quix-common-agent": "^1.1.0",
+    "@linear/sdk": "^38.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.7.3"
+  },
+  "license": "Apache-2.0"
+}
