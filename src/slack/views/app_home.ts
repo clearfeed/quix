@@ -214,7 +214,7 @@ const getIntegrationInfo = (
       value: 'disconnect',
     })
   ];
-  if (connection instanceof PostgresConfig) {
+  if (connection instanceof PostgresConfig || connection instanceof NotionConfig) {
     overflowMenuOptions.unshift(
       Bits.Option({
         text: `${Md.emoji('pencil')} Edit`,

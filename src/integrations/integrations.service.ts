@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { JiraConfig, HubspotConfig, PostgresConfig, SalesforceConfig, GithubConfig } from '../database/models';
+import { Injectable, Logger } from '@nestjs/common';
+import { JiraConfig, HubspotConfig, PostgresConfig, SalesforceConfig, GithubConfig, NotionConfig } from '../database/models';
 import { TimeInMilliSeconds } from '@quix/lib/constants';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
@@ -21,7 +21,9 @@ export class IntegrationsService {
     @InjectModel(SalesforceConfig)
     private readonly salesforceConfigModel: typeof SalesforceConfig,
     @InjectModel(GithubConfig)
-    private readonly githubConfigModel: typeof GithubConfig
+    private readonly githubConfigModel: typeof GithubConfig,
+    @InjectModel(NotionConfig)
+    private readonly notionConfigModel: typeof NotionConfig
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
@@ -134,6 +136,10 @@ export class IntegrationsService {
 
   async removeGithubConfig(teamId: string) {
     await this.githubConfigModel.destroy({ where: { team_id: teamId }, force: true });
+  }
+
+  async removeNotionConfig(teamId: string) {
+    await this.notionConfigModel.destroy({ where: { team_id: teamId }, force: true });
   }
 
 }

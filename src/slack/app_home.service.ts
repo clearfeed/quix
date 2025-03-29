@@ -180,6 +180,18 @@ export class AppHomeService {
               projectKey: jiraConfig.default_config?.projectKey || '',
             })
             break;
+          case SUPPORTED_INTEGRATIONS.NOTION:
+            const { notionConfig } = slackWorkspace;
+            if (!notionConfig) return;
+            await publishNotionConnectionModal(webClient, {
+              triggerId,
+              teamId,
+              initialValues: {
+                id: notionConfig.id,
+                apiToken: notionConfig.access_token
+              }
+            });
+            break;
           default:
             break;
         }
@@ -200,6 +212,9 @@ export class AppHomeService {
             break;
           case SUPPORTED_INTEGRATIONS.GITHUB:
             await this.integrationsService.removeGithubConfig(teamId);
+            break;
+          case SUPPORTED_INTEGRATIONS.NOTION:
+            await this.integrationsService.removeNotionConfig(teamId);
             break;
           default:
             break;
