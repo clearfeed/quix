@@ -2,7 +2,7 @@ import { Elements, BlockCollection, ContextBuilder, Md, SectionBuilder } from "s
 import { SLACK_ACTIONS } from "@quix/lib/utils/slack-constants";
 import { Block, View } from "@slack/web-api";
 import { Bits, Section, Input, Image } from "slack-block-builder";
-import { JiraDefaultConfigModalArgs, PostgresConnectionModalArgs, NotionConnectionModalArgs, DisplayErrorModalPayload, DisplayErrorModalResponse, UpdateModalResponsePayload } from "./types";
+import { JiraDefaultConfigModalArgs, PostgresConnectionModalArgs, NotionConnectionModalArgs, LinearConnectionModalArgs, DisplayErrorModalPayload, DisplayErrorModalResponse, UpdateModalResponsePayload } from "./types";
 import { WebClient } from "@slack/web-api";
 import { Surfaces } from "slack-block-builder";
 import { QuixUserAccessLevel } from "@quix/lib/constants";
@@ -320,6 +320,46 @@ export const publishNotionConnectionModal = async (
     });
   } catch (error) {
     console.error("Error publishing Notion connection modal:", error);
+    throw error;
+  }
+};
+
+export const publishLinearConnectionModal = async (
+  client: WebClient,
+  args: LinearConnectionModalArgs
+): Promise<void> => {
+  try {
+    await client.views.open({
+      trigger_id: args.triggerId,
+      view: {
+        ...Surfaces.Modal({
+          title: 'Linear Connection',
+          submit: 'Submit',
+          close: 'Cancel',
+          callbackId: SLACK_ACTIONS.SUBMIT_LINEAR_CONNECTION
+        }).buildToObject(),
+        blocks: BlockCollection([
+          Section({
+            text: 'Please enter your Linear API key:'
+          }),
+          Input({
+            label: 'API Key',
+            blockId: 'linear_api_key',
+          }).element(Elements.TextInput({
+            placeholder: 'lin_api_...',
+            actionId: SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.API_TOKEN
+          }).initialValue(args.initialValues?.apiToken || '')),
+          Section({
+            text: 'You can find your Linear API key in Linear settings > Security & Access > Personal API keys'
+          })
+        ]),
+        private_metadata: JSON.stringify({
+          id: args.initialValues?.id
+        })
+      }
+    });
+  } catch (error) {
+    console.error("Error publishing Linear connection modal:", error);
     throw error;
   }
 };

@@ -9,6 +9,7 @@ export enum SUPPORTED_INTEGRATIONS {
   SALESFORCE = 'salesforce',
   SLACK = 'slack',
   NOTION = 'notion',
+  LINEAR = 'linear'
 }
 
 export enum QuixUserAccessLevel {
@@ -95,6 +96,14 @@ export const INTEGRATIONS: {
       connectedText: 'Notion has been successfully connected! You can now query Notion by chatting with me or mentioning me in any channel. Try asking me things like "Show me my recent pages", "Search for documents about marketing", or "Get the content of page X".',
       relation: 'notionConfig',
       oauth: false,
+    },
+    {
+      name: 'Linear',
+      value: SUPPORTED_INTEGRATIONS.LINEAR,
+      helpText: 'Connect Linear to interact with your projects.',
+      connectedText: 'Linear has been successfully connected! You can now query Linear by chatting with me or mentioning me in any channel. Try asking me things like "Show me my recent issues", "Search for issues about marketing", or "Get the content of issue X".',
+      relation: 'linearConfig',
+      oauth: false,
     }
   ];
 
@@ -169,6 +178,18 @@ You should ask the user to provide more information only if required to answer t
     responseGeneration: `
     When formatting Slack responses:
     - Include channel/user IDs when referencing specific records
+    - Format important contact details in bold
+    - Present deal values and stages clearly
+    `
+  },
+  LINEAR: {
+    toolSelection: `
+    Linear is a project management tool that manages:
+    - Projects: Tasks, issues, and milestones.
+    `,
+    responseGeneration: `
+    When formatting Linear responses:
+    - Include project/issue IDs when referencing specific records
     - Format important contact details in bold
     - Present deal values and stages clearly
     `

@@ -26,7 +26,7 @@ export class ToolService {
 
   async getAvailableTools(teamId: string): Promise<Record<string, ToolConfig> | undefined> {
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
-      include: ['jiraConfig', 'hubspotConfig', 'postgresConfig', 'githubConfig', 'salesforceConfig', 'notionConfig']
+      include: ['jiraConfig', 'hubspotConfig', 'postgresConfig', 'githubConfig', 'salesforceConfig', 'notionConfig', 'linearConfig']
     });
     if (!slackWorkspace) return;
     const tools: Record<string, ToolConfig> = {};
@@ -104,6 +104,22 @@ export class ToolService {
             prompts: {
               toolSelection: QuixPrompts.NOTION.toolSelection,
               responseGeneration: QuixPrompts.NOTION.responseGeneration
+            }
+          };
+        }
+      }
+
+      if (slackWorkspace.linearConfig) {
+        const linearMcpTools = await this.mcpService.getMcpServerTools(SUPPORTED_INTEGRATIONS.LINEAR, {
+          LINEAR_API_KEY: slackWorkspace.linearConfig.access_token
+        });
+        if (linearMcpTools && linearMcpTools.tools.length > 0) {
+          this.runningTools.push(linearMcpTools.cleanup);
+          tools.linear = {
+            tools: linearMcpTools.tools,
+            prompts: {
+              toolSelection: QuixPrompts.LINEAR.toolSelection,
+              responseGeneration: QuixPrompts.LINEAR.responseGeneration
             }
           };
         }

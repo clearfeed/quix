@@ -8,7 +8,7 @@ import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { HubspotTokenResponse, HubspotHubInfo, GithubTokenResponse, GitHubInfo, SalesforceTokenResponse, SalesforceTokenIntrospectionResponse } from './types';
-import { JiraConfig, HubspotConfig, PostgresConfig, GithubConfig, SalesforceConfig, NotionConfig } from '../database/models';
+import { JiraConfig, HubspotConfig, PostgresConfig, GithubConfig, SalesforceConfig, NotionConfig, LinearConfig } from '../database/models';
 import { ToolInstallState } from '@quix/lib/types/common';
 import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
 import { ViewSubmitAction } from '@slack/bolt';
@@ -34,6 +34,8 @@ export class IntegrationsInstallService {
     private readonly salesforceConfigModel: typeof SalesforceConfig,
     @InjectModel(NotionConfig)
     private readonly notionConfigModel: typeof NotionConfig,
+    @InjectModel(LinearConfig)
+    private readonly linearConfigModel: typeof LinearConfig,
     private readonly eventEmitter: EventEmitter2,
     @InjectModel(PostgresConfig)
     private readonly postgresConfigModel: typeof PostgresConfig
@@ -425,6 +427,62 @@ export class IntegrationsInstallService {
     } catch (error) {
       this.logger.error('Failed to connect to Notion:', error);
       throw new BadRequestException('Invalid Notion API token or unable to fetch workspace details');
+    }
+  }
+
+  async linear(payload: ViewSubmitAction): Promise<LinearConfig> {
+    try {
+      const parsedResponse = parseInputBlocksSubmission(
+        payload.view.blocks as KnownBlock[],
+        payload.view.state.values
+      );
+
+      if (!parsedResponse[SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.API_TOKEN].selectedValue) {
+        throw new BadRequestException('Invalid response');
+      }
+
+      const apiToken = parsedResponse[SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.API_TOKEN].selectedValue as string;
+
+      // Validate the token and get workspace details
+      const response = await this.httpService.axiosRef.post('https://api.linear.app/graphql', {
+        query: `
+          query {
+            organization {
+              id
+              name
+            }
+          }
+        `
+      }, {
+        headers: {
+          'Authorization': apiToken,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.data?.data?.organization) {
+        throw new BadRequestException('Invalid Linear API token');
+      }
+
+      // If the API call succeeds, save the token and workspace details
+      const [linearConfig] = await this.linearConfigModel.upsert({
+        workspace_name: response.data.data.organization.name,
+        linear_org_id: response.data.data.organization.id,
+        access_token: apiToken,
+        team_id: payload.view.team_id
+      });
+
+      this.eventEmitter.emit(EVENT_NAMES.LINEAR_CONNECTED, {
+        teamId: payload.view.team_id,
+        appId: payload.view.app_id!,
+        type: SUPPORTED_INTEGRATIONS.LINEAR,
+        userId: payload.user.id,
+      } satisfies IntegrationConnectedEvent);
+
+      return linearConfig;
+    } catch (error) {
+      this.logger.error('Failed to connect to Linear:', error);
+      throw new BadRequestException('Invalid Linear API token or unable to fetch workspace details');
     }
   }
 }

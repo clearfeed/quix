@@ -76,7 +76,8 @@ export class McpService {
   static readonly INTEGRATION_TO_MCP_SERVER: Partial<Record<SUPPORTED_INTEGRATIONS, string>> = {
     // Add new mappings as new MCP servers are installed
     [SUPPORTED_INTEGRATIONS.SLACK]: '@modelcontextprotocol/server-slack',
-    [SUPPORTED_INTEGRATIONS.NOTION]: '@suekou/mcp-notion-server'
+    [SUPPORTED_INTEGRATIONS.NOTION]: '@suekou/mcp-notion-server',
+    [SUPPORTED_INTEGRATIONS.LINEAR]: '@ibraheem4/linear-mcp'
   };
 
   constructor(private readonly configService: ConfigService) { }

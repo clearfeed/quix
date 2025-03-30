@@ -24,6 +24,7 @@ import { QuixUserAccessLevel } from '@quix/lib/constants';
 import { WebClient } from '@slack/web-api';
 import { SLACK_MESSAGE_MAX_LENGTH } from '@quix/lib/utils/slack-constants';
 import { NotionConfig } from './notion-config.model';
+import { LinearConfig } from './linear-config.model';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -198,6 +199,12 @@ export class SlackWorkspace extends Model<
     as: 'notionConfig'
   })
   declare notionConfig: NonAttribute<NotionConfig>;
+
+  @HasOne(() => LinearConfig, {
+    foreignKey: 'team_id',
+    as: 'linearConfig'
+  })
+  declare linearConfig: NonAttribute<LinearConfig>;
 
   async postMessage(message: string, channel: string, thread_ts?: string) {
     const webClient = new WebClient(this.bot_access_token);

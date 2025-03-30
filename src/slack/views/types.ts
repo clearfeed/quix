@@ -1,11 +1,11 @@
-import { HubspotConfig, JiraConfig, PostgresConfig, SlackWorkspace, GithubConfig, SalesforceConfig, NotionConfig } from "@quix/database/models";
+import { HubspotConfig, JiraConfig, PostgresConfig, SlackWorkspace, GithubConfig, SalesforceConfig, NotionConfig, LinearConfig } from "@quix/database/models";
 import { INTEGRATIONS } from "@quix/lib/constants";
 import { ModalView, ViewsOpenResponse, ViewsUpdateResponse, WebClient } from "@slack/web-api";
 
 export type HomeViewArgs = {
   slackWorkspace: SlackWorkspace;
   selectedTool?: typeof INTEGRATIONS[number]['value'];
-  connection?: JiraConfig | HubspotConfig | PostgresConfig | GithubConfig | SalesforceConfig | NotionConfig;
+  connection?: JiraConfig | HubspotConfig | PostgresConfig | GithubConfig | SalesforceConfig | NotionConfig | LinearConfig;
   userId: string;
 }
 
@@ -32,6 +32,15 @@ export type JiraDefaultConfigModalArgs = {
 }
 
 export type NotionConnectionModalArgs = {
+  triggerId: string;
+  teamId: string;
+  initialValues?: {
+    id?: string;
+    apiToken?: string;
+  };
+}
+
+export type LinearConnectionModalArgs = {
   triggerId: string;
   teamId: string;
   initialValues?: {
