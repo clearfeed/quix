@@ -66,7 +66,7 @@ export class LinearConfig extends Model<
 
   @BelongsTo(() => SlackWorkspace, {
     foreignKey: 'team_id',
-    as: 'slack_workspace',
+    as: 'slack_workspace'
   })
   declare slack_workspace: NonAttribute<SlackWorkspace>;
 
