@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DynamicStructuredTool, StructuredTool } from '@langchain/core/tools';
+import { DynamicStructuredTool } from '@langchain/core/tools';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { CallToolResultSchema, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js';
@@ -118,7 +118,8 @@ export class McpService {
    */
   async getMcpServerTools(
     integration: SUPPORTED_INTEGRATIONS,
-    envVars?: Record<string, string>
+    envVars?: Record<string, string>,
+    defaultConfig?: Record<string, string>
   ): Promise<{
     tools: DynamicStructuredTool<any>[];
     cleanup: McpServerCleanupFn;
@@ -135,7 +136,7 @@ export class McpService {
       env: envVars || {}
     };
 
-    return this.convertSingleMcpToLangchainTools(serverName, config, this.logger);
+    return this.convertSingleMcpToLangchainTools(serverName, config, this.logger, defaultConfig);
   }
 
   /**
@@ -196,10 +197,39 @@ export class McpService {
     return { tools: allTools, cleanup };
   }
 
-  private convertJsonToZod(schema: JsonSchema): z.ZodObject<any> {
+  private convertJsonToZod(
+    schema: JsonSchema,
+    defaultConfig?: Record<string, string>,
+  ): z.ZodObject<any> {
     // Fix schema to ensure arrays have items property
     const fixedSchema = this.fixArraySchemas(schema);
-    return jsonSchemaToZod(fixedSchema) as z.ZodObject<any>;
+
+    // Get the base Zod schema
+    const baseZodSchema = jsonSchemaToZod(fixedSchema, {}) as z.ZodObject<any>;
+
+    if (_.isEmpty(defaultConfig)) {
+      return baseZodSchema;
+    }
+
+    const shape = baseZodSchema.shape;
+    const newShape: Record<string, z.ZodTypeAny> = {};
+    
+    // Process each property in the shape
+    for (const [key, zodType] of Object.entries(shape) as [string, z.ZodTypeAny][]) {
+      // If the property exists in defaultConfig, make it optional with a default value
+      if (key in defaultConfig) {
+        newShape[key] = (zodType as z.ZodTypeAny)
+          .optional()
+          .default(defaultConfig[key]);
+        this.logger.debug(
+          `Added default value for property ${key}: ${defaultConfig[key]}`,
+        );
+      } else {
+        newShape[key] = zodType 
+      }
+    }
+
+    return z.object(newShape);
   }
 
   /**
@@ -252,7 +282,8 @@ export class McpService {
   private async convertSingleMcpToLangchainTools(
     serverName: string,
     config: StdioServerParameters,
-    logger: McpToolsLogger
+    logger: McpToolsLogger,
+    defaultConfig?: Record<string, string>
   ): Promise<{
     tools: DynamicStructuredTool[];
     cleanup: McpServerCleanupFn;
@@ -298,7 +329,7 @@ export class McpService {
         new DynamicStructuredTool({
           name: tool.name,
           description: tool.description || '',
-          schema: this.convertJsonToZod(tool.inputSchema as JsonSchema),
+          schema: this.convertJsonToZod(tool.inputSchema as JsonSchema, defaultConfig),
           func: async function (input) {
             logger.log(`MCP tool "${serverName}"/"${tool.name}" received input:`, input);
 

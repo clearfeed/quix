@@ -10,9 +10,15 @@ import {
   PrimaryKey,
   AllowNull,
 } from 'sequelize-typescript';
-import { CreationOptional, InferAttributes, InferCreationAttributes, NonAttribute } from 'sequelize';
+import {
+  CreationOptional,
+  InferAttributes,
+  InferCreationAttributes,
+  NonAttribute,
+} from 'sequelize';
 import { encrypt, decrypt } from '../../lib/utils/encryption';
 import { SlackWorkspace } from './slack-workspace.model';
+import { Nullable } from '@quix/lib/types/common';
 
 @Table({ tableName: 'linear_configs' })
 export class LinearConfig extends Model<
@@ -35,7 +41,7 @@ export class LinearConfig extends Model<
 
   @AllowNull(false)
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   get access_token(): string {
     const value = this.getDataValue('access_token') as string;
@@ -50,9 +56,17 @@ export class LinearConfig extends Model<
     this.setDataValue('access_token', encrypt(value));
   }
 
+  @Column({
+    type: DataType.JSON,
+    allowNull: true,
+  })
+  declare default_config: Nullable<{
+    team_id?: string;
+  }>;
+
   @BelongsTo(() => SlackWorkspace, {
     foreignKey: 'team_id',
-    as: 'slack_workspace'
+    as: 'slack_workspace',
   })
   declare slack_workspace: NonAttribute<SlackWorkspace>;
 
