@@ -73,42 +73,16 @@ export class McpService {
    * Maps integration types to MCP server names
    * Static for testing and extension outside the class
    */
-  static readonly INTEGRATION_TO_MCP_SERVER: Partial<Record<SUPPORTED_INTEGRATIONS, string>> = {
+  static readonly INTEGRATION_TO_MCP_SERVER= {
     // Add new mappings as new MCP servers are installed
     [SUPPORTED_INTEGRATIONS.SLACK]: '@modelcontextprotocol/server-slack',
     [SUPPORTED_INTEGRATIONS.NOTION]: '@suekou/mcp-notion-server',
     [SUPPORTED_INTEGRATIONS.LINEAR]: '@ibraheem4/linear-mcp'
-  };
+  } as const satisfies Partial<Record<SUPPORTED_INTEGRATIONS, string>>;
 
   constructor(private readonly configService: ConfigService) { }
 
-  /**
-   * Gets LangChain tools for a specific integration using MCP
-   * 
-   * @param integration The integration type to get tools for
-   * @param envVars Optional environment variables to pass to the MCP server
-   * @returns A promise resolving to an array of StructuredTool instances or undefined
-   */
-  async getToolsForIntegration(
-    integration: SUPPORTED_INTEGRATIONS,
-    envVars?: Record<string, string>
-  ): Promise<{ tools: DynamicStructuredTool<any>[]; cleanup: McpServerCleanupFn } | undefined> {
-    const serverName = McpService.INTEGRATION_TO_MCP_SERVER[integration];
-
-    if (!serverName) {
-      this.logger.warn(`No MCP server mapping found for integration: ${integration}`);
-      return undefined;
-    }
-
-    try {
-      const { tools, cleanup } = await this.getMcpServerTools(integration, envVars);
-      return { tools, cleanup };
-    } catch (error) {
-      this.logger.error(`Failed to get tools for integration ${integration}:`, error);
-      return undefined;
-    }
-  }
-
+ 
   /**
    * Gets tools from an MCP server for a specified integration
    * 
@@ -117,7 +91,29 @@ export class McpService {
    * @returns A promise resolving to tools and cleanup function
    */
   async getMcpServerTools(
-    integration: SUPPORTED_INTEGRATIONS,
+    integration: SUPPORTED_INTEGRATIONS.SLACK,
+    envVars: { SLACK_BOT_TOKEN: string; SLACK_TEAM_ID: string }
+  ): Promise<{
+    tools: DynamicStructuredTool<any>[];
+    cleanup: McpServerCleanupFn;
+  }>;
+  async getMcpServerTools(
+    integration: SUPPORTED_INTEGRATIONS.NOTION,
+    envVars: { NOTION_API_TOKEN: string }
+  ): Promise<{
+    tools: DynamicStructuredTool<any>[];
+    cleanup: McpServerCleanupFn;
+  }>;
+  async getMcpServerTools(
+    integration: SUPPORTED_INTEGRATIONS.LINEAR,
+    envVars: { LINEAR_API_KEY: string },
+    defaultConfig?: { teamId: string }
+  ): Promise<{
+    tools: DynamicStructuredTool<any>[];
+    cleanup: McpServerCleanupFn;
+  }>;
+  async getMcpServerTools(
+    integration: keyof typeof McpService.INTEGRATION_TO_MCP_SERVER,
     envVars?: Record<string, string>,
     defaultConfig?: Record<string, string>
   ): Promise<{
