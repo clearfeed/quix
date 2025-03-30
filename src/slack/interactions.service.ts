@@ -44,10 +44,8 @@ export class InteractionsService {
 
   async handleViewSubmission(payload: ViewSubmitAction) {
     const slackWorkspace = await this.slackService.getSlackWorkspace(payload.view.team_id);
-    if (!slackWorkspace) {
-      this.logger.error('Slack workspace not found', { payload });
-      return;
-    }
+    if (!slackWorkspace) return;
+
     switch (payload.view.callback_id) {
       case SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION:
         const postgresConfig = await this.integrationsInstallService.postgres(payload);
@@ -82,6 +80,32 @@ export class InteractionsService {
               viewId: payload.view.id,
             });
             this.appHomeService.handleNotionConnected(payload.user.id, payload.view.team_id);
+          }).catch(error => {
+            return displayErrorModal({
+              error,
+              backgroundCaller: true,
+              viewId: payload.view.id,
+              web: new WebClient(slackWorkspace.bot_access_token)
+            });
+          });
+          return displayLoadingModal('Please Wait');
+        } catch (error) {
+          console.error(error);
+          return displayErrorModal({
+            error,
+            backgroundCaller: true,
+            viewId: payload.view.id,
+            web: new WebClient(slackWorkspace.bot_access_token)
+          });
+        }
+      case SLACK_ACTIONS.SUBMIT_LINEAR_CONNECTION:
+        try {
+          this.integrationsInstallService.linear(payload).then(async () => {
+            await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
+              text: 'Linear connected successfully',
+              viewId: payload.view.id,
+            });
+            this.appHomeService.handleLinearConnected(payload.user.id, payload.view.team_id);
           }).catch(error => {
             return displayErrorModal({
               error,

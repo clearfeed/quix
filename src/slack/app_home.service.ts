@@ -4,7 +4,7 @@ import { BlockElementAction, ButtonAction, StaticSelectAction, OverflowAction } 
 import { AppHomeOpenedEvent } from '@slack/web-api';
 import { WebClient } from '@slack/web-api';
 import { getHomeView } from './views/app_home';
-import { publishPostgresConnectionModal, publishOpenaiKeyModal, publishManageAdminsModal, publishAccessControlModal, publishJiraConfigModal, publishNotionConnectionModal } from './views/modals';
+import { publishPostgresConnectionModal, publishOpenaiKeyModal, publishManageAdminsModal, publishAccessControlModal, publishJiraConfigModal, publishNotionConnectionModal, publishLinearConnectionModal } from './views/modals';
 import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
 import { SlackWorkspace, PostgresConfig } from '@quix/database/models';
@@ -138,6 +138,16 @@ export class AppHomeService {
         teamId,
         initialValues
       });
+    } else if (selectedTool === SUPPORTED_INTEGRATIONS.LINEAR) {
+      const initialValues = slackWorkspace.linearConfig ? {
+        id: slackWorkspace.linearConfig.id,
+        apiToken: slackWorkspace.linearConfig.access_token
+      } : undefined;
+      await publishLinearConnectionModal(webClient, {
+        triggerId,
+        teamId,
+        initialValues
+      });
     }
   }
 
@@ -192,6 +202,18 @@ export class AppHomeService {
               }
             });
             break;
+          case SUPPORTED_INTEGRATIONS.LINEAR:
+            const { linearConfig } = slackWorkspace;
+            if (!linearConfig) return;
+            await publishLinearConnectionModal(webClient, {
+              triggerId,
+              teamId,
+              initialValues: {
+                id: linearConfig.id,
+                apiToken: linearConfig.access_token
+              }
+            });
+            break;
           default:
             break;
         }
@@ -215,6 +237,9 @@ export class AppHomeService {
             break;
           case SUPPORTED_INTEGRATIONS.NOTION:
             await this.integrationsService.removeNotionConfig(teamId);
+            break;
+          case SUPPORTED_INTEGRATIONS.LINEAR:
+            await this.integrationsService.removeLinearConfig(teamId);
             break;
           default:
             break;
@@ -348,6 +373,20 @@ export class AppHomeService {
       user_id: userId,
       view: getHomeView({
         slackWorkspace,
+        userId
+      })
+    });
+  }
+
+  async handleLinearConnected(userId: string, teamId: string) {
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
+    if (!slackWorkspace) return;
+    const webClient = new WebClient(slackWorkspace.bot_access_token);
+    await webClient.views.publish({
+      user_id: userId,
+      view: getHomeView({
+        slackWorkspace,
+        connection: slackWorkspace.linearConfig,
         userId
       })
     });

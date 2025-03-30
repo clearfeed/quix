@@ -30,6 +30,10 @@ export const SLACK_ACTIONS = {
   NOTION_CONNECTION_ACTIONS: {
     API_TOKEN: 'notion-api-token',
   },
+  SUBMIT_LINEAR_CONNECTION: 'submit-linear-connection',
+  LINEAR_CONNECTION_ACTIONS: {
+    API_TOKEN: 'linear-api-token',
+  },
 } as const;
 
 export const SLACK_SCOPES = [
