@@ -199,32 +199,24 @@ export class McpService {
   ): z.ZodObject<any> {
     // Fix schema to ensure arrays have items property
     const fixedSchema = this.fixArraySchemas(schema);
-
     // Get the base Zod schema
     const baseZodSchema = jsonSchemaToZod(fixedSchema, {}) as z.ZodObject<any>;
-
     if (_.isEmpty(defaultConfig)) {
       return baseZodSchema;
     }
-
     const shape = baseZodSchema.shape;
     const newShape: Record<string, z.ZodTypeAny> = {};
-    
-    // Process each property in the shape
     for (const [key, zodType] of Object.entries(shape) as [string, z.ZodTypeAny][]) {
       // If the property exists in defaultConfig, make it optional with a default value
       if (key in defaultConfig) {
-        newShape[key] = (zodType as z.ZodTypeAny)
-          .optional()
-          .default(defaultConfig[key]);
+        newShape[key] = zodType.optional().default(defaultConfig[key]);
         this.logger.debug(
           `Added default value for property ${key}: ${defaultConfig[key]}`,
         );
       } else {
-        newShape[key] = zodType 
+        newShape[key] = zodType;
       }
     }
-
     return z.object(newShape);
   }
 
