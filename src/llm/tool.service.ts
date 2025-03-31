@@ -112,7 +112,11 @@ export class ToolService {
       if (slackWorkspace.linearConfig) {
         const linearMcpTools = await this.mcpService.getMcpServerTools(SUPPORTED_INTEGRATIONS.LINEAR, {
           LINEAR_API_KEY: slackWorkspace.linearConfig.access_token
-        });
+        },
+          slackWorkspace.linearConfig.default_config?.team_id 
+            ? { teamId: slackWorkspace.linearConfig.default_config.team_id } 
+            : undefined
+        );
         if (linearMcpTools && linearMcpTools.tools.length > 0) {
           this.runningTools.push(linearMcpTools.cleanup);
           tools.linear = {
