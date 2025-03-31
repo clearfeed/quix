@@ -504,6 +504,17 @@ export class IntegrationsInstallService {
       throw new BadRequestException('Missing required fields');
     }
 
+    // Validate URL format
+    const urlString = parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL].selectedValue as string;
+    try {
+      const url = new URL(urlString);
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        throw new BadRequestException('URL must use http or https protocol');
+      }
+    } catch (error) {
+      throw new BadRequestException('Invalid URL format');
+    }
+
     // Create or update MCP connection
     const [mcpConnection] = await this.mcpConnectionModel.upsert({
       id: privateMetadata.id,

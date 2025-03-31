@@ -14,6 +14,7 @@ import { Tool } from "@clearfeed-ai/quix-common-agent";
 
 export const getHomeView = (args: HomeViewArgs): HomeView => {
   const { selectedTool, slackWorkspace, connection } = args;
+  const mcpConnections = slackWorkspace.mcpConnections;
   const blocks = [
     Blocks.Header({
       text: ':wave: Welcome to Quix'
@@ -27,8 +28,8 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
     blocks.push(...getOpenAIView(slackWorkspace));
     if (slackWorkspace.openai_key) {
       blocks.push(Blocks.Divider());
-      blocks.push(...getToolConnectionView(selectedTool));
-      if (selectedTool) blocks.push(...getIntegrationInfo(selectedTool, slackWorkspace.team_id, connection));
+      blocks.push(...getToolConnectionView(selectedTool, mcpConnections));
+      if (selectedTool) blocks.push(...getIntegrationInfo(selectedTool, slackWorkspace.team_id, connection, mcpConnections));
     }
   } else {
     blocks.push(...getNonAdminView(slackWorkspace));
@@ -256,7 +257,8 @@ const getConnectionInfo = (connection: HomeViewArgs['connection']): string => {
 const getIntegrationInfo = (
   selectedTool: typeof INTEGRATIONS[number]['value'] | string,
   teamId: string,
-  connection?: HomeViewArgs['connection']
+  connection?: HomeViewArgs['connection'],
+  mcpConnections?: McpConnection[]
 ): BlockBuilder[] => {
   // Handle MCP server or Add MCP server option
   if (selectedTool === 'add_mcp_server') {
@@ -273,7 +275,7 @@ const getIntegrationInfo = (
   }
 
   if (typeof selectedTool === 'string' && selectedTool.startsWith('mcp:')) {
-    const mcpConnection = connection as McpConnection;
+    const mcpConnection = mcpConnections?.find(c => c.id === selectedTool.split(':')[1]);
     if (!mcpConnection) return [];
 
     return [

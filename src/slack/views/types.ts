@@ -6,7 +6,6 @@ export type HomeViewArgs = {
   slackWorkspace: SlackWorkspace;
   selectedTool?: typeof INTEGRATIONS[number]['value'] | string;  // string for MCP server IDs
   connection?: JiraConfig | HubspotConfig | PostgresConfig | GithubConfig | SalesforceConfig | NotionConfig | LinearConfig | McpConnection;
-  mcpConnections?: McpConnection[];  // Add MCP connections array
   userId: string;
 }
 

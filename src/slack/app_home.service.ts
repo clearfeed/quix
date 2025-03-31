@@ -21,7 +21,7 @@ export class AppHomeService {
   async handleAppHomeOpened(event: AppHomeOpenedEvent, teamId: string) {
     if (event.tab !== 'home') return;
 
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['mcpConnections']);
     if (!slackWorkspace) return;
 
     const webClient = new WebClient(slackWorkspace.bot_access_token);
@@ -94,16 +94,12 @@ export class AppHomeService {
   async handleConnectTool(action: StaticSelectAction, teamId: string, userId: string) {
     const selectedTool = action.selected_option?.value;
     const integration = INTEGRATIONS.find(integration => integration.value === selectedTool);
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, integration ? [integration.relation] : undefined);
+    const relations = ['mcpConnections'];
+    if (integration) relations.push(integration.relation);
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, relations);
     if (!slackWorkspace) return;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     this.logger.log('Publishing home view', { selectedTool });
-
-    // Get MCP connections if needed
-    let mcpConnections: McpConnection[] = [];
-    if (selectedTool?.startsWith('mcp:') || selectedTool === 'add_mcp_server') {
-      mcpConnections = await slackWorkspace.$get('mcpConnections');
-    }
 
     await webClient.views.publish({
       user_id: userId,
@@ -111,7 +107,6 @@ export class AppHomeService {
         selectedTool,
         slackWorkspace,
         connection: integration ? slackWorkspace[integration.relation as keyof SlackWorkspace] : undefined,
-        mcpConnections,
         userId
       })
     });
@@ -417,13 +412,11 @@ export class AppHomeService {
     const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['mcpConnections']);
     if (!slackWorkspace) return;
 
-    const mcpConnections: McpConnection[] = slackWorkspace.mcpConnections;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
       view: getHomeView({
         slackWorkspace,
-        mcpConnections,
         userId
       })
     });
