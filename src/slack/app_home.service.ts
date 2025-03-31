@@ -159,106 +159,136 @@ export class AppHomeService {
 
   private async handleConnectionOverflowMenu(action: OverflowAction, teamId: string, userId: string, triggerId: string) {
     const selectedOption = action.selected_option?.value as 'edit' | 'disconnect' | undefined;
-    const connectionInfo: {
-      type: SUPPORTED_INTEGRATIONS
-    } = JSON.parse(action.block_id);
-    const integration = INTEGRATIONS.find(integration => integration.value === connectionInfo.type);
-    if (!integration) return;
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, [integration.relation]);
-    if (!slackWorkspace) return;
-    const webClient = new WebClient(slackWorkspace.bot_access_token);
-    switch (selectedOption) {
-      case 'edit':
-        switch (connectionInfo.type) {
-          case SUPPORTED_INTEGRATIONS.POSTGRES:
-            const { postgresConfig } = slackWorkspace;
-            if (!postgresConfig) return;
-            await publishPostgresConnectionModal(webClient, {
-              triggerId,
-              teamId,
-              initialValues: {
-                id: postgresConfig.id,
-                host: postgresConfig.host,
-                port: postgresConfig.port.toString(),
-                username: postgresConfig.user,
-                password: postgresConfig.password,
-                database: postgresConfig.database,
-                ssl: postgresConfig.ssl
-              }
-            });
-            break;
-          case SUPPORTED_INTEGRATIONS.JIRA:
-            const { jiraConfig } = slackWorkspace;
-            if (!jiraConfig) return;
-            await publishJiraConfigModal(webClient, {
-              triggerId,
-              teamId,
-              projectKey: jiraConfig.default_config?.projectKey || '',
+    try {
+      const connectionInfo: {
+        type: SUPPORTED_INTEGRATIONS
+      } | {
+        type: 'mcp',
+        id: string
+      } = JSON.parse(action.block_id);
+      const integration = INTEGRATIONS.find(integration => integration.value === connectionInfo.type);
+      const relations = ['mcpConnections'];
+      if (integration) relations.push(integration.relation);
+      const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, relations);
+      if (!slackWorkspace) return;
+      const webClient = new WebClient(slackWorkspace.bot_access_token);
+      switch (selectedOption) {
+        case 'edit':
+          switch (connectionInfo.type) {
+            case SUPPORTED_INTEGRATIONS.POSTGRES:
+              const { postgresConfig } = slackWorkspace;
+              if (!postgresConfig) return;
+              await publishPostgresConnectionModal(webClient, {
+                triggerId,
+                teamId,
+                initialValues: {
+                  id: postgresConfig.id,
+                  host: postgresConfig.host,
+                  port: postgresConfig.port.toString(),
+                  username: postgresConfig.user,
+                  password: postgresConfig.password,
+                  database: postgresConfig.database,
+                  ssl: postgresConfig.ssl
+                }
+              });
+              break;
+            case SUPPORTED_INTEGRATIONS.JIRA:
+              const { jiraConfig } = slackWorkspace;
+              if (!jiraConfig) return;
+              await publishJiraConfigModal(webClient, {
+                triggerId,
+                teamId,
+                projectKey: jiraConfig.default_config?.projectKey || '',
+              })
+              break;
+            case SUPPORTED_INTEGRATIONS.NOTION:
+              const { notionConfig } = slackWorkspace;
+              if (!notionConfig) return;
+              await publishNotionConnectionModal(webClient, {
+                triggerId,
+                teamId,
+                initialValues: {
+                  id: notionConfig.id,
+                  apiToken: notionConfig.access_token
+                }
+              });
+              break;
+            case SUPPORTED_INTEGRATIONS.LINEAR:
+              const { linearConfig } = slackWorkspace;
+              if (!linearConfig) return;
+              await publishLinearConnectionModal(webClient, {
+                triggerId,
+                teamId,
+                initialValues: {
+                  id: linearConfig.id,
+                  apiToken: linearConfig.access_token
+                }
+              });
+              break;
+            case 'mcp':
+              const { mcpConnections } = slackWorkspace;
+              const mcpConnection = mcpConnections.find(c => c.id === connectionInfo.id);
+              if (!mcpConnection) return;
+              await publishMcpConnectionModal(webClient, {
+                triggerId,
+                teamId,
+                initialValues: {
+                  id: mcpConnection.id,
+                  url: mcpConnection.url,
+                  name: mcpConnection.name,
+                  apiToken: mcpConnection.auth_token || undefined
+                }
+              });
+              break;
+            default:
+              break;
+          }
+          break;
+        case 'disconnect':
+          switch (connectionInfo.type) {
+            case SUPPORTED_INTEGRATIONS.POSTGRES:
+              await this.integrationsService.removePostgresConfig(teamId);
+              break;
+            case SUPPORTED_INTEGRATIONS.HUBSPOT:
+              await this.integrationsService.removeHubspotConfig(teamId);
+              break;
+            case SUPPORTED_INTEGRATIONS.JIRA:
+              await this.integrationsService.removeJiraConfig(teamId);
+              break;
+            case SUPPORTED_INTEGRATIONS.SALESFORCE:
+              await this.integrationsService.removeSalesforceConfig(teamId);
+              break;
+            case SUPPORTED_INTEGRATIONS.GITHUB:
+              await this.integrationsService.removeGithubConfig(teamId);
+              break;
+            case SUPPORTED_INTEGRATIONS.NOTION:
+              await this.integrationsService.removeNotionConfig(teamId);
+              break;
+            case SUPPORTED_INTEGRATIONS.LINEAR:
+              await this.integrationsService.removeLinearConfig(teamId);
+              break;
+            case 'mcp':
+              await this.integrationsService.removeMcpConnection(teamId, connectionInfo.id);
+              break;
+            default:
+              break;
+          }
+          await slackWorkspace.reload({
+            include: ['mcpConnections']
+          });
+          await webClient.views.publish({
+            user_id: userId,
+            view: getHomeView({
+              slackWorkspace,
+              connection: undefined,
+              userId
             })
-            break;
-          case SUPPORTED_INTEGRATIONS.NOTION:
-            const { notionConfig } = slackWorkspace;
-            if (!notionConfig) return;
-            await publishNotionConnectionModal(webClient, {
-              triggerId,
-              teamId,
-              initialValues: {
-                id: notionConfig.id,
-                apiToken: notionConfig.access_token
-              }
-            });
-            break;
-          case SUPPORTED_INTEGRATIONS.LINEAR:
-            const { linearConfig } = slackWorkspace;
-            if (!linearConfig) return;
-            await publishLinearConnectionModal(webClient, {
-              triggerId,
-              teamId,
-              initialValues: {
-                id: linearConfig.id,
-                apiToken: linearConfig.access_token
-              }
-            });
-            break;
-          default:
-            break;
-        }
-        break;
-      case 'disconnect':
-        switch (connectionInfo.type) {
-          case SUPPORTED_INTEGRATIONS.POSTGRES:
-            await this.integrationsService.removePostgresConfig(teamId);
-            break;
-          case SUPPORTED_INTEGRATIONS.HUBSPOT:
-            await this.integrationsService.removeHubspotConfig(teamId);
-            break;
-          case SUPPORTED_INTEGRATIONS.JIRA:
-            await this.integrationsService.removeJiraConfig(teamId);
-            break;
-          case SUPPORTED_INTEGRATIONS.SALESFORCE:
-            await this.integrationsService.removeSalesforceConfig(teamId);
-            break;
-          case SUPPORTED_INTEGRATIONS.GITHUB:
-            await this.integrationsService.removeGithubConfig(teamId);
-            break;
-          case SUPPORTED_INTEGRATIONS.NOTION:
-            await this.integrationsService.removeNotionConfig(teamId);
-            break;
-          case SUPPORTED_INTEGRATIONS.LINEAR:
-            await this.integrationsService.removeLinearConfig(teamId);
-            break;
-          default:
-            break;
-        }
-        await webClient.views.publish({
-          user_id: userId,
-          view: getHomeView({
-            slackWorkspace,
-            connection: undefined,
-            userId
-          })
-        });
-        break;
+          });
+          break;
+      }
+    } catch (error) {
+      this.logger.error('Error parsing connection info', { error, blockId: action.block_id });
+      return;
     }
   }
 

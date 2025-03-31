@@ -345,10 +345,13 @@ export const publishLinearConnectionModal = async (
           Input({
             label: 'API Key',
             blockId: 'linear_api_key',
+            hint: args.initialValues?.apiToken
+              ? 'Current token is not displayed for security reasons. Enter a new token to update it.'
+              : 'Get your token at https://linear.app/settings/api'
           }).element(Elements.TextInput({
-            placeholder: 'lin_api_...',
+            placeholder: args.initialValues?.apiToken ? 'Enter new token to update' : 'lin_api_...',
             actionId: SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.API_TOKEN
-          }).initialValue(args.initialValues?.apiToken || '')),
+          })),
           Section({
             text: 'You can find your Linear API key in Linear settings > Security & Access > Personal API keys'
           })
@@ -503,7 +506,7 @@ export const getMcpConnectionModal = (args: McpConnectionModalArgs): Block[] => 
     }).element(Elements.TextInput({
       placeholder: 'Your MCP server API token',
       actionId: SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN
-    }).initialValue(initialValues?.apiToken || '')),
+    })),
   ]);
 };
 

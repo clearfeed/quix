@@ -280,7 +280,11 @@ const getIntegrationInfo = (
 
     return [
       Blocks.Section({
-        text: `Connected to ${mcpConnection.name} (${mcpConnection.url})`
+        text: `Connected to ${mcpConnection.name} (${mcpConnection.url})`,
+        blockId: JSON.stringify({
+          type: 'mcp',
+          id: mcpConnection.id
+        })
       }).accessory(
         Elements.OverflowMenu({
           actionId: SLACK_ACTIONS.CONNECTION_OVERFLOW_MENU
