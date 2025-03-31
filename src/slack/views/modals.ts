@@ -2,7 +2,7 @@ import { Elements, BlockCollection, ContextBuilder, Md, SectionBuilder } from "s
 import { SLACK_ACTIONS } from "@quix/lib/utils/slack-constants";
 import { Block, View } from "@slack/web-api";
 import { Bits, Section, Input, Image } from "slack-block-builder";
-import { JiraDefaultConfigModalArgs, PostgresConnectionModalArgs, NotionConnectionModalArgs, LinearConnectionModalArgs, DisplayErrorModalPayload, DisplayErrorModalResponse, UpdateModalResponsePayload } from "./types";
+import { JiraDefaultConfigModalArgs, PostgresConnectionModalArgs, NotionConnectionModalArgs, LinearConnectionModalArgs, DisplayErrorModalPayload, DisplayErrorModalResponse, UpdateModalResponsePayload, McpConnectionModalArgs } from "./types";
 import { WebClient } from "@slack/web-api";
 import { Surfaces } from "slack-block-builder";
 import { QuixUserAccessLevel } from "@quix/lib/constants";
@@ -473,4 +473,67 @@ export const displaySuccessModal = async (
     view_id: viewId,
     view
   });
+};
+
+export const getMcpConnectionModal = (args: McpConnectionModalArgs): Block[] => {
+  const { initialValues } = args;
+
+  return BlockCollection([
+    Section({
+      text: 'Please provide your MCP server connection details:'
+    }),
+    Input({
+      label: 'Name',
+      blockId: 'mcp_name',
+    }).element(Elements.TextInput({
+      placeholder: 'e.g., My MCP Server',
+      actionId: SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME
+    }).initialValue(initialValues?.name || '')),
+    Input({
+      label: 'URL',
+      blockId: 'mcp_url',
+    }).element(Elements.TextInput({
+      placeholder: 'e.g., https://mcp.example.com',
+      actionId: SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL
+    }).initialValue(initialValues?.url || '')),
+    Input({
+      label: 'API Token',
+      blockId: 'mcp_api_token',
+      hint: initialValues?.apiToken ? 'Current token is not displayed for security reasons. Enter a new token to update it.' : 'Your token is stored securely and cannot be accessed by anyone.'
+    }).element(Elements.TextInput({
+      placeholder: 'Your MCP server API token',
+      actionId: SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN
+    }).initialValue(initialValues?.apiToken || '')),
+  ]);
+};
+
+/**
+ * Publishes a modal to collect MCP server connection details
+ */
+export const publishMcpConnectionModal = async (
+  client: WebClient,
+  args: McpConnectionModalArgs
+): Promise<void> => {
+  try {
+    const modal = getMcpConnectionModal(args);
+
+    await client.views.open({
+      trigger_id: args.triggerId,
+      view: {
+        ...Surfaces.Modal({
+          title: 'MCP Server Connection',
+          submit: 'Submit',
+          close: 'Cancel',
+          callbackId: SLACK_ACTIONS.SUBMIT_MCP_CONNECTION
+        }).buildToObject(),
+        blocks: modal,
+        private_metadata: JSON.stringify({
+          id: args.initialValues?.id
+        })
+      }
+    });
+  } catch (error) {
+    console.error("Error publishing MCP connection modal:", error);
+    throw error;
+  }
 };

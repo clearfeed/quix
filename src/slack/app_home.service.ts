@@ -4,10 +4,10 @@ import { BlockElementAction, ButtonAction, StaticSelectAction, OverflowAction } 
 import { AppHomeOpenedEvent } from '@slack/web-api';
 import { WebClient } from '@slack/web-api';
 import { getHomeView } from './views/app_home';
-import { publishPostgresConnectionModal, publishOpenaiKeyModal, publishManageAdminsModal, publishAccessControlModal, publishJiraConfigModal, publishNotionConnectionModal, publishLinearConnectionModal } from './views/modals';
+import { publishPostgresConnectionModal, publishOpenaiKeyModal, publishManageAdminsModal, publishAccessControlModal, publishJiraConfigModal, publishNotionConnectionModal, publishLinearConnectionModal, publishMcpConnectionModal } from './views/modals';
 import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
-import { SlackWorkspace, PostgresConfig } from '@quix/database/models';
+import { SlackWorkspace, PostgresConfig, McpConnection } from '@quix/database/models';
 import { IntegrationsService } from 'src/integrations/integrations.service';
 
 @Injectable()
@@ -36,6 +36,10 @@ export class AppHomeService {
       case SLACK_ACTIONS.INSTALL_TOOL:
         if (action.type !== 'button') return;
         this.handleInstallTool(action, teamId, userId, triggerId);
+        break;
+      case SLACK_ACTIONS.INSTALL_MCP_SERVER:
+        if (action.type !== 'button') return;
+        this.handleInstallMcpServer(action, teamId, userId, triggerId);
         break;
       case SLACK_ACTIONS.ADD_OPENAI_KEY:
         if (action.type !== 'button') return;
@@ -88,22 +92,29 @@ export class AppHomeService {
   }
 
   async handleConnectTool(action: StaticSelectAction, teamId: string, userId: string) {
-    const selectedTool = action.selected_option?.value as SUPPORTED_INTEGRATIONS | undefined;
+    const selectedTool = action.selected_option?.value;
     const integration = INTEGRATIONS.find(integration => integration.value === selectedTool);
     const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, integration ? [integration.relation] : undefined);
     if (!slackWorkspace) return;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     this.logger.log('Publishing home view', { selectedTool });
+
+    // Get MCP connections if needed
+    let mcpConnections: McpConnection[] = [];
+    if (selectedTool?.startsWith('mcp:') || selectedTool === 'add_mcp_server') {
+      mcpConnections = await slackWorkspace.$get('mcpConnections');
+    }
+
     await webClient.views.publish({
       user_id: userId,
       view: getHomeView({
         selectedTool,
         slackWorkspace,
         connection: integration ? slackWorkspace[integration.relation as keyof SlackWorkspace] : undefined,
+        mcpConnections,
         userId
       })
     });
-
   }
 
   async handleInstallTool(action: ButtonAction, teamId: string, userId: string, triggerId: string) {
@@ -387,6 +398,32 @@ export class AppHomeService {
       view: getHomeView({
         slackWorkspace,
         connection: slackWorkspace.linearConfig,
+        userId
+      })
+    });
+  }
+
+  async handleInstallMcpServer(action: ButtonAction, teamId: string, userId: string, triggerId: string) {
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
+    if (!slackWorkspace) return;
+    const webClient = new WebClient(slackWorkspace.bot_access_token);
+    await publishMcpConnectionModal(webClient, {
+      triggerId,
+      teamId
+    });
+  }
+
+  async handleMcpConnected(userId: string, teamId: string) {
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['mcpConnections']);
+    if (!slackWorkspace) return;
+
+    const mcpConnections: McpConnection[] = slackWorkspace.mcpConnections;
+    const webClient = new WebClient(slackWorkspace.bot_access_token);
+    await webClient.views.publish({
+      user_id: userId,
+      view: getHomeView({
+        slackWorkspace,
+        mcpConnections,
         userId
       })
     });

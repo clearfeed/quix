@@ -8,7 +8,7 @@ import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { HubspotTokenResponse, HubspotHubInfo, GithubTokenResponse, GitHubInfo, SalesforceTokenResponse, SalesforceTokenIntrospectionResponse } from './types';
-import { JiraConfig, HubspotConfig, PostgresConfig, GithubConfig, SalesforceConfig, NotionConfig, LinearConfig } from '../database/models';
+import { JiraConfig, HubspotConfig, PostgresConfig, GithubConfig, SalesforceConfig, NotionConfig, LinearConfig, McpConnection } from '../database/models';
 import { ToolInstallState } from '@quix/lib/types/common';
 import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
 import { ViewSubmitAction } from '@slack/bolt';
@@ -36,6 +36,8 @@ export class IntegrationsInstallService {
     private readonly notionConfigModel: typeof NotionConfig,
     @InjectModel(LinearConfig)
     private readonly linearConfigModel: typeof LinearConfig,
+    @InjectModel(McpConnection)
+    private readonly mcpConnectionModel: typeof McpConnection,
     private readonly eventEmitter: EventEmitter2,
     @InjectModel(PostgresConfig)
     private readonly postgresConfigModel: typeof PostgresConfig
@@ -484,5 +486,33 @@ export class IntegrationsInstallService {
       this.logger.error('Failed to connect to Linear:', error);
       throw new BadRequestException('Invalid Linear API token or unable to fetch workspace details');
     }
+  }
+
+  async mcp(payload: ViewSubmitAction): Promise<McpConnection> {
+    const parsedResponse = parseInputBlocksSubmission(
+      payload.view.blocks as KnownBlock[],
+      payload.view.state.values
+    );
+    const privateMetadata = JSON.parse(payload.view.private_metadata || '{}');
+
+    // Validate required fields
+    if (![
+      SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME,
+      SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL,
+      SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN
+    ].every(field => parsedResponse[field]?.selectedValue)) {
+      throw new BadRequestException('Missing required fields');
+    }
+
+    // Create or update MCP connection
+    const [mcpConnection] = await this.mcpConnectionModel.upsert({
+      id: privateMetadata.id,
+      name: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME].selectedValue as string,
+      url: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL].selectedValue as string,
+      auth_token: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN].selectedValue as string,
+      team_id: payload.view.team_id
+    });
+
+    return mcpConnection;
   }
 }
