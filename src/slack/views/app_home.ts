@@ -3,7 +3,7 @@ import { SLACK_ACTIONS } from "@quix/lib/utils/slack-constants";
 import { HomeViewArgs } from "./types";
 import { INTEGRATIONS, SUPPORTED_INTEGRATIONS } from "@quix/lib/constants";
 import { getInstallUrl } from "@quix/lib/utils/slack";
-import { HubspotConfig, JiraConfig, PostgresConfig, SlackWorkspace, GithubConfig, SalesforceConfig, NotionConfig, LinearConfig } from "@quix/database/models";
+import { HubspotConfig, JiraConfig, PostgresConfig, SlackWorkspace, GithubConfig, SalesforceConfig, NotionConfig, LinearConfig, McpConnection } from "@quix/database/models";
 import { BlockCollection, Elements, Bits, Blocks, Md, BlockBuilder } from "slack-block-builder";
 import { createHubspotToolsExport } from "@clearfeed-ai/quix-hubspot-agent";
 import { createJiraToolsExport } from "@clearfeed-ai/quix-jira-agent";
@@ -14,6 +14,7 @@ import { Tool } from "@clearfeed-ai/quix-common-agent";
 
 export const getHomeView = (args: HomeViewArgs): HomeView => {
   const { selectedTool, slackWorkspace, connection } = args;
+  const mcpConnections = slackWorkspace.mcpConnections;
   const blocks = [
     Blocks.Header({
       text: ':wave: Welcome to Quix'
@@ -27,8 +28,8 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
     blocks.push(...getOpenAIView(slackWorkspace));
     if (slackWorkspace.openai_key) {
       blocks.push(Blocks.Divider());
-      blocks.push(...getToolConnectionView(selectedTool));
-      if (selectedTool) blocks.push(...getIntegrationInfo(selectedTool, slackWorkspace.team_id, connection));
+      blocks.push(...getToolConnectionView(selectedTool, mcpConnections));
+      if (selectedTool) blocks.push(...getIntegrationInfo(selectedTool, slackWorkspace.team_id, connection, mcpConnections));
     }
   } else {
     blocks.push(...getNonAdminView(slackWorkspace));
@@ -56,13 +57,14 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
   }
 }
 
-const getToolData = (selectedTool: typeof INTEGRATIONS[number]['value']) => {
+const getToolData = (selectedTool: typeof INTEGRATIONS[number]['value'] | string | undefined) => {
   let tool, availableFns;
-  if (selectedTool) {
-    tool = INTEGRATIONS.find(integration => integration.value === selectedTool);
-  }
-  if (selectedTool) {
-    availableFns = getAvailableFns(selectedTool);
+
+  // Only process standard integrations
+  if (selectedTool && typeof selectedTool === 'string' && !selectedTool.startsWith('mcp:') && selectedTool !== 'add_mcp_server') {
+    const integrationValue = selectedTool as SUPPORTED_INTEGRATIONS;
+    tool = INTEGRATIONS.find(integration => integration.value === integrationValue);
+    availableFns = getAvailableFns(integrationValue);
   }
 
   return {
@@ -71,9 +73,8 @@ const getToolData = (selectedTool: typeof INTEGRATIONS[number]['value']) => {
 }
 
 const getAvailableFns = (
-  selectedTool: typeof INTEGRATIONS[number]["value"],
+  selectedTool: SUPPORTED_INTEGRATIONS,
 ) => {
-
   if (selectedTool === SUPPORTED_INTEGRATIONS.JIRA) {
     const tools = createJiraToolsExport({
       host: 'test-url',
@@ -136,26 +137,75 @@ const getAvailableFns = (
   return [];
 };
 
-const getToolConnectionView = (selectedTool: typeof INTEGRATIONS[number]['value'] | undefined): BlockBuilder[] => {
+const getToolConnectionView = (
+  selectedTool: typeof INTEGRATIONS[number]['value'] | string | undefined,
+  mcpConnections: McpConnection[] = []
+): BlockBuilder[] => {
+  const select = Elements.StaticSelect({
+    placeholder: 'Select a tool',
+    actionId: SLACK_ACTIONS.CONNECT_TOOL,
+  });
+
+  const integrationOptions = INTEGRATIONS.map(integration =>
+    Bits.Option({
+      text: integration.name,
+      value: integration.value
+    })
+  );
+
+  const mcpOptions = mcpConnections.map(conn =>
+    Bits.Option({
+      text: conn.name,
+      value: `mcp:${conn.id}`
+    })
+  );
+
+  const addYourOwnOption = Bits.Option({
+    text: 'Add your MCP Server',
+    value: 'add_mcp_server'
+  });
+
+  // Add all option groups
+  select.optionGroups(
+    Bits.OptionGroup().label('Integrations').options(...integrationOptions),
+    ...(mcpConnections.length ? [Bits.OptionGroup().label('MCP Servers').options(...mcpOptions)] : []),
+    Bits.OptionGroup().label('Add Your Own').options(addYourOwnOption)
+  );
+
+  // Set initial option if any
+  if (selectedTool) {
+    if (selectedTool.startsWith('mcp:')) {
+      const mcpId = selectedTool.split(':')[1];
+      const conn = mcpConnections.find(c => c.id === mcpId);
+      if (conn) {
+        select.initialOption(
+          Bits.Option({
+            text: conn.name,
+            value: selectedTool
+          })
+        );
+      }
+    } else if (selectedTool === 'add_mcp_server') {
+      select.initialOption(addYourOwnOption);
+    } else {
+      const integration = INTEGRATIONS.find(i => i.value === selectedTool);
+      if (integration) {
+        select.initialOption(
+          Bits.Option({
+            text: integration.name,
+            value: selectedTool
+          })
+        );
+      }
+    }
+  }
+
   return [
     Blocks.Input({
       label: 'Connect your tools to get started',
-    }).element(
-      Elements.StaticSelect({
-        placeholder: 'Select a tool',
-        actionId: SLACK_ACTIONS.CONNECT_TOOL,
-      }).options(
-        INTEGRATIONS.map(integration => Bits.Option({
-          text: integration.name,
-          value: integration.value
-        }))
-      ).initialOption(selectedTool ? Bits.Option({
-        text: INTEGRATIONS.find(integration => integration.value === selectedTool)?.name || 'Select a tool',
-        value: selectedTool
-      }) : undefined)
-    ).dispatchAction(true)
-  ]
-}
+    }).element(select).dispatchAction(true)
+  ];
+};
 
 const getOpenAIView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
   if (slackWorkspace.openai_key) return [
@@ -205,17 +255,65 @@ const getConnectionInfo = (connection: HomeViewArgs['connection']): string => {
 }
 
 const getIntegrationInfo = (
-  selectedTool: typeof INTEGRATIONS[number]['value'],
-  teamId: string, connection?: HomeViewArgs['connection']
+  selectedTool: typeof INTEGRATIONS[number]['value'] | string,
+  teamId: string,
+  connection?: HomeViewArgs['connection'],
+  mcpConnections?: McpConnection[]
 ): BlockBuilder[] => {
-  const integration = INTEGRATIONS.find(integration => integration.value === selectedTool);
+  // Handle MCP server or Add MCP server option
+  if (selectedTool === 'add_mcp_server') {
+    return [
+      Blocks.Section({
+        text: 'Connect to your MCP server to access its tools.'
+      }).accessory(
+        Elements.Button({
+          text: 'Connect',
+          actionId: SLACK_ACTIONS.INSTALL_MCP_SERVER,
+        }).primary()
+      )
+    ];
+  }
+
+  if (typeof selectedTool === 'string' && selectedTool.startsWith('mcp:')) {
+    const mcpConnection = mcpConnections?.find(c => c.id === selectedTool.split(':')[1]);
+    if (!mcpConnection) return [];
+
+    return [
+      Blocks.Section({
+        text: `Connected to ${mcpConnection.name} (${mcpConnection.url})`,
+        blockId: JSON.stringify({
+          type: 'mcp',
+          id: mcpConnection.id
+        })
+      }).accessory(
+        Elements.OverflowMenu({
+          actionId: SLACK_ACTIONS.CONNECTION_OVERFLOW_MENU
+        }).options([
+          Bits.Option({
+            text: `${Md.emoji('pencil')} Edit`,
+            value: 'edit',
+          }),
+          Bits.Option({
+            text: `${Md.emoji('no_entry')} Disconnect`,
+            value: 'disconnect',
+          })
+        ])
+      )
+    ];
+  }
+
+  // Handle standard integrations
+  const integrationValue = selectedTool as SUPPORTED_INTEGRATIONS;
+  const integration = INTEGRATIONS.find(integration => integration.value === integrationValue);
   if (!integration) return [];
+
   const overflowMenuOptions = [
     Bits.Option({
       text: `${Md.emoji('no_entry')} Disconnect`,
       value: 'disconnect',
     })
   ];
+
   if (connection instanceof PostgresConfig || connection instanceof NotionConfig) {
     overflowMenuOptions.unshift(
       Bits.Option({
@@ -224,6 +322,7 @@ const getIntegrationInfo = (
       })
     )
   }
+
   if (connection instanceof JiraConfig) {
     overflowMenuOptions.unshift(
       Bits.Option({
@@ -232,25 +331,25 @@ const getIntegrationInfo = (
       })
     )
   }
+
   const accessory = connection ?
     Elements.OverflowMenu({ actionId: SLACK_ACTIONS.CONNECTION_OVERFLOW_MENU }).options(overflowMenuOptions)
     : Elements.Button({
       text: 'Connect',
       actionId: SLACK_ACTIONS.INSTALL_TOOL,
-      value: selectedTool,
-      url: integration.oauth ? getInstallUrl(selectedTool, teamId) : undefined,
+      value: integrationValue,
+      url: integration.oauth ? getInstallUrl(integrationValue, teamId) : undefined,
     }).primary();
+
   return [Blocks.Section({
     blockId: JSON.stringify({
       type: integration.value,
     })
   })
     .text(connection ? getConnectionInfo(connection) : integration.helpText)
-    .accessory(
-      accessory
-    )
-  ]
-}
+    .accessory(accessory)
+  ];
+};
 
 const getNonAdminView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
   let warningText = '';

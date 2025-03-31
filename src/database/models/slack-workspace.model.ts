@@ -25,6 +25,7 @@ import { WebClient } from '@slack/web-api';
 import { SLACK_MESSAGE_MAX_LENGTH } from '@quix/lib/utils/slack-constants';
 import { NotionConfig } from './notion-config.model';
 import { LinearConfig } from './linear-config.model';
+import { McpConnection } from './mcp-connection.model';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -205,6 +206,12 @@ export class SlackWorkspace extends Model<
     as: 'linearConfig'
   })
   declare linearConfig: NonAttribute<LinearConfig>;
+
+  @HasMany(() => McpConnection, {
+    foreignKey: 'team_id',
+    as: 'mcpConnections'
+  })
+  declare mcpConnections: NonAttribute<McpConnection[]>;
 
   async postMessage(message: string, channel: string, thread_ts?: string) {
     const webClient = new WebClient(this.bot_access_token);

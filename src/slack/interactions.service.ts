@@ -124,6 +124,32 @@ export class InteractionsService {
             web: new WebClient(slackWorkspace.bot_access_token)
           });
         }
+      case SLACK_ACTIONS.SUBMIT_MCP_CONNECTION:
+        try {
+          this.integrationsInstallService.mcp(payload).then(async () => {
+            await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
+              text: 'MCP server connected successfully',
+              viewId: payload.view.id,
+            });
+            this.appHomeService.handleMcpConnected(payload.user.id, payload.view.team_id);
+          }).catch(error => {
+            return displayErrorModal({
+              error,
+              backgroundCaller: true,
+              viewId: payload.view.id,
+              web: new WebClient(slackWorkspace.bot_access_token)
+            });
+          });
+          return displayLoadingModal('Please Wait');
+        } catch (error) {
+          console.error(error);
+          return displayErrorModal({
+            error,
+            backgroundCaller: true,
+            viewId: payload.view.id,
+            web: new WebClient(slackWorkspace.bot_access_token)
+          });
+        }
       default:
         return;
     }

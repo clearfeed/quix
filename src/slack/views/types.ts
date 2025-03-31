@@ -1,11 +1,11 @@
-import { HubspotConfig, JiraConfig, PostgresConfig, SlackWorkspace, GithubConfig, SalesforceConfig, NotionConfig, LinearConfig } from "@quix/database/models";
+import { HubspotConfig, JiraConfig, PostgresConfig, SlackWorkspace, GithubConfig, SalesforceConfig, NotionConfig, LinearConfig, McpConnection } from "@quix/database/models";
 import { INTEGRATIONS } from "@quix/lib/constants";
 import { ModalView, ViewsOpenResponse, ViewsUpdateResponse, WebClient } from "@slack/web-api";
 
 export type HomeViewArgs = {
   slackWorkspace: SlackWorkspace;
-  selectedTool?: typeof INTEGRATIONS[number]['value'];
-  connection?: JiraConfig | HubspotConfig | PostgresConfig | GithubConfig | SalesforceConfig | NotionConfig | LinearConfig;
+  selectedTool?: typeof INTEGRATIONS[number]['value'] | string;  // string for MCP server IDs
+  connection?: JiraConfig | HubspotConfig | PostgresConfig | GithubConfig | SalesforceConfig | NotionConfig | LinearConfig | McpConnection;
   userId: string;
 }
 
@@ -48,6 +48,17 @@ export type LinearConnectionModalArgs = {
     apiToken?: string;
   };
 }
+
+export type McpConnectionModalArgs = {
+  triggerId: string;
+  teamId: string;
+  initialValues?: {
+    id?: string;
+    name?: string;
+    url?: string;
+    apiToken?: string;
+  };
+};
 
 /**
 * error modal can be opened/updated in three different ways:

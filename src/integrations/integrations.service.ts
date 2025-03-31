@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { JiraConfig, HubspotConfig, PostgresConfig, SalesforceConfig, GithubConfig, NotionConfig, LinearConfig } from '../database/models';
+import { JiraConfig, HubspotConfig, PostgresConfig, SalesforceConfig, GithubConfig, NotionConfig, LinearConfig, McpConnection } from '../database/models';
 import { TimeInMilliSeconds } from '@quix/lib/constants';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
@@ -25,7 +25,9 @@ export class IntegrationsService {
     @InjectModel(NotionConfig)
     private readonly notionConfigModel: typeof NotionConfig,
     @InjectModel(LinearConfig)
-    private readonly linearConfigModel: typeof LinearConfig
+    private readonly linearConfigModel: typeof LinearConfig,
+    @InjectModel(McpConnection)
+    private readonly mcpConnectionModel: typeof McpConnection
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
@@ -152,4 +154,12 @@ export class IntegrationsService {
     });
   }
 
+  async removeMcpConnection(teamId: string, id: string): Promise<void> {
+    await this.mcpConnectionModel.destroy({
+      where: {
+        team_id: teamId,
+        id
+      }
+    });
+  }
 }

@@ -1,6 +1,7 @@
 export const SLACK_ACTIONS = {
   CONNECT_TOOL: 'connect-tool-action',
   INSTALL_TOOL: 'install-tool-action',
+  INSTALL_MCP_SERVER: 'install-mcp-server-action',
   ADD_OPENAI_KEY: 'add-openai-key',
   MANAGE_ADMINS: 'manage-admins',
   MANAGE_ADMINS_INPUT: 'manage-admins-input',
@@ -33,6 +34,12 @@ export const SLACK_ACTIONS = {
   SUBMIT_LINEAR_CONNECTION: 'submit-linear-connection',
   LINEAR_CONNECTION_ACTIONS: {
     API_TOKEN: 'linear-api-token',
+  },
+  SUBMIT_MCP_CONNECTION: 'submit-mcp-connection',
+  MCP_CONNECTION_ACTIONS: {
+    NAME: 'mcp-name',
+    URL: 'mcp-url',
+    API_TOKEN: 'mcp-api-token',
   },
 } as const;
 
