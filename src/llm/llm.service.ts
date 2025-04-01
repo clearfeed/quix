@@ -12,6 +12,7 @@ import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { AIMessage } from '@langchain/core/messages';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import slackifyMarkdown from 'slackify-markdown';
+import { QuixCallBackManager } from './callback-manager';
 
 @Injectable()
 export class LlmService {
@@ -56,6 +57,8 @@ export class LlmService {
 
     const result = await agent.invoke({
       messages: previousMessages
+    }, {
+      callbacks: [new QuixCallBackManager()]
     });
 
     const { totalTokens, toolCallCount, toolNames } = result.messages.reduce((acc, msg) => {
@@ -79,6 +82,7 @@ export class LlmService {
     }, { totalTokens: 0, toolCallCount: 0, toolNames: [] as string[] });
 
     this.logger.log(`Token usage: ${totalTokens}, Tool calls made: ${toolCallCount}, Tools used: ${toolNames.join(', ')}`);
+    await this.tool.shutDownMcpServers();
 
     const llmResponse = result.messages[result.messages.length - 1].content;
 
