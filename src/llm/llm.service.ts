@@ -11,7 +11,7 @@ import { QuixPrompts } from '../lib/constants';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { AIMessage } from '@langchain/core/messages';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import slackifyMarkdown from 'slackify-markdown';
+import slackify = require('slackify-markdown');
 import { QuixCallBackManager } from './callback-manager';
 
 @Injectable()
@@ -87,7 +87,7 @@ export class LlmService {
     const llmResponse = result.messages[result.messages.length - 1].content;
 
     const finalContent = Array.isArray(llmResponse) ? llmResponse.join(' ') : llmResponse;
-    return slackifyMarkdown(finalContent);
+    return slackify(finalContent);
   }
 
   private async toolSelection(message: string, tools: Record<string, ToolConfig>, previousMessages: LLMContext[], llm: BaseChatModel): Promise<{
@@ -170,6 +170,6 @@ export class LlmService {
     });
 
     const finalContent = Array.isArray(response.content) ? response.content.join(' ') : response.content;
-    return slackifyMarkdown(finalContent);
+    return slackify(finalContent);
   }
 }
