@@ -4,7 +4,9 @@ import {
   GetTicketParams,
   SearchTicketsParams,
   GetTicketResponse,
-  SearchTicketsResponse
+  SearchTicketsResponse,
+  GetTicketWithRepliesParams,
+  TicketWithReplies
 } from './types';
 import { BaseService, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import _ from 'lodash'
@@ -50,7 +52,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
       console.error('Zendesk search error:', error);
       return {
         success: false,
-        error: error.message || 'Failed to search tickets'
+        error: error instanceof Error ? error.message : 'Failed to search tickets'
       };
     }
   }
@@ -67,7 +69,32 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
       console.error('Zendesk get ticket error:', error);
       return {
         success: false,
-        error: error.message || 'Failed to fetch ticket'
+        error: error instanceof Error ? error.message : 'Failed to fetch ticket'
+      };
+    }
+  }
+
+  async getTicketWithReplies(params: GetTicketWithRepliesParams): Promise<BaseResponse<TicketWithReplies>> {
+    try {
+      _.every(['ticketId'], (field) => _.has(params, field));
+
+      const [ticketResponse, commentsResponse] = await Promise.all([
+        this.client.tickets.show(params.ticketId),
+        this.client.tickets.getComments(params.ticketId)
+      ]);
+
+      return {
+        success: true,
+        data: {
+          ticket: ticketResponse.result,
+          comments: commentsResponse || []
+        }
+      };
+    } catch (error: any) {
+      console.error('Zendesk get ticket with replies error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch ticket with replies'
       };
     }
   }

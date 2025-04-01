@@ -1,7 +1,8 @@
 import {
   ZendeskConfig,
   SearchTicketsParams,
-  GetTicketParams
+  GetTicketParams,
+  GetTicketWithRepliesParams
 } from './types';
 import { ZendeskService } from './index';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
@@ -47,7 +48,16 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
         ticketId: z.number().describe('The unique ID of the Zendesk ticket to retrieve')
       }),
       func: async (args: GetTicketParams) => service.getTicket(args)
-    })
+    }),
+    new DynamicStructuredTool({
+      name: 'get_zendesk_ticket_with_replies',
+      description: 'Retrieve a specific Zendesk ticket along with its replies and comments',
+      schema: z.object({
+        ticketId: z.number().describe('The unique ID of the Zendesk ticket to retrieve along with its replies')
+      }),
+      func: async (args: GetTicketWithRepliesParams) => service.getTicketWithReplies(args)
+    }),
+
   ];
 
   return {

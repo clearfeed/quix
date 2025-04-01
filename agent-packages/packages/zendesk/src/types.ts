@@ -19,5 +19,15 @@ export interface SearchTicketsParams {
   limit?: number;
 }
 
+export interface GetTicketWithRepliesParams {
+  ticketId: number;
+}
+
+export interface TicketWithReplies {
+  ticket: Ticket;
+  comments: any[];
+}
+
+export type GetTicketWithRepliesResponse = BaseResponse<TicketWithReplies>;
 export type GetTicketResponse = BaseResponse<Ticket>;
 export type SearchTicketsResponse = BaseResponse<Ticket[]>; 
