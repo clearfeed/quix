@@ -33,7 +33,7 @@ export const createLLMContext = async (event: GenericMessageEvent | AppMentionEv
     if (messagesResponse.messages && messagesResponse.messages.length > 0) {
       messages = messagesResponse.messages.map((message: MessageElement) => {
         if (message.subtype === 'assistant_app_thread' || !message.text) return;
-        const rawAuthor = message.app_id === slackWorkspace.app_id ? 'Quix' : userInfoMap[message.user || '']?.name;
+        const rawAuthor = message.app_id === slackWorkspace.app_id ? 'Quix' : message.subtype === 'bot_message' ? message.username : userInfoMap[message.user || '']?.name;
         const author = rawAuthor ? sanitizeName(rawAuthor) : 'Unknown';
         return {
           role: message.app_id === slackWorkspace.app_id ? 'assistant' : 'user',
@@ -101,85 +101,85 @@ export const parseInputBlocksSubmission = (
     const element = block.element;
     if (!element.action_id) continue;
     switch (element.type) {
-      case 'users_select':
-        {
-          const initialValue = getSanitizedValue(element.initial_user);
-          const selectedValue = getSanitizedValue(
-            stateValues[block.block_id]?.[element.action_id]?.selected_user
-          );
-          submittedValuesRecord[element.action_id] = {
-            initialValue,
-            selectedValue,
-            isUpdated: !isEqual(initialValue, selectedValue),
-            inputFieldType: element.type
-          };
-        }
-        break;
-      case 'static_select':
-      case 'external_select':
-        {
-          const initialValue = getSanitizedValue(element.initial_option?.value);
-          const selectedValue = getSanitizedValue(
-            stateValues[block.block_id]?.[element.action_id]?.selected_option?.value
-          );
-          submittedValuesRecord[element.action_id] = {
-            initialValue,
-            selectedValue,
-            isUpdated: !isEqual(initialValue, selectedValue),
-            inputFieldType: element.type
-          };
-        }
-        break;
-      case 'multi_static_select':
-      case 'multi_external_select':
-      case 'checkboxes':
-        {
-          const initialValue = getSanitizedValue(
-            element.initial_options?.map((option) => option.value)
-          );
-          const selectedValue = getSanitizedValue(
-            stateValues[block.block_id]?.[element.action_id]?.selected_options?.map(
-              (option) => option.value
-            )
-          );
-          submittedValuesRecord[element.action_id] = {
-            initialValue,
-            selectedValue,
-            isUpdated: !isEqual(initialValue, selectedValue),
-            inputFieldType: element.type
-          };
-        }
-        break;
-      case 'number_input':
-      case 'email_text_input':
-      case 'plain_text_input':
-        {
-          const initialValue = getSanitizedValue(element.initial_value);
-          const selectedValue = getSanitizedValue(
-            stateValues[block.block_id]?.[element.action_id]?.value
-          );
-          submittedValuesRecord[element.action_id] = {
-            initialValue,
-            selectedValue,
-            isUpdated: !isEqual(initialValue, selectedValue),
-            inputFieldType: element.type
-          };
-        }
-        break;
-      case 'datepicker':
-        {
-          const initialValue = getSanitizedValue(element.initial_date);
-          const selectedValue = getSanitizedValue(
-            stateValues[block.block_id]?.[element.action_id]?.selected_date
-          );
-          submittedValuesRecord[element.action_id] = {
-            initialValue,
-            selectedValue,
-            isUpdated: !isEqual(initialValue, selectedValue),
-            inputFieldType: element.type
-          };
-        }
-        break;
+    case 'users_select':
+      {
+        const initialValue = getSanitizedValue(element.initial_user);
+        const selectedValue = getSanitizedValue(
+          stateValues[block.block_id]?.[element.action_id]?.selected_user
+        );
+        submittedValuesRecord[element.action_id] = {
+          initialValue,
+          selectedValue,
+          isUpdated: !isEqual(initialValue, selectedValue),
+          inputFieldType: element.type
+        };
+      }
+      break;
+    case 'static_select':
+    case 'external_select':
+      {
+        const initialValue = getSanitizedValue(element.initial_option?.value);
+        const selectedValue = getSanitizedValue(
+          stateValues[block.block_id]?.[element.action_id]?.selected_option?.value
+        );
+        submittedValuesRecord[element.action_id] = {
+          initialValue,
+          selectedValue,
+          isUpdated: !isEqual(initialValue, selectedValue),
+          inputFieldType: element.type
+        };
+      }
+      break;
+    case 'multi_static_select':
+    case 'multi_external_select':
+    case 'checkboxes':
+      {
+        const initialValue = getSanitizedValue(
+          element.initial_options?.map((option) => option.value)
+        );
+        const selectedValue = getSanitizedValue(
+          stateValues[block.block_id]?.[element.action_id]?.selected_options?.map(
+            (option) => option.value
+          )
+        );
+        submittedValuesRecord[element.action_id] = {
+          initialValue,
+          selectedValue,
+          isUpdated: !isEqual(initialValue, selectedValue),
+          inputFieldType: element.type
+        };
+      }
+      break;
+    case 'number_input':
+    case 'email_text_input':
+    case 'plain_text_input':
+      {
+        const initialValue = getSanitizedValue(element.initial_value);
+        const selectedValue = getSanitizedValue(
+          stateValues[block.block_id]?.[element.action_id]?.value
+        );
+        submittedValuesRecord[element.action_id] = {
+          initialValue,
+          selectedValue,
+          isUpdated: !isEqual(initialValue, selectedValue),
+          inputFieldType: element.type
+        };
+      }
+      break;
+    case 'datepicker':
+      {
+        const initialValue = getSanitizedValue(element.initial_date);
+        const selectedValue = getSanitizedValue(
+          stateValues[block.block_id]?.[element.action_id]?.selected_date
+        );
+        submittedValuesRecord[element.action_id] = {
+          initialValue,
+          selectedValue,
+          isUpdated: !isEqual(initialValue, selectedValue),
+          inputFieldType: element.type
+        };
+      }
+      break;
     }
   }
   return submittedValuesRecord;
