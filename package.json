@@ -62,6 +62,7 @@
     "sequelize": "^6.37.6",
     "sequelize-typescript": "^2.1.6",
     "slack-block-builder": "^2.8.0",
+    "slackify-markdown": "^4.4.0",
     "tsscmp": "^1.0.6",
     "zod": "^3.24.2"
   },

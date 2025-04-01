@@ -11,6 +11,7 @@ import { QuixPrompts } from '../lib/constants';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { AIMessage } from '@langchain/core/messages';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import slackifyMarkdown from 'slackify-markdown';
 import { QuixCallBackManager } from './callback-manager';
 
 @Injectable()
@@ -85,7 +86,8 @@ export class LlmService {
 
     const llmResponse = result.messages[result.messages.length - 1].content;
 
-    return Array.isArray(llmResponse) ? llmResponse.join(' ') : llmResponse;
+    const finalContent = Array.isArray(llmResponse) ? llmResponse.join(' ') : llmResponse;
+    return slackifyMarkdown(finalContent);
   }
 
   private async toolSelection(message: string, tools: Record<string, ToolConfig>, previousMessages: LLMContext[], llm: BaseChatModel): Promise<{
@@ -145,10 +147,8 @@ export class LlmService {
     llm: BaseChatModel) {
     const responsePrompt = ChatPromptTemplate.fromMessages([
       SystemMessagePromptTemplate.fromTemplate(`
-              You are a business assistant. Given a user's query and structured API data, generate a response that directly answers the user's question in a clear and concise manner. Format the response as a Slack message using Slack's supported markdown syntax:
+              You are a business assistant. Given a user's query and structured API data, generate a response that directly answers the user's question in a clear and concise manner. Format the response as an standard markdown syntax:
   
-            - Use <URL|Text> for links instead of [text](URL).
-            - Use *bold* instead of **bold**.
             - Ensure proper line breaks by using \n\n between list items.
             - Retain code blocks using triple backticks where needed.
             - Ensure all output is correctly formatted to display properly in Slack.
@@ -169,6 +169,7 @@ export class LlmService {
       input: `The user's question is: "${message}". Here is the structured response from ${functionName}: ${JSON.stringify(result, null, 2)}`
     });
 
-    return Array.isArray(response.content) ? response.content.join(' ') : response.content;
+    const finalContent = Array.isArray(response.content) ? response.content.join(' ') : response.content;
+    return slackifyMarkdown(finalContent);
   }
 }
