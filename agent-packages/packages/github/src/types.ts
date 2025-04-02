@@ -30,6 +30,7 @@ export interface SearchIssuesParams {
   type: 'issue' | 'pull-request';
   keyword: string;
   reporter?: string;
+  status?: 'open' | 'closed';
 }
 
 export type SearchCodeResponse = Endpoints['GET /search/code']['response']['data'];
@@ -75,18 +76,9 @@ export interface CreateOrUpdateFileParams {
   sha?: string;
 }
 
-export interface PushFilesParams {
-  owner: string;
-  repo: string;
-  branch: string;
-  files: FileContent[];
-  message: string;
-}
-
 export interface SearchRepositoriesParams {
   query: string;
   page?: number;
-  perPage?: number;
 }
 
 export interface CreatePullRequestParams {
@@ -98,12 +90,6 @@ export interface CreatePullRequestParams {
   body?: string;
   draft?: boolean;
   maintainer_can_modify?: boolean;
-}
-
-export interface ForkRepositoryParams {
-  owner: string;
-  repo: string;
-  organization?: string;
 }
 
 export interface CreateBranchParams {

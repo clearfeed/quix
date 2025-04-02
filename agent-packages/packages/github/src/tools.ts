@@ -4,12 +4,10 @@ import {
   GitHubConfig,
   SearchIssuesParams,
   CreateOrUpdateFileParams,
-  PushFilesParams,
   SearchRepositoriesParams,
   CreateRepositoryParams,
   GetFileContentsParams,
   CreatePullRequestParams,
-  ForkRepositoryParams,
   CreateBranchParams,
   ListCommitsParams,
   ListIssuesParams,
@@ -65,6 +63,7 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
         type: z.enum(['issue', 'pull-request']).describe('Specify whether to search for issues or pull requests. Both are tracked the same way in GitHub'),
         keyword: z.string().describe('Text to search for in issue titles and descriptions. Can include multiple words or phrases'),
         reporter: z.string().describe('GitHub username of the person who created the issue/PR. Filters results to show only their submissions').optional(),
+        status: z.enum(['open', 'closed']).describe('Filter issues by their status (open or closed)').optional(),
       }),
       func: async (args: SearchIssuesParams) => service.searchIssues(args)
     }),
@@ -171,31 +170,11 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
       func: async (params: CreateOrUpdateFileParams) => service.createOrUpdateFile(params)
     }),
     new DynamicStructuredTool({
-      name: 'push_files',
-      description: 'Push multiple files in a single commit to a GitHub repository',
-      schema: z.object({
-        owner: config.owner
-          ? z.string().describe('Username or organization that owns the repository').optional().default(config.owner)
-          : z.string().describe('Username or organization that owns the repository'),
-        repo: config.repo
-          ? z.string().describe('Name of the repository where files will be pushed').optional().default(config.repo)
-          : z.string().describe('Name of the repository where files will be pushed'),
-        branch: z.string().describe('Name of the branch where files should be pushed (e.g., "main", "feature/new-files")'),
-        files: z.array(z.object({
-          path: z.string().describe('Full path where the file should be created, including filename and extension (e.g., "src/index.js")'),
-          content: z.string().describe('Content to write to the file. Text content for text files, base64 encoded content for binary files')
-        })).describe('Array of files to create or update, each with a path and content'),
-        message: z.string().describe('Git commit message explaining the changes being made in this batch of files')
-      }),
-      func: async (params: PushFilesParams) => service.pushFiles(params)
-    }),
-    new DynamicStructuredTool({
       name: 'search_repositories',
       description: 'Search for GitHub repositories',
       schema: z.object({
         query: z.string().describe('Search query'),
-        page: z.number().optional(),
-        perPage: z.number().optional()
+        page: z.number().optional()
       }),
       func: async (params: SearchRepositoriesParams) => service.searchRepositories(params)
     }),
@@ -236,19 +215,9 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
         base: z.string().describe('Name of the branch you want to merge changes into, typically "main" or "master"'),
         body: z.string().describe('Detailed description of the changes, explaining what was changed and why').optional(),
         draft: z.boolean().describe('Whether to create as a draft PR (true) or regular PR (false). Draft PRs cannot be merged').optional(),
-        maintainer_can_modify: z.boolean().describe('Allow repository maintainers to modify your PR branch. Recommended true for collaboration').optional()
+        maintainer_can_modify: z.boolean().describe('Allow repository maintainers to modify your PR branch. Recommended true for collaboration').optional().default(true)
       }),
       func: async (params: CreatePullRequestParams) => service.createPullRequest(params)
-    }),
-    new DynamicStructuredTool({
-      name: 'fork_repository',
-      description: 'Fork a GitHub repository',
-      schema: z.object({
-        owner: z.string(),
-        repo: z.string(),
-        organization: z.string().optional()
-      }),
-      func: async (params: ForkRepositoryParams) => service.forkRepository(params)
     }),
     new DynamicStructuredTool({
       name: 'create_branch',
@@ -269,7 +238,12 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
         repo: config.repo ? z.string().optional().default(config.repo) : z.string(),
         sha: z.string().optional(),
         page: z.number().optional(),
-        perPage: z.number().optional()
+        perPage: z.number()
+          .int("Page size must be an integer")
+          .min(1, "Page size must be at least 1")
+          .max(100, "GitHub API limits page size to maximum of 100")
+          .describe('Number of items per page (min: 1, max: 100)')
+          .optional()
       }),
       func: async (params: ListCommitsParams) => service.listCommits(params)
     }),
@@ -288,7 +262,12 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
         direction: z.enum(['asc', 'desc']).describe('Sort direction: ascending (oldest first) or descending (newest first)').optional(),
         since: z.string().describe('ISO 8601 timestamp to filter issues updated after this date').optional(),
         page: z.number().describe('Page number for pagination, starting at 1').optional(),
-        per_page: z.number().describe('Number of issues to return per page (max 100)').optional(),
+        per_page: z.number()
+          .int("Page size must be an integer")
+          .min(1, "Page size must be at least 1")
+          .max(100, "GitHub API limits page size to maximum of 100")
+          .describe('Number of items per page (min: 1, max: 100)')
+          .optional(),
         labels: z.array(z.string()).describe('Filter issues by label names (e.g., ["bug", "high-priority"])').optional()
       }),
       func: async (params: ListIssuesParams) => service.listIssues(params)
@@ -336,7 +315,12 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
         sort: z.enum(['followers', 'repositories', 'joined']).describe('Sort users by: number of followers, number of repositories, or join date').optional(),
         order: z.enum(['asc', 'desc']).describe('Sort order: ascending (lowest/oldest first) or descending (highest/newest first)').optional(),
         page: z.number().describe('Page number for pagination, starting at 1').optional(),
-        per_page: z.number().describe('Number of users per page (max 100)').optional()
+        per_page: z.number()
+          .int("Page size must be an integer")
+          .min(1, "Page size must be at least 1")
+          .max(100, "GitHub API limits page size to maximum of 100")
+          .describe('Number of users per page (min: 1, max: 100)')
+          .optional()
       }),
       func: async (params: SearchUsersParams) => service.searchUsers(params)
     }),
@@ -361,7 +345,12 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
         base: z.string().optional(),
         sort: z.enum(['created', 'updated', 'popularity', 'long-running']).optional(),
         direction: z.enum(['asc', 'desc']).optional(),
-        per_page: z.number().optional(),
+        per_page: z.number()
+          .int("Page size must be an integer")
+          .min(1, "Page size must be at least 1")
+          .max(100, "GitHub API limits page size to maximum of 100")
+          .describe('Number of items per page (min: 1, max: 100)')
+          .optional(),
         page: z.number().optional()
       }),
       func: async (params: ListPullRequestsParams) => service.listPullRequests(params)
@@ -412,7 +401,12 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
         q: z.string().describe('Search query using GitHub code search syntax. Can include filename:, language:, repo:, or other qualifiers'),
         order: z.enum(['asc', 'desc']).describe('Sort order: ascending (oldest first) or descending (newest first)').optional(),
         page: z.number().describe('Page number for pagination, starting at 1').optional(),
-        per_page: z.number().describe('Number of results per page (max 100)').optional()
+        per_page: z.number()
+          .int("Page size must be an integer")
+          .min(1, "Page size must be at least 1")
+          .max(100, "GitHub API limits page size to maximum of 100")
+          .describe('Number of results per page (min: 1, max: 100)')
+          .optional()
       }),
       func: async (params: SearchCodeParams) => service.searchCodeGlobal(params)
     }),
@@ -424,7 +418,12 @@ export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
         sort: z.enum(['comments', 'reactions', 'created', 'updated']).describe('Sort by: number of comments, reactions, creation date, or last update').optional(),
         order: z.enum(['asc', 'desc']).describe('Sort order: ascending (oldest/least first) or descending (newest/most first)').optional(),
         page: z.number().describe('Page number for pagination, starting at 1').optional(),
-        per_page: z.number().describe('Number of results per page (max 100)').optional()
+        per_page: z.number()
+          .int("Page size must be an integer")
+          .min(1, "Page size must be at least 1")
+          .max(100, "GitHub API limits page size to maximum of 100")
+          .describe('Number of results per page (min: 1, max: 100)')
+          .optional()
       }),
       func: async (params: SearchIssuesGlobalParams) => service.searchIssuesGlobal(params)
     }),
