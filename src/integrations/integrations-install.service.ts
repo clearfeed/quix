@@ -8,7 +8,7 @@ import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { HubspotTokenResponse, HubspotHubInfo, GithubTokenResponse, GitHubInfo, SalesforceTokenResponse, SalesforceTokenIntrospectionResponse } from './types';
-import { JiraConfig, HubspotConfig, PostgresConfig, GithubConfig, SalesforceConfig } from '../database/models';
+import { JiraConfig, HubspotConfig, PostgresConfig, GithubConfig, SalesforceConfig, NotionConfig, LinearConfig, McpConnection } from '../database/models';
 import { ToolInstallState } from '@quix/lib/types/common';
 import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
 import { ViewSubmitAction } from '@slack/bolt';
@@ -32,6 +32,12 @@ export class IntegrationsInstallService {
     private readonly githubConfigModel: typeof GithubConfig,
     @InjectModel(SalesforceConfig)
     private readonly salesforceConfigModel: typeof SalesforceConfig,
+    @InjectModel(NotionConfig)
+    private readonly notionConfigModel: typeof NotionConfig,
+    @InjectModel(LinearConfig)
+    private readonly linearConfigModel: typeof LinearConfig,
+    @InjectModel(McpConnection)
+    private readonly mcpConnectionModel: typeof McpConnection,
     private readonly eventEmitter: EventEmitter2,
     @InjectModel(PostgresConfig)
     private readonly postgresConfigModel: typeof PostgresConfig
@@ -368,5 +374,156 @@ export class IntegrationsInstallService {
       this.logger.error('Failed to connect to Salesforce:', error);
       throw new BadRequestException('Failed to connect to Salesforce');
     }
+  }
+
+  async notion(payload: ViewSubmitAction): Promise<NotionConfig> {
+    try {
+      const parsedResponse = parseInputBlocksSubmission(
+        payload.view.blocks as KnownBlock[],
+        payload.view.state.values
+      );
+
+      if (!parsedResponse[SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.API_TOKEN].selectedValue) {
+        throw new BadRequestException('Invalid response');
+      }
+
+      const apiToken = parsedResponse[SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.API_TOKEN].selectedValue as string;
+
+      // Validate the token and get workspace details
+      const userResponse = await this.httpService.axiosRef.get<{
+        object: string;
+        id: string;
+        name: string;
+        avatar_url: string;
+        type: string;
+        bot: {
+          owner: {
+            type: string;
+            workspace: boolean;
+          };
+          workspace_name: string;
+        };
+        request_id: string;
+      }>('https://api.notion.com/v1/users/me', {
+        headers: {
+          'Authorization': `Bearer ${apiToken}`,
+          'Notion-Version': '2022-06-28'
+        }
+      });
+
+      // If the API calls succeed, save the token and workspace details
+      const [notionConfig] = await this.notionConfigModel.upsert({
+        workspace_name: userResponse.data.bot.workspace_name,
+        access_token: apiToken,
+        team_id: payload.view.team_id
+      });
+
+      this.eventEmitter.emit(EVENT_NAMES.NOTION_CONNECTED, {
+        teamId: payload.view.team_id,
+        appId: payload.view.app_id!,
+        type: SUPPORTED_INTEGRATIONS.NOTION,
+        userId: payload.user.id,
+      } satisfies IntegrationConnectedEvent);
+
+      return notionConfig;
+    } catch (error) {
+      this.logger.error('Failed to connect to Notion:', error);
+      throw new BadRequestException('Invalid Notion API token or unable to fetch workspace details');
+    }
+  }
+
+  async linear(payload: ViewSubmitAction): Promise<LinearConfig> {
+    try {
+      const parsedResponse = parseInputBlocksSubmission(
+        payload.view.blocks as KnownBlock[],
+        payload.view.state.values
+      );
+
+      if (!parsedResponse[SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.API_TOKEN].selectedValue) {
+        throw new BadRequestException('Invalid response');
+      }
+
+      const apiToken = parsedResponse[SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.API_TOKEN].selectedValue as string;
+
+      // Validate the token and get workspace details
+      const response = await this.httpService.axiosRef.post('https://api.linear.app/graphql', {
+        query: `
+          query {
+            organization {
+              id
+              name
+            }
+          }
+        `
+      }, {
+        headers: {
+          'Authorization': apiToken,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.data?.data?.organization) {
+        throw new BadRequestException('Invalid Linear API token');
+      }
+
+      // If the API call succeeds, save the token and workspace details
+      const [linearConfig] = await this.linearConfigModel.upsert({
+        workspace_name: response.data.data.organization.name,
+        linear_org_id: response.data.data.organization.id,
+        access_token: apiToken,
+        team_id: payload.view.team_id
+      });
+
+      this.eventEmitter.emit(EVENT_NAMES.LINEAR_CONNECTED, {
+        teamId: payload.view.team_id,
+        appId: payload.view.app_id!,
+        type: SUPPORTED_INTEGRATIONS.LINEAR,
+        userId: payload.user.id,
+      } satisfies IntegrationConnectedEvent);
+
+      return linearConfig;
+    } catch (error) {
+      this.logger.error('Failed to connect to Linear:', error);
+      throw new BadRequestException('Invalid Linear API token or unable to fetch workspace details');
+    }
+  }
+
+  async mcp(payload: ViewSubmitAction): Promise<McpConnection> {
+    const parsedResponse = parseInputBlocksSubmission(
+      payload.view.blocks as KnownBlock[],
+      payload.view.state.values
+    );
+    const privateMetadata = JSON.parse(payload.view.private_metadata || '{}');
+
+    // Validate required fields
+    if (![
+      SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME,
+      SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL,
+      SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN
+    ].every(field => parsedResponse[field]?.selectedValue)) {
+      throw new BadRequestException('Missing required fields');
+    }
+
+    // Validate URL format
+    const urlString = parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL].selectedValue as string;
+    try {
+      const url = new URL(urlString);
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        throw new BadRequestException('URL must use http or https protocol');
+      }
+    } catch (error) {
+      throw new BadRequestException('Invalid URL format');
+    }
+
+    // Create or update MCP connection
+    const [mcpConnection] = await this.mcpConnectionModel.upsert({
+      id: privateMetadata.id,
+      name: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME].selectedValue as string,
+      url: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL].selectedValue as string,
+      auth_token: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN].selectedValue as string,
+      team_id: payload.view.team_id
+    });
+
+    return mcpConnection;
   }
 }

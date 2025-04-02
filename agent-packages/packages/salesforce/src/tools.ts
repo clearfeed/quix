@@ -1,7 +1,7 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { SalesforceConfig } from './types';
+import { SalesforceConfig, SearchOpportunitiesParams } from './types';
 import { SalesforceService } from './index';
 import { CreateTaskParams } from './types/index';
 
@@ -35,12 +35,14 @@ export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfi
 
   const tools: DynamicStructuredTool<any>[] = [
     tool(
-      async (args: { stage?: string }) => service.getOpportunityCount(args.stage),
+      async (args: SearchOpportunitiesParams) => service.getOpportunityCount(args),
       {
         name: 'get_salesforce_opportunity_count',
-        description: 'Get the count of opportunities in Salesforce base on stage.',
+        description: 'Get the count of opportunities in Salesforce based on stage.',
         schema: z.object({
-          stage: z.string().optional().describe('The stage of the opportunity to get the count for')
+          stage: z.string().optional().describe('The stage of the opportunity to get the count for'),
+          keyword: z.string().optional().describe('The keyword to search for in Salesforce opportunities'),
+          ownerId: z.string().optional().describe('Salesforce user ID of the opportunity owner. If you have a name or email, use the find_user tool to get the user ID first.')
         }),
       }
     ),
@@ -54,13 +56,14 @@ export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfi
       }
     ),
     tool(
-      async (args: { keyword: string; stage?: string }) => service.searchOpportunities(args.keyword, args.stage),
+      async (args: SearchOpportunitiesParams) => service.searchOpportunities(args),
       {
         name: 'search_salesforce_opportunities',
         description: 'Search for opportunities in Salesforce based on keyword or stage',
         schema: z.object({
           stage: z.string().optional().describe('The stage of the opportunity to search for'),
-          keyword: z.string().describe('The keyword to search for in Salesforce opportunities')
+          keyword: z.string().optional().describe('The keyword to search for in Salesforce opportunities'),
+          ownerId: z.string().optional().describe('Salesforce user ID of the opportunity owner. If you have a name or email, use the find_user tool to get the user ID first.')
         }),
       }
     ),

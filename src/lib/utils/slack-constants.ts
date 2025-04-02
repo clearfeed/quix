@@ -1,6 +1,7 @@
 export const SLACK_ACTIONS = {
   CONNECT_TOOL: 'connect-tool-action',
   INSTALL_TOOL: 'install-tool-action',
+  INSTALL_MCP_SERVER: 'install-mcp-server-action',
   ADD_OPENAI_KEY: 'add-openai-key',
   MANAGE_ADMINS: 'manage-admins',
   MANAGE_ADMINS_INPUT: 'manage-admins-input',
@@ -30,7 +31,21 @@ export const SLACK_ACTIONS = {
   },
   MANAGE_ACCESS_CONTROLS: 'manage-access-controls',
   ALLOWED_CHANNELS_SELECT: 'allowed-channels-select',
-  ACCESS_LEVEL_SELECT: 'access-level-select'
+  ACCESS_LEVEL_SELECT: 'access-level-select',
+  SUBMIT_NOTION_CONNECTION: 'submit-notion-connection',
+  NOTION_CONNECTION_ACTIONS: {
+    API_TOKEN: 'notion-api-token',
+  },
+  SUBMIT_LINEAR_CONNECTION: 'submit-linear-connection',
+  LINEAR_CONNECTION_ACTIONS: {
+    API_TOKEN: 'linear-api-token',
+  },
+  SUBMIT_MCP_CONNECTION: 'submit-mcp-connection',
+  MCP_CONNECTION_ACTIONS: {
+    NAME: 'mcp-name',
+    URL: 'mcp-url',
+    API_TOKEN: 'mcp-api-token',
+  },
 } as const;
 
 export const SLACK_SCOPES = [
@@ -42,7 +57,8 @@ export const SLACK_SCOPES = [
   'channels:history',
   'groups:history',
   'users:read',
-  'users:read.email'
+  'users:read.email',
+  'channels:read',
 ] as const;
 
 export const SLACK_MESSAGE_MAX_LENGTH = 3000;

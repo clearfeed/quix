@@ -4,12 +4,16 @@ import { AppHomeService } from './app_home.service';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { IntegrationsInstallService } from '../integrations/integrations-install.service';
 import { QuixUserAccessLevel } from '@quix/lib/constants';
+import { displayErrorModal, displayLoadingModal, displaySuccessModal, publishNotionConnectionModal } from './views/modals';
+import { WebClient } from '@slack/web-api';
+import { SlackService } from './slack.service';
 @Injectable()
 export class InteractionsService {
   private readonly logger = new Logger(InteractionsService.name);
   constructor(
     private readonly appHomeService: AppHomeService,
     private readonly integrationsInstallService: IntegrationsInstallService,
+    private readonly slackService: SlackService
   ) { }
 
   async handleInteraction(
@@ -39,6 +43,9 @@ export class InteractionsService {
   }
 
   async handleViewSubmission(payload: ViewSubmitAction) {
+    const slackWorkspace = await this.slackService.getSlackWorkspace(payload.view.team_id);
+    if (!slackWorkspace) return;
+
     switch (payload.view.callback_id) {
     case SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION:
       const postgresConfig = await this.integrationsInstallService.postgres(payload);
@@ -74,6 +81,84 @@ export class InteractionsService {
       const accessLevel = payload.view.state.values.access_level[SLACK_ACTIONS.ACCESS_LEVEL_SELECT].selected_option?.value as QuixUserAccessLevel;
       this.appHomeService.handleManageAccessControlsSubmitted(payload.user.id, payload.view.team_id, allowedChannels, accessLevel);
       break;
+    case SLACK_ACTIONS.SUBMIT_NOTION_CONNECTION:
+      try {
+        this.integrationsInstallService.notion(payload).then(async () => {
+          await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
+            text: 'Notion connected successfully',
+            viewId: payload.view.id,
+          });
+          this.appHomeService.handleNotionConnected(payload.user.id, payload.view.team_id);
+        }).catch(error => {
+          return displayErrorModal({
+            error,
+            backgroundCaller: true,
+            viewId: payload.view.id,
+            web: new WebClient(slackWorkspace.bot_access_token)
+          });
+        });
+        return displayLoadingModal('Please Wait');
+      } catch (error) {
+        console.error(error);
+        return displayErrorModal({
+          error,
+          backgroundCaller: true,
+          viewId: payload.view.id,
+          web: new WebClient(slackWorkspace.bot_access_token)
+        });
+      }
+    case SLACK_ACTIONS.SUBMIT_LINEAR_CONNECTION:
+      try {
+        this.integrationsInstallService.linear(payload).then(async () => {
+          await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
+            text: 'Linear connected successfully',
+            viewId: payload.view.id,
+          });
+          this.appHomeService.handleLinearConnected(payload.user.id, payload.view.team_id);
+        }).catch(error => {
+          return displayErrorModal({
+            error,
+            backgroundCaller: true,
+            viewId: payload.view.id,
+            web: new WebClient(slackWorkspace.bot_access_token)
+          });
+        });
+        return displayLoadingModal('Please Wait');
+      } catch (error) {
+        console.error(error);
+        return displayErrorModal({
+          error,
+          backgroundCaller: true,
+          viewId: payload.view.id,
+          web: new WebClient(slackWorkspace.bot_access_token)
+        });
+      }
+    case SLACK_ACTIONS.SUBMIT_MCP_CONNECTION:
+      try {
+        this.integrationsInstallService.mcp(payload).then(async () => {
+          await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
+            text: 'MCP server connected successfully',
+            viewId: payload.view.id,
+          });
+          this.appHomeService.handleMcpConnected(payload.user.id, payload.view.team_id);
+        }).catch(error => {
+          return displayErrorModal({
+            error,
+            backgroundCaller: true,
+            viewId: payload.view.id,
+            web: new WebClient(slackWorkspace.bot_access_token)
+          });
+        });
+        return displayLoadingModal('Please Wait');
+      } catch (error) {
+        console.error(error);
+        return displayErrorModal({
+          error,
+          backgroundCaller: true,
+          viewId: payload.view.id,
+          web: new WebClient(slackWorkspace.bot_access_token)
+        });
+      }
     default:
       return;
     }
