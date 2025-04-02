@@ -6,7 +6,9 @@ import {
   GetTicketResponse,
   SearchTicketsResponse,
   GetTicketWithRepliesParams,
-  TicketWithReplies
+  TicketWithReplies,
+  AddInternalCommentParams,
+  AddInternalCommentResponse
 } from './types';
 import { BaseService, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import _ from 'lodash'
@@ -95,6 +97,35 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch ticket with replies'
+      };
+    }
+  }
+
+  async addInternalComment(params: AddInternalCommentParams): Promise<BaseResponse<AddInternalCommentResponse['data']>> {
+    try {
+      _.every(['ticketId', 'comment'], (field) => _.has(params, field));
+
+      const response = await this.client.tickets.update(params.ticketId, {
+        ticket: {
+          comment: {
+            body: params.comment,
+            public: false
+          }
+        }
+      });
+
+      return {
+        success: true,
+        data: {
+          ticketId: params.ticketId,
+          commentId: response.result.id
+        }
+      };
+    } catch (error: any) {
+      console.error('Zendesk add internal comment error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to add internal comment'
       };
     }
   }

@@ -30,4 +30,14 @@ export interface TicketWithReplies {
 
 export type GetTicketWithRepliesResponse = BaseResponse<TicketWithReplies>;
 export type GetTicketResponse = BaseResponse<Ticket>;
-export type SearchTicketsResponse = BaseResponse<Ticket[]>; 
+export type SearchTicketsResponse = BaseResponse<Ticket[]>;
+
+export interface AddInternalCommentParams {
+  ticketId: number;
+  comment: string;
+}
+
+export type AddInternalCommentResponse = BaseResponse<{
+  ticketId: number;
+  commentId: number;
+}>; 
