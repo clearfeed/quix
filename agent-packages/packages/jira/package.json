@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "atlassian-jwt": "^2.0.3",
-    "axios": "^1.7.9"
+    "axios": "^1.8.2"
   },
   "devDependencies": {
     "typescript": "^5.7.3"
