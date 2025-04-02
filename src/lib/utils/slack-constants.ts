@@ -24,6 +24,11 @@ export const SLACK_ACTIONS = {
     SUBMIT: 'jira-config-modal-submit',
     PROJECT_KEY_INPUT: 'jira-config-modal-project-key-input'
   },
+  GITHUB_CONFIG_MODAL: {
+    SUBMIT: 'github-config-modal-submit',
+    REPO_INPUT: 'github-config-modal-repo-input',
+    OWNER_INPUT: 'github-config-modal-owner-input',
+  },
   MANAGE_ACCESS_CONTROLS: 'manage-access-controls',
   ALLOWED_CHANNELS_SELECT: 'allowed-channels-select',
   ACCESS_LEVEL_SELECT: 'access-level-select',
