@@ -37,13 +37,13 @@ export class LlmService {
     }
 
     const toolSelection = await this.toolSelection(message, tools, previousMessages, llm);
-    this.logger.log(`Selected tool: ${toolSelection.selectedTool}`);
+    this.logger.log(`Selected tools: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}`);
 
-    if (toolSelection.selectedTool === 'none') {
+    if (toolSelection.selectedTools === 'none') {
       return toolSelection.content;
     }
 
-    const availableFunctions: ToolConfig['tools'] = tools[toolSelection.selectedTool].tools;
+    const availableFunctions: ToolConfig['tools'] = toolSelection.selectedTools.map(tool => tools[tool].tools).flat();
 
     if (!availableFunctions) {
       return 'I apologize, but I don\'t have any tools configured to help with your request at the moment.';
@@ -52,11 +52,11 @@ export class LlmService {
     const agent = createReactAgent({
       llm,
       tools: availableFunctions as any,
-      prompt: QuixPrompts.basePrompt
+      prompt: toolSelection.selectedTools.length > 1 ? QuixPrompts.multiStepBasePrompt(toolSelection.selectedTools) : QuixPrompts.basePrompt
     });
 
     const result = await agent.invoke({
-      messages: previousMessages
+      messages: [...previousMessages, { role: 'user', content: message }]
     }, {
       callbacks: [new QuixCallBackManager()]
     });
@@ -91,7 +91,7 @@ export class LlmService {
   }
 
   private async toolSelection(message: string, tools: Record<string, ToolConfig>, previousMessages: LLMContext[], llm: BaseChatModel): Promise<{
-    selectedTool: keyof typeof tools | 'none';
+    selectedTools: (keyof typeof tools)[] | 'none';
     content: string;
   }> {
     const availableCategories = Object.keys(tools);
@@ -101,13 +101,14 @@ export class LlmService {
 
     const toolSelectionFunction = new DynamicStructuredTool({
       name: 'selectTool',
-      description: 'Select the tool category to use for the query. If no specific tool is needed, respond with "none" and provide a direct answer.',
+      description: QuixPrompts.baseToolSelection,
       schema: z.object({
-        toolCategory: z.enum(availableCategories as [string, ...string[]]),
+        toolCategories: z.array(z.enum(availableCategories as [string, ...string[]])),
         reason: z.string()
       }),
-      func: async ({ toolCategory, reason }) => {
-        return { toolCategory, reason };
+      func: async ({ toolCategories, reason }) => {
+        console.log(toolCategories, reason);
+        return { toolCategories, reason };
       }
     });
 
@@ -130,11 +131,13 @@ export class LlmService {
     const result = await agentChain.invoke({
       chat_history: previousMessages,
       input: message,
-      tool_choice: 'auto'
+      tool_choice: 'auto',
+    }, {
+      callbacks: [new QuixCallBackManager()]
     });
 
     return {
-      selectedTool: result.tool_calls?.[0]?.args?.toolCategory ?? 'none',
+      selectedTools: result.tool_calls?.[0]?.args?.toolCategories ?? 'none',
       content: Array.isArray(result.content) ? result.content.join(' ') : result.content
     };
   }
