@@ -49,10 +49,20 @@ export class LlmService {
       return 'I apologize, but I don\'t have any tools configured to help with your request at the moment.';
     }
 
+    const plan = await this.generatePlan(availableFunctions, previousMessages, message, llm);
+    const formattedPlan = plan.map((step, i) => {
+      if (step.type === 'tool') {
+        return `${i + 1}. Call tool \`${step.tool}\`. ${step.input || ''}`.trim();
+      } else {
+        return `${i + 1}. ${step.input}`;
+      }
+    }).join('\n');
+    this.logger.log(`Generated plan: ${formattedPlan}`);
+
     const agent = createReactAgent({
       llm,
       tools: availableFunctions as any,
-      prompt: toolSelection.selectedTools.length > 1 ? QuixPrompts.multiStepBasePrompt(toolSelection.selectedTools) : QuixPrompts.basePrompt
+      prompt: toolSelection.selectedTools.length > 1 ? QuixPrompts.multiStepBasePrompt(formattedPlan) : QuixPrompts.basePrompt
     });
 
     const result = await agent.invoke({
@@ -107,7 +117,6 @@ export class LlmService {
         reason: z.string()
       }),
       func: async ({ toolCategories, reason }) => {
-        console.log(toolCategories, reason);
         return { toolCategories, reason };
       }
     });
@@ -174,5 +183,43 @@ export class LlmService {
 
     const finalContent = Array.isArray(response.content) ? response.content.join(' ') : response.content;
     return slackify(finalContent);
+  }
+
+  private async generatePlan(availableFunctions: ToolConfig['tools'], previousMessages: LLMContext[], message: string, llm: BaseChatModel) {
+    const planPrompt = ChatPromptTemplate.fromMessages([
+      SystemMessagePromptTemplate.fromTemplate(`
+        You are a planner that breaks down the user's request into an ordered list of steps using available tools.
+Only use the following tools: ${availableFunctions.map(func => func.name).join(', ')}.
+
+Each step must be:
+- a tool call: {{ "type": "tool", "tool": "toolName", "args": {{ ... }} }}
+- or a reasoning step: {{ "type": "reason", "input": "..." }}
+
+Output only structured JSON matching the required format.
+      `),
+      new MessagesPlaceholder('chat_history'),
+      HumanMessagePromptTemplate.fromTemplate('{input}')
+    ]);
+
+    const planChain = RunnableSequence.from([
+      planPrompt,
+      llm.withStructuredOutput(z.object({
+        steps: z.array(z.object({
+          type: z.enum(['tool', 'reason']),
+          tool: z.string().optional(),
+          args: z.object({}).strict().optional(),
+          input: z.string().optional()
+        }))
+      }))
+    ]);
+
+    const result = await planChain.invoke({
+      chat_history: previousMessages,
+      input: message
+    }, {
+      callbacks: [new QuixCallBackManager()]
+    });
+
+    return result.steps;
   }
 }
