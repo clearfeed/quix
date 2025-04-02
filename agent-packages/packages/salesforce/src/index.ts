@@ -271,6 +271,44 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
       data: { stages }
     };
   }
+
+  async describeObject(objectName: string): Promise<BaseResponse<{ fields: { type: string; name: string; label: string }[] }>> {
+    try {
+      const response = await this.connection.sobject(objectName).describe();
+      return {
+        success: true,
+        data: { fields: response.fields }
+      };
+    } catch (error) {
+      console.error('Error describing Salesforce object:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to describe Salesforce object'
+      };
+    }
+  }
+
+  async searchAccounts(keyword: string): Promise<BaseResponse<{ accounts: { id: string; name: string }[] }>> {
+    try {
+      const soqlString = await this.connection.sobject('Account')
+        .select('Id, Name')
+        .where(`Name LIKE '%${keyword}%'`)
+        .orderby('LastModifiedDate', 'DESC')
+        .limit(10).toSOQL();
+      const response = await this.connection.query<{ Id: string; Name: string }>(soqlString);
+      const accounts = response.records.map((account) => ({ id: account.Id, name: account.Name }));
+      return {
+        success: true,
+        data: { accounts }
+      };
+    } catch (error) {
+      console.error('Error searching Salesforce accounts:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to search Salesforce accounts'
+      };
+    }
+  }
 }
 
 // Export tools after service class is defined
