@@ -24,6 +24,7 @@ export interface SalesforceTask {
   Priority?: string;
   OwnerId?: string;
   WhatId?: string;
+  Type?: string;
 }
 
 export interface SalesforceNote {
@@ -40,10 +41,27 @@ export interface SalesforceResponse<T> {
 }
 
 export type CreateTaskParams = {
-  opportunityId: string;
+  whatId: string;
   subject: string;
   description?: string;
   status?: string;
   priority?: string;
   ownerId?: string;
+  type?: string;
+}
+
+export type DescribeObjectParams = {
+  objectName: SalesforceObjectName;
+}
+
+export enum SalesforceObjectName {
+  Account = 'Account',
+  Contact = 'Contact',
+  Opportunity = 'Opportunity',
+  Case = 'Case',
+  Task = 'Task'
+}
+
+export type SearchAccountsParams = {
+  keyword: string;
 }

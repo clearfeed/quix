@@ -1,4 +1,5 @@
-import jsforce, { Connection, IdentityInfo } from 'jsforce';
+import { DescribeObjectParams } from './types/index';
+import { Connection } from 'jsforce';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   SalesforceConfig,
@@ -193,12 +194,12 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
     }
   }
 
-  async createTask(params: CreateTaskParams): Promise<BaseResponse<{ taskId: string; opportunityUrl?: string }>> {
+  async createTask(params: CreateTaskParams): Promise<BaseResponse<{ taskId: string; whatId: string }>> {
     try {
       const taskData: SalesforceTask = {
         Subject: params.subject,
         Description: params.description || '',
-        WhatId: params.opportunityId
+        WhatId: params.whatId
       };
       if (params.status) {
         taskData.Status = params.status;
@@ -208,6 +209,9 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
       }
       if (params.ownerId) {
         taskData.OwnerId = params.ownerId;
+      }
+      if (params.type) {
+        taskData.Type = params.type;
       }
 
       const response = await this.connection.sobject('Task').create(taskData);
@@ -219,7 +223,7 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
         success: true,
         data: {
           taskId: response.id,
-          opportunityUrl: params.opportunityId ? this.getOpportunityUrl(params.opportunityId) : undefined
+          whatId: params.whatId
         }
       };
     } catch (error) {
@@ -272,9 +276,9 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
     };
   }
 
-  async describeObject(objectName: string): Promise<BaseResponse<{ fields: { type: string; name: string; label: string }[] }>> {
+  async describeObject(args: DescribeObjectParams): Promise<BaseResponse<{ fields: Record<string, any>[] }>> {
     try {
-      const response = await this.connection.sobject(objectName).describe();
+      const response = await this.connection.sobject(args.objectName).describe();
       return {
         success: true,
         data: { fields: response.fields }
@@ -288,7 +292,7 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
     }
   }
 
-  async searchAccounts(keyword: string): Promise<BaseResponse<{ accounts: { id: string; name: string }[] }>> {
+  async searchAccounts(keyword: string): Promise<BaseResponse<{ accounts: { id: string; }[] }>> {
     try {
       const soqlString = await this.connection.sobject('Account')
         .select('Id, Name')
@@ -296,7 +300,7 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
         .orderby('LastModifiedDate', 'DESC')
         .limit(10).toSOQL();
       const response = await this.connection.query<{ Id: string; Name: string }>(soqlString);
-      const accounts = response.records.map((account) => ({ id: account.Id, name: account.Name }));
+      const accounts = response.records.map((account) => ({ id: account.Id, ...account }));
       return {
         success: true,
         data: { accounts }
