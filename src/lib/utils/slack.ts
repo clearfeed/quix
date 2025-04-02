@@ -33,7 +33,7 @@ export const createLLMContext = async (event: GenericMessageEvent | AppMentionEv
     if (messagesResponse.messages && messagesResponse.messages.length > 0) {
       messages = messagesResponse.messages.map((message: MessageElement) => {
         if (message.subtype === 'assistant_app_thread' || !message.text) return;
-        const rawAuthor = message.app_id === slackWorkspace.app_id ? 'Quix' : userInfoMap[message.user || '']?.name;
+        const rawAuthor = message.app_id === slackWorkspace.app_id ? 'Quix' : message.subtype === 'bot_message' ? message.username : userInfoMap[message.user || '']?.name;
         const author = rawAuthor ? sanitizeName(rawAuthor) : 'Unknown';
         return {
           role: message.app_id === slackWorkspace.app_id ? 'assistant' : 'user',
