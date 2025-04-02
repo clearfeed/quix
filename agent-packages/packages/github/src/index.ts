@@ -4,6 +4,27 @@ import {
   GitHubConfig,
   SearchIssuesParams,
   SearchIssuesResponse,
+  CreateOrUpdateFileParams,
+  PushFilesParams,
+  SearchRepositoriesParams,
+  CreateRepositoryParams,
+  GetFileContentsParams,
+  CreatePullRequestParams,
+  ForkRepositoryParams,
+  CreateBranchParams,
+  ListCommitsParams,
+  ListIssuesParams,
+  UpdateIssueParams,
+  AddIssueCommentParams,
+  SearchUsersParams,
+  PullRequestParams,
+  ListPullRequestsParams,
+  CreatePullRequestReviewParams,
+  MergePullRequestParams,
+  UpdatePullRequestBranchParams,
+  SearchCodeParams,
+  SearchCodeResponse,
+  SearchIssuesGlobalParams
 } from './types';
 import { CodeSearchParams, CreateIssueParams } from './types/index';
 
@@ -12,6 +33,7 @@ export * from './tools';
 
 export class GitHubService implements BaseService<GitHubConfig> {
   private client: Octokit;
+  private config: GitHubConfig;
 
   validateConfig(config?: Record<string, any>): { isValid: boolean; error?: string } & Record<string, any> {
     const repoOwner = config?.owner || this.config.owner;
@@ -27,7 +49,8 @@ export class GitHubService implements BaseService<GitHubConfig> {
     return { isValid: true, repoOwner, repoName };
   }
 
-  constructor(private config: GitHubConfig) {
+  constructor(config: GitHubConfig) {
+    this.config = config;
     this.client = new Octokit({ auth: config.token });
     if (!config.token) {
       throw new Error('GitHub integration is not configured. Please pass in a token.');
@@ -184,5 +207,333 @@ export class GitHubService implements BaseService<GitHubConfig> {
         error: error instanceof Error ? error.message : 'Failed to search GitHub code'
       };
     }
+  }
+
+  async createOrUpdateFile(params: CreateOrUpdateFileParams): Promise<RestEndpointMethodTypes['repos']['createOrUpdateFileContents']['response']> {
+    const { owner, repo, path, content, message, branch, sha } = params;
+    return this.client.repos.createOrUpdateFileContents({
+      owner,
+      repo,
+      path,
+      message,
+      content: Buffer.from(content).toString('base64'),
+      branch,
+      sha
+    });
+  }
+
+  async pushFiles(params: PushFilesParams): Promise<RestEndpointMethodTypes['git']['createTree']['response']> {
+    const { owner, repo, branch, files, message } = params;
+
+    // Get the latest commit SHA
+    const ref = await this.client.git.getRef({
+      owner,
+      repo,
+      ref: `heads/${branch}`
+    });
+    const latestCommit = await this.client.git.getCommit({
+      owner,
+      repo,
+      commit_sha: ref.data.object.sha
+    });
+
+    // Create blobs for each file
+    const blobs = await Promise.all(
+      files.map(file =>
+        this.client.git.createBlob({
+          owner,
+          repo,
+          content: Buffer.from(file.content).toString('base64'),
+          encoding: 'base64'
+        })
+      )
+    );
+
+    // Create tree
+    const tree = await this.client.git.createTree({
+      owner,
+      repo,
+      base_tree: latestCommit.data.tree.sha,
+      tree: files.map((file, index) => ({
+        path: file.path,
+        mode: '100644',
+        type: 'blob',
+        sha: blobs[index].data.sha
+      }))
+    });
+
+    // Create commit
+    const commit = await this.client.git.createCommit({
+      owner,
+      repo,
+      message,
+      tree: tree.data.sha,
+      parents: [latestCommit.data.sha]
+    });
+
+    // Update branch reference
+    await this.client.git.updateRef({
+      owner,
+      repo,
+      ref: `heads/${branch}`,
+      sha: commit.data.sha
+    });
+
+    return tree;
+  }
+
+  async searchRepositories(params: SearchRepositoriesParams): Promise<RestEndpointMethodTypes['search']['repos']['response']> {
+    const { query, page, perPage } = params;
+    return this.client.search.repos({
+      q: query,
+      page,
+      per_page: perPage
+    });
+  }
+
+  async createRepository(params: CreateRepositoryParams): Promise<RestEndpointMethodTypes['repos']['createForAuthenticatedUser']['response']> {
+    const { name, description, private: isPrivate, autoInit } = params;
+    return this.client.repos.createForAuthenticatedUser({
+      name,
+      description,
+      private: isPrivate,
+      auto_init: autoInit
+    });
+  }
+
+  async getFileContents(params: GetFileContentsParams): Promise<RestEndpointMethodTypes['repos']['getContent']['response']> {
+    const { owner, repo, path, branch } = params;
+    return this.client.repos.getContent({
+      owner,
+      repo,
+      path,
+      ref: branch
+    });
+  }
+
+  async createPullRequest(params: CreatePullRequestParams): Promise<RestEndpointMethodTypes['pulls']['create']['response']> {
+    const { owner, repo, title, head, base, body, draft, maintainer_can_modify } = params;
+    return this.client.pulls.create({
+      owner,
+      repo,
+      title,
+      head,
+      base,
+      body,
+      draft,
+      maintainer_can_modify
+    });
+  }
+
+  async forkRepository(params: ForkRepositoryParams): Promise<RestEndpointMethodTypes['repos']['createFork']['response']> {
+    const { owner, repo, organization } = params;
+    return this.client.repos.createFork({
+      owner,
+      repo,
+      organization
+    });
+  }
+
+  async createBranch(params: CreateBranchParams): Promise<RestEndpointMethodTypes['git']['createRef']['response']> {
+    const { owner, repo, branch, from_branch } = params;
+    const ref = await this.client.git.getRef({
+      owner,
+      repo,
+      ref: `heads/${from_branch || 'main'}`
+    });
+    return this.client.git.createRef({
+      owner,
+      repo,
+      ref: `refs/heads/${branch}`,
+      sha: ref.data.object.sha
+    });
+  }
+
+  async listCommits(params: ListCommitsParams): Promise<RestEndpointMethodTypes['repos']['listCommits']['response']> {
+    const { owner, repo, sha, page, perPage } = params;
+    return this.client.repos.listCommits({
+      owner,
+      repo,
+      sha,
+      page,
+      per_page: perPage
+    });
+  }
+
+  async listIssues(params: ListIssuesParams): Promise<RestEndpointMethodTypes['issues']['listForRepo']['response']> {
+    const { owner, repo, state, sort, direction, since, page, per_page, labels } = params;
+    return this.client.issues.listForRepo({
+      owner,
+      repo,
+      state,
+      sort,
+      direction,
+      since,
+      page,
+      per_page,
+      labels: labels?.join(',')
+    });
+  }
+
+  async updateIssue(params: UpdateIssueParams): Promise<RestEndpointMethodTypes['issues']['update']['response']> {
+    const { owner, repo, issue_number, title, body, state, labels, assignees, milestone } = params;
+    return this.client.issues.update({
+      owner,
+      repo,
+      issue_number,
+      title,
+      body,
+      state,
+      labels,
+      assignees,
+      milestone
+    });
+  }
+
+  async addIssueComment(params: AddIssueCommentParams): Promise<RestEndpointMethodTypes['issues']['createComment']['response']> {
+    const { owner, repo, issue_number, body } = params;
+    return this.client.issues.createComment({
+      owner,
+      repo,
+      issue_number,
+      body
+    });
+  }
+
+  async searchUsers(params: SearchUsersParams): Promise<RestEndpointMethodTypes['search']['users']['response']> {
+    const { q, sort, order, per_page, page } = params;
+    return this.client.search.users({
+      q,
+      sort,
+      order,
+      per_page,
+      page
+    });
+  }
+
+  async getPullRequest(params: PullRequestParams): Promise<RestEndpointMethodTypes['pulls']['get']['response']> {
+    const { owner, repo, pull_number } = params;
+    return this.client.pulls.get({
+      owner,
+      repo,
+      pull_number
+    });
+  }
+
+  async listPullRequests(params: ListPullRequestsParams): Promise<RestEndpointMethodTypes['pulls']['list']['response']> {
+    const { owner, repo, state, head, base, sort, direction, per_page, page } = params;
+    return this.client.pulls.list({
+      owner,
+      repo,
+      state,
+      head,
+      base,
+      sort,
+      direction,
+      per_page,
+      page
+    });
+  }
+
+  async createPullRequestReview(params: CreatePullRequestReviewParams): Promise<RestEndpointMethodTypes['pulls']['createReview']['response']> {
+    const { owner, repo, pull_number, body, event, commit_id, comments } = params;
+    return this.client.pulls.createReview({
+      owner,
+      repo,
+      pull_number,
+      body,
+      event,
+      commit_id,
+      comments
+    });
+  }
+
+  async mergePullRequest(params: MergePullRequestParams): Promise<RestEndpointMethodTypes['pulls']['merge']['response']> {
+    const { owner, repo, pull_number, commit_title, commit_message, merge_method } = params;
+    return this.client.pulls.merge({
+      owner,
+      repo,
+      pull_number,
+      commit_title,
+      commit_message,
+      merge_method
+    });
+  }
+
+  async getPullRequestFiles(params: PullRequestParams): Promise<RestEndpointMethodTypes['pulls']['listFiles']['response']> {
+    const { owner, repo, pull_number } = params;
+    return this.client.pulls.listFiles({
+      owner,
+      repo,
+      pull_number
+    });
+  }
+
+  async getPullRequestStatus(params: PullRequestParams): Promise<RestEndpointMethodTypes['repos']['getCombinedStatusForRef']['response']> {
+    const { owner, repo, pull_number } = params;
+    const pr = await this.client.pulls.get({
+      owner,
+      repo,
+      pull_number
+    });
+    return this.client.repos.getCombinedStatusForRef({
+      owner,
+      repo,
+      ref: pr.data.head.sha
+    });
+  }
+
+  async updatePullRequestBranch(params: UpdatePullRequestBranchParams): Promise<RestEndpointMethodTypes['pulls']['updateBranch']['response']> {
+    const { owner, repo, pull_number, expected_head_sha } = params;
+    return this.client.pulls.updateBranch({
+      owner,
+      repo,
+      pull_number,
+      expected_head_sha
+    });
+  }
+
+  async getPullRequestComments(params: PullRequestParams): Promise<RestEndpointMethodTypes['pulls']['listReviewComments']['response']> {
+    const { owner, repo, pull_number } = params;
+    return this.client.pulls.listReviewComments({
+      owner,
+      repo,
+      pull_number
+    });
+  }
+
+  async getPullRequestReviews(params: PullRequestParams): Promise<RestEndpointMethodTypes['pulls']['listReviews']['response']> {
+    const { owner, repo, pull_number } = params;
+    return this.client.pulls.listReviews({
+      owner,
+      repo,
+      pull_number
+    });
+  }
+
+  async searchCodeGlobal(params: SearchCodeParams): Promise<SearchCodeResponse> {
+    const response = await this.client.rest.search.code({
+      q: params.q,
+      order: params.order,
+      per_page: params.per_page,
+      page: params.page
+    });
+    return response.data;
+  }
+
+  async searchIssuesGlobal(params: SearchIssuesGlobalParams): Promise<SearchIssuesResponse> {
+    const response = await this.client.rest.search.issuesAndPullRequests({
+      q: params.q,
+      sort: params.sort,
+      order: params.order,
+      per_page: params.per_page,
+      page: params.page
+    });
+    return {
+      success: true,
+      data: {
+        issues: response.data.items
+      }
+    };
   }
 } 
