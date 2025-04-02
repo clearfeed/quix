@@ -279,9 +279,28 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
   async describeObject(args: DescribeObjectParams): Promise<BaseResponse<{ fields: Record<string, any>[] }>> {
     try {
       const response = await this.connection.sobject(args.objectName).describe();
+
+      // Filter to only important fields
+      const importantFields = response.fields.map(field => ({
+        name: field.name,
+        label: field.label,
+        type: field.type,
+        required: field.nillable === false,
+        createable: field.createable,
+        updateable: field.updateable,
+        defaultValue: field.defaultValue,
+        ...(field.type === 'picklist' && {
+          picklistValues: field.picklistValues?.map(val => ({
+            label: val.label,
+            value: val.value,
+            isDefault: val.defaultValue
+          }))
+        })
+      }));
+
       return {
         success: true,
-        data: { fields: response.fields }
+        data: { fields: importantFields }
       };
     } catch (error) {
       console.error('Error describing Salesforce object:', error);
