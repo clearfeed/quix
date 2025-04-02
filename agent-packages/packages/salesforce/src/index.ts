@@ -213,6 +213,9 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
       if (params.type) {
         taskData.Type = params.type;
       }
+      if (params.dueDate) {
+        taskData.ActivityDate = params.dueDate;
+      }
 
       const response = await this.connection.sobject('Task').create(taskData);
       if (!response.success) {

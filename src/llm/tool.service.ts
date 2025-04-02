@@ -11,6 +11,7 @@ import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
 import { McpServerCleanupFn, McpService } from './mcp.service';
 import { QuixPrompts, SUPPORTED_INTEGRATIONS } from '../lib/constants';
+import { createCommonToolsExport } from '@clearfeed-ai/quix-common-agent';
 
 @Injectable()
 export class ToolService {
@@ -29,7 +30,9 @@ export class ToolService {
       include: ['jiraConfig', 'hubspotConfig', 'postgresConfig', 'githubConfig', 'salesforceConfig', 'notionConfig', 'linearConfig']
     });
     if (!slackWorkspace) return;
-    const tools: Record<string, ToolConfig> = {};
+    const tools: Record<string, ToolConfig> = {
+      common: createCommonToolsExport()
+    };
     const jiraConfig = slackWorkspace.jiraConfig;
     if (jiraConfig) {
       const updatedJiraConfig = await this.integrationsService.updateJiraConfig(jiraConfig);
@@ -113,8 +116,8 @@ export class ToolService {
         const linearMcpTools = await this.mcpService.getMcpServerTools(SUPPORTED_INTEGRATIONS.LINEAR, {
           LINEAR_API_KEY: slackWorkspace.linearConfig.access_token
         },
-          slackWorkspace.linearConfig.default_config?.team_id 
-            ? { teamId: slackWorkspace.linearConfig.default_config.team_id } 
+          slackWorkspace.linearConfig.default_config?.team_id
+            ? { teamId: slackWorkspace.linearConfig.default_config.team_id }
             : undefined
         );
         if (linearMcpTools && linearMcpTools.tools.length > 0) {

@@ -25,6 +25,7 @@ export interface SalesforceTask {
   OwnerId?: string;
   WhatId?: string;
   Type?: string;
+  ActivityDate?: string;
 }
 
 export interface SalesforceNote {
@@ -48,6 +49,7 @@ export type CreateTaskParams = {
   priority?: string;
   ownerId?: string;
   type?: string;
+  dueDate?: string;
 }
 
 export type DescribeObjectParams = {
