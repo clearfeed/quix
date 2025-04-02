@@ -6,7 +6,10 @@ import {
   GetTicketResponse,
   SearchTicketsResponse,
   GetTicketWithRepliesParams,
-  TicketWithReplies
+  TicketWithReplies,
+  AddInternalNoteParams,
+  InternalNote,
+  GetInternalNotesParams
 } from './types';
 import { BaseService, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import _ from 'lodash'
@@ -95,6 +98,71 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch ticket with replies'
+      };
+    }
+  }
+
+  async addInternalNote(params: AddInternalNoteParams): Promise<BaseResponse<InternalNote>> {
+    try {
+      _.every(['ticketId', 'note'], (field) => _.has(params, field));
+
+      const response = await this.client.tickets.update(params.ticketId, {
+        ticket: {
+          comment: {
+            body: params.note,
+            public: false
+          }
+        }
+      });
+
+      if (!response.result?.comment) {
+        throw new Error('Failed to create internal note: No comment data received');
+      }
+
+      const comment = response.result.comment;
+      return {
+        success: true,
+        data: {
+          id: comment.id,
+          type: 'internal_note' as const,
+          body: comment.body,
+          created_at: comment.created_at,
+          author_id: comment.author_id
+        }
+      };
+    } catch (error: any) {
+      console.error('Zendesk add internal note error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to add internal note'
+      };
+    }
+  }
+
+  async getInternalNotes(params: GetInternalNotesParams): Promise<BaseResponse<InternalNote[]>> {
+    try {
+      _.every(['ticketId'], (field) => _.has(params, field));
+
+      const response = await this.client.tickets.getComments(params.ticketId);
+      const internalNotes = response
+        .filter(comment => !comment.public)
+        .map(comment => ({
+          id: comment.id,
+          type: 'internal_note' as const,
+          body: comment.body,
+          created_at: comment.created_at,
+          author_id: comment.author_id
+        }));
+
+      return {
+        success: true,
+        data: internalNotes
+      };
+    } catch (error: any) {
+      console.error('Zendesk get internal notes error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch internal notes'
       };
     }
   }
