@@ -28,7 +28,18 @@ export class QuixCallBackManager extends BaseCallbackHandler {
     metadata?: Record<string, unknown>,
     runName?: string
   ) {
-    // this.logger.debug("LLM start:", {llm, prompts, runId, parentRunId, extraParams, tags, metadata, runName});
+    /*
+    this.logger.debug('LLM start:', {
+      llm,
+      prompts,
+      runId,
+      parentRunId,
+      extraParams,
+      tags,
+      metadata,
+      runName
+    });
+    */
   }
 
   handleLLMEnd(
@@ -51,7 +62,18 @@ export class QuixCallBackManager extends BaseCallbackHandler {
     runType?: string,
     runName?: string
   ) {
-    // this.logger.debug("Chain start:", { chain, inputs, runId, parentRunId, tags, metadata, runType, runName });
+    /*
+    this.logger.debug('Chain start:', {
+      chain,
+      inputs,
+      runId,
+      parentRunId,
+      tags,
+      metadata,
+      runType,
+      runName
+    });
+    */
   }
 
   handleChainEnd(

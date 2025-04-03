@@ -365,7 +365,11 @@ const getIntegrationInfo = (
     );
   }
 
-  if (connection instanceof JiraConfig || connection instanceof GithubConfig) {
+  if (
+    connection instanceof JiraConfig ||
+    connection instanceof GithubConfig ||
+    connection instanceof SalesforceConfig
+  ) {
     overflowMenuOptions.unshift(
       Bits.Option({
         text: `${Md.emoji('pencil')} Edit`,
