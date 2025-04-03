@@ -96,13 +96,13 @@ export class LlmService {
 
     let availableFunctions: ToolConfig['tools'] = [];
     /**
-     * If there is only one tool category overall or only one tool category apart from
-     * common and slack, then we can use all tools instad of first selecting the tool categories
-     * and then calling the tools.
+     * If there is only one tool category overall or less than 2 tool categories apart from
+     * common and slack, then we can use all tools to generate the plan instad of first selecting
+     * the tool categories and then calling the tools.
      */
     if (
       availableToolCategories.length === 1 ||
-      remove(availableToolCategories, [ToolCategory.COMMON, ToolCategory.SLACK]).length === 1
+      remove(availableToolCategories, [ToolCategory.COMMON, ToolCategory.SLACK]).length <= 1
     ) {
       availableFunctions = Object.values(tools).flatMap((tool) => tool.tools);
     } else {
