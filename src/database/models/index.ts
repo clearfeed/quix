@@ -7,4 +7,5 @@ export * from './postgres-config.model';
 export * from './salesforce-config.model';
 export * from './notion-config.model';
 export * from './linear-config.model';
-export * from './mcp-connection.model'; 
+export * from './mcp-connection.model';
+export * from './conversation-state.model';

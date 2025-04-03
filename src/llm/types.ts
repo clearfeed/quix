@@ -7,3 +7,11 @@ export enum SupportedChatModels {
   OPENAI = 'openai',
   GEMINI = 'gemini',
 }
+
+export interface MessageProcessingArgs {
+  message: string;
+  teamId: string;
+  threadTs: string;
+  previousMessages: LLMContext[];
+  channelId: string;
+}

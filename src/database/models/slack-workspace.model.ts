@@ -26,6 +26,7 @@ import { SLACK_MESSAGE_MAX_LENGTH } from '@quix/lib/utils/slack-constants';
 import { NotionConfig } from './notion-config.model';
 import { LinearConfig } from './linear-config.model';
 import { McpConnection } from './mcp-connection.model';
+import { ConversationState } from './conversation-state.model';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -212,6 +213,12 @@ export class SlackWorkspace extends Model<
     as: 'mcpConnections'
   })
   declare mcpConnections: NonAttribute<McpConnection[]>;
+
+  @HasMany(() => ConversationState, {
+    foreignKey: 'team_id',
+    as: 'conversationStates'
+  })
+  declare conversationStates: NonAttribute<ConversationState[]>;
 
   async postMessage(message: string, channel: string, thread_ts?: string) {
     const webClient = new WebClient(this.bot_access_token);
