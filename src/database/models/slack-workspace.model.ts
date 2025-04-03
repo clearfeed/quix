@@ -112,7 +112,7 @@ export class SlackWorkspace extends Model<
    * Within the first week of our app being installed we allow the users to be in the trial mode
    * and use our default openai key.
    */
-  get isTrialMode(): boolean {
+  get isTrialMode(): NonAttribute<boolean> {
     return new Date(this.created_at).getTime() > Date.now() - TRIAL_DAYS * 24 * 60 * 60 * 1000;
   }
 
@@ -120,7 +120,7 @@ export class SlackWorkspace extends Model<
    * Returns true if the openai key is set by the user. Within the first week of our app being
    * installed we allow the users to use our default openai key.
    */
-  isOpenAIKeySet(): boolean {
+  get isOpenAIKeySet(): NonAttribute<boolean> {
     return !!this.getDataValue('openai_key');
   }
 

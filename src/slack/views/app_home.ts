@@ -225,7 +225,7 @@ const getToolConnectionView = (
 };
 
 const getOpenAIView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
-  if (slackWorkspace.isOpenAIKeySet())
+  if (slackWorkspace.isOpenAIKeySet)
     return [
       Blocks.Section({
         text: `${Md.emoji('white_check_mark')} OpenAI API key is already set.`
