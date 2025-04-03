@@ -47,111 +47,120 @@ export class InteractionsService {
     if (!slackWorkspace) return;
 
     switch (payload.view.callback_id) {
-      case SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION:
-        const postgresConfig = await this.integrationsInstallService.postgres(payload);
-        this.appHomeService.handlePostgresConnected(payload.user.id, payload.view.team_id, postgresConfig);
-        break;
-      case SLACK_ACTIONS.OPENAI_API_KEY_MODAL.SUBMIT:
-        const openaiApiKey = payload.view.state.values.openai_api_key.openai_api_key_input.value;
-        if (!openaiApiKey) {
-          this.logger.error('OpenAI API key not found', { payload });
-          return;
-        }
-        this.appHomeService.handleOpenaiApiKeySubmitted(payload.user.id, payload.view.team_id, openaiApiKey);
-        break;
-      case SLACK_ACTIONS.MANAGE_ADMINS:
-        const adminUserIds = payload.view.state.values.admin_user_ids[SLACK_ACTIONS.MANAGE_ADMINS_INPUT].selected_conversations as string[];
-        this.appHomeService.handleManageAdminsSubmitted(payload.user.id, payload.view.team_id, adminUserIds);
-        break;
-      case SLACK_ACTIONS.JIRA_CONFIG_MODAL.SUBMIT:
-        const defaultProjectKey = payload.view.state.values.project_key[SLACK_ACTIONS.JIRA_CONFIG_MODAL.PROJECT_KEY_INPUT].value as string;
-        this.appHomeService.handleJiraConfigurationSubmitted(payload.user.id, payload.view.team_id, defaultProjectKey);
-        break;
-      case SLACK_ACTIONS.MANAGE_ACCESS_CONTROLS:
-        const allowedChannels = payload.view.state.values.allowed_channel_ids[SLACK_ACTIONS.ALLOWED_CHANNELS_SELECT].selected_conversations as string[];
-        const accessLevel = payload.view.state.values.access_level[SLACK_ACTIONS.ACCESS_LEVEL_SELECT].selected_option?.value as QuixUserAccessLevel;
-        this.appHomeService.handleManageAccessControlsSubmitted(payload.user.id, payload.view.team_id, allowedChannels, accessLevel);
-        break;
-      case SLACK_ACTIONS.SUBMIT_NOTION_CONNECTION:
-        try {
-          this.integrationsInstallService.notion(payload).then(async () => {
-            await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
-              text: 'Notion connected successfully',
-              viewId: payload.view.id,
-            });
-            this.appHomeService.handleNotionConnected(payload.user.id, payload.view.team_id);
-          }).catch(error => {
-            return displayErrorModal({
-              error,
-              backgroundCaller: true,
-              viewId: payload.view.id,
-              web: new WebClient(slackWorkspace.bot_access_token)
-            });
-          });
-          return displayLoadingModal('Please Wait');
-        } catch (error) {
-          console.error(error);
-          return displayErrorModal({
-            error,
-            backgroundCaller: true,
-            viewId: payload.view.id,
-            web: new WebClient(slackWorkspace.bot_access_token)
-          });
-        }
-      case SLACK_ACTIONS.SUBMIT_LINEAR_CONNECTION:
-        try {
-          this.integrationsInstallService.linear(payload).then(async () => {
-            await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
-              text: 'Linear connected successfully',
-              viewId: payload.view.id,
-            });
-            this.appHomeService.handleLinearConnected(payload.user.id, payload.view.team_id);
-          }).catch(error => {
-            return displayErrorModal({
-              error,
-              backgroundCaller: true,
-              viewId: payload.view.id,
-              web: new WebClient(slackWorkspace.bot_access_token)
-            });
-          });
-          return displayLoadingModal('Please Wait');
-        } catch (error) {
-          console.error(error);
-          return displayErrorModal({
-            error,
-            backgroundCaller: true,
-            viewId: payload.view.id,
-            web: new WebClient(slackWorkspace.bot_access_token)
-          });
-        }
-      case SLACK_ACTIONS.SUBMIT_MCP_CONNECTION:
-        try {
-          this.integrationsInstallService.mcp(payload).then(async () => {
-            await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
-              text: 'MCP server connected successfully',
-              viewId: payload.view.id,
-            });
-            this.appHomeService.handleMcpConnected(payload.user.id, payload.view.team_id);
-          }).catch(error => {
-            return displayErrorModal({
-              error,
-              backgroundCaller: true,
-              viewId: payload.view.id,
-              web: new WebClient(slackWorkspace.bot_access_token)
-            });
-          });
-          return displayLoadingModal('Please Wait');
-        } catch (error) {
-          console.error(error);
-          return displayErrorModal({
-            error,
-            backgroundCaller: true,
-            viewId: payload.view.id,
-            web: new WebClient(slackWorkspace.bot_access_token)
-          });
-        }
-      default:
+    case SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION:
+      const postgresConfig = await this.integrationsInstallService.postgres(payload);
+      this.appHomeService.handlePostgresConnected(payload.user.id, payload.view.team_id, postgresConfig);
+      break;
+    case SLACK_ACTIONS.OPENAI_API_KEY_MODAL.SUBMIT:
+      const openaiApiKey = payload.view.state.values.openai_api_key.openai_api_key_input.value;
+      if (!openaiApiKey) {
+        this.logger.error('OpenAI API key not found', { payload });
         return;
+      }
+      this.appHomeService.handleOpenaiApiKeySubmitted(payload.user.id, payload.view.team_id, openaiApiKey);
+      break;
+    case SLACK_ACTIONS.MANAGE_ADMINS:
+      const adminUserIds = payload.view.state.values.admin_user_ids[SLACK_ACTIONS.MANAGE_ADMINS_INPUT].selected_conversations as string[];
+      this.appHomeService.handleManageAdminsSubmitted(payload.user.id, payload.view.team_id, adminUserIds);
+      break;
+    case SLACK_ACTIONS.JIRA_CONFIG_MODAL.SUBMIT:
+      const defaultProjectKey = payload.view.state.values.project_key[SLACK_ACTIONS.JIRA_CONFIG_MODAL.PROJECT_KEY_INPUT].value as string;
+      this.appHomeService.handleJiraConfigurationSubmitted(payload.user.id, payload.view.team_id, defaultProjectKey);
+      break;
+    case SLACK_ACTIONS.GITHUB_CONFIG_MODAL.SUBMIT:
+      const defaultRepo = payload.view.state.values.repo[SLACK_ACTIONS.GITHUB_CONFIG_MODAL.REPO_INPUT].value as string;
+      const defaultOwner = payload.view.state.values.owner[SLACK_ACTIONS.GITHUB_CONFIG_MODAL.OWNER_INPUT].value as string;
+      const default_config = {
+        repo: defaultRepo,
+        owner: defaultOwner
+      }
+      this.appHomeService.handleGithubConfigurationSubmitted(payload.user.id, payload.view.team_id, default_config);
+      break;
+    case SLACK_ACTIONS.MANAGE_ACCESS_CONTROLS:
+      const allowedChannels = payload.view.state.values.allowed_channel_ids[SLACK_ACTIONS.ALLOWED_CHANNELS_SELECT].selected_conversations as string[];
+      const accessLevel = payload.view.state.values.access_level[SLACK_ACTIONS.ACCESS_LEVEL_SELECT].selected_option?.value as QuixUserAccessLevel;
+      this.appHomeService.handleManageAccessControlsSubmitted(payload.user.id, payload.view.team_id, allowedChannels, accessLevel);
+      break;
+    case SLACK_ACTIONS.SUBMIT_NOTION_CONNECTION:
+      try {
+        this.integrationsInstallService.notion(payload).then(async () => {
+          await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
+            text: 'Notion connected successfully',
+            viewId: payload.view.id,
+          });
+          this.appHomeService.handleNotionConnected(payload.user.id, payload.view.team_id);
+        }).catch(error => {
+          return displayErrorModal({
+            error,
+            backgroundCaller: true,
+            viewId: payload.view.id,
+            web: new WebClient(slackWorkspace.bot_access_token)
+          });
+        });
+        return displayLoadingModal('Please Wait');
+      } catch (error) {
+        console.error(error);
+        return displayErrorModal({
+          error,
+          backgroundCaller: true,
+          viewId: payload.view.id,
+          web: new WebClient(slackWorkspace.bot_access_token)
+        });
+      }
+    case SLACK_ACTIONS.SUBMIT_LINEAR_CONNECTION:
+      try {
+        this.integrationsInstallService.linear(payload).then(async () => {
+          await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
+            text: 'Linear connected successfully',
+            viewId: payload.view.id,
+          });
+          this.appHomeService.handleLinearConnected(payload.user.id, payload.view.team_id);
+        }).catch(error => {
+          return displayErrorModal({
+            error,
+            backgroundCaller: true,
+            viewId: payload.view.id,
+            web: new WebClient(slackWorkspace.bot_access_token)
+          });
+        });
+        return displayLoadingModal('Please Wait');
+      } catch (error) {
+        console.error(error);
+        return displayErrorModal({
+          error,
+          backgroundCaller: true,
+          viewId: payload.view.id,
+          web: new WebClient(slackWorkspace.bot_access_token)
+        });
+      }
+    case SLACK_ACTIONS.SUBMIT_MCP_CONNECTION:
+      try {
+        this.integrationsInstallService.mcp(payload).then(async () => {
+          await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
+            text: 'MCP server connected successfully',
+            viewId: payload.view.id,
+          });
+          this.appHomeService.handleMcpConnected(payload.user.id, payload.view.team_id);
+        }).catch(error => {
+          return displayErrorModal({
+            error,
+            backgroundCaller: true,
+            viewId: payload.view.id,
+            web: new WebClient(slackWorkspace.bot_access_token)
+          });
+        });
+        return displayLoadingModal('Please Wait');
+      } catch (error) {
+        console.error(error);
+        return displayErrorModal({
+          error,
+          backgroundCaller: true,
+          viewId: payload.view.id,
+          web: new WebClient(slackWorkspace.bot_access_token)
+        });
+      }
+    default:
+      return;
     }
   }
 }
