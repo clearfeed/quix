@@ -91,9 +91,10 @@ export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfi
           description: z.string().optional().describe('The description of the task'),
           status: z.string().optional().describe('The status of the task'),
           priority: z.string().optional().describe('The priority of the task'),
-          ownerId: z.string().optional().describe('The ID of the owner of the task'),
+          ownerId: z.string().optional().describe('The ID of the person who will own the task, also referred to as Assignee. If you have a name or email, use the find_user tool to get the user ID first.'),
           whatId: z.string().describe('The ID of the object to create the task for'),
-          type: z.string().optional().describe('The type of the task. Possible values can be obtained from the describe_object tool')
+          type: z.string().optional().describe('The type of the task. Possible values can be obtained from the describe_object tool'),
+          dueDate: z.string().optional().describe('The due date of the task, also referred to as ActivityDate')
         }),
       }
     ),

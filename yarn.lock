@@ -359,36 +359,33 @@
     zod "^3.24.2"
 
 "@clearfeed-ai/quix-common-agent@^1.1.2":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.1.2.tgz#392a19e330ad18f526ba7ed815f34b7fce594882"
-  integrity sha512-D8FbBRmOfoZCwmwWI13kQJi/xLdRV7kvm/4o8duHEwqK9CzdE/68nf8EU9minO8B86+Go9Ys2BtLXjAf42H5YQ==
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.1.4.tgz#7d6aac4cf2214b1a86658033e796b8f4dd17b63e"
+  integrity sha512-8uYN+tRRJiejWpxfaZvVR0MKFCsMIT/myizmZKiVZIM//RSU+9oJN8E4T01ZbvpItk62wV6rpGs+50d+pod6fA==
   dependencies:
-    "@langchain/core" "^0.3.40"
     zod "^3.24.2"
 
 "@clearfeed-ai/quix-github-agent@^1.2.3":
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.2.4.tgz#e19d059e9955ce6be5196058373d06985a824900"
-  integrity sha512-+6WGRb/yU1OaOFbxhJr20W8pjTkanhw+dv6ok8no1t14ffaMw52bF3TE4VEAlSuuYNktPnQqCPC6HoIxAi2j9Q==
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.2.5.tgz#1d67a8d53e50e70d6049e70da5d5e177dadf42aa"
+  integrity sha512-1OZliQhvBMKnhdBb+IzT3phMURWKNtRKKInMuo2CPUhNXdQ0lR2UDFubwoHBHBge0Y+s9Dt0WY93EXSBPIeepw==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "^1.1.2"
     "@octokit/rest" "^19.0.13"
 
-"@clearfeed-ai/quix-hubspot-agent@1.1.3":
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-1.1.3.tgz#10891bd207f88be8ecbe5be82d87cc5c0a3a2f5a"
-  integrity sha512-1GY1IT/sYQCbcHj8EevlDjf0RkBg5lCx1ut1QxwtyMbbvNyG0Pw9sNhs9GzJjpe9j8cY2GJ1K373f/c0dswCnQ==
+"@clearfeed-ai/quix-hubspot-agent@^1.1.3":
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-1.1.4.tgz#2098ca3fb435938b4b9ca2acab157987a841d953"
+  integrity sha512-WzGPTv+pxMibSHKzK6rWPmAMEx4lpbVo6enl5dptljsBaGAFeFxMPhg4LEj+vi4vufGm6OlL8XsF+D3vxmdAFw==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "^1.1.0"
     "@hubspot/api-client" "^12.0.1"
 
-"@clearfeed-ai/quix-jira-agent@1.2.7":
-  version "1.2.7"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.2.7.tgz#d77506adae8593673999e338910bff39fed4cac5"
-  integrity sha512-6ZPNjs4AfvRHHIu4r73nRwe09G4R+RfsJPKiYFdTcAMNo06iylV6MxqmiqBrRIp49QMKJVtexFQPcOZgfpur9g==
+"@clearfeed-ai/quix-jira-agent@^1.2.7":
+  version "1.2.9"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.2.9.tgz#660b240c081bd1f34c7a22e3a2cbc658cedec004"
+  integrity sha512-w5+6K7l+eIAyeg4neTQ2paMkm3X6fu2Ayh/KDQo6lqKV3AzHZKsJnd2mplU0QVmlBr+f4S7cH652y/6QBlT+IQ==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "^1.1.0"
-    axios "^1.7.9"
+    atlassian-jwt "^2.0.3"
+    axios "^1.8.2"
 
 "@clearfeed-ai/quix-postgres-agent@^1.0.0":
   version "1.0.0"
@@ -399,9 +396,9 @@
     pg "^8.14.0"
 
 "@clearfeed-ai/quix-salesforce-agent@^1.0.2":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-salesforce-agent/-/quix-salesforce-agent-1.0.5.tgz#3ce51ac72f9d552593a0f6c942015a61d9e2f3c0"
-  integrity sha512-viUJySsbEAVFyNaG1vfNbf/89CciXlKUueiwPYG0Uza32pokqF65hWksPwf0al4KgsdKSa3kHLkLp2r+QJ98dA==
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-salesforce-agent/-/quix-salesforce-agent-1.0.6.tgz#7b3176443b43953b0d2120dee7068b09b68d1daf"
+  integrity sha512-PSVFeNsVYlT3Ji52YOWpxc4rr0+1l/LUMhjQz5y+99S1mnQSe/YpKt4BiOWrJdZLojNZQScBKAIMZJ5cy6eJag==
   dependencies:
     "@clearfeed-ai/quix-common-agent" "^1.1.0"
     jsforce "^3.5.0"
@@ -957,7 +954,7 @@
   dependencies:
     buffer "^6.0.3"
 
-"@langchain/core@0.3.40", "@langchain/core@^0.3.40":
+"@langchain/core@0.3.40":
   version "0.3.40"
   resolved "https://registry.yarnpkg.com/@langchain/core/-/core-0.3.40.tgz#e5f41f8b4288672d73aa98bcdaf6b32df0480db8"
   integrity sha512-RGhJOTzJv6H+3veBAnDlH2KXuZ68CXMEg6B6DPTzL3IGDyd+vLxXG4FIttzUwjdeQKjrrFBwlXpJDl7bkoApzQ==
@@ -1911,10 +1908,10 @@
     "@types/node" "*"
     form-data "^4.0.0"
 
-"@types/node@*", "@types/node@>=18.0.0", "@types/node@^22.10.7":
-  version "22.13.8"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.13.8.tgz#57e2450295b33a6518d6fd4f65f47236d3e41d8d"
-  integrity sha512-G3EfaZS+iOGYWLLRCEAXdWK9my08oHNZ+FHluRiggIYJPOXzhOiDgpVCUHaUvyIC5/fj7C/p637jdzC666AOKQ==
+"@types/node@*":
+  version "22.13.17"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.13.17.tgz#9ca6a81a0180cdcfd3719b9cf6c09186756e1754"
+  integrity sha512-nAJuQXoyPj04uLgu+obZcSmsfOenUg6DxPKogeUy6yNCFwWaj5sBF8/G/pNo8EtBJjAfSVgfIlugR/BCOleO+g==
   dependencies:
     undici-types "~6.20.0"
 
@@ -1922,6 +1919,13 @@
   version "22.13.9"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-22.13.9.tgz#5d9a8f7a975a5bd3ef267352deb96fb13ec02eca"
   integrity sha512-acBjXdRJ3A6Pb3tqnw9HZmyR3Fiol3aGxRCK1x3d+6CDAMjl7I649wpSd+yNURCjbOUGu9tqtLKnTGxmK6CyGw==
+  dependencies:
+    undici-types "~6.20.0"
+
+"@types/node@>=18.0.0", "@types/node@^22.10.7":
+  version "22.13.8"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.13.8.tgz#57e2450295b33a6518d6fd4f65f47236d3e41d8d"
+  integrity sha512-G3EfaZS+iOGYWLLRCEAXdWK9my08oHNZ+FHluRiggIYJPOXzhOiDgpVCUHaUvyIC5/fj7C/p637jdzC666AOKQ==
   dependencies:
     undici-types "~6.20.0"
 
@@ -2559,10 +2563,27 @@ at-least-node@^1.0.0:
   resolved "https://registry.yarnpkg.com/at-least-node/-/at-least-node-1.0.0.tgz#602cd4b46e844ad4effc92a8011a3c46e0238dc2"
   integrity sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==
 
-axios@^1.7.8, axios@^1.7.9:
+atlassian-jwt@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/atlassian-jwt/-/atlassian-jwt-2.0.3.tgz#f5772bf422e8236b33e9eac8da4991a5d83ed4e0"
+  integrity sha512-G9oO3HHS1UKgsLRXj6nNKv2TY6g3PleBCdzHwbFeVKg+18GBFIMRz+ApxuOuWAgcL7RngNFF5rGNtw1Ss3hvTg==
+  dependencies:
+    jsuri "^1.3.1"
+    lodash "^4.17.21"
+
+axios@^1.7.8:
   version "1.8.2"
   resolved "https://registry.yarnpkg.com/axios/-/axios-1.8.2.tgz#fabe06e241dfe83071d4edfbcaa7b1c3a40f7979"
   integrity sha512-ls4GYBm5aig9vWx8AWDSGLpnpDQRtWAfrjU+EuytuODrFBkqesN2RkOQCBzrA1RQNHw1SmRMSDDDSwzNAYQ6Rg==
+  dependencies:
+    follow-redirects "^1.15.6"
+    form-data "^4.0.0"
+    proxy-from-env "^1.1.0"
+
+axios@^1.8.2:
+  version "1.8.4"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.8.4.tgz#78990bb4bc63d2cae072952d374835950a82f447"
+  integrity sha512-eBSYY4Y68NNlHbHBMdeDmKNtDgXWhQsJcGqzO3iLUM0GraQFSS9cVgPX5I9b3lbdFKyYoAEGAZF1DwhTaljNAw==
   dependencies:
     follow-redirects "^1.15.6"
     form-data "^4.0.0"
@@ -5290,6 +5311,11 @@ jsonwebtoken@^9:
     lodash.once "^4.0.0"
     ms "^2.1.1"
     semver "^7.5.4"
+
+jsuri@^1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/jsuri/-/jsuri-1.3.1.tgz#cd93fc6a87b255142cb7b0f479f00517ab9395ed"
+  integrity sha512-LLdAeqOf88/X0hylAI7oSir6QUsz/8kOW0FcJzzu/SJRfORA/oPHycAOthkNp7eLPlTAbqVDFbqNRHkRVzEA3g==
 
 jwa@^1.4.1:
   version "1.4.1"
