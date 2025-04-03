@@ -27,7 +27,8 @@ const sanitizeName = (name: string): string => {
 export const createLLMContext = async (
   event: GenericMessageEvent | AppMentionEvent,
   userInfoMap: ParseSlackMentionsUserMap,
-  slackWorkspace: SlackWorkspace
+  slackWorkspace: SlackWorkspace,
+  currentMessageTs: string
 ) => {
   const client = new WebClient(slackWorkspace.bot_access_token);
   let messages: LLMContext[] = [];
@@ -41,6 +42,7 @@ export const createLLMContext = async (
     if (messagesResponse.messages && messagesResponse.messages.length > 0) {
       messages = messagesResponse.messages
         .map((message: MessageElement) => {
+          if (message.ts === currentMessageTs) return;
           if (message.subtype === 'assistant_app_thread' || !message.text) return;
           const rawAuthor =
             message.app_id === slackWorkspace.app_id

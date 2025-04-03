@@ -45,6 +45,10 @@ export const SLACK_ACTIONS = {
     NAME: 'mcp-name',
     URL: 'mcp-url',
     API_TOKEN: 'mcp-api-token'
+  },
+  SALESFORCE_CONFIG_MODAL: {
+    DEFAULT_PROMPT: 'salesforce-default-prompt',
+    SUBMIT: 'submit-salesforce-config-modal'
   }
 } as const;
 

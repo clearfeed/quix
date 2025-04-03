@@ -2,6 +2,7 @@ import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize
 import { Nullable } from '@quix/lib/types/common';
 import { InferAttributes, InferCreationAttributes, NonAttribute } from 'sequelize';
 import { SlackWorkspace } from './slack-workspace.model';
+import { encrypt, decrypt } from '../../lib/utils/encryption';
 
 @Table({
   tableName: 'mcp_connections',
@@ -50,6 +51,19 @@ export class McpConnection extends Model<
     defaultValue: {}
   })
   declare request_config: Nullable<Record<string, any>>;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true
+  })
+  get default_prompt(): Nullable<string> {
+    const value = this.getDataValue('default_prompt') as string;
+    if (!value) return null;
+    return decrypt(value);
+  }
+  set default_prompt(value: Nullable<string>) {
+    this.setDataValue('default_prompt', value ? encrypt(value) : value);
+  }
 
   @BelongsTo(() => SlackWorkspace, {
     foreignKey: 'team_id',

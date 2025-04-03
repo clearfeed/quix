@@ -1,7 +1,6 @@
 import { createHubspotToolsExport } from '@clearfeed-ai/quix-hubspot-agent';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { SlackWorkspace } from '../database/models';
@@ -11,7 +10,7 @@ import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent
 import { McpServerCleanupFn, McpService } from './mcp.service';
 import { QuixPrompts, SUPPORTED_INTEGRATIONS } from '../lib/constants';
 import { createCommonToolsExport } from '@clearfeed-ai/quix-common-agent';
-import { ToolCategory } from './types';
+import { AvailableToolsWithConfig } from './types';
 
 @Injectable()
 export class ToolService {
@@ -23,9 +22,7 @@ export class ToolService {
 
   private runningTools: McpServerCleanupFn[] = [];
 
-  async getAvailableTools(
-    teamId: string
-  ): Promise<Partial<Record<ToolCategory, ToolConfig>> | undefined> {
+  async getAvailableTools(teamId: string): Promise<Partial<AvailableToolsWithConfig> | undefined> {
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
       include: [
         'jiraConfig',
@@ -38,56 +35,74 @@ export class ToolService {
       ]
     });
     if (!slackWorkspace) return;
-    const tools: Partial<Record<ToolCategory, ToolConfig>> = {
-      common: createCommonToolsExport()
+    const tools: Partial<AvailableToolsWithConfig> = {
+      common: {
+        toolConfig: createCommonToolsExport(),
+        config: slackWorkspace
+      }
     };
     const jiraConfig = slackWorkspace.jiraConfig;
     if (jiraConfig) {
       const updatedJiraConfig = await this.integrationsService.updateJiraConfig(jiraConfig);
-      tools.jira = createJiraToolsExport({
-        host: updatedJiraConfig.url,
-        apiHost: `https://api.atlassian.com/ex/jira/${updatedJiraConfig.id}`,
-        auth: { bearerToken: updatedJiraConfig.access_token },
-        ...(updatedJiraConfig.default_config
-          ? {
-              defaultConfig: updatedJiraConfig.default_config
-            }
-          : {})
-      });
+      tools.jira = {
+        toolConfig: createJiraToolsExport({
+          host: updatedJiraConfig.url,
+          apiHost: `https://api.atlassian.com/ex/jira/${updatedJiraConfig.id}`,
+          auth: { bearerToken: updatedJiraConfig.access_token },
+          ...(updatedJiraConfig.default_config
+            ? {
+                defaultConfig: updatedJiraConfig.default_config
+              }
+            : {})
+        }),
+        config: jiraConfig
+      };
     }
     const hubspotConfig = slackWorkspace.hubspotConfig;
     if (hubspotConfig) {
       const updatedHubspotConfig =
         await this.integrationsService.updateHubspotConfig(hubspotConfig);
-      tools.hubspot = createHubspotToolsExport({ accessToken: updatedHubspotConfig.access_token });
+      tools.hubspot = {
+        toolConfig: createHubspotToolsExport({ accessToken: updatedHubspotConfig.access_token }),
+        config: hubspotConfig
+      };
     }
     const githubConfig = slackWorkspace.githubConfig;
     if (githubConfig) {
-      tools.github = createGitHubToolsExport({
-        token: githubConfig.access_token,
-        owner: githubConfig.default_config?.owner,
-        repo: githubConfig.default_config?.repo
-      });
+      tools.github = {
+        toolConfig: createGitHubToolsExport({
+          token: githubConfig.access_token,
+          owner: githubConfig.default_config?.owner,
+          repo: githubConfig.default_config?.repo
+        }),
+        config: githubConfig
+      };
     }
     const postgresConfig = slackWorkspace.postgresConfig;
     if (postgresConfig) {
-      tools.postgres = createPostgresToolsExport({
-        host: postgresConfig.host,
-        port: postgresConfig.port,
-        user: postgresConfig.user,
-        password: postgresConfig.password,
-        database: postgresConfig.database,
-        ssl: postgresConfig.ssl
-      });
+      tools.postgres = {
+        toolConfig: createPostgresToolsExport({
+          host: postgresConfig.host,
+          port: postgresConfig.port,
+          user: postgresConfig.user,
+          password: postgresConfig.password,
+          database: postgresConfig.database,
+          ssl: postgresConfig.ssl
+        }),
+        config: postgresConfig
+      };
     }
     const salesforceConfig = slackWorkspace.salesforceConfig;
     if (salesforceConfig) {
       const updatedSalesforceConfig =
         await this.integrationsService.updateSalesforceConfig(salesforceConfig);
-      tools.salesforce = createSalesforceToolsExport({
-        instanceUrl: updatedSalesforceConfig.instance_url,
-        accessToken: updatedSalesforceConfig.access_token
-      });
+      tools.salesforce = {
+        toolConfig: createSalesforceToolsExport({
+          instanceUrl: updatedSalesforceConfig.instance_url,
+          accessToken: updatedSalesforceConfig.access_token
+        }),
+        config: salesforceConfig
+      };
     }
 
     // Handle MCP-based integrations
@@ -100,11 +115,14 @@ export class ToolService {
       if (slackMcpTools && slackMcpTools.tools.length > 0) {
         this.runningTools.push(slackMcpTools.cleanup);
         tools.slack = {
-          tools: slackMcpTools.tools,
-          prompts: {
-            toolSelection: QuixPrompts.SLACK.toolSelection,
-            responseGeneration: QuixPrompts.SLACK.responseGeneration
-          }
+          toolConfig: {
+            tools: slackMcpTools.tools,
+            prompts: {
+              toolSelection: QuixPrompts.SLACK.toolSelection,
+              responseGeneration: QuixPrompts.SLACK.responseGeneration
+            }
+          },
+          config: slackWorkspace
         };
       }
 
@@ -118,11 +136,14 @@ export class ToolService {
         if (notionMcpTools && notionMcpTools.tools.length > 0) {
           this.runningTools.push(notionMcpTools.cleanup);
           tools.notion = {
-            tools: notionMcpTools.tools,
-            prompts: {
-              toolSelection: QuixPrompts.NOTION.toolSelection,
-              responseGeneration: QuixPrompts.NOTION.responseGeneration
-            }
+            toolConfig: {
+              tools: notionMcpTools.tools,
+              prompts: {
+                toolSelection: QuixPrompts.NOTION.toolSelection,
+                responseGeneration: QuixPrompts.NOTION.responseGeneration
+              }
+            },
+            config: slackWorkspace.notionConfig
           };
         }
       }
@@ -140,11 +161,14 @@ export class ToolService {
         if (linearMcpTools && linearMcpTools.tools.length > 0) {
           this.runningTools.push(linearMcpTools.cleanup);
           tools.linear = {
-            tools: linearMcpTools.tools,
-            prompts: {
-              toolSelection: QuixPrompts.LINEAR.toolSelection,
-              responseGeneration: QuixPrompts.LINEAR.responseGeneration
-            }
+            toolConfig: {
+              tools: linearMcpTools.tools,
+              prompts: {
+                toolSelection: QuixPrompts.LINEAR.toolSelection,
+                responseGeneration: QuixPrompts.LINEAR.responseGeneration
+              }
+            },
+            config: slackWorkspace.linearConfig
           };
         }
       }

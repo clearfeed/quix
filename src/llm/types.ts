@@ -1,3 +1,7 @@
+import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
+import { SlackWorkspace } from '@quix/database/models';
+import { Connections } from '@quix/lib/types/common';
+
 export type LLMContext = {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -14,6 +18,7 @@ export interface MessageProcessingArgs {
   threadTs: string;
   previousMessages: LLMContext[];
   channelId: string;
+  authorName: string;
 }
 
 export enum ToolCategory {
@@ -27,3 +32,7 @@ export enum ToolCategory {
   NOTION = 'notion',
   LINEAR = 'linear'
 }
+export type AvailableToolsWithConfig = Record<
+  ToolCategory,
+  { toolConfig: ToolConfig; config?: Connections | SlackWorkspace }
+>;
