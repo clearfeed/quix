@@ -25,6 +25,9 @@ oauth_config:
       - mpim:history
       - channels:history
       - groups:history
+      - users:read
+      - users:read.email
+      - channels:read
 settings:
   event_subscriptions:
     request_url: <YOUR_EVENTS_URL>

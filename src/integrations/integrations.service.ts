@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { JiraConfig, HubspotConfig, PostgresConfig, SalesforceConfig, GithubConfig } from '../database/models';
+import { Injectable, Logger } from '@nestjs/common';
+import { JiraConfig, HubspotConfig, PostgresConfig, SalesforceConfig, GithubConfig, NotionConfig, LinearConfig, McpConnection } from '../database/models';
 import { TimeInMilliSeconds } from '@quix/lib/constants';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
@@ -21,7 +21,13 @@ export class IntegrationsService {
     @InjectModel(SalesforceConfig)
     private readonly salesforceConfigModel: typeof SalesforceConfig,
     @InjectModel(GithubConfig)
-    private readonly githubConfigModel: typeof GithubConfig
+    private readonly githubConfigModel: typeof GithubConfig,
+    @InjectModel(NotionConfig)
+    private readonly notionConfigModel: typeof NotionConfig,
+    @InjectModel(LinearConfig)
+    private readonly linearConfigModel: typeof LinearConfig,
+    @InjectModel(McpConnection)
+    private readonly mcpConnectionModel: typeof McpConnection
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
@@ -136,4 +142,24 @@ export class IntegrationsService {
     await this.githubConfigModel.destroy({ where: { team_id: teamId }, force: true });
   }
 
+  async removeNotionConfig(teamId: string) {
+    await this.notionConfigModel.destroy({ where: { team_id: teamId }, force: true });
+  }
+
+  async removeLinearConfig(teamId: string): Promise<void> {
+    await this.linearConfigModel.destroy({
+      where: {
+        team_id: teamId
+      }
+    });
+  }
+
+  async removeMcpConnection(teamId: string, id: string): Promise<void> {
+    await this.mcpConnectionModel.destroy({
+      where: {
+        team_id: teamId,
+        id
+      }
+    });
+  }
 }

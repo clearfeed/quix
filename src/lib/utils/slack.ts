@@ -1,4 +1,4 @@
-import { AppMentionEvent, GenericMessageEvent, KnownBlock } from "@slack/web-api";
+import { AppMentionEvent, ErrorCode, GenericMessageEvent, KnownBlock } from "@slack/web-api";
 import { LLMContext } from "@quix/llm/types";
 import { WebClient } from "@slack/web-api";
 import { MessageElement } from "@slack/web-api/dist/types/response/ConversationsHistoryResponse";
@@ -33,7 +33,7 @@ export const createLLMContext = async (event: GenericMessageEvent | AppMentionEv
     if (messagesResponse.messages && messagesResponse.messages.length > 0) {
       messages = messagesResponse.messages.map((message: MessageElement) => {
         if (message.subtype === 'assistant_app_thread' || !message.text) return;
-        const rawAuthor = message.app_id === slackWorkspace.app_id ? 'Quix' : userInfoMap[message.user || '']?.name;
+        const rawAuthor = message.app_id === slackWorkspace.app_id ? 'Quix' : message.subtype === 'bot_message' ? message.username : userInfoMap[message.user || '']?.name;
         const author = rawAuthor ? sanitizeName(rawAuthor) : 'Unknown';
         return {
           role: message.app_id === slackWorkspace.app_id ? 'assistant' : 'user',
@@ -184,3 +184,7 @@ export const parseInputBlocksSubmission = (
   }
   return submittedValuesRecord;
 };
+
+export function isSlackWebClientError(error: any): boolean {
+  return Object.values(ErrorCode).includes(error.code);
+}
