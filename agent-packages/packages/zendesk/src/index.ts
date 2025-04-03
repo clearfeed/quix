@@ -6,16 +6,15 @@ import {
   GetTicketResponse,
   SearchTicketsResponse,
   GetTicketWithRepliesParams,
-  TicketWithReplies,
   AddInternalNoteParams,
-  InternalNote,
+  GetInternalNotesResponse,
   GetInternalNotesParams,
+  AddInternalNoteResponse,
   AddInternalCommentParams,
   AddInternalCommentResponse,
-  AddInternalNoteResponse
+  TicketWithRepliesResponse
 } from './types';
 import { BaseService, BaseResponse } from '@clearfeed-ai/quix-common-agent';
-import _ from 'lodash';
 import { TicketComment } from 'node-zendesk/dist/types/clients/core/tickets';
 
 export * from './tools';
@@ -25,30 +24,27 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
   private client;
 
   constructor(private config: ZendeskConfig) {
-    this.client = createClient({
-      subdomain: config.subdomain,
-      token: config.auth.token,
-      username: config.auth.username
-    });
-    if (!config.subdomain || !config.auth.token || !config.auth.username) {
-      throw new Error('Zendesk integration is not configured. Please pass in a token.');
+    if ('oauthToken' in config.auth) {
+      this.client = createClient({
+        subdomain: config.subdomain,
+        oauth: true,
+        token: config.auth.oauthToken,
+      });
+    } else {
+      this.client = createClient({
+        subdomain: config.subdomain,
+        token: config.auth.token,
+        username: config.auth.username,
+      });
     }
   }
 
   validateConfig(config?: Record<string, any>): { isValid: boolean; error?: string; } & Record<string, any> {
-    const ticketId = config?.ticketId;
-    if (!ticketId) {
-      return {
-        isValid: false,
-        error: 'Ticket must be provided'
-      }
-    }
-    return { isValid: true, ticketId }
+    return { isValid: true }
   }
 
   async searchTickets(params: SearchTicketsParams): Promise<BaseResponse<SearchTicketsResponse['data']>> {
     try {
-      _.every(['query'], (field) => _.has(params, field));
       const response = await this.client.search.query(`type:ticket ${params.query}`);
       const tickets = Array.isArray(response.result) ? response.result.slice(0, params.limit || 10) : [];
       return {
@@ -66,7 +62,6 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
 
   async getTicket(params: GetTicketParams): Promise<BaseResponse<GetTicketResponse['data']>> {
     try {
-      _.every(['ticketId'], (field) => _.has(params, field));
       const response = await this.client.tickets.show(params.ticketId);
       return {
         success: true,
@@ -81,10 +76,8 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
     }
   }
 
-  async getTicketWithReplies(params: GetTicketWithRepliesParams): Promise<BaseResponse<TicketWithReplies>> {
+  async getTicketWithReplies(params: GetTicketWithRepliesParams): Promise<BaseResponse<TicketWithRepliesResponse>> {
     try {
-      _.every(['ticketId'], (field) => _.has(params, field));
-
       const [ticketResponse, commentsResponse] = await Promise.all([
         this.client.tickets.show(params.ticketId),
         this.client.tickets.getComments(params.ticketId)
@@ -108,8 +101,6 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
 
   async addInternalNote(params: AddInternalNoteParams): Promise<BaseResponse<AddInternalNoteResponse>> {
     try {
-      _.every(['ticketId', 'note'], (field) => _.has(params, field));
-
       const response = await this.client.tickets.update(params.ticketId, {
         ticket: {
           comment: {
@@ -137,9 +128,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
 
   async addInternalComment(params: AddInternalCommentParams): Promise<BaseResponse<AddInternalCommentResponse['data']>> {
     try {
-      _.every(['ticketId', 'comment'], (field) => _.has(params, field));
-
-      const response = await this.client.tickets.update(params.ticketId, {
+      await this.client.tickets.update(params.ticketId, {
         ticket: {
           comment: {
             body: params.comment,
@@ -152,7 +141,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
         success: true,
         data: {
           ticketId: params.ticketId,
-          commentId: response.result.id
+          comment: params.comment,
         }
       };
     } catch (error: any) {
@@ -164,10 +153,8 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
     }
   }
 
-  async getInternalNotes(params: GetInternalNotesParams): Promise<BaseResponse<InternalNote[]>> {
+  async getInternalNotes(params: GetInternalNotesParams): Promise<BaseResponse<GetInternalNotesResponse>> {
     try {
-      _.every(['ticketId'], (field) => _.has(params, field));
-
       const response = await this.client.tickets.getComments(params.ticketId);
       const internalNotes = response
         .filter((comment: TicketComment) => !comment.public)
