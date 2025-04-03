@@ -1,5 +1,5 @@
 import { HomeView } from '@slack/web-api';
-import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
+import { SLACK_ACTIONS, TRIAL_DAYS } from '@quix/lib/utils/slack-constants';
 import { HomeViewArgs } from './types';
 import { INTEGRATIONS, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { getInstallUrl } from '@quix/lib/utils/slack';
@@ -225,7 +225,8 @@ const getToolConnectionView = (
 };
 
 const getOpenAIView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
-  if (slackWorkspace.openai_key)
+  console.log(slackWorkspace.openai_key);
+  if (slackWorkspace.isOpenAIKeySet())
     return [
       Blocks.Section({
         text: `${Md.emoji('white_check_mark')} OpenAI API key is already set.`
@@ -242,8 +243,30 @@ const getOpenAIView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
         ])
       )
     ];
+
+  const createdAt = new Date(slackWorkspace.created_at);
+  const trialEndDate = new Date(createdAt.getTime() + TRIAL_DAYS * 1000 * 60 * 60 * 24);
+  const currentDate = new Date();
+  const daysRemaining = Math.floor(
+    (trialEndDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  let message = '';
+  if (daysRemaining >= 0) {
+    message = `${Md.emoji('rocket')} *Trial Mode Active*\n`;
+    if (daysRemaining === 0) {
+      message += 'Your trial will expire today';
+    } else {
+      message += `Your trial will expire in ${daysRemaining} day${daysRemaining > 1 ? 's' : ''}`;
+    }
+    message += `\nTo continue using Quix after the trial, please enter your OpenAI API key.`;
+  } else {
+    message = `Your trial has expired. Please enter your OpenAI API key to continue using Quix.`;
+  }
   return [
-    Blocks.Section({ text: 'To get started, please enter your OpenAI API key:' }).accessory(
+    Blocks.Section({
+      text: message
+    }).accessory(
       Elements.Button({
         text: 'Add OpenAI Key',
         actionId: SLACK_ACTIONS.ADD_OPENAI_KEY
