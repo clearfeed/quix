@@ -49,7 +49,10 @@ export interface InternalNote {
   author_id: number;
 }
 
-export type AddInternalNoteResponse = BaseResponse<InternalNote>;
+export type AddInternalNoteResponse = {
+  ticketId: number;
+  note: string;
+};
 export type GetInternalNotesResponse = BaseResponse<InternalNote[]>;
 export interface AddInternalCommentParams {
   ticketId: number;
