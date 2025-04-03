@@ -1,3 +1,7 @@
+import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
+
+import { AvailableToolsWithConfig } from '@quix/llm/types';
+
 export const OPENAI_CONTEXT_SIZE = 30;
 
 export enum SUPPORTED_INTEGRATIONS {
@@ -137,16 +141,17 @@ export const TimeInMinutes = {
 export const SlackMessageUserIdRegex = new RegExp(/<@([U|W]\w+)>/g);
 
 export const QuixPrompts = {
-  basePrompt: `
-  You are Quix, a helpful assistant that must use the available tools when relevant to answer the user's queries. These queries may come from different sources and may require using one or more tools in sequence.
+  basePrompt: (authorName: string) => `
+  You are Quix, a helpful assistant who is responding to ${authorName} (also referred to as "user") that must use the available tools when relevant to answer the user's queries. These queries may come from different sources and may require using one or more tools in sequence.
 
 - You must not make up any information; always use the provided tools to retrieve facts or perform actions.
 - If a task involves multiple steps (e.g., retrieving information and then creating or sending something), use all relevant tools in the correct order.
 - Respond in clear and concise markdown.
 - Ask the user for more details only if absolutely necessary to proceed.
+- When the user references relative dates like "today", "tomorrow", or "now" you MUST always select the common tool to get the current date and time. Do not assume the current date and time.
   `,
-  multiStepBasePrompt: (plan: string) => `
-  You are Quix, a helpful assistant that must execute the following plan using available tools:
+  multiStepBasePrompt: (plan: string, authorName: string) => `
+  You are Quix, a helpful assistant who is responding to ${authorName} (also referred to as "user") that must execute the following plan using available tools:
 
 ${plan}
 
@@ -157,8 +162,32 @@ Do not ask the user for more details unless absolutely necessary to call the too
 Respond in clear markdown.
   `,
   baseToolSelection: `
-  Select the tool categories to use for the query. If no specific tool is needed, respond with "none" and provide a direct answer.
+  Select the tool categories to use for the query.
+  If no specific tool is needed, respond with "none" and provide a direct answer.
   `,
+  PLANNER_PROMPT: (allFunctions: string[], allCustomPrompts: string[]) => {
+    const basePrompt = `
+    You are a planner that breaks down the user's request into an ordered list of steps using available tools.
+Only use the following tools:`;
+    const outputPrompt = `
+    If you see the get_current_date_time tool in the list above, you MUST use it in your plan.
+    If the user references to themselves such as "I" or "me" or "user", you MUST use the user's name in your plan.
+    Each step must be:
+- a tool call: {{ "type": "tool", "tool": "toolName", "args": {{ ... }} }}
+- or a reasoning step: {{ "type": "reason", "input": "..." }}
+
+Output only structured JSON matching the required format.`;
+    const customPrompt = `
+    You MUST follow these instructions when planning your steps:
+    ${allCustomPrompts.join('\n')}
+    `;
+    return `
+    ${basePrompt}
+    ${allFunctions.join('\n')}
+    ${customPrompt}
+    ${outputPrompt}
+    `;
+  },
   NOTION: {
     toolSelection: `
     Notion is a workspace tool that manages:
