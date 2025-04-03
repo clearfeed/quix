@@ -231,7 +231,7 @@ export const publishGithubConfigModal = async (
         Input({
           label: 'Repository',
           blockId: 'repo',
-          hint: 'Quix will default to using this repository when none is specified by the user.',
+          hint: 'Quix will default to this repository for answering queries and performing tasks.',
         }).optional(true).element(Elements.TextInput({
           placeholder: 'e.g., my-awesome-repo',
           actionId: SLACK_ACTIONS.GITHUB_CONFIG_MODAL.REPO_INPUT,
@@ -240,7 +240,7 @@ export const publishGithubConfigModal = async (
         Input({
           label: 'Repository Owner',
           blockId: 'owner',
-          hint: 'Quix will default to using this owner when none is specified by the user.',
+          hint: 'Quix will default to this owner for answering queries and performing tasks.',
         }).optional(true).element(Elements.TextInput({
           placeholder: 'e.g., org-name',
           actionId: SLACK_ACTIONS.GITHUB_CONFIG_MODAL.OWNER_INPUT,
