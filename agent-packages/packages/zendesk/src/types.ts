@@ -1,13 +1,13 @@
-import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
+import { BaseConfig } from '@clearfeed-ai/quix-common-agent';
 
 export type ZendeskAuth =
   | {
-    token: string;
-    username: string;
-  }
+      token: string;
+      username: string;
+    }
   | {
-    oauthToken: string;
-  };
+      oauthToken: string;
+    };
 
 export interface ZendeskConfig extends BaseConfig {
   subdomain: string;
