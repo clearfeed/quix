@@ -50,4 +50,13 @@ export interface InternalNote {
 }
 
 export type AddInternalNoteResponse = BaseResponse<InternalNote>;
-export type GetInternalNotesResponse = BaseResponse<InternalNote[]>; 
+export type GetInternalNotesResponse = BaseResponse<InternalNote[]>;
+export interface AddInternalCommentParams {
+  ticketId: number;
+  comment: string;
+}
+
+export type AddInternalCommentResponse = BaseResponse<{
+  ticketId: number;
+  commentId: number;
+}>; 

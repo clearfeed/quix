@@ -9,10 +9,12 @@ import {
   TicketWithReplies,
   AddInternalNoteParams,
   InternalNote,
-  GetInternalNotesParams
+  GetInternalNotesParams,
+  AddInternalCommentParams,
+  AddInternalCommentResponse
 } from './types';
 import { BaseService, BaseResponse } from '@clearfeed-ai/quix-common-agent';
-import _ from 'lodash'
+import _ from 'lodash';
 
 export * from './tools';
 export * from './types';
@@ -115,16 +117,16 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
         }
       });
 
-      if (!response.result?.comment) {
-        throw new Error('Failed to create internal note: No comment data received');
+      const comment = response.result?.comment;
+      if (!comment) {
+        throw new Error('Failed to add internal note: No comment returned');
       }
 
-      const comment = response.result.comment;
       return {
         success: true,
         data: {
           id: comment.id,
-          type: 'internal_note' as const,
+          type: 'internal_note',
           body: comment.body,
           created_at: comment.created_at,
           author_id: comment.author_id
@@ -139,14 +141,48 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
     }
   }
 
+  async addInternalComment(params: AddInternalCommentParams): Promise<BaseResponse<AddInternalCommentResponse['data']>> {
+    try {
+      _.every(['ticketId', 'comment'], (field) => _.has(params, field));
+
+      const response = await this.client.tickets.update(params.ticketId, {
+        ticket: {
+          comment: {
+            body: params.comment,
+            public: false
+          }
+        }
+      });
+
+      const comment = response.result?.comment;
+      if (!comment) {
+        throw new Error('Failed to create internal comment: No comment data received');
+      }
+
+      return {
+        success: true,
+        data: {
+          ticketId: params.ticketId,
+          commentId: comment.id
+        }
+      };
+    } catch (error: any) {
+      console.error('Zendesk add internal comment error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to add internal comment'
+      };
+    }
+  }
+
   async getInternalNotes(params: GetInternalNotesParams): Promise<BaseResponse<InternalNote[]>> {
     try {
       _.every(['ticketId'], (field) => _.has(params, field));
 
       const response = await this.client.tickets.getComments(params.ticketId);
       const internalNotes = response
-        .filter(comment => !comment.public)
-        .map(comment => ({
+        .filter((comment: any) => !comment.public)
+        .map((comment: any) => ({
           id: comment.id,
           type: 'internal_note' as const,
           body: comment.body,

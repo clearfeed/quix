@@ -1,9 +1,9 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { SalesforceConfig } from './types';
+import { SalesforceConfig, SearchOpportunitiesParams } from './types';
 import { SalesforceService } from './index';
-import { CreateTaskParams } from './types/index';
+import { CreateTaskParams, DescribeObjectParams, SalesforceObjectName, SearchAccountsParams } from './types/index';
 
 const SALESFORCE_TOOL_SELECTION_PROMPT = `
 Salesforce is a CRM platform that manages:
@@ -35,12 +35,14 @@ export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfi
 
   const tools: DynamicStructuredTool<any>[] = [
     tool(
-      async (args: { stage?: string }) => service.getOpportunityCount(args.stage),
+      async (args: SearchOpportunitiesParams) => service.getOpportunityCount(args),
       {
         name: 'get_salesforce_opportunity_count',
-        description: 'Get the count of opportunities in Salesforce base on stage.',
+        description: 'Get the count of opportunities in Salesforce based on stage.',
         schema: z.object({
-          stage: z.string().optional().describe('The stage of the opportunity to get the count for')
+          stage: z.string().optional().describe('The stage of the opportunity to get the count for'),
+          keyword: z.string().optional().describe('The keyword to search for in Salesforce opportunities'),
+          ownerId: z.string().optional().describe('Salesforce user ID of the opportunity owner. If you have a name or email, use the find_user tool to get the user ID first.')
         }),
       }
     ),
@@ -54,13 +56,14 @@ export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfi
       }
     ),
     tool(
-      async (args: { keyword: string; stage?: string }) => service.searchOpportunities(args.keyword, args.stage),
+      async (args: SearchOpportunitiesParams) => service.searchOpportunities(args),
       {
         name: 'search_salesforce_opportunities',
         description: 'Search for opportunities in Salesforce based on keyword or stage',
         schema: z.object({
           stage: z.string().optional().describe('The stage of the opportunity to search for'),
-          keyword: z.string().describe('The keyword to search for in Salesforce opportunities')
+          keyword: z.string().optional().describe('The keyword to search for in Salesforce opportunities'),
+          ownerId: z.string().optional().describe('Salesforce user ID of the opportunity owner. If you have a name or email, use the find_user tool to get the user ID first.')
         }),
       }
     ),
@@ -84,12 +87,14 @@ export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfi
         name: 'create_task',
         description: 'Create a task in Salesforce',
         schema: z.object({
-          opportunityId: z.string().describe('The ID of the opportunity to create a task for'),
           subject: z.string().describe('The subject of the task'),
           description: z.string().optional().describe('The description of the task'),
           status: z.string().optional().describe('The status of the task'),
           priority: z.string().optional().describe('The priority of the task'),
-          ownerId: z.string().optional().describe('The ID of the owner of the task')
+          ownerId: z.string().optional().describe('The ID of the person who will own the task, also referred to as Assignee. If you have a name or email, use the find_user tool to get the user ID first.'),
+          whatId: z.string().describe('The ID of the object to create the task for'),
+          type: z.string().optional().describe('The type of the task. Possible values can be obtained from the describe_object tool'),
+          dueDate: z.string().optional().describe('The due date of the task, also referred to as ActivityDate')
         }),
       }
     ),
@@ -104,6 +109,28 @@ export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfi
             z.object({ name: z.string().describe('The name of the user to find') }),
             z.object({ email: z.string().describe('The email of the user to find') })
           ])
+        }),
+      }
+    ),
+    tool(
+      async (args: DescribeObjectParams) =>
+        service.describeObject(args),
+      {
+        name: 'describe_object',
+        description: 'Describe salesforce objects such as accounts, contacts, opportunities, etc.',
+        schema: z.object({
+          objectName: z.nativeEnum(SalesforceObjectName)
+        }),
+      }
+    ),
+    tool(
+      async (args: SearchAccountsParams) =>
+        service.searchAccounts(args.keyword),
+      {
+        name: 'search_accounts',
+        description: 'Search for accounts in Salesforce based on a keyword',
+        schema: z.object({
+          keyword: z.string().describe('The keyword to search for in Salesforce accounts')
         }),
       }
     )
