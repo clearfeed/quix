@@ -149,7 +149,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
         ticket: {
           comment: {
             body: params.comment,
-            public: false
+            public: true
           }
         }
       });
