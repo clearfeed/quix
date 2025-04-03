@@ -1,4 +1,4 @@
-import { SUPPORTED_INTEGRATIONS } from "@quix/lib/constants";
+import { SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 
 /**
  * Integration Events
@@ -17,5 +17,5 @@ export const EVENT_NAMES: Record<string, `connected.${SUPPORTED_INTEGRATIONS}`> 
   HUBSPOT_CONNECTED: `connected.${SUPPORTED_INTEGRATIONS.HUBSPOT}`,
   ZENDESK_CONNECTED: `connected.${SUPPORTED_INTEGRATIONS.ZENDESK}`,
   POSTGRES_CONNECTED: `connected.${SUPPORTED_INTEGRATIONS.POSTGRES}`,
-  SALESFORCE_CONNECTED: `connected.${SUPPORTED_INTEGRATIONS.SALESFORCE}`,
+  SALESFORCE_CONNECTED: `connected.${SUPPORTED_INTEGRATIONS.SALESFORCE}`
 } as const;

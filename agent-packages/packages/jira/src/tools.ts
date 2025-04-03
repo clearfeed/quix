@@ -45,7 +45,8 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
       schema: z.object({
         keyword: z.string().describe('The keyword to search for in Jira issues')
       }),
-      func: async ({ keyword }: { keyword: string }): Promise<BaseResponse<SearchIssuesResponse>> => service.searchIssues(keyword)
+      func: async ({ keyword }: { keyword: string }): Promise<BaseResponse<SearchIssuesResponse>> =>
+        service.searchIssues(keyword)
     }),
     new DynamicStructuredTool<ZodObject<{ issueId: z.ZodString }>>({
       name: 'get_jira_issue',
@@ -53,14 +54,19 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
       schema: z.object({
         issueId: z.string().describe('The Jira issue ID (e.g., PROJ-123)')
       }),
-      func: async ({ issueId }: { issueId: string }): Promise<GetIssueResponse> => service.getIssue(issueId)
+      func: async ({ issueId }: { issueId: string }): Promise<GetIssueResponse> =>
+        service.getIssue(issueId)
     }),
     new DynamicStructuredTool({
       name: 'create_jira_issue',
       description: 'Create a new JIRA issue',
       schema: z.object({
         projectKey: config.defaultConfig?.projectKey
-          ? z.string().describe('The project key where the issue will be created').optional().default(config.defaultConfig.projectKey)
+          ? z
+              .string()
+              .describe('The project key where the issue will be created')
+              .optional()
+              .default(config.defaultConfig.projectKey)
           : z.string().describe('The project key where the issue will be created (required)'),
         summary: z.string().describe('The summary/title of the issue'),
         description: z.string().describe('The description of the issue').optional(),
@@ -68,7 +74,8 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
         priority: z.string().describe('The priority of the issue').optional(),
         assignee: z.string().describe('The username of the assignee').optional()
       }),
-      func: async (params: CreateIssueParams): Promise<GetIssueResponse> => service.createIssue(params)
+      func: async (params: CreateIssueParams): Promise<GetIssueResponse> =>
+        service.createIssue(params)
     }),
     new DynamicStructuredTool({
       name: 'assign_jira_issue',
@@ -77,7 +84,13 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
         issueId: z.string().describe('The Jira issue ID (e.g., PROJ-123)'),
         accountId: z.string().describe('The ID of the person to assign the issue to')
       }),
-      func: async ({ issueId, accountId }: { issueId: string, accountId: string }): Promise<AssignIssueResponse> => service.assignIssue(issueId, accountId)
+      func: async ({
+        issueId,
+        accountId
+      }: {
+        issueId: string;
+        accountId: string;
+      }): Promise<AssignIssueResponse> => service.assignIssue(issueId, accountId)
     }),
     new DynamicStructuredTool({
       name: 'add_jira_comment',
@@ -86,7 +99,8 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
         issueId: z.string().describe('The Jira issue ID (e.g., PROJ-123)'),
         comment: z.string().describe('The comment text to add to the issue')
       }),
-      func: async (params: AddCommentParams): Promise<AddCommentResponse> => service.addComment(params)
+      func: async (params: AddCommentParams): Promise<AddCommentResponse> =>
+        service.addComment(params)
     }),
     new DynamicStructuredTool({
       name: 'get_jira_comments',
@@ -94,7 +108,8 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
       schema: z.object({
         issueId: z.string().describe('The Jira issue ID (e.g., PROJ-123)')
       }),
-      func: async ({ issueId }: { issueId: string }): Promise<GetCommentsResponse> => service.getComments(issueId)
+      func: async ({ issueId }: { issueId: string }): Promise<GetCommentsResponse> =>
+        service.getComments(issueId)
     }),
     new DynamicStructuredTool({
       name: 'update_jira_issue',
@@ -106,7 +121,7 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
           description: z.string().describe('The description of the issue').optional(),
           priority: z.string().describe('The priority of the issue').optional(),
           assigneeId: z.string().describe('The ID of the user to assign the issue to').optional(),
-          labels: z.array(z.string()).describe('The labels of the issue').optional(),
+          labels: z.array(z.string()).describe('The labels of the issue').optional()
         })
       }),
       func: async (params: {
@@ -120,7 +135,8 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
       schema: z.object({
         query: z.string().describe('The query to search for in Jira users')
       }),
-      func: async ({ query }: { query: string }): Promise<SearchUsersResponse> => service.searchUsers(query)
+      func: async ({ query }: { query: string }): Promise<SearchUsersResponse> =>
+        service.searchUsers(query)
     })
   ];
 
@@ -128,7 +144,6 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
 }
 
 export function createJiraToolsExport(config: JiraConfig): ToolConfig {
-
   return {
     tools: createJiraTools(config),
     prompts: {
@@ -136,4 +151,4 @@ export function createJiraToolsExport(config: JiraConfig): ToolConfig {
       responseGeneration: getJiraResponsePrompt(config)
     }
   };
-} 
+}

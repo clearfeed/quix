@@ -1,13 +1,14 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import { Ticket } from 'node-zendesk/dist/types/clients/core/tickets';
 
-export type ZendeskAuth = {
-  token: string;
-  username: string;
-} | {
-  oauthToken: string;
-};
-
+export type ZendeskAuth =
+  | {
+      token: string;
+      username: string;
+    }
+  | {
+      oauthToken: string;
+    };
 
 export interface ZendeskConfig extends BaseConfig {
   subdomain: string;
@@ -24,4 +25,4 @@ export interface SearchTicketsParams {
 }
 
 export type GetTicketResponse = BaseResponse<Ticket>;
-export type SearchTicketsResponse = BaseResponse<Ticket[]>; 
+export type SearchTicketsResponse = BaseResponse<Ticket[]>;

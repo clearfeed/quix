@@ -27,25 +27,25 @@ export const SLACK_ACTIONS = {
   GITHUB_CONFIG_MODAL: {
     SUBMIT: 'github-config-modal-submit',
     REPO_INPUT: 'github-config-modal-repo-input',
-    OWNER_INPUT: 'github-config-modal-owner-input',
+    OWNER_INPUT: 'github-config-modal-owner-input'
   },
   MANAGE_ACCESS_CONTROLS: 'manage-access-controls',
   ALLOWED_CHANNELS_SELECT: 'allowed-channels-select',
   ACCESS_LEVEL_SELECT: 'access-level-select',
   SUBMIT_NOTION_CONNECTION: 'submit-notion-connection',
   NOTION_CONNECTION_ACTIONS: {
-    API_TOKEN: 'notion-api-token',
+    API_TOKEN: 'notion-api-token'
   },
   SUBMIT_LINEAR_CONNECTION: 'submit-linear-connection',
   LINEAR_CONNECTION_ACTIONS: {
-    API_TOKEN: 'linear-api-token',
+    API_TOKEN: 'linear-api-token'
   },
   SUBMIT_MCP_CONNECTION: 'submit-mcp-connection',
   MCP_CONNECTION_ACTIONS: {
     NAME: 'mcp-name',
     URL: 'mcp-url',
-    API_TOKEN: 'mcp-api-token',
-  },
+    API_TOKEN: 'mcp-api-token'
+  }
 } as const;
 
 export const SLACK_SCOPES = [
@@ -58,7 +58,7 @@ export const SLACK_SCOPES = [
   'groups:history',
   'users:read',
   'users:read.email',
-  'channels:read',
+  'channels:read'
 ] as const;
 
 export const SLACK_MESSAGE_MAX_LENGTH = 3000;

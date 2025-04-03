@@ -3,9 +3,7 @@ import { IntegrationsInstallService } from './integrations-install.service';
 
 @Controller('integrations')
 export class IntegrationsController {
-  constructor(
-    private readonly integrationsInstallService: IntegrationsInstallService,
-  ) { }
+  constructor(private readonly integrationsInstallService: IntegrationsInstallService) {}
 
   @Get('connect/jira')
   @Redirect()
@@ -17,7 +15,7 @@ export class IntegrationsController {
 
     return {
       url: `slack://app?team=${result.teamId}&id=${result.appId}&tab=messages`,
-      statusCode: 302,
+      statusCode: 302
     };
   }
 
@@ -31,7 +29,7 @@ export class IntegrationsController {
 
     return {
       url: `slack://app?team=${result.teamId}&id=${result.appId}&tab=messages`,
-      statusCode: 302,
+      statusCode: 302
     };
   }
 
@@ -46,7 +44,7 @@ export class IntegrationsController {
 
     return {
       url: `slack://app?team=${result.teamId}&id=${result.appId}&tab=messages`,
-      statusCode: 302,
+      statusCode: 302
     };
   }
 
@@ -61,7 +59,7 @@ export class IntegrationsController {
 
     return {
       url: `slack://app?team=${result.teamId}&id=${result.appId}&tab=messages`,
-      statusCode: 302,
+      statusCode: 302
     };
   }
 }

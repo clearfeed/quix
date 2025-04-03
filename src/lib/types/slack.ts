@@ -1,6 +1,6 @@
-import { ViewOutput } from "@slack/bolt";
-import { Nullable } from "./common";
-import { InputBlock } from "@slack/web-api";
+import { ViewOutput } from '@slack/bolt';
+import { Nullable } from './common';
+import { InputBlock } from '@slack/web-api';
 
 export type ParseSlackMentionsUserMap = Record<
   string,

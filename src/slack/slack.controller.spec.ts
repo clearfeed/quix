@@ -6,7 +6,7 @@ describe('SlackController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [SlackController],
+      controllers: [SlackController]
     }).compile();
 
     controller = module.get<SlackController>(SlackController);

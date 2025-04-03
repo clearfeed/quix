@@ -1,5 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { JiraConfig, HubspotConfig, PostgresConfig, SalesforceConfig, GithubConfig, NotionConfig, LinearConfig, McpConnection } from '../database/models';
+import {
+  JiraConfig,
+  HubspotConfig,
+  PostgresConfig,
+  SalesforceConfig,
+  GithubConfig,
+  NotionConfig,
+  LinearConfig,
+  McpConnection
+} from '../database/models';
 import { TimeInMilliSeconds } from '@quix/lib/constants';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
@@ -34,19 +43,22 @@ export class IntegrationsService {
 
   async updateJiraConfig(jiraConfig: JiraConfig): Promise<JiraConfig> {
     const expiresAt = new Date(jiraConfig.expires_at);
-    if (expiresAt < new Date(Date.now() + (TimeInMilliSeconds.ONE_MINUTE * 10))) {
-      const response = await this.httpService.axiosRef.post('https://auth.atlassian.com/oauth/token', {
-        grant_type: 'refresh_token',
-        client_id: this.configService.get('JIRA_CLIENT_ID'),
-        client_secret: this.configService.get('JIRA_CLIENT_SECRET'),
-        refresh_token: jiraConfig.refresh_token
-      });
+    if (expiresAt < new Date(Date.now() + TimeInMilliSeconds.ONE_MINUTE * 10)) {
+      const response = await this.httpService.axiosRef.post(
+        'https://auth.atlassian.com/oauth/token',
+        {
+          grant_type: 'refresh_token',
+          client_id: this.configService.get('JIRA_CLIENT_ID'),
+          client_secret: this.configService.get('JIRA_CLIENT_SECRET'),
+          refresh_token: jiraConfig.refresh_token
+        }
+      );
       const data = response.data;
 
       await jiraConfig.update({
         access_token: data.access_token,
         refresh_token: data.refresh_token,
-        expires_at: new Date(Date.now() + (data.expires_in * 1000))
+        expires_at: new Date(Date.now() + data.expires_in * 1000)
       });
 
       return jiraConfig;
@@ -56,23 +68,27 @@ export class IntegrationsService {
 
   async updateHubspotConfig(hubspotConfig: HubspotConfig): Promise<HubspotConfig> {
     const expiresAt = new Date(hubspotConfig.expires_at);
-    if (expiresAt < new Date(Date.now() + (TimeInMilliSeconds.ONE_MINUTE * 10))) {
+    if (expiresAt < new Date(Date.now() + TimeInMilliSeconds.ONE_MINUTE * 10)) {
       const params = new URLSearchParams();
       params.set('grant_type', 'refresh_token');
       params.set('refresh_token', hubspotConfig.refresh_token);
       params.set('client_id', this.configService.get<string>('HUBSPOT_CLIENT_ID')!);
       params.set('client_secret', this.configService.get<string>('HUBSPOT_CLIENT_SECRET')!);
-      const response = await this.httpService.axiosRef.post('https://api.hubapi.com/oauth/v1/token', params, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+      const response = await this.httpService.axiosRef.post(
+        'https://api.hubapi.com/oauth/v1/token',
+        params,
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
         }
-      });
+      );
       const data = response.data;
 
       await hubspotConfig.update({
         access_token: data.access_token,
         refresh_token: data.refresh_token,
-        expires_at: new Date(Date.now() + (data.expires_in * 1000))
+        expires_at: new Date(Date.now() + data.expires_in * 1000)
       });
 
       return hubspotConfig;
@@ -84,37 +100,42 @@ export class IntegrationsService {
     const expiresAt = new Date(salesforceConfig.expires_at);
     const clientId = this.configService.get<string>('SALESFORCE_CONSUMER_KEY')!;
     const clientSecret = this.configService.get<string>('SALESFORCE_CONSUMER_SECRET')!;
-    if (expiresAt < new Date(Date.now() + (TimeInMilliSeconds.ONE_MINUTE * 10))) {
+    if (expiresAt < new Date(Date.now() + TimeInMilliSeconds.ONE_MINUTE * 10)) {
       const params = new URLSearchParams();
       params.set('grant_type', 'refresh_token');
       params.set('refresh_token', salesforceConfig.refresh_token);
       params.set('client_id', clientId);
       params.set('client_secret', clientSecret);
-      const response = await this.httpService.axiosRef.post('https://login.salesforce.com/services/oauth2/token', params, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      });
-      const oauthData = response.data;
-
-      const tokenIntrospectionResponse = await this.httpService.axiosRef.post<SalesforceTokenIntrospectionResponse>(
-        `${salesforceConfig.instance_url}/services/oauth2/introspect`,
-        new URLSearchParams({
-          token: oauthData.access_token,
-          token_type_hint: 'access_token',
-          client_id: clientId,
-          client_secret: clientSecret
-        }),
+      const response = await this.httpService.axiosRef.post(
+        'https://login.salesforce.com/services/oauth2/token',
+        params,
         {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
           }
         }
       );
+      const oauthData = response.data;
+
+      const tokenIntrospectionResponse =
+        await this.httpService.axiosRef.post<SalesforceTokenIntrospectionResponse>(
+          `${salesforceConfig.instance_url}/services/oauth2/introspect`,
+          new URLSearchParams({
+            token: oauthData.access_token,
+            token_type_hint: 'access_token',
+            client_id: clientId,
+            client_secret: clientSecret
+          }),
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+          }
+        );
 
       await salesforceConfig.update({
         access_token: oauthData.access_token,
-        expires_at: new Date(tokenIntrospectionResponse.data.exp * 1000),
+        expires_at: new Date(tokenIntrospectionResponse.data.exp * 1000)
       });
 
       return salesforceConfig;

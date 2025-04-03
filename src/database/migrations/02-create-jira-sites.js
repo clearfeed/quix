@@ -58,4 +58,4 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('jira_configs');
   }
-}; 
+};

@@ -27,7 +27,7 @@ export class JiraService implements BaseService<JiraConfig> {
       host: config.apiHost ? config.apiHost : config.host,
       apiVersion: '3',
       auth: config.auth
-    }
+    };
     this.client = new JiraClient(jiraOpts);
   }
 
@@ -239,4 +239,4 @@ export class JiraService implements BaseService<JiraConfig> {
       };
     }
   }
-} 
+}

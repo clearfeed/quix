@@ -14,19 +14,25 @@ export class LlmProviderService {
   constructor(
     private readonly config: ConfigService,
     @InjectModel(SlackWorkspace)
-    private readonly slackWorkspaceModel: typeof SlackWorkspace,
+    private readonly slackWorkspaceModel: typeof SlackWorkspace
   ) {
     this.providers = new Map();
-    this.providers.set(SupportedChatModels.OPENAI, new ChatOpenAI({
-      model: 'gpt-4o',
-      temperature: 0.5
-    }));
+    this.providers.set(
+      SupportedChatModels.OPENAI,
+      new ChatOpenAI({
+        model: 'gpt-4o',
+        temperature: 0.5
+      })
+    );
     if (this.config.get('GEMINI_API_KEY')) {
-      this.providers.set(SupportedChatModels.GEMINI, new ChatGoogleGenerativeAI({
-        model: 'gemini-2.0-flash',
-        temperature: 0.5,
-        apiKey: this.config.get('GEMINI_API_KEY')
-      }));
+      this.providers.set(
+        SupportedChatModels.GEMINI,
+        new ChatGoogleGenerativeAI({
+          model: 'gemini-2.0-flash',
+          temperature: 0.5,
+          apiKey: this.config.get('GEMINI_API_KEY')
+        })
+      );
     }
   }
 
@@ -42,7 +48,6 @@ export class LlmProviderService {
           model: 'gpt-4o',
           temperature: 0.5,
           apiKey: slackWorkspace.openai_key
-
         });
       case SupportedChatModels.GEMINI:
         return new ChatGoogleGenerativeAI({

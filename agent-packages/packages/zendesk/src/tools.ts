@@ -1,8 +1,4 @@
-import {
-  ZendeskConfig,
-  SearchTicketsParams,
-  GetTicketParams
-} from './types';
+import { ZendeskConfig, SearchTicketsParams, GetTicketParams } from './types';
 import { ZendeskService } from './index';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
@@ -35,7 +31,11 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
       name: 'search_zendesk_tickets',
       description: 'Search Zendesk tickets using a query string',
       schema: z.object({
-        query: z.string().describe('Search keywords or phrases to filter Zendesk tickets by title, description, or metadata'),
+        query: z
+          .string()
+          .describe(
+            'Search keywords or phrases to filter Zendesk tickets by title, description, or metadata'
+          ),
         limit: z.number().describe('Limit on the number of tickets to return').default(10)
       }),
       func: async (args: SearchTicketsParams) => service.searchTickets(args)

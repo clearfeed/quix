@@ -19,25 +19,31 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
       this.client = createClient({
         subdomain: config.subdomain,
         oauth: true,
-        token: config.auth.oauthToken,
+        token: config.auth.oauthToken
       });
     } else {
       this.client = createClient({
         subdomain: config.subdomain,
         token: config.auth.token,
-        username: config.auth.username,
+        username: config.auth.username
       });
     }
   }
 
-  validateConfig(config?: Record<string, any>): { isValid: boolean; error?: string; } & Record<string, any> {
-    return { isValid: true }
+  validateConfig(
+    config?: Record<string, any>
+  ): { isValid: boolean; error?: string } & Record<string, any> {
+    return { isValid: true };
   }
 
-  async searchTickets(params: SearchTicketsParams): Promise<BaseResponse<SearchTicketsResponse['data']>> {
+  async searchTickets(
+    params: SearchTicketsParams
+  ): Promise<BaseResponse<SearchTicketsResponse['data']>> {
     try {
       const response = await this.client.search.query(`type:ticket ${params.query}`);
-      const tickets = Array.isArray(response.result) ? response.result.slice(0, params.limit || 10) : [];
+      const tickets = Array.isArray(response.result)
+        ? response.result.slice(0, params.limit || 10)
+        : [];
       return {
         success: true,
         data: tickets

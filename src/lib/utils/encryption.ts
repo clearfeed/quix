@@ -14,10 +14,7 @@ const algorithm = 'aes-256-gcm';
 export function encrypt(text: string): string {
   const iv = randomBytes(16);
   const cipher = createCipheriv(algorithm, key, iv);
-  const encrypted = Buffer.concat([
-    cipher.update(text, 'utf8'),
-    cipher.final()
-  ]);
+  const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
 
   const authTag = cipher.getAuthTag();
   return Buffer.concat([iv, authTag, encrypted]).toString('base64');
@@ -38,11 +35,8 @@ export function decrypt(encryptedText: string): string {
     const decipher = createDecipheriv(algorithm, key, iv);
     decipher.setAuthTag(authTag);
 
-    return Buffer.concat([
-      decipher.update(encrypted),
-      decipher.final()
-    ]).toString('utf8');
+    return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString('utf8');
   } catch (error) {
     throw new Error('Failed to decrypt data');
   }
-} 
+}

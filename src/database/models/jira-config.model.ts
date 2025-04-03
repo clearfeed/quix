@@ -10,7 +10,12 @@ import {
   PrimaryKey,
   AllowNull
 } from 'sequelize-typescript';
-import { CreationOptional, InferAttributes, InferCreationAttributes, NonAttribute } from 'sequelize';
+import {
+  CreationOptional,
+  InferAttributes,
+  InferCreationAttributes,
+  NonAttribute
+} from 'sequelize';
 import { encrypt, decrypt } from '../../lib/utils/encryption';
 import { SlackWorkspace } from './slack-workspace.model';
 import { Nullable } from '@quix/lib/types/common';
@@ -104,4 +109,4 @@ export class JiraConfig extends Model<
 
   @UpdatedAt
   declare updated_at: CreationOptional<Date>;
-} 
+}

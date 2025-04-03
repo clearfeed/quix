@@ -21,13 +21,21 @@ export class ToolService {
     private readonly slackWorkspaceModel: typeof SlackWorkspace,
     private readonly integrationsService: IntegrationsService,
     private readonly mcpService: McpService
-  ) { }
+  ) {}
 
   private runningTools: McpServerCleanupFn[] = [];
 
   async getAvailableTools(teamId: string): Promise<Record<string, ToolConfig> | undefined> {
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
-      include: ['jiraConfig', 'hubspotConfig', 'postgresConfig', 'githubConfig', 'salesforceConfig', 'notionConfig', 'linearConfig']
+      include: [
+        'jiraConfig',
+        'hubspotConfig',
+        'postgresConfig',
+        'githubConfig',
+        'salesforceConfig',
+        'notionConfig',
+        'linearConfig'
+      ]
     });
     if (!slackWorkspace) return;
     const tools: Record<string, ToolConfig> = {
@@ -40,14 +48,17 @@ export class ToolService {
         host: updatedJiraConfig.url,
         apiHost: `https://api.atlassian.com/ex/jira/${updatedJiraConfig.id}`,
         auth: { bearerToken: updatedJiraConfig.access_token },
-        ...(updatedJiraConfig.default_config ? {
-          defaultConfig: updatedJiraConfig.default_config
-        } : {})
+        ...(updatedJiraConfig.default_config
+          ? {
+              defaultConfig: updatedJiraConfig.default_config
+            }
+          : {})
       });
     }
     const hubspotConfig = slackWorkspace.hubspotConfig;
     if (hubspotConfig) {
-      const updatedHubspotConfig = await this.integrationsService.updateHubspotConfig(hubspotConfig);
+      const updatedHubspotConfig =
+        await this.integrationsService.updateHubspotConfig(hubspotConfig);
       tools.hubspot = createHubspotToolsExport({ accessToken: updatedHubspotConfig.access_token });
     }
     const githubConfig = slackWorkspace.githubConfig;
@@ -56,7 +67,7 @@ export class ToolService {
         token: githubConfig.access_token,
         owner: githubConfig.default_config?.owner,
         repo: githubConfig.default_config?.repo
-      })
+      });
     }
     const postgresConfig = slackWorkspace.postgresConfig;
     if (postgresConfig) {
@@ -71,7 +82,8 @@ export class ToolService {
     }
     const salesforceConfig = slackWorkspace.salesforceConfig;
     if (salesforceConfig) {
-      const updatedSalesforceConfig = await this.integrationsService.updateSalesforceConfig(salesforceConfig);
+      const updatedSalesforceConfig =
+        await this.integrationsService.updateSalesforceConfig(salesforceConfig);
       tools.salesforce = createSalesforceToolsExport({
         instanceUrl: updatedSalesforceConfig.instance_url,
         accessToken: updatedSalesforceConfig.access_token
@@ -97,9 +109,12 @@ export class ToolService {
       }
 
       if (slackWorkspace.notionConfig) {
-        const notionMcpTools = await this.mcpService.getMcpServerTools(SUPPORTED_INTEGRATIONS.NOTION, {
-          NOTION_API_TOKEN: slackWorkspace.notionConfig.access_token
-        });
+        const notionMcpTools = await this.mcpService.getMcpServerTools(
+          SUPPORTED_INTEGRATIONS.NOTION,
+          {
+            NOTION_API_TOKEN: slackWorkspace.notionConfig.access_token
+          }
+        );
         if (notionMcpTools && notionMcpTools.tools.length > 0) {
           this.runningTools.push(notionMcpTools.cleanup);
           tools.notion = {
@@ -113,9 +128,11 @@ export class ToolService {
       }
 
       if (slackWorkspace.linearConfig) {
-        const linearMcpTools = await this.mcpService.getMcpServerTools(SUPPORTED_INTEGRATIONS.LINEAR, {
-          LINEAR_API_KEY: slackWorkspace.linearConfig.access_token
-        },
+        const linearMcpTools = await this.mcpService.getMcpServerTools(
+          SUPPORTED_INTEGRATIONS.LINEAR,
+          {
+            LINEAR_API_KEY: slackWorkspace.linearConfig.access_token
+          },
           slackWorkspace.linearConfig.default_config?.team_id
             ? { teamId: slackWorkspace.linearConfig.default_config.team_id }
             : undefined
@@ -133,14 +150,14 @@ export class ToolService {
       }
     } catch (error) {
       // Log error but continue with other tools
-      console.error("Failed to load MCP tools:", error);
+      console.error('Failed to load MCP tools:', error);
     }
 
     return tools;
   }
 
   async shutDownMcpServers() {
-    await Promise.all(this.runningTools.map(cleanup => cleanup()));
+    await Promise.all(this.runningTools.map((cleanup) => cleanup()));
     this.runningTools = [];
   }
 }
