@@ -58,7 +58,6 @@ export class LlmService {
       }
     }).join('\n');
     this.logger.log(`Generated plan: ${formattedPlan}`);
-    return formattedPlan;
 
     const agent = createReactAgent({
       llm,
@@ -109,7 +108,6 @@ export class LlmService {
 
     const toolSelectionPrompts = availableCategories.map(category => tools[category].prompts?.toolSelection).filter(Boolean).join('\n');
     const systemPrompt = `${QuixPrompts.basePrompt}\n${toolSelectionPrompts}`;
-    console.log(systemPrompt);
 
     const toolSelectionFunction = new DynamicStructuredTool({
       name: 'selectTool',
@@ -191,7 +189,11 @@ export class LlmService {
     const planPrompt = ChatPromptTemplate.fromMessages([
       SystemMessagePromptTemplate.fromTemplate(`
         You are a planner that breaks down the user's request into an ordered list of steps using available tools.
-Only use the following tools: ${availableFunctions.map(func => func.name).join(', ')}.
+Only use the following tools: ${availableFunctions.map(func => {
+        return `
+  ${func.name}: ${func.description}
+  `
+      }).join('\n')}.
 
 Each step must be:
 - a tool call: {{ "type": "tool", "tool": "toolName", "args": {{ ... }} }}
