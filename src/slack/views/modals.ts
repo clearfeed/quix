@@ -238,7 +238,7 @@ export const publishGithubConfigModal = async (
           initialValue: initialValues?.repo || '',
         })),
         Input({
-          label: 'Owner',
+          label: 'Repository Owner',
           blockId: 'owner',
           hint: 'Quix will default to using this owner when none is specified by the user.',
         }).optional(true).element(Elements.TextInput({

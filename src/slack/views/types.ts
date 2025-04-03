@@ -38,9 +38,7 @@ export type GithubDefaultConfig = {
 
 export type GithubDefaultConfigModalArgs = {
   triggerId: string;
-  teamId: string;
-  callbackId?: string;
-  initialValues?: GithubDefaultConfig;
+  initialValues: GithubDefaultConfig;
 }
 
 export type NotionConnectionModalArgs = {

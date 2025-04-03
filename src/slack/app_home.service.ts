@@ -207,7 +207,6 @@ export class AppHomeService {
           if (!githubConfig) return;
           await publishGithubConfigModal(webClient, {
             triggerId,
-            teamId,
             initialValues: {
               repo: githubConfig.default_config?.repo || '',
               owner: githubConfig.default_config?.owner || ''
