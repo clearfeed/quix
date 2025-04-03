@@ -50,11 +50,11 @@ export type CreateTaskParams = {
   ownerId?: string;
   type?: string;
   dueDate?: string;
-}
+};
 
 export type DescribeObjectParams = {
   objectName: SalesforceObjectName;
-}
+};
 
 export enum SalesforceObjectName {
   Account = 'Account',
@@ -66,4 +66,4 @@ export enum SalesforceObjectName {
 
 export type SearchAccountsParams = {
   keyword: string;
-}
+};

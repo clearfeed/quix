@@ -146,7 +146,7 @@ export class SlackWorkspace extends Model<
 
   // Helper method to remove an admin
   removeAdmin(userId: string): void {
-    this.admin_user_ids = this.admin_user_ids.filter(id => id !== userId);
+    this.admin_user_ids = this.admin_user_ids.filter((id) => id !== userId);
   }
 
   @AllowNull(false)
@@ -167,7 +167,7 @@ export class SlackWorkspace extends Model<
   // Check if a channel is authorized
   isChannelAuthorized(channelId: string): boolean {
     const allowedIds = this.access_settings.allowedChannelIds || [];
-    return (!allowedIds.length || allowedIds.includes(channelId)) ? true : false;
+    return !allowedIds.length || allowedIds.includes(channelId) ? true : false;
   }
 
   // Update access level for interaction
@@ -228,4 +228,4 @@ export class SlackWorkspace extends Model<
       thread_ts
     });
   }
-} 
+}

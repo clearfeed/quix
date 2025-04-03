@@ -5,7 +5,8 @@ import { RawBodyRequest } from '@nestjs/common';
 export const verifySlackSignature = (req: RawBodyRequest<Request>, secret: string | undefined) => {
   try {
     if (!secret) return false;
-    if (!req.headers['x-slack-signature'] || !req.headers['x-slack-request-timestamp']) return false;
+    if (!req.headers['x-slack-signature'] || !req.headers['x-slack-request-timestamp'])
+      return false;
     // Grab the signature and timestamp from the headers
     const requestSignature = req.headers['x-slack-signature'] as string;
     const requestTimestamp = req.headers['x-slack-request-timestamp'];
@@ -28,4 +29,4 @@ export const verifySlackSignature = (req: RawBodyRequest<Request>, secret: strin
     console.error(error);
     return false;
   }
-}
+};

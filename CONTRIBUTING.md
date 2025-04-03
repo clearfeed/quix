@@ -7,6 +7,7 @@ Thank you for considering contributing to Quix! We welcome contributions in the 
 1. **Fork the Repository**: Create a personal fork of the repository on GitHub.
 
 2. **Clone Your Fork**:
+
    ```bash
    git clone <your-fork-url>
    cd <repository-directory>
@@ -14,6 +15,7 @@ Thank you for considering contributing to Quix! We welcome contributions in the 
 
 3. **Create a Branch**:
    Create a new branch for your feature or bug fix:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -23,12 +25,14 @@ Thank you for considering contributing to Quix! We welcome contributions in the 
 
 5. **Commit Your Changes**:
    Commit your changes with a descriptive commit message:
+
    ```bash
    git commit -m "Add feature: description of feature"
    ```
 
 6. **Push to Your Fork**:
    Push your changes to your fork:
+
    ```bash
    git push origin feature/your-feature-name
    ```
@@ -46,4 +50,4 @@ If you encounter any issues, please report them on the GitHub issue tracker.
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License. 
+By contributing, you agree that your contributions will be licensed under the MIT License.

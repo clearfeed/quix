@@ -18,33 +18,33 @@ module.exports = {
       channel_id: {
         type: Sequelize.STRING,
         primaryKey: true,
-        allowNull: false,
+        allowNull: false
       },
       thread_ts: {
         type: Sequelize.STRING,
         primaryKey: true,
-        allowNull: false,
+        allowNull: false
       },
       last_tool_calls: {
         type: Sequelize.JSON,
-        defaultValue: [],
+        defaultValue: []
       },
       last_plan: {
         type: Sequelize.JSON,
-        defaultValue: null,
+        defaultValue: null
       },
       contextual_memory: {
         type: Sequelize.JSON,
-        defaultValue: null,
+        defaultValue: null
       },
       created_at: {
         type: Sequelize.DATE,
-        allowNull: false,
+        allowNull: false
       },
       updated_at: {
         type: Sequelize.DATE,
-        allowNull: false,
-      },
+        allowNull: false
+      }
     });
 
     await queryInterface.addIndex('conversation_states', ['updated_at']);
@@ -53,4 +53,4 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('conversation_states');
   }
-}; 
+};

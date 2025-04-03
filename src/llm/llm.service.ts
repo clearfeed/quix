@@ -4,7 +4,12 @@ import { LLMContext, MessageProcessingArgs, SupportedChatModels } from './types'
 import { LlmProviderService } from './llm.provider';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts';
+import {
+  ChatPromptTemplate,
+  SystemMessagePromptTemplate,
+  HumanMessagePromptTemplate,
+  MessagesPlaceholder
+} from '@langchain/core/prompts';
 import { RunnableSequence } from '@langchain/core/runnables';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { QuixPrompts } from '../lib/constants';
@@ -24,17 +29,23 @@ export class LlmService {
     private readonly tool: ToolService,
     @InjectModel(ConversationState)
     private readonly conversationStateModel: typeof ConversationState
-  ) { }
+  ) {}
 
-  private async enhanceMessagesWithToolContext(previousMessages: LLMContext[], lastToolCalls: ConversationState['last_tool_calls']): Promise<LLMContext[]> {
+  private async enhanceMessagesWithToolContext(
+    previousMessages: LLMContext[],
+    lastToolCalls: ConversationState['last_tool_calls']
+  ): Promise<LLMContext[]> {
     const enhancedPreviousMessages = [...previousMessages];
 
     if (lastToolCalls) {
       enhancedPreviousMessages.push({
         role: 'system',
-        content: `Previous tools you have used in this conversation: ${Object.values(lastToolCalls).map(call =>
-          `Tool "${call.name}" with args ${JSON.stringify(call.args)} returned: ${call.result}`
-        ).join('; ')}`
+        content: `Previous tools you have used in this conversation: ${Object.values(lastToolCalls)
+          .map(
+            (call) =>
+              `Tool "${call.name}" with args ${JSON.stringify(call.args)} returned: ${call.result}`
+          )
+          .join('; ')}`
       });
     }
 
@@ -49,7 +60,7 @@ export class LlmService {
       where: {
         team_id: teamId,
         channel_id: channelId,
-        thread_ts: threadTs,
+        thread_ts: threadTs
       }
     });
 
@@ -67,7 +78,7 @@ export class LlmService {
 
     const tools = await this.tool.getAvailableTools(teamId);
     if (!tools) {
-      return 'I apologize, but I don\'t have any tools configured to help with your request at the moment.';
+      return "I apologize, but I don't have any tools configured to help with your request at the moment.";
     }
     const availableCategories = Object.keys(tools);
     const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, teamId);
@@ -81,33 +92,47 @@ export class LlmService {
     // Add previous tool calls to system context for better continuity
     let enhancedPreviousMessages: LLMContext[] = [];
     try {
-      enhancedPreviousMessages = await this.enhanceMessagesWithToolContext(previousMessages, conversationState.last_tool_calls);
+      enhancedPreviousMessages = await this.enhanceMessagesWithToolContext(
+        previousMessages,
+        conversationState.last_tool_calls
+      );
     } catch (error) {
       this.logger.error(`Error enhancing messages with tool context: ${error}`);
       enhancedPreviousMessages = previousMessages;
     }
 
     const toolSelection = await this.toolSelection(message, tools, enhancedPreviousMessages, llm);
-    this.logger.log(`Selected tools: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}`);
+    this.logger.log(
+      `Selected tools: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}`
+    );
 
     if (toolSelection.selectedTools === 'none') {
       return toolSelection.content || `I could not find any tools to fulfill your request.`;
     }
 
-    const availableFunctions: ToolConfig['tools'] = toolSelection.selectedTools.map(tool => tools[tool].tools).flat();
+    const availableFunctions: ToolConfig['tools'] = toolSelection.selectedTools
+      .map((tool) => tools[tool].tools)
+      .flat();
 
     if (!availableFunctions) {
-      return 'I apologize, but I don\'t have any tools configured to help with your request at the moment.';
+      return "I apologize, but I don't have any tools configured to help with your request at the moment.";
     }
 
-    const plan = await this.generatePlan(availableFunctions, enhancedPreviousMessages, message, llm);
-    const formattedPlan = plan.map((step, i) => {
-      if (step.type === 'tool') {
-        return `${i + 1}. Call tool \`${step.tool}\`. ${step.input || ''}`.trim();
-      } else {
-        return `${i + 1}. ${step.input}`;
-      }
-    }).join('\n');
+    const plan = await this.generatePlan(
+      availableFunctions,
+      enhancedPreviousMessages,
+      message,
+      llm
+    );
+    const formattedPlan = plan
+      .map((step, i) => {
+        if (step.type === 'tool') {
+          return `${i + 1}. Call tool \`${step.tool}\`. ${step.input || ''}`.trim();
+        } else {
+          return `${i + 1}. ${step.input}`;
+        }
+      })
+      .join('\n');
     this.logger.log(`Generated plan: ${formattedPlan}`);
 
     // Store the plan in conversation state
@@ -120,18 +145,24 @@ export class LlmService {
     const agent = createReactAgent({
       llm,
       tools: availableFunctions as any,
-      prompt: toolSelection.selectedTools.length > 1 ? QuixPrompts.multiStepBasePrompt(formattedPlan) : QuixPrompts.basePrompt
+      prompt:
+        toolSelection.selectedTools.length > 1
+          ? QuixPrompts.multiStepBasePrompt(formattedPlan)
+          : QuixPrompts.basePrompt
     });
 
     // Create a callback to track tool calls
     const toolCallTracker = new QuixCallBackManager();
     toolCallTracker.captureToolCalls = true;
 
-    const result = await agent.invoke({
-      messages: [...enhancedPreviousMessages, { role: 'user', content: message }]
-    }, {
-      callbacks: [toolCallTracker]
-    });
+    const result = await agent.invoke(
+      {
+        messages: [...enhancedPreviousMessages, { role: 'user', content: message }]
+      },
+      {
+        callbacks: [toolCallTracker]
+      }
+    );
 
     // Update conversation state with tool calls
     if (toolCallTracker.toolCalls) {
@@ -152,27 +183,32 @@ export class LlmService {
       await conversationState.save();
     }
 
-    const { totalTokens, toolCallCount, toolNames } = result.messages.reduce((acc, msg) => {
-      // Add token usage
-      const tokens = msg.response_metadata?.tokenUsage?.totalTokens || 0;
+    const { totalTokens, toolCallCount, toolNames } = result.messages.reduce(
+      (acc, msg) => {
+        // Add token usage
+        const tokens = msg.response_metadata?.tokenUsage?.totalTokens || 0;
 
-      // Add tool calls and names if it's an AIMessage with tool calls
-      if (msg instanceof AIMessage && msg.tool_calls) {
-        const toolsInMessage = msg.tool_calls.map(call => call.name);
+        // Add tool calls and names if it's an AIMessage with tool calls
+        if (msg instanceof AIMessage && msg.tool_calls) {
+          const toolsInMessage = msg.tool_calls.map((call) => call.name);
+          return {
+            totalTokens: acc.totalTokens + tokens,
+            toolCallCount: acc.toolCallCount + msg.tool_calls.length,
+            toolNames: [...acc.toolNames, ...toolsInMessage]
+          };
+        }
+
         return {
-          totalTokens: acc.totalTokens + tokens,
-          toolCallCount: acc.toolCallCount + msg.tool_calls.length,
-          toolNames: [...acc.toolNames, ...toolsInMessage]
+          ...acc,
+          totalTokens: acc.totalTokens + tokens
         };
-      }
+      },
+      { totalTokens: 0, toolCallCount: 0, toolNames: [] as string[] }
+    );
 
-      return {
-        ...acc,
-        totalTokens: acc.totalTokens + tokens
-      };
-    }, { totalTokens: 0, toolCallCount: 0, toolNames: [] as string[] });
-
-    this.logger.log(`Token usage: ${totalTokens}, Tool calls made: ${toolCallCount}, Tools used: ${toolNames.join(', ')}`);
+    this.logger.log(
+      `Token usage: ${totalTokens}, Tool calls made: ${toolCallCount}, Tools used: ${toolNames.join(', ')}`
+    );
     await this.tool.shutDownMcpServers();
 
     const llmResponse = result.messages[result.messages.length - 1].content;
@@ -181,13 +217,21 @@ export class LlmService {
     return slackify(finalContent);
   }
 
-  private async toolSelection(message: string, tools: Record<string, ToolConfig>, previousMessages: LLMContext[], llm: BaseChatModel): Promise<{
+  private async toolSelection(
+    message: string,
+    tools: Record<string, ToolConfig>,
+    previousMessages: LLMContext[],
+    llm: BaseChatModel
+  ): Promise<{
     selectedTools: (keyof typeof tools)[] | 'none';
     content: string;
   }> {
     const availableCategories = Object.keys(tools);
 
-    const toolSelectionPrompts = availableCategories.map(category => tools[category].prompts?.toolSelection).filter(Boolean).join('\n');
+    const toolSelectionPrompts = availableCategories
+      .map((category) => tools[category].prompts?.toolSelection)
+      .filter(Boolean)
+      .join('\n');
     const systemPrompt = `${QuixPrompts.basePrompt}\n${toolSelectionPrompts}`;
 
     const toolSelectionFunction = new DynamicStructuredTool({
@@ -213,18 +257,18 @@ export class LlmService {
       HumanMessagePromptTemplate.fromTemplate('{input}')
     ]);
 
-    const agentChain = RunnableSequence.from([
-      promptTemplate,
-      llmProviderWithTools ?? llm
-    ]);
+    const agentChain = RunnableSequence.from([promptTemplate, llmProviderWithTools ?? llm]);
 
-    const result = await agentChain.invoke({
-      chat_history: previousMessages,
-      input: message,
-      tool_choice: 'auto',
-    }, {
-      callbacks: [new QuixCallBackManager()]
-    });
+    const result = await agentChain.invoke(
+      {
+        chat_history: previousMessages,
+        input: message,
+        tool_choice: 'auto'
+      },
+      {
+        callbacks: [new QuixCallBackManager()]
+      }
+    );
 
     return {
       selectedTools: result.tool_calls?.[0]?.args?.toolCategories ?? 'none',
@@ -232,12 +276,14 @@ export class LlmService {
     };
   }
 
-  private async generateResponse(message: string,
+  private async generateResponse(
+    message: string,
     result: Record<string, any>,
     functionName: string,
     responseGenerationPrompt: string,
     previousMessages: LLMContext[],
-    llm: BaseChatModel) {
+    llm: BaseChatModel
+  ) {
     const responsePrompt = ChatPromptTemplate.fromMessages([
       SystemMessagePromptTemplate.fromTemplate(`
               You are a business assistant. Given a user's query and structured API data, generate a response that directly answers the user's question in a clear and concise manner. Format the response as an standard markdown syntax:
@@ -252,29 +298,35 @@ export class LlmService {
       HumanMessagePromptTemplate.fromTemplate('{input}')
     ]);
 
-    const responseChain = RunnableSequence.from([
-      responsePrompt,
-      llm
-    ]);
+    const responseChain = RunnableSequence.from([responsePrompt, llm]);
 
     const response = await responseChain.invoke({
       chat_history: previousMessages,
       input: `The user's question is: "${message}". Here is the structured response from ${functionName}: ${JSON.stringify(result, null, 2)}`
     });
 
-    const finalContent = Array.isArray(response.content) ? response.content.join(' ') : response.content;
+    const finalContent = Array.isArray(response.content)
+      ? response.content.join(' ')
+      : response.content;
     return slackify(finalContent);
   }
 
-  private async generatePlan(availableFunctions: ToolConfig['tools'], previousMessages: LLMContext[], message: string, llm: BaseChatModel) {
+  private async generatePlan(
+    availableFunctions: ToolConfig['tools'],
+    previousMessages: LLMContext[],
+    message: string,
+    llm: BaseChatModel
+  ) {
     const planPrompt = ChatPromptTemplate.fromMessages([
       SystemMessagePromptTemplate.fromTemplate(`
         You are a planner that breaks down the user's request into an ordered list of steps using available tools.
-Only use the following tools: ${availableFunctions.map(func => {
-        return `
+Only use the following tools: ${availableFunctions
+        .map((func) => {
+          return `
   ${func.name}: ${func.description}
-  `
-      }).join('\n')}.
+  `;
+        })
+        .join('\n')}.
 
 Each step must be:
 - a tool call: {{ "type": "tool", "tool": "toolName", "args": {{ ... }} }}
@@ -288,22 +340,29 @@ Output only structured JSON matching the required format.
 
     const planChain = RunnableSequence.from([
       planPrompt,
-      llm.withStructuredOutput(z.object({
-        steps: z.array(z.object({
-          type: z.enum(['tool', 'reason']),
-          tool: z.string().optional(),
-          args: z.object({}).strict().optional(),
-          input: z.string().optional()
-        }))
-      }))
+      llm.withStructuredOutput(
+        z.object({
+          steps: z.array(
+            z.object({
+              type: z.enum(['tool', 'reason']),
+              tool: z.string().optional(),
+              args: z.object({}).strict().optional(),
+              input: z.string().optional()
+            })
+          )
+        })
+      )
     ]);
 
-    const result = await planChain.invoke({
-      chat_history: previousMessages,
-      input: message
-    }, {
-      callbacks: [new QuixCallBackManager()]
-    });
+    const result = await planChain.invoke(
+      {
+        chat_history: previousMessages,
+        input: message
+      },
+      {
+        callbacks: [new QuixCallBackManager()]
+      }
+    );
 
     return result.steps;
   }

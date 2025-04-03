@@ -32,13 +32,15 @@ When formatting Zendesk responses:
 export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
   const client = createClient({
     subdomain: config.subdomain,
-    ...(config.auth.useOAuth ? {
-      token: config.auth.token,
-      useOAuth: true
-    } : {
-      username: config.auth.email,
-      token: config.auth.token
-    })
+    ...(config.auth.useOAuth
+      ? {
+          token: config.auth.token,
+          useOAuth: true
+        }
+      : {
+          username: config.auth.email,
+          token: config.auth.token
+        })
   });
 
   const tools: DynamicStructuredTool<any>[] = [
@@ -53,9 +55,9 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
         try {
           const searchQuery = args.query;
           const limit = args.limit || 10;
-  
+
           const response = await client.search.query(`type:ticket ${searchQuery}`);
-  
+
           const tickets = Array.isArray(response.result) ? response.result.slice(0, limit) : [];
           return {
             success: true,
@@ -99,4 +101,4 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
       responseGeneration: ZENDESK_RESPONSE_GENERATION_PROMPT
     }
   };
-} 
+}

@@ -57,9 +57,7 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
     const validStages = await this.getOpportunityStages();
     const userStage = stage.toLowerCase();
     // Try exact match ignoring case
-    const exactMatch = validStages.data?.stages.find(
-      (stage) => stage.toLowerCase() === userStage
-    );
+    const exactMatch = validStages.data?.stages.find((stage) => stage.toLowerCase() === userStage);
     if (exactMatch) {
       return `StageName = '${exactMatch}'`;
     } else {
@@ -67,11 +65,12 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
     }
   }
 
-  async getOpportunityCount(args: SearchOpportunitiesParams): Promise<BaseResponse<{ totalOpportunities: number }>> {
+  async getOpportunityCount(
+    args: SearchOpportunitiesParams
+  ): Promise<BaseResponse<{ totalOpportunities: number }>> {
     try {
       // Create a query builder
-      let queryBuilder = this.connection.sobject('Opportunity')
-        .select('COUNT(Id) totalCount');
+      let queryBuilder = this.connection.sobject('Opportunity').select('COUNT(Id) totalCount');
 
       // Get stage query if provided
       let stageQuery = '';
@@ -108,11 +107,18 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
     }
   }
 
-  async searchOpportunities({ keyword, stage, ownerId }: SearchOpportunitiesParams): Promise<SearchOpportunitiesResponse> {
+  async searchOpportunities({
+    keyword,
+    stage,
+    ownerId
+  }: SearchOpportunitiesParams): Promise<SearchOpportunitiesResponse> {
     try {
       const limit = 10;
-      let soql = this.connection.sobject('Opportunity')
-        .select('Id, Name, StageName, Amount, CloseDate, Probability, Account.Name, Owner.Name, CreatedDate, LastModifiedDate');
+      let soql = this.connection
+        .sobject('Opportunity')
+        .select(
+          'Id, Name, StageName, Amount, CloseDate, Probability, Account.Name, Owner.Name, CreatedDate, LastModifiedDate'
+        );
 
       let stageQuery = '';
       if (stage) {
@@ -161,7 +167,11 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
     }
   }
 
-  async addNoteToOpportunity(opportunityId: string, note: string, title?: string): Promise<AddNoteToOpportunityResponse> {
+  async addNoteToOpportunity(
+    opportunityId: string,
+    note: string,
+    title?: string
+  ): Promise<AddNoteToOpportunityResponse> {
     try {
       const userInfo = await this.connection.identity();
 
@@ -189,12 +199,15 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
       console.error('Error adding note to opportunity:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to add note to Salesforce opportunity'
+        error:
+          error instanceof Error ? error.message : 'Failed to add note to Salesforce opportunity'
       };
     }
   }
 
-  async createTask(params: CreateTaskParams): Promise<BaseResponse<{ taskId: string; whatId: string }>> {
+  async createTask(
+    params: CreateTaskParams
+  ): Promise<BaseResponse<{ taskId: string; whatId: string }>> {
     try {
       const taskData: SalesforceTask = {
         Subject: params.subject,
@@ -238,7 +251,10 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
     }
   }
 
-  async findUser(userIdentifier: { name?: string; email?: string }): Promise<BaseResponse<{ users: { id: string; name: string; email: string }[] }>> {
+  async findUser(userIdentifier: {
+    name?: string;
+    email?: string;
+  }): Promise<BaseResponse<{ users: { id: string; name: string; email: string }[] }>> {
     if (!userIdentifier.name && !userIdentifier.email) {
       return {
         success: false,
@@ -272,19 +288,24 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
 
   async getOpportunityStages(): Promise<BaseResponse<{ stages: string[] }>> {
     const response = await this.connection.sobject('Opportunity').describe();
-    const stages = response.fields.filter((field) => field.type === 'picklist').map((field) => field.picklistValues?.map((value) => value.label)).flat();
+    const stages = response.fields
+      .filter((field) => field.type === 'picklist')
+      .map((field) => field.picklistValues?.map((value) => value.label))
+      .flat();
     return {
       success: true,
       data: { stages }
     };
   }
 
-  async describeObject(args: DescribeObjectParams): Promise<BaseResponse<{ fields: Record<string, any>[] }>> {
+  async describeObject(
+    args: DescribeObjectParams
+  ): Promise<BaseResponse<{ fields: Record<string, any>[] }>> {
     try {
       const response = await this.connection.sobject(args.objectName).describe();
 
       // Filter to only important fields
-      const importantFields = response.fields.map(field => ({
+      const importantFields = response.fields.map((field) => ({
         name: field.name,
         label: field.label,
         type: field.type,
@@ -293,7 +314,7 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
         updateable: field.updateable,
         defaultValue: field.defaultValue,
         ...(field.type === 'picklist' && {
-          picklistValues: field.picklistValues?.map(val => ({
+          picklistValues: field.picklistValues?.map((val) => ({
             label: val.label,
             value: val.value,
             isDefault: val.defaultValue
@@ -314,13 +335,15 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
     }
   }
 
-  async searchAccounts(keyword: string): Promise<BaseResponse<{ accounts: { id: string; }[] }>> {
+  async searchAccounts(keyword: string): Promise<BaseResponse<{ accounts: { id: string }[] }>> {
     try {
-      const soqlString = await this.connection.sobject('Account')
+      const soqlString = await this.connection
+        .sobject('Account')
         .select('Id, Name')
         .where(`Name LIKE '%${keyword}%'`)
         .orderby('LastModifiedDate', 'DESC')
-        .limit(10).toSOQL();
+        .limit(10)
+        .toSOQL();
       const response = await this.connection.query<{ Id: string; Name: string }>(soqlString);
       const accounts = response.records.map((account) => ({ id: account.Id, ...account }));
       return {
@@ -338,4 +361,4 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
 }
 
 // Export tools after service class is defined
-export * from './tools'; 
+export * from './tools';

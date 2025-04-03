@@ -9,11 +9,11 @@ async function bootstrap() {
   }
   const logger = new ConsoleLogger({
     logLevels,
-    json: process.env.NODE_ENV === 'production',
+    json: process.env.NODE_ENV === 'production'
   });
   const app = await NestFactory.create(AppModule, {
     logger,
-    rawBody: true,
+    rawBody: true
   });
   await app.listen(process.env.PORT ?? 3000);
 }

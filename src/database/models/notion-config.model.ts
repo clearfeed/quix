@@ -11,7 +11,12 @@ import {
   AllowNull,
   Unique
 } from 'sequelize-typescript';
-import { CreationOptional, InferAttributes, InferCreationAttributes, NonAttribute } from 'sequelize';
+import {
+  CreationOptional,
+  InferAttributes,
+  InferCreationAttributes,
+  NonAttribute
+} from 'sequelize';
 import { encrypt, decrypt } from '../../lib/utils/encryption';
 import { SlackWorkspace } from './slack-workspace.model';
 
@@ -58,4 +63,4 @@ export class NotionConfig extends Model<
 
   @UpdatedAt
   declare updated_at: CreationOptional<Date>;
-} 
+}
