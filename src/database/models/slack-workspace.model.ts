@@ -22,7 +22,7 @@ import { SalesforceConfig } from './salesforce-config.model';
 import { AccessSettingsType } from '@quix/lib/types/slack-workspace';
 import { QuixUserAccessLevel } from '@quix/lib/constants';
 import { WebClient } from '@slack/web-api';
-import { SLACK_MESSAGE_MAX_LENGTH } from '@quix/lib/utils/slack-constants';
+import { SLACK_MESSAGE_MAX_LENGTH, TRIAL_DAYS } from '@quix/lib/utils/slack-constants';
 import { NotionConfig } from './notion-config.model';
 import { LinearConfig } from './linear-config.model';
 import { McpConnection } from './mcp-connection.model';
@@ -108,12 +108,35 @@ export class SlackWorkspace extends Model<
   })
   declare salesforceConfig?: NonAttribute<SalesforceConfig>;
 
+  /**
+   * Within the first week of our app being installed we allow the users to be in the trial mode
+   * and use our default openai key.
+   */
+  get isTrialMode(): NonAttribute<boolean> {
+    return new Date(this.created_at).getTime() > Date.now() - TRIAL_DAYS * 24 * 60 * 60 * 1000;
+  }
+
+  /**
+   * Returns true if the openai key is set by the user. Within the first week of our app being
+   * installed we allow the users to use our default openai key.
+   */
+  get isOpenAIKeySet(): NonAttribute<boolean> {
+    return !!this.getDataValue('openai_key');
+  }
+
   @Column({
     type: DataType.TEXT,
     allowNull: true
   })
   get openai_key(): string | null {
     const value = this.getDataValue('openai_key') as string;
+    /**
+     * If the Slack Workspace was created in the last week and the openai key is not set,
+     * return the openai key from the env
+     */
+    if (!value && process.env.OPENAI_API_KEY && this.isTrialMode) {
+      return process.env.OPENAI_API_KEY;
+    }
     if (!value) return null;
     return decrypt(value);
   }

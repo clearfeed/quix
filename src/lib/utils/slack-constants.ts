@@ -62,3 +62,8 @@ export const SLACK_SCOPES = [
 ] as const;
 
 export const SLACK_MESSAGE_MAX_LENGTH = 3000;
+
+/**
+ * The number of days a user can use Quix for free using our default OpenAI key.
+ */
+export const TRIAL_DAYS = 7;
