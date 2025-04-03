@@ -36,7 +36,14 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
           .describe(
             'Search keywords or phrases to filter Zendesk tickets by title, description, or metadata'
           ),
-        limit: z.number().describe('Limit on the number of tickets to return').default(10)
+        limit: z
+          .number()
+          .int()
+          .min(1)
+          .max(100)
+          .describe('Limit on the number of tickets to return')
+          .optional()
+          .default(10)
       }),
       func: async (args: SearchTicketsParams) => service.searchTickets(args)
     }),
@@ -44,7 +51,7 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
       name: 'get_zendesk_ticket',
       description: 'Retrieve a specific Zendesk ticket by ID',
       schema: z.object({
-        ticketId: z.number().describe('The unique ID of the Zendesk ticket to retrieve')
+        ticketId: z.number().int().describe('The ID of the Zendesk ticket to retrieve')
       }),
       func: async (args: GetTicketParams) => service.getTicket(args)
     })

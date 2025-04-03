@@ -3,8 +3,6 @@ import {
   ZendeskConfig,
   GetTicketParams,
   SearchTicketsParams,
-  GetTicketResponse,
-  SearchTicketsResponse
 } from './types';
 import { BaseService, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import { Ticket } from 'node-zendesk/dist/types/clients/core/tickets';
@@ -39,11 +37,11 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
 
   async searchTickets(
     params: SearchTicketsParams
-  ): Promise<BaseResponse<SearchTicketsResponse['data']>> {
+  ): Promise<BaseResponse<Ticket[]>> {
     try {
       const response = await this.client.search.query(`type:ticket ${params.query}`);
       const tickets: Ticket[] = Array.isArray(response.result)
-        ? response.result.slice(0, params.limit || 10)
+        ? response.result.slice(0, params.limit)
         : [];
       return {
         success: true,
@@ -58,7 +56,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
     }
   }
 
-  async getTicket(params: GetTicketParams): Promise<BaseResponse<GetTicketResponse['data']>> {
+  async getTicket(params: GetTicketParams): Promise<BaseResponse<Ticket>> {
     try {
       const response = await this.client.tickets.show(params.ticketId);
       const ticket: Ticket = response.result;
