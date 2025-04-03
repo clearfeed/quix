@@ -55,21 +55,20 @@ export class LlmService {
   async processMessage(args: MessageProcessingArgs): Promise<string> {
     const { message, teamId, threadTs, previousMessages, channelId } = args;
 
-    const [conversationState] = await this.conversationStateModel.findOrCreate({
-      where: {
-        team_id: teamId,
-        channel_id: channelId,
-        thread_ts: threadTs
-      },
-      defaults: {
+    const [conversationState] = await this.conversationStateModel.upsert(
+      {
         team_id: teamId,
         channel_id: channelId,
         thread_ts: threadTs,
         last_tool_calls: null,
         last_plan: null,
         contextual_memory: {}
+      },
+      {
+        // on conflict, update nothing
+        fields: []
       }
-    });
+    );
 
     const tools = await this.tool.getAvailableTools(teamId);
     const availableCategories = Object.keys(tools ?? {});
