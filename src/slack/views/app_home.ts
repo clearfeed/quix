@@ -235,22 +235,22 @@ const getOpenAIView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
 const getConnectionInfo = (connection: HomeViewArgs['connection']): string => {
   if (!connection) return '';
   switch (true) {
-    case connection instanceof JiraConfig:
-      return `Connected to ${connection.url}`;
-    case connection instanceof HubspotConfig:
-      return `Connected to ${connection.hub_domain}`;
-    case connection instanceof PostgresConfig:
-      return `Connected to ${connection.host}`;
-    case connection instanceof GithubConfig:
-      return `Connected to ${connection.username}`
-    case connection instanceof SalesforceConfig:
-      return `Connected to ${connection.instance_url}`
-    case connection instanceof NotionConfig:
-      return `Connected to ${connection.workspace_name}`
-    case connection instanceof LinearConfig:
-      return `Connected to ${connection.workspace_name}`
-    default:
-      return '';
+  case connection instanceof JiraConfig:
+    return `Connected to ${connection.url}`;
+  case connection instanceof HubspotConfig:
+    return `Connected to ${connection.hub_domain}`;
+  case connection instanceof PostgresConfig:
+    return `Connected to ${connection.host}`;
+  case connection instanceof GithubConfig:
+    return `Connected to ${connection.username}`
+  case connection instanceof SalesforceConfig:
+    return `Connected to ${connection.instance_url}`
+  case connection instanceof NotionConfig:
+    return `Connected to ${connection.workspace_name}`
+  case connection instanceof LinearConfig:
+    return `Connected to ${connection.workspace_name}`
+  default:
+    return '';
   }
 }
 
@@ -323,7 +323,7 @@ const getIntegrationInfo = (
     )
   }
 
-  if (connection instanceof JiraConfig) {
+  if (connection instanceof JiraConfig || connection instanceof GithubConfig) {
     overflowMenuOptions.unshift(
       Bits.Option({
         text: `${Md.emoji('pencil')} Edit`,
