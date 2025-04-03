@@ -15,3 +15,15 @@ export interface MessageProcessingArgs {
   previousMessages: LLMContext[];
   channelId: string;
 }
+
+export enum ToolCategory {
+  COMMON = 'common',
+  JIRA = 'jira',
+  HUBSPOT = 'hubspot',
+  GITHUB = 'github',
+  POSTGRES = 'postgres',
+  SALESFORCE = 'salesforce',
+  SLACK = 'slack',
+  NOTION = 'notion',
+  LINEAR = 'linear'
+}

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ToolService } from './tool.service';
-import { LLMContext, MessageProcessingArgs, SupportedChatModels } from './types';
+import { LLMContext, MessageProcessingArgs, SupportedChatModels, ToolCategory } from './types';
 import { LlmProviderService } from './llm.provider';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
@@ -19,6 +19,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { QuixCallBackManager } from './callback-manager';
 import { ConversationState } from '../database/models/conversation-state.model';
 import { InjectModel } from '@nestjs/sequelize';
+import { remove } from 'lodash';
 import slackify = require('slackify-markdown');
 
 @Injectable()
@@ -71,13 +72,15 @@ export class LlmService {
     );
 
     const tools = await this.tool.getAvailableTools(teamId);
-    const availableCategories = Object.keys(tools ?? {});
-    if (!tools || availableCategories.length < 1) {
+    const availableToolCategories = Object.keys(tools ?? {});
+    if (!tools || availableToolCategories.length === 0) {
       this.logger.log('No tool categories available, returning direct response');
       return "I apologize, but I don't have any tools configured to help with your request at the moment.";
     }
     const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, teamId);
-    this.logger.log(`Processing message: ${message} with tools: ${availableCategories.join(', ')}`);
+    this.logger.log(
+      `Processing message: ${message} with tools: ${availableToolCategories.join(', ')}`
+    );
 
     // Add previous tool calls to system context for better continuity
     let enhancedPreviousMessages: LLMContext[] = [];
@@ -91,20 +94,33 @@ export class LlmService {
       enhancedPreviousMessages = previousMessages;
     }
 
-    const toolSelection = await this.toolSelection(message, tools, enhancedPreviousMessages, llm);
-    this.logger.log(
-      `Selected tools: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}`
-    );
+    let availableFunctions: ToolConfig['tools'] = [];
+    /**
+     * If there is only one tool category overall or only one tool category apart from
+     * common and slack, then we can use all tools instad of first selecting the tool categories
+     * and then calling the tools.
+     */
+    if (
+      availableToolCategories.length === 1 ||
+      remove(availableToolCategories, [ToolCategory.COMMON, ToolCategory.SLACK]).length === 1
+    ) {
+      availableFunctions = Object.values(tools).flatMap((tool) => tool.tools);
+    } else {
+      const toolSelection = await this.toolSelection(message, tools, enhancedPreviousMessages, llm);
+      this.logger.log(
+        `Selected tools: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}`
+      );
 
-    if (toolSelection.selectedTools === 'none') {
-      return toolSelection.content || `I could not find any tools to fulfill your request.`;
+      if (toolSelection.selectedTools === 'none') {
+        return toolSelection.content || `I could not find any tools to fulfill your request.`;
+      }
+
+      availableFunctions = toolSelection.selectedTools
+        .map((selectedToolCategory: ToolCategory) => tools[selectedToolCategory]?.tools ?? [])
+        .flat();
     }
 
-    const availableFunctions: ToolConfig['tools'] = toolSelection.selectedTools
-      .map((tool) => tools[tool].tools)
-      .flat();
-
-    if (!availableFunctions) {
+    if (availableFunctions.length === 0) {
       return "I apologize, but I don't have any tools configured to help with your request at the moment.";
     }
 
@@ -134,10 +150,7 @@ export class LlmService {
     const agent = createReactAgent({
       llm,
       tools: availableFunctions as any,
-      prompt:
-        toolSelection.selectedTools.length > 1
-          ? QuixPrompts.multiStepBasePrompt(formattedPlan)
-          : QuixPrompts.basePrompt
+      prompt: QuixPrompts.multiStepBasePrompt(formattedPlan)
     });
 
     // Create a callback to track tool calls
