@@ -35,10 +35,10 @@ export class LlmService {
     private readonly conversationStateModel: typeof ConversationState
   ) {}
 
-  private async enhanceMessagesWithToolContext(
+  private enhanceMessagesWithToolContext(
     previousMessages: LLMContext[],
     lastToolCalls: ConversationState['last_tool_calls']
-  ): Promise<LLMContext[]> {
+  ): LLMContext[] {
     const enhancedPreviousMessages = [...previousMessages];
 
     if (lastToolCalls) {
@@ -59,44 +59,34 @@ export class LlmService {
   async processMessage(args: MessageProcessingArgs): Promise<string> {
     const { message, teamId, threadTs, previousMessages, channelId, authorName } = args;
 
-    // Load conversation state if it exists
-    let conversationState = await this.conversationStateModel.findOne({
-      where: {
-        team_id: teamId,
-        channel_id: channelId,
-        thread_ts: threadTs
-      }
-    });
-
-    // Create a new conversation state if it doesn't exist
-    if (!conversationState) {
-      conversationState = await this.conversationStateModel.create({
+    const [conversationState] = await this.conversationStateModel.upsert(
+      {
         team_id: teamId,
         channel_id: channelId,
         thread_ts: threadTs,
         last_tool_calls: null,
         last_plan: null,
         contextual_memory: {}
-      });
-    }
+      },
+      {
+        // on conflict, update nothing
+        fields: []
+      }
+    );
 
     const tools = await this.tool.getAvailableTools(teamId);
-    if (!tools) {
+    const availableCategories = Object.keys(tools ?? {});
+    if (!tools || availableCategories.length < 1) {
+      this.logger.log('No tool categories available, returning direct response');
       return "I apologize, but I don't have any tools configured to help with your request at the moment.";
     }
-    const availableCategories = Object.keys(tools);
     const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, teamId);
     this.logger.log(`Processing message: ${message} with tools: ${availableCategories.join(', ')}`);
-    if (availableCategories.length < 1) {
-      this.logger.log('No tool categories available, returning direct response');
-      const response = await this.generateResponse(message, {}, 'none', '', previousMessages, llm);
-      return response;
-    }
 
     // Add previous tool calls to system context for better continuity
     let enhancedPreviousMessages: LLMContext[] = [];
     try {
-      enhancedPreviousMessages = await this.enhanceMessagesWithToolContext(
+      enhancedPreviousMessages = this.enhanceMessagesWithToolContext(
         previousMessages,
         conversationState.last_tool_calls
       );
@@ -159,7 +149,6 @@ export class LlmService {
       steps: plan,
       completed: false
     };
-    await conversationState.save();
 
     const agent = createReactAgent({
       llm,
@@ -198,9 +187,8 @@ export class LlmService {
       if (conversationState.last_plan) {
         conversationState.last_plan.completed = true;
       }
-
-      await conversationState.save();
     }
+    await conversationState.save();
 
     const { totalTokens, toolCallCount, toolNames } = result.messages.reduce(
       (acc, msg) => {
@@ -306,41 +294,6 @@ export class LlmService {
       selectedTools: result.tool_calls?.[0]?.args?.toolCategories ?? 'none',
       content: Array.isArray(result.content) ? result.content.join(' ') : result.content
     };
-  }
-
-  private async generateResponse(
-    message: string,
-    result: Record<string, any>,
-    functionName: string,
-    responseGenerationPrompt: string,
-    previousMessages: LLMContext[],
-    llm: BaseChatModel
-  ) {
-    const responsePrompt = ChatPromptTemplate.fromMessages([
-      SystemMessagePromptTemplate.fromTemplate(`
-              You are a business assistant. Given a user's query and structured API data, generate a response that directly answers the user's question in a clear and concise manner. Format the response as an standard markdown syntax:
-  
-            - Ensure proper line breaks by using \n\n between list items.
-            - Retain code blocks using triple backticks where needed.
-            - Ensure all output is correctly formatted to display properly in Slack.
-  
-            ${responseGenerationPrompt}
-          `),
-      new MessagesPlaceholder('chat_history'),
-      HumanMessagePromptTemplate.fromTemplate('{input}')
-    ]);
-
-    const responseChain = RunnableSequence.from([responsePrompt, llm]);
-
-    const response = await responseChain.invoke({
-      chat_history: previousMessages,
-      input: `The user's question is: "${message}". Here is the structured response from ${functionName}: ${JSON.stringify(result, null, 2)}`
-    });
-
-    const finalContent = Array.isArray(response.content)
-      ? response.content.join(' ')
-      : response.content;
-    return slackify(finalContent);
   }
 
   private async generatePlan(
