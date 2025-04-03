@@ -75,9 +75,9 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
       description: 'Assign a Jira issue to a user',
       schema: z.object({
         issueId: z.string().describe('The Jira issue ID (e.g., PROJ-123)'),
-        assignee: z.string().describe('The username of the person to assign the issue to')
+        accountId: z.string().describe('The ID of the person to assign the issue to')
       }),
-      func: async ({ issueId, assignee }: { issueId: string, assignee: string }): Promise<AssignIssueResponse> => service.assignIssue(issueId, assignee)
+      func: async ({ issueId, accountId }: { issueId: string, accountId: string }): Promise<AssignIssueResponse> => service.assignIssue(issueId, accountId)
     }),
     new DynamicStructuredTool({
       name: 'add_jira_comment',

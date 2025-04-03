@@ -27,4 +27,10 @@ export type SearchOpportunitiesResponse = BaseResponse<{
 export type AddNoteToOpportunityResponse = BaseResponse<{
   noteId: string;
   opportunityUrl: string;
-}>; 
+}>;
+
+export type SearchOpportunitiesParams = {
+  keyword?: string;
+  stage?: string;
+  ownerId?: string;
+}
