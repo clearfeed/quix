@@ -225,7 +225,6 @@ const getToolConnectionView = (
 };
 
 const getOpenAIView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
-  console.log(slackWorkspace.openai_key);
   if (slackWorkspace.isOpenAIKeySet())
     return [
       Blocks.Section({
