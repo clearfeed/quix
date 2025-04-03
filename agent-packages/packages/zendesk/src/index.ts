@@ -7,6 +7,7 @@ import {
   SearchTicketsResponse
 } from './types';
 import { BaseService, BaseResponse } from '@clearfeed-ai/quix-common-agent';
+import { Ticket } from 'node-zendesk/dist/types/clients/core/tickets';
 
 export * from './tools';
 export * from './types';
@@ -41,12 +42,12 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
   ): Promise<BaseResponse<SearchTicketsResponse['data']>> {
     try {
       const response = await this.client.search.query(`type:ticket ${params.query}`);
-      const tickets = Array.isArray(response.result)
+      const tickets: Ticket[] = Array.isArray(response.result)
         ? response.result.slice(0, params.limit || 10)
         : [];
       return {
         success: true,
-        data: tickets
+        data: tickets.map(this.processTicketObjectForResponse)
       };
     } catch (error: any) {
       console.error('Zendesk search error:', error);
@@ -60,9 +61,10 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
   async getTicket(params: GetTicketParams): Promise<BaseResponse<GetTicketResponse['data']>> {
     try {
       const response = await this.client.tickets.show(params.ticketId);
+      const ticket: Ticket = response.result;
       return {
         success: true,
-        data: response.result
+        data: this.processTicketObjectForResponse(ticket)
       };
     } catch (error: any) {
       console.error('Zendesk get ticket error:', error);
@@ -71,5 +73,10 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
         error: error.message || 'Failed to fetch ticket'
       };
     }
+  }
+
+  private processTicketObjectForResponse(ticket: Ticket): Ticket {
+    ticket.url = `https://${this.config.subdomain}.zendesk.com/agent/tickets/${ticket.id}`;
+    return ticket;
   }
 }
