@@ -19,6 +19,7 @@ Consider using Salesforce tools when the user wants to:
 - Check account information like industry, size, revenue
 - View opportunity status, amount, stage, close date
 - Access case details, support history, resolutions
+- Create tasks, notes, or other activities against opportunities, accounts, or contacts
 `;
 
 const SALESFORCE_RESPONSE_GENERATION_PROMPT = `

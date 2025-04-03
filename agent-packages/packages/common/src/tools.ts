@@ -3,8 +3,8 @@ import { ToolConfig } from ".";
 import { z } from "zod";
 
 const TOOL_SELECTION_PROMPT = `
-Use this tool to get realtime information such as:
-- Current date and time
+When the user references relative dates like "today", "tomorrow", or "now", you **must** use this tool to resolve the actual date.
+Do not assume the current date — always call the tool to get it.
 `;
 
 export function createCommonToolsExport(): ToolConfig {
@@ -13,7 +13,7 @@ export function createCommonToolsExport(): ToolConfig {
       async () => ({ success: true, data: { date: new Date().toISOString() } }),
       {
         name: 'get_current_date_time',
-        description: 'Get the current date and time',
+        description: 'Use this tool to resolve expressions like \'today\', \'tomorrow\', \'next week\', or \'current time\' into exact date and time values.',
         schema: z.object({})
       }
     )
