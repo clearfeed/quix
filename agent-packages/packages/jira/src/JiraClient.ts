@@ -1,5 +1,16 @@
-import { CreateIssueParams, JiraClientConfig, JiraIssueResponse, SearchIssuesResponse, JiraProjectResponse, JiraUserResponse, JiraCommentResponse, JiraIssueComments, UpdateIssueFields, UpdateIssueResponse } from "./types";
-import axios, { AxiosInstance } from "axios";
+import {
+  CreateIssueParams,
+  JiraClientConfig,
+  JiraIssueResponse,
+  SearchIssuesResponse,
+  JiraProjectResponse,
+  JiraUserResponse,
+  JiraCommentResponse,
+  JiraIssueComments,
+  UpdateIssueFields,
+  UpdateIssueResponse
+} from './types';
+import axios, { AxiosInstance } from 'axios';
 import * as jwt from 'atlassian-jwt';
 
 export class JiraClient {
@@ -23,10 +34,10 @@ export class JiraClient {
   }
 
   private async getToken(payload: {
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
-    path: string,
-    sharedSecret: string,
-    atlassianConnectAppKey: string
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    path: string;
+    sharedSecret: string;
+    atlassianConnectAppKey: string;
   }): Promise<string> {
     const { method, path, sharedSecret, atlassianConnectAppKey } = payload;
     const now = new Date();
@@ -94,7 +105,11 @@ export class JiraClient {
 
   async searchIssues(jql: string, options: { maxResults?: number }): Promise<SearchIssuesResponse> {
     const response = await this.makeApiCall('GET', '/search', {
-      params: { jql, fields: ['summary', 'description', 'status', 'priority', 'assignee'], maxResults: options.maxResults }
+      params: {
+        jql,
+        fields: ['summary', 'description', 'status', 'priority', 'assignee'],
+        maxResults: options.maxResults
+      }
     });
     return response;
   }
@@ -111,7 +126,7 @@ export class JiraClient {
     }
 
     // Validate issue type exists in project
-    const issueTypeObj = project.issueTypes.find(type => type.name === issueType);
+    const issueTypeObj = project.issueTypes.find((type) => type.name === issueType);
     if (!issueTypeObj) {
       throw new Error(`Issue type ${issueType} not found in project ${projectKey}`);
     }
@@ -121,7 +136,13 @@ export class JiraClient {
         fields: {
           project: { id: project.id },
           summary,
-          description: description ? { type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text: description }] }] } : undefined,
+          description: description
+            ? {
+                type: 'doc',
+                version: 1,
+                content: [{ type: 'paragraph', content: [{ type: 'text', text: description }] }]
+              }
+            : undefined,
           issuetype: { id: issueTypeObj.id }
         }
       }
@@ -150,13 +171,13 @@ export class JiraClient {
               content: [
                 {
                   text: comment,
-                  type: "text"
+                  type: 'text'
                 }
               ],
-              type: "paragraph"
+              type: 'paragraph'
             }
           ],
-          type: "doc",
+          type: 'doc',
           version: 1
         }
       }
@@ -164,7 +185,10 @@ export class JiraClient {
     return response;
   }
 
-  async getComments(issueId: string, options?: { maxResults?: number; startAt?: number }): Promise<JiraIssueComments> {
+  async getComments(
+    issueId: string,
+    options?: { maxResults?: number; startAt?: number }
+  ): Promise<JiraIssueComments> {
     const params: Record<string, any> = {};
     if (options?.maxResults) {
       params.maxResults = options.maxResults;
@@ -195,7 +219,13 @@ export class JiraClient {
           ...(description ? { description } : {}),
           ...(fields.assigneeId ? { assignee: { id: fields.assigneeId } } : {}),
           ...(fields.labels ? { labels: fields.labels } : {}),
-          ...(fields.priority ? { priority: { name: fields.priority.charAt(0).toUpperCase() + fields.priority.slice(1) } } : {})
+          ...(fields.priority
+            ? {
+                priority: {
+                  name: fields.priority.charAt(0).toUpperCase() + fields.priority.slice(1)
+                }
+              }
+            : {})
         }
       }
     });

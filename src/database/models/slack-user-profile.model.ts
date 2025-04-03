@@ -67,4 +67,4 @@ export class SlackUserProfile extends Model<
 
   @UpdatedAt
   declare updated_at: CreationOptional<Date>;
-} 
+}

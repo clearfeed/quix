@@ -38,7 +38,8 @@ export type SearchIssuesResponse = BaseResponse<{
   issues: RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'];
 }>;
 
-type SearchResultItem = RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'][number];
+type SearchResultItem =
+  RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'][number];
 export type PullRequest = SearchResultItem;
 
 export type GetPRResponse = BaseResponse<{
@@ -183,4 +184,4 @@ export interface MergePullRequestParams extends PullRequestParams {
 
 export interface UpdatePullRequestBranchParams extends PullRequestParams {
   expected_head_sha?: string;
-} 
+}

@@ -4,4 +4,4 @@ export type ToolInstallState = {
   appId: string;
   teamId: string;
   state: string;
-}
+};

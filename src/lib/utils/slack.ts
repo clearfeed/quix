@@ -1,13 +1,17 @@
-import { AppMentionEvent, ErrorCode, GenericMessageEvent, KnownBlock } from "@slack/web-api";
-import { LLMContext } from "@quix/llm/types";
-import { WebClient } from "@slack/web-api";
-import { MessageElement } from "@slack/web-api/dist/types/response/ConversationsHistoryResponse";
-import { INTEGRATIONS, OPENAI_CONTEXT_SIZE, SlackMessageUserIdRegex } from "../constants";
-import { SLACK_SCOPES } from "./slack-constants";
-import { SlackWorkspace } from "@quix/database/models";
-import { ParseInputBlockResponse, ParseSlackMentionsUserMap, SlackBlockStateValues } from "../types/slack";
-import { isEqual, isEmpty } from "lodash";
-import { Nullable } from "../types/common";
+import { AppMentionEvent, ErrorCode, GenericMessageEvent, KnownBlock } from '@slack/web-api';
+import { LLMContext } from '@quix/llm/types';
+import { WebClient } from '@slack/web-api';
+import { MessageElement } from '@slack/web-api/dist/types/response/ConversationsHistoryResponse';
+import { INTEGRATIONS, OPENAI_CONTEXT_SIZE, SlackMessageUserIdRegex } from '../constants';
+import { SLACK_SCOPES } from './slack-constants';
+import { SlackWorkspace } from '@quix/database/models';
+import {
+  ParseInputBlockResponse,
+  ParseSlackMentionsUserMap,
+  SlackBlockStateValues
+} from '../types/slack';
+import { isEqual, isEmpty } from 'lodash';
+import { Nullable } from '../types/common';
 
 /**
  * Sanitizes a name to match OpenAI's requirements (alphanumeric, underscore, hyphen only)
@@ -20,7 +24,11 @@ const sanitizeName = (name: string): string => {
   return firstName.replace(/[^a-zA-Z0-9_-]/g, '');
 };
 
-export const createLLMContext = async (event: GenericMessageEvent | AppMentionEvent, userInfoMap: ParseSlackMentionsUserMap, slackWorkspace: SlackWorkspace) => {
+export const createLLMContext = async (
+  event: GenericMessageEvent | AppMentionEvent,
+  userInfoMap: ParseSlackMentionsUserMap,
+  slackWorkspace: SlackWorkspace
+) => {
   const client = new WebClient(slackWorkspace.bot_access_token);
   let messages: LLMContext[] = [];
   // get previous messages
@@ -31,39 +39,54 @@ export const createLLMContext = async (event: GenericMessageEvent | AppMentionEv
     });
 
     if (messagesResponse.messages && messagesResponse.messages.length > 0) {
-      messages = messagesResponse.messages.map((message: MessageElement) => {
-        if (message.subtype === 'assistant_app_thread' || !message.text) return;
-        const rawAuthor = message.app_id === slackWorkspace.app_id ? 'Quix' : message.subtype === 'bot_message' ? message.username : userInfoMap[message.user || '']?.name;
-        const author = rawAuthor ? sanitizeName(rawAuthor) : 'Unknown';
-        return {
-          role: message.app_id === slackWorkspace.app_id ? 'assistant' : 'user',
-          name: author,
-          content: replaceSlackUserMentions({
-            message: message.text,
-            userInfoMap: userInfoMap,
-          })
-        } as LLMContext;
-      }).filter((message) => message !== undefined).slice(-OPENAI_CONTEXT_SIZE);
+      messages = messagesResponse.messages
+        .map((message: MessageElement) => {
+          if (message.subtype === 'assistant_app_thread' || !message.text) return;
+          const rawAuthor =
+            message.app_id === slackWorkspace.app_id
+              ? 'Quix'
+              : message.subtype === 'bot_message'
+                ? message.username
+                : userInfoMap[message.user || '']?.name;
+          const author = rawAuthor ? sanitizeName(rawAuthor) : 'Unknown';
+          return {
+            role: message.app_id === slackWorkspace.app_id ? 'assistant' : 'user',
+            name: author,
+            content: replaceSlackUserMentions({
+              message: message.text,
+              userInfoMap: userInfoMap
+            })
+          } as LLMContext;
+        })
+        .filter((message) => message !== undefined)
+        .slice(-OPENAI_CONTEXT_SIZE);
     }
   }
   return messages;
-}
+};
 
-export const getInstallUrl = (tool: typeof INTEGRATIONS[number]['value'], teamId?: string): string => {
+export const getInstallUrl = (
+  tool: (typeof INTEGRATIONS)[number]['value'],
+  teamId?: string
+): string => {
   return `https://slack.com/oauth/v2/authorize?client_id=${process.env.SLACK_CLIENT_ID}&scope=${SLACK_SCOPES.join(',')}&redirect_uri=${encodeURIComponent(`${process.env.SELFSERVER_URL}/slack/install/${tool}`)}&team=${teamId}`;
-}
+};
 
-export const sendMessage = async (slackWorkspace: SlackWorkspace, channel: string, message: string) => {
+export const sendMessage = async (
+  slackWorkspace: SlackWorkspace,
+  channel: string,
+  message: string
+) => {
   const client = new WebClient(slackWorkspace.bot_access_token);
   await client.chat.postMessage({
     channel,
     text: message
   });
-}
+};
 /**
  * Create a history of messages with the author of the message.
- * @param payload 
- * @returns 
+ * @param payload
+ * @returns
  */
 export const replaceSlackUserMentions = (payload: {
   message: string;

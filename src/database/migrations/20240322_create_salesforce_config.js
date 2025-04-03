@@ -7,36 +7,36 @@ module.exports = {
       organization_id: {
         type: Sequelize.STRING,
         primaryKey: true,
-        allowNull: false,
+        allowNull: false
       },
       access_token: {
         type: Sequelize.TEXT,
-        allowNull: true,
+        allowNull: true
       },
       refresh_token: {
         type: Sequelize.TEXT,
-        allowNull: true,
+        allowNull: true
       },
       instance_url: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       token_type: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: true
       },
       scopes: {
         type: Sequelize.ARRAY(Sequelize.STRING),
         allowNull: true,
-        defaultValue: [],
+        defaultValue: []
       },
       expires_at: {
         type: Sequelize.DATE,
-        allowNull: false,
+        allowNull: false
       },
       authed_user_email: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       team_id: {
         type: Sequelize.STRING,
@@ -51,16 +51,16 @@ module.exports = {
       },
       created_at: {
         type: Sequelize.DATE,
-        allowNull: false,
+        allowNull: false
       },
       updated_at: {
         type: Sequelize.DATE,
-        allowNull: false,
-      },
+        allowNull: false
+      }
     });
   },
 
   async down(queryInterface) {
     await queryInterface.dropTable('salesforce_configs');
-  },
-}; 
+  }
+};

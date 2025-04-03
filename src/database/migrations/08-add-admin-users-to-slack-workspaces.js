@@ -20,4 +20,4 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     await queryInterface.removeColumn('slack_workspaces', 'admin_user_ids');
   }
-}; 
+};

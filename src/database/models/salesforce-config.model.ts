@@ -8,7 +8,7 @@ import {
   Unique,
   AllowNull,
   BelongsTo,
-  ForeignKey,
+  ForeignKey
 } from 'sequelize-typescript';
 import { SlackWorkspace } from './slack-workspace.model';
 import { NonAttribute } from 'sequelize';
@@ -28,50 +28,50 @@ export class SalesforceConfig extends Model {
   @Column({
     type: DataType.STRING,
     primaryKey: true,
-    allowNull: false,
+    allowNull: false
   })
   declare organization_id: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true,
+    allowNull: true
   })
   declare access_token: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true,
+    allowNull: true
   })
   declare refresh_token: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
   declare expires_at: Date;
 
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: false
   })
   declare authed_user_email: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
   declare instance_url: string;
 
   @Column({
     type: DataType.STRING,
-    allowNull: true,
+    allowNull: true
   })
   declare token_type: string;
 
   @Column({
     type: DataType.ARRAY(DataType.STRING),
     allowNull: true,
-    defaultValue: null,
+    defaultValue: null
   })
   declare scopes: string[];
 
@@ -94,5 +94,4 @@ export class SalesforceConfig extends Model {
   @UpdatedAt
   @Column
   declare updated_at: Date;
-
-} 
+}

@@ -1,4 +1,4 @@
-import { BaseConfig } from "@clearfeed-ai/quix-common-agent";
+import { BaseConfig } from '@clearfeed-ai/quix-common-agent';
 
 export interface PostgresConfig extends BaseConfig {
   host: string;

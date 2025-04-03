@@ -21,7 +21,7 @@ export class SlackService {
     @InjectModel(SlackWorkspace)
     private readonly slackWorkspaceModel: typeof SlackWorkspace,
     @InjectModel(SlackUserProfile)
-    private readonly slackUserProfileModel: typeof SlackUserProfile,
+    private readonly slackUserProfileModel: typeof SlackUserProfile
   ) {
     this.webClient = new WebClient(this.configService.get('SLACK_BOT_TOKEN'));
   }
@@ -45,8 +45,13 @@ export class SlackService {
         this.logger.warn('Slack workspace not found', { teamId: event.teamId });
         return;
       }
-      this.logger.log(`Sending integration connection notification to ${slackWorkspace.authed_user_id}`, { event });
-      const text = INTEGRATIONS.find(integration => integration.value === event.type)?.connectedText;
+      this.logger.log(
+        `Sending integration connection notification to ${slackWorkspace.authed_user_id}`,
+        { event }
+      );
+      const text = INTEGRATIONS.find(
+        (integration) => integration.value === event.type
+      )?.connectedText;
       if (!text) {
         this.logger.warn('No connected text found for integration', { event });
         return;
@@ -57,14 +62,19 @@ export class SlackService {
     }
   }
 
-  async install(code: string, tool?: typeof INTEGRATIONS[number]['value']): Promise<{
+  async install(
+    code: string,
+    tool?: (typeof INTEGRATIONS)[number]['value']
+  ): Promise<{
     team_id: string;
     app_id: string;
   } | void> {
     const response = await this.webClient.oauth.v2.access({
       client_id: this.configService.get<string>('SLACK_CLIENT_ID') || '',
       client_secret: this.configService.get<string>('SLACK_CLIENT_SECRET') || '',
-      redirect_uri: tool ? `${this.configService.get<string>('SELFSERVER_URL')}/slack/install/${tool}` : this.configService.get<string>('SELFSERVER_URL') + '/slack/install',
+      redirect_uri: tool
+        ? `${this.configService.get<string>('SELFSERVER_URL')}/slack/install/${tool}`
+        : this.configService.get<string>('SELFSERVER_URL') + '/slack/install',
       code
     });
     if (response.ok && response.team?.id) {
@@ -83,7 +93,10 @@ export class SlackService {
       // Store all Slack users after workspace is connected
       this.storeSlackUsers(slackWorkspace);
     }
-    this.logger.log(`Connected to Slack workspace`, { team_id: response.team?.id, app_id: response.app_id });
+    this.logger.log(`Connected to Slack workspace`, {
+      team_id: response.team?.id,
+      app_id: response.app_id
+    });
     return {
       team_id: response.team?.id || '',
       app_id: response.app_id || ''
@@ -98,7 +111,9 @@ export class SlackService {
   private async storeSlackUsers(slackWorkspace: SlackWorkspace): Promise<void> {
     try {
       if (!slackWorkspace.bot_access_token) {
-        this.logger.error('No access token provided for storing Slack users', { teamId: slackWorkspace.team_id });
+        this.logger.error('No access token provided for storing Slack users', {
+          teamId: slackWorkspace.team_id
+        });
         return;
       }
 
@@ -127,15 +142,18 @@ export class SlackService {
           const displayName = member.profile.display_name || member.real_name || member.name || '';
           const avatarUrl = member.profile.image_192 || member.profile.image_72 || '';
 
-          await this.slackUserProfileModel.upsert({
-            team_id: slackWorkspace.team_id,
-            user_id: member.id as string,
-            display_name: displayName,
-            email: member.profile.email || null,
-            avatar_url: avatarUrl
-          }, {
-            conflictFields: ['team_id', 'user_id']
-          });
+          await this.slackUserProfileModel.upsert(
+            {
+              team_id: slackWorkspace.team_id,
+              user_id: member.id as string,
+              display_name: displayName,
+              email: member.profile.email || null,
+              avatar_url: avatarUrl
+            },
+            {
+              conflictFields: ['team_id', 'user_id']
+            }
+          );
         }
 
         // Update cursor for next page
@@ -180,7 +198,7 @@ export class SlackService {
           this.logger.log(`Successfully refreshed users for workspace ${workspace.team_id}`);
 
           // 500ms delay before the next API call
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 500));
         } catch (error) {
           this.logger.error(`Failed to refresh users for workspace ${workspace.team_id}`, error);
           // Continue with the next workspace even if one fails
@@ -193,5 +211,4 @@ export class SlackService {
       this.logger.error('Failed to refresh workspace users', error);
     }
   }
-
 }

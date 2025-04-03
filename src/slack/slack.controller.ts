@@ -1,4 +1,17 @@
-import { Controller, Post, Body, Req, RawBodyRequest, Query, Get, HttpStatus, Redirect, Param, Inject, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  RawBodyRequest,
+  Query,
+  Get,
+  HttpStatus,
+  Redirect,
+  Param,
+  Inject,
+  BadRequestException
+} from '@nestjs/common';
 import { SlackService } from './slack.service';
 import { Request } from 'express';
 import { verifySlackSignature } from '@quix/lib/utils/verifySlackSignature';
@@ -20,12 +33,15 @@ export class SlackController {
     private readonly interactionsService: InteractionsService,
     private readonly integrationsService: IntegrationsInstallService,
     private readonly slackEventsHandlerService: SlackEventsHandlerService,
-    @Inject(CACHE_MANAGER) private cache: Cache,
-  ) { }
+    @Inject(CACHE_MANAGER) private cache: Cache
+  ) {}
 
   @Post('events')
   async handleEvent(@Req() req: RawBodyRequest<Request>) {
-    const isVerified = verifySlackSignature(req, this.configService.get<string>('SLACK_SIGNING_SECRET'));
+    const isVerified = verifySlackSignature(
+      req,
+      this.configService.get<string>('SLACK_SIGNING_SECRET')
+    );
     if (!isVerified) {
       return {
         statusCode: 401,
@@ -61,11 +77,18 @@ export class SlackController {
 
   @Get('install/:tool')
   @Redirect()
-  async installTool(@Param('tool') tool: typeof INTEGRATIONS[number]['value'], @Query('code') code: string) {
+  async installTool(
+    @Param('tool') tool: (typeof INTEGRATIONS)[number]['value'],
+    @Query('code') code: string
+  ) {
     const result = await this.slackService.install(code, tool);
     if (!result) throw new BadRequestException();
     const state = Math.random().toString(36).substring(2, 15);
-    await this.cache.set<ToolInstallState>(`install_${tool}`, { state, teamId: result.team_id, appId: result.app_id }, 60 * 5);
+    await this.cache.set<ToolInstallState>(
+      `install_${tool}`,
+      { state, teamId: result.team_id, appId: result.app_id },
+      60 * 5
+    );
     return {
       url: this.integrationsService.getInstallUrl(tool, state),
       statusCode: 302

@@ -33,6 +33,6 @@ export type EventCallbackEvent = {
   type: 'event_callback';
   event: SlackEvent;
   team_id: string;
-}
+};
 
 export type AllSlackEvents = UrlVerificationEvent | EventCallbackEvent;

@@ -114,6 +114,17 @@ export class SlackWorkspace extends Model<
   })
   get openai_key(): string | null {
     const value = this.getDataValue('openai_key') as string;
+    /**
+     * If the Slack Workspace was created in the last week and the openai key is not set,
+     * return the openai key from the env
+     */
+    if (
+      !value &&
+      process.env.OPENAI_API_KEY &&
+      new Date(this.created_at).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
+    ) {
+      return process.env.OPENAI_API_KEY;
+    }
     if (!value) return null;
     return decrypt(value);
   }
@@ -146,7 +157,7 @@ export class SlackWorkspace extends Model<
 
   // Helper method to remove an admin
   removeAdmin(userId: string): void {
-    this.admin_user_ids = this.admin_user_ids.filter(id => id !== userId);
+    this.admin_user_ids = this.admin_user_ids.filter((id) => id !== userId);
   }
 
   @AllowNull(false)
@@ -167,7 +178,7 @@ export class SlackWorkspace extends Model<
   // Check if a channel is authorized
   isChannelAuthorized(channelId: string): boolean {
     const allowedIds = this.access_settings.allowedChannelIds || [];
-    return (!allowedIds.length || allowedIds.includes(channelId)) ? true : false;
+    return !allowedIds.length || allowedIds.includes(channelId) ? true : false;
   }
 
   // Update access level for interaction
@@ -228,4 +239,4 @@ export class SlackWorkspace extends Model<
       thread_ts
     });
   }
-} 
+}
