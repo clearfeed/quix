@@ -6,7 +6,7 @@ import {
   GetTicketResponse,
   SearchTicketsResponse,
   GetTicketWithRepliesParams,
-  TicketWithReplies
+  TicketWithRepliesResponse
 } from './types';
 import { BaseService, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 
@@ -69,10 +69,8 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
     }
   }
 
-  async getTicketWithReplies(params: GetTicketWithRepliesParams): Promise<BaseResponse<TicketWithReplies>> {
+  async getTicketWithReplies(params: GetTicketWithRepliesParams): Promise<BaseResponse<TicketWithRepliesResponse>> {
     try {
-      _.every(['ticketId'], (field) => _.has(params, field));
-
       const [ticketResponse, commentsResponse] = await Promise.all([
         this.client.tickets.show(params.ticketId),
         this.client.tickets.getComments(params.ticketId)
