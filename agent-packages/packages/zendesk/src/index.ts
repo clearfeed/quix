@@ -101,7 +101,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
 
   async addInternalNote(params: AddInternalNoteParams): Promise<BaseResponse<AddInternalNoteResponse>> {
     try {
-      const response = await this.client.tickets.update(params.ticketId, {
+      await this.client.tickets.update(params.ticketId, {
         ticket: {
           comment: {
             body: params.note,
