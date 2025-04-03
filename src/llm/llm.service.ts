@@ -129,14 +129,14 @@ export class LlmService {
         authorName
       );
       this.logger.log(
-        `Selected tools: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}`
+        `Selected tools: ${Array.isArray(toolSelection.selectedToolCategories) ? toolSelection.selectedToolCategories.join(', ') : 'none'}`
       );
 
-      if (toolSelection.selectedTools === 'none') {
+      if (toolSelection.selectedToolCategories === 'none') {
         return toolSelection.content || `I could not find any tools to fulfill your request.`;
       }
 
-      availableFunctions = toolSelection.selectedTools
+      availableFunctions = toolSelection.selectedToolCategories
         .map((tool) => {
           if (!tools[tool]) {
             return [];
@@ -255,7 +255,7 @@ export class LlmService {
     llm: BaseChatModel,
     authorName: string
   ): Promise<{
-    selectedTools: (keyof typeof tools)[] | 'none';
+    selectedToolCategories: (keyof typeof tools)[] | 'none';
     content: string;
   }> {
     const availableCategories = Object.keys(tools);
@@ -315,7 +315,7 @@ export class LlmService {
     );
 
     return {
-      selectedTools: result.tool_calls?.[0]?.args?.toolCategories ?? 'none',
+      selectedToolCategories: result.tool_calls?.[0]?.args?.toolCategories ?? 'none',
       content: Array.isArray(result.content) ? result.content.join(' ') : result.content
     };
   }
