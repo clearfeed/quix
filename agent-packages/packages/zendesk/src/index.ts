@@ -148,16 +148,11 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
         }
       });
 
-      const comment = response.result?.comment;
-      if (!comment) {
-        throw new Error('Failed to create internal comment: No comment data received');
-      }
-
       return {
         success: true,
         data: {
           ticketId: params.ticketId,
-          commentId: comment.id
+          commentId: response.result.id
         }
       };
     } catch (error: any) {
