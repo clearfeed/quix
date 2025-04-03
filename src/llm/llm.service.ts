@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ToolService } from './tool.service';
-import { LLMContext, SupportedChatModels } from './types';
+import { LLMContext, MessageProcessingArgs, SupportedChatModels } from './types';
 import { LlmProviderService } from './llm.provider';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
@@ -13,16 +13,58 @@ import { AIMessage } from '@langchain/core/messages';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import slackify = require('slackify-markdown');
 import { QuixCallBackManager } from './callback-manager';
+import { ConversationState } from '../database/models/conversation-state.model';
+import { InjectModel } from '@nestjs/sequelize';
 
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);
   constructor(
     private readonly llmProvider: LlmProviderService,
-    private readonly tool: ToolService
+    private readonly tool: ToolService,
+    @InjectModel(ConversationState)
+    private readonly conversationStateModel: typeof ConversationState
   ) { }
 
-  async processMessage(message: string, teamId: string, previousMessages: LLMContext[]): Promise<string> {
+  private async enhanceMessagesWithToolContext(previousMessages: LLMContext[], lastToolCalls: ConversationState['last_tool_calls']): Promise<LLMContext[]> {
+    const enhancedPreviousMessages = [...previousMessages];
+
+    if (lastToolCalls) {
+      enhancedPreviousMessages.push({
+        role: 'system',
+        content: `Previous tools you have used in this conversation: ${Object.values(lastToolCalls).map(call =>
+          `Tool "${call.name}" with args ${JSON.stringify(call.args)} returned: ${call.result}`
+        ).join('; ')}`
+      });
+    }
+
+    return enhancedPreviousMessages;
+  }
+
+  async processMessage(args: MessageProcessingArgs): Promise<string> {
+    const { message, teamId, threadTs, previousMessages, channelId } = args;
+
+    // Load conversation state if it exists
+    let conversationState = await this.conversationStateModel.findOne({
+      where: {
+        team_id: teamId,
+        channel_id: channelId,
+        thread_ts: threadTs,
+      }
+    });
+
+    // Create a new conversation state if it doesn't exist
+    if (!conversationState) {
+      conversationState = await this.conversationStateModel.create({
+        team_id: teamId,
+        channel_id: channelId,
+        thread_ts: threadTs,
+        last_tool_calls: null,
+        last_plan: null,
+        contextual_memory: {}
+      });
+    }
+
     const tools = await this.tool.getAvailableTools(teamId);
     if (!tools) {
       return 'I apologize, but I don\'t have any tools configured to help with your request at the moment.';
@@ -36,11 +78,20 @@ export class LlmService {
       return response;
     }
 
-    const toolSelection = await this.toolSelection(message, tools, previousMessages, llm);
+    // Add previous tool calls to system context for better continuity
+    let enhancedPreviousMessages: LLMContext[] = [];
+    try {
+      enhancedPreviousMessages = await this.enhanceMessagesWithToolContext(previousMessages, conversationState.last_tool_calls);
+    } catch (error) {
+      this.logger.error(`Error enhancing messages with tool context: ${error}`);
+      enhancedPreviousMessages = previousMessages;
+    }
+
+    const toolSelection = await this.toolSelection(message, tools, enhancedPreviousMessages, llm);
     this.logger.log(`Selected tools: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}`);
 
     if (toolSelection.selectedTools === 'none') {
-      return toolSelection.content;
+      return toolSelection.content || `I could not find any tools to fulfill your request.`;
     }
 
     const availableFunctions: ToolConfig['tools'] = toolSelection.selectedTools.map(tool => tools[tool].tools).flat();
@@ -49,7 +100,7 @@ export class LlmService {
       return 'I apologize, but I don\'t have any tools configured to help with your request at the moment.';
     }
 
-    const plan = await this.generatePlan(availableFunctions, previousMessages, message, llm);
+    const plan = await this.generatePlan(availableFunctions, enhancedPreviousMessages, message, llm);
     const formattedPlan = plan.map((step, i) => {
       if (step.type === 'tool') {
         return `${i + 1}. Call tool \`${step.tool}\`. ${step.input || ''}`.trim();
@@ -59,17 +110,47 @@ export class LlmService {
     }).join('\n');
     this.logger.log(`Generated plan: ${formattedPlan}`);
 
+    // Store the plan in conversation state
+    conversationState.last_plan = {
+      steps: plan,
+      completed: false
+    };
+    await conversationState.save();
+
     const agent = createReactAgent({
       llm,
       tools: availableFunctions as any,
       prompt: toolSelection.selectedTools.length > 1 ? QuixPrompts.multiStepBasePrompt(formattedPlan) : QuixPrompts.basePrompt
     });
 
+    // Create a callback to track tool calls
+    const toolCallTracker = new QuixCallBackManager();
+    toolCallTracker.captureToolCalls = true;
+
     const result = await agent.invoke({
-      messages: [...previousMessages, { role: 'user', content: message }]
+      messages: [...enhancedPreviousMessages, { role: 'user', content: message }]
     }, {
-      callbacks: [new QuixCallBackManager()]
+      callbacks: [toolCallTracker]
     });
+
+    // Update conversation state with tool calls
+    if (toolCallTracker.toolCalls) {
+      const newToolCalls = {
+        ...toolCallTracker.toolCalls
+      };
+
+      conversationState.last_tool_calls = {
+        ...conversationState.last_tool_calls,
+        ...newToolCalls
+      };
+
+      // Mark plan as completed
+      if (conversationState.last_plan) {
+        conversationState.last_plan.completed = true;
+      }
+
+      await conversationState.save();
+    }
 
     const { totalTokens, toolCallCount, toolNames } = result.messages.reduce((acc, msg) => {
       // Add token usage
