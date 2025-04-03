@@ -58,6 +58,7 @@ export class LlmService {
       }
     }).join('\n');
     this.logger.log(`Generated plan: ${formattedPlan}`);
+    return formattedPlan;
 
     const agent = createReactAgent({
       llm,
@@ -108,6 +109,7 @@ export class LlmService {
 
     const toolSelectionPrompts = availableCategories.map(category => tools[category].prompts?.toolSelection).filter(Boolean).join('\n');
     const systemPrompt = `${QuixPrompts.basePrompt}\n${toolSelectionPrompts}`;
+    console.log(systemPrompt);
 
     const toolSelectionFunction = new DynamicStructuredTool({
       name: 'selectTool',
