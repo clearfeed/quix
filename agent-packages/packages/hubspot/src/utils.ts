@@ -1,6 +1,6 @@
 export function validateRequiredFields<T extends Record<string, any>>({
   params,
-  requiredFields,
+  requiredFields
 }: {
   params: T;
   requiredFields: (keyof T)[];

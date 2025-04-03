@@ -1,0 +1,30 @@
+# Build outputs
+dist/
+build/
+coverage/
+
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Environment files
+.env*
+!.env.example
+
+# Cache and logs
+.cache/
+.npm/
+logs/
+*.log
+
+# IDE specific files
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Generated files
+agent-packages/**/dist/

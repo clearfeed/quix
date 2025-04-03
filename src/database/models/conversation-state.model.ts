@@ -6,7 +6,7 @@ import { Nullable } from 'slack-block-builder/dist/internal';
 @Table({
   tableName: 'conversation_states',
   timestamps: true,
-  underscored: true,
+  underscored: true
 })
 export class ConversationState extends Model<
   InferAttributes<ConversationState>,
@@ -16,41 +16,46 @@ export class ConversationState extends Model<
   @Column({
     type: DataType.STRING,
     primaryKey: true,
-    allowNull: false,
+    allowNull: false
   })
   declare team_id: string;
 
   @Column({
     type: DataType.STRING,
     primaryKey: true,
-    allowNull: false,
+    allowNull: false
   })
   declare channel_id: string;
 
   @Column({
     type: DataType.STRING,
     primaryKey: true,
-    allowNull: false,
+    allowNull: false
   })
   declare thread_ts: string;
 
   @Column({
     type: DataType.JSON,
-    defaultValue: [],
+    defaultValue: []
   })
-  declare last_tool_calls: Nullable<Record<string, {
-    name: string;
-    args: Record<string, unknown>;
-    result: {
-      kwargs: {
-        content: string
+  declare last_tool_calls: Nullable<
+    Record<
+      string,
+      {
+        name: string;
+        args: Record<string, unknown>;
+        result: {
+          kwargs: {
+            content: string;
+          };
+        };
       }
-    };
-  }>>;
+    >
+  >;
 
   @Column({
     type: DataType.JSON,
-    defaultValue: null,
+    defaultValue: null
   })
   declare last_plan: {
     steps: Array<{
@@ -64,7 +69,7 @@ export class ConversationState extends Model<
 
   @Column({
     type: DataType.JSON,
-    defaultValue: null,
+    defaultValue: null
   })
   declare contextual_memory: Record<string, any> | null;
 
@@ -74,4 +79,4 @@ export class ConversationState extends Model<
     as: 'slack_workspace'
   })
   declare slack_workspace: NonAttribute<SlackWorkspace>;
-} 
+}

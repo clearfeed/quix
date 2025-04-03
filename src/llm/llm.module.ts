@@ -11,4 +11,4 @@ import { McpService } from './mcp.service';
   exports: [LlmService, McpService],
   imports: [ConfigModule, IntegrationsModule]
 })
-export class LlmModule { }
+export class LlmModule {}

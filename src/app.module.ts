@@ -14,7 +14,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,
+      isGlobal: true
     }),
     EventEmitterModule.forRoot({
       wildcard: true,
@@ -38,14 +38,14 @@ import { ScheduleModule } from '@nestjs/schedule';
         };
       },
       isGlobal: true,
-      inject: [ConfigService],
+      inject: [ConfigService]
     }),
     DatabaseModule,
     SlackModule,
     LlmModule,
-    IntegrationsModule,
+    IntegrationsModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService]
 })
-export class AppModule { }
+export class AppModule {}
