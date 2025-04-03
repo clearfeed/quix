@@ -1,9 +1,11 @@
-import jsforce, { Connection, IdentityInfo } from 'jsforce';
+import { DescribeObjectParams } from './types/index';
+import { Connection } from 'jsforce';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   SalesforceConfig,
   SearchOpportunitiesResponse,
   AddNoteToOpportunityResponse,
+  SearchOpportunitiesParams
 } from './types';
 import { BaseResponse } from '@clearfeed-ai/quix-common-agent';
 
@@ -13,7 +15,7 @@ import {
   CreateTaskParams,
   SalesforceTask
 } from './types/index';
-
+import { filterOpportunities } from './utils';
 // Export all types
 export * from './types';
 
@@ -64,17 +66,35 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
       return `StageName LIKE '%${userStage}%'`;
     }
   }
-  async getOpportunityCount(stage?: string): Promise<BaseResponse<{ totalOpportunities: number }>> {
+
+  async getOpportunityCount(args: SearchOpportunitiesParams): Promise<BaseResponse<{ totalOpportunities: number }>> {
     try {
+      // Create a query builder
+      let queryBuilder = this.connection.sobject('Opportunity')
+        .select('COUNT(Id) totalCount');
+
+      // Get stage query if provided
       let stageQuery = '';
-      let soql = 'SELECT COUNT(Id) totalCount FROM Opportunity';
-      if (stage) {
-        stageQuery = await this.stageQuery(stage);
+      if (args.stage) {
+        stageQuery = await this.stageQuery(args.stage);
       }
-      if (stageQuery) {
-        soql += ` WHERE ${stageQuery}`;
+
+      // Use the filterOpportunities utility to build conditions
+      const conditions = filterOpportunities({
+        keyword: args.keyword,
+        stageQuery,
+        ownerId: args.ownerId
+      });
+
+      // Add conditions to query
+      if (conditions.length > 0) {
+        queryBuilder = queryBuilder.where(conditions.join(' AND '));
       }
-      const response = await this.connection.query<{ totalCount: number }>(soql);
+
+      // Convert to SOQL and execute
+      const soqlString = await queryBuilder.toSOQL();
+      const response = await this.connection.query<{ totalCount: number }>(soqlString);
+
       return {
         success: true,
         data: { totalOpportunities: response.records[0].totalCount }
@@ -88,19 +108,27 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
     }
   }
 
-  async searchOpportunities(keyword: string, stage?: string): Promise<SearchOpportunitiesResponse> {
+  async searchOpportunities({ keyword, stage, ownerId }: SearchOpportunitiesParams): Promise<SearchOpportunitiesResponse> {
     try {
       const limit = 10;
       let soql = this.connection.sobject('Opportunity')
-        .select('Id, Name, StageName, Amount, CloseDate, Probability, Account.Name, Owner.Name, CreatedDate, LastModifiedDate')
-        .where(`Name LIKE '%${keyword}%'`);
+        .select('Id, Name, StageName, Amount, CloseDate, Probability, Account.Name, Owner.Name, CreatedDate, LastModifiedDate');
+
       let stageQuery = '';
       if (stage) {
         stageQuery = await this.stageQuery(stage);
       }
-      if (stageQuery) {
-        soql = soql.where(stageQuery);
+
+      const conditions = filterOpportunities({
+        keyword,
+        stageQuery,
+        ownerId
+      });
+
+      if (conditions.length > 0) {
+        soql = soql.where(conditions.join(' AND '));
       }
+
       soql = soql.orderby('LastModifiedDate', 'DESC').limit(limit);
       const soqlString = await soql.toSOQL();
 
@@ -166,12 +194,12 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
     }
   }
 
-  async createTask(params: CreateTaskParams): Promise<BaseResponse<{ taskId: string; opportunityUrl?: string }>> {
+  async createTask(params: CreateTaskParams): Promise<BaseResponse<{ taskId: string; whatId: string }>> {
     try {
       const taskData: SalesforceTask = {
         Subject: params.subject,
         Description: params.description || '',
-        WhatId: params.opportunityId
+        WhatId: params.whatId
       };
       if (params.status) {
         taskData.Status = params.status;
@@ -181,6 +209,12 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
       }
       if (params.ownerId) {
         taskData.OwnerId = params.ownerId;
+      }
+      if (params.type) {
+        taskData.Type = params.type;
+      }
+      if (params.dueDate) {
+        taskData.ActivityDate = params.dueDate;
       }
 
       const response = await this.connection.sobject('Task').create(taskData);
@@ -192,7 +226,7 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
         success: true,
         data: {
           taskId: response.id,
-          opportunityUrl: params.opportunityId ? this.getOpportunityUrl(params.opportunityId) : undefined
+          whatId: params.whatId
         }
       };
     } catch (error) {
@@ -243,6 +277,63 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
       success: true,
       data: { stages }
     };
+  }
+
+  async describeObject(args: DescribeObjectParams): Promise<BaseResponse<{ fields: Record<string, any>[] }>> {
+    try {
+      const response = await this.connection.sobject(args.objectName).describe();
+
+      // Filter to only important fields
+      const importantFields = response.fields.map(field => ({
+        name: field.name,
+        label: field.label,
+        type: field.type,
+        required: field.nillable === false,
+        createable: field.createable,
+        updateable: field.updateable,
+        defaultValue: field.defaultValue,
+        ...(field.type === 'picklist' && {
+          picklistValues: field.picklistValues?.map(val => ({
+            label: val.label,
+            value: val.value,
+            isDefault: val.defaultValue
+          }))
+        })
+      }));
+
+      return {
+        success: true,
+        data: { fields: importantFields }
+      };
+    } catch (error) {
+      console.error('Error describing Salesforce object:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to describe Salesforce object'
+      };
+    }
+  }
+
+  async searchAccounts(keyword: string): Promise<BaseResponse<{ accounts: { id: string; }[] }>> {
+    try {
+      const soqlString = await this.connection.sobject('Account')
+        .select('Id, Name')
+        .where(`Name LIKE '%${keyword}%'`)
+        .orderby('LastModifiedDate', 'DESC')
+        .limit(10).toSOQL();
+      const response = await this.connection.query<{ Id: string; Name: string }>(soqlString);
+      const accounts = response.records.map((account) => ({ id: account.Id, ...account }));
+      return {
+        success: true,
+        data: { accounts }
+      };
+    } catch (error) {
+      console.error('Error searching Salesforce accounts:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to search Salesforce accounts'
+      };
+    }
   }
 }
 

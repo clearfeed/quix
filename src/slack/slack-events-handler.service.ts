@@ -119,9 +119,14 @@ export class SlackEventsHandlerService {
         const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
         const messages = await createLLMContext(event, userInfoMap, slackWorkspace);
         if (!event.team) return;
-        const response = await this.llmService.processMessage(event.text, event.team, messages);
-        await slackWorkspace.postMessage(response, event.channel, event.thread_ts);
-        this.logger.log('Sent response to message', { channel: event.channel, response });
+        try {
+          const response = await this.llmService.processMessage(event.text, event.team, messages);
+          await slackWorkspace.postMessage(response, event.channel, event.thread_ts);
+          this.logger.log('Sent response to message', { channel: event.channel, response });
+        } catch (error) {
+          this.logger.error('Error processing message:', error);
+          await slackWorkspace.postMessage('Sorry, I couldn\'t process that request. Please try again.', event.channel, event.thread_ts);
+        }
       } else {
         await slackWorkspace.postMessage('Please provide more information...', event.channel, event.thread_ts);
         this.logger.log('No text in message', { event });

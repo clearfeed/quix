@@ -1,11 +1,26 @@
-# Cursor Rules for Clearfeed Agents Monorepo
+# Cursor Rules for Quix Monorepo
 
 ## Project Structure
 - This is a Nest.js monorepo with a main application and integration packages for various services
 - Main Nest.js application is in the root `src/` directory
+- Integrations are either built as a separate public npm package or integratied via an mcp server in mcp.service.ts
 - Integration packages are located in `agent-packages/packages/`
 - Each integration package follows a consistent structure with `src/`, `dist/`, and configuration files
 - Common utilities and shared types are in the `agent-packages/packages/common` package
+
+## Adding a new integration
+To add a new integration
+- Either use Oauth or API token and create a db migration similar to other integrations
+- Use an id from the integration system as the primary key
+- Create a sequelize model and associate the integration with slack workspace table via team_id
+- Always prefix model attributes with `declare`
+- Publish an app_home view to Slack for this integration via the app_home service and views
+- Allow editing or reconnecting and disconnecting the integration
+- Validate API tokens if accepting them in integrations-install.service.ts
+
+## Slack events and interactions
+- All slack events are handled in slack-events-handler.service.ts
+- All slack interactions are handled in interactions.service.ts
 
 ## Code Organization Rules
 1. Keep all service-specific code within its respective package directory
@@ -24,6 +39,9 @@
 3. Leverage the common package for shared types and utilities
 4. Use proper type imports from @types packages when available
 5. Follow Nest.js decorators and typing conventions for dependency injection
+6. DO NOT use the any type
+7. Import types from packages whenever possible before declaring your own types
+8. Avoid type casting as much as possible
 
 ## Package Dependencies
 1. Each integration package should have its own `package.json`
