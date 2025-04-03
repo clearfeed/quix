@@ -38,7 +38,7 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
       description: 'Search Zendesk tickets using a query string',
       schema: z.object({
         query: z.string().describe('Search keywords or phrases to filter Zendesk tickets by title, description, or metadata'),
-        limit: z.number().optional().describe('Optional limit on the number of tickets to return (default: 10)')
+        limit: z.number().describe('Limit on the number of tickets to return').default(10)
       }),
       func: async (args: SearchTicketsParams) => service.searchTickets(args)
     }),
