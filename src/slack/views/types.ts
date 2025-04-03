@@ -31,6 +31,16 @@ export type JiraDefaultConfigModalArgs = {
   projectKey: string;
 }
 
+export type GithubDefaultConfig = {
+  repo: string;
+  owner: string;
+}
+
+export type GithubDefaultConfigModalArgs = {
+  triggerId: string;
+  initialValues: GithubDefaultConfig;
+}
+
 export type NotionConnectionModalArgs = {
   triggerId: string;
   teamId: string;
