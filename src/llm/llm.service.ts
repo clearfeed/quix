@@ -105,6 +105,10 @@ export class LlmService {
       remove(availableToolCategories, [ToolCategory.COMMON, ToolCategory.SLACK]).length <= 1
     ) {
       availableFunctions = Object.values(tools).flatMap((tool) => tool.tools);
+      this.logger.log(
+        'Using all available tools instead of selecting tool categories before generating the plan',
+        { toolCategoriesUsed: availableToolCategories }
+      );
     } else {
       const toolSelection = await this.toolSelection(message, tools, enhancedPreviousMessages, llm);
       this.logger.log(
