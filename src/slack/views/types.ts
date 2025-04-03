@@ -1,6 +1,4 @@
-import {
-  SlackWorkspace,
-} from '@quix/database/models';
+import { SlackWorkspace } from '@quix/database/models';
 import { INTEGRATIONS } from '@quix/lib/constants';
 import { Connections } from '@quix/lib/types/common';
 import { ModalView, ViewsOpenResponse, ViewsUpdateResponse, WebClient } from '@slack/web-api';

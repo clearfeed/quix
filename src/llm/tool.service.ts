@@ -1,7 +1,6 @@
 import { createHubspotToolsExport } from '@clearfeed-ai/quix-hubspot-agent';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
@@ -12,7 +11,6 @@ import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent
 import { McpServerCleanupFn, McpService } from './mcp.service';
 import { QuixPrompts, SUPPORTED_INTEGRATIONS } from '../lib/constants';
 import { createCommonToolsExport } from '@clearfeed-ai/quix-common-agent';
-import { InferAttributes, InferCreationAttributes, Model, NonAttribute } from 'sequelize';
 import { AvailableToolsWithConfig } from './types';
 
 @Injectable()

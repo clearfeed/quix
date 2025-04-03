@@ -85,4 +85,4 @@ module.exports = {
     // Remove default_prompt column from salesforce_configs
     await queryInterface.removeColumn('salesforce_configs', 'default_prompt');
   }
-}; 
+};

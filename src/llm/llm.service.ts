@@ -21,12 +21,10 @@ import { QuixPrompts } from '../lib/constants';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { AIMessage } from '@langchain/core/messages';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import slackify = require('slackify-markdown');
 import { QuixCallBackManager } from './callback-manager';
 import { ConversationState } from '../database/models/conversation-state.model';
 import { InjectModel } from '@nestjs/sequelize';
-import { Connections } from '@quix/lib/types/common';
-import { isUndefined } from 'lodash';
+import slackify = require('slackify-markdown');
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);

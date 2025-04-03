@@ -1,7 +1,3 @@
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
-
-import { AvailableToolsWithConfig } from '@quix/llm/types';
-
 export const OPENAI_CONTEXT_SIZE = 30;
 
 export enum SUPPORTED_INTEGRATIONS {

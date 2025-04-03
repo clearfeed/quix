@@ -22,4 +22,7 @@ export interface MessageProcessingArgs {
   authorName: string;
 }
 
-export type AvailableToolsWithConfig = Record<string, { toolConfig: ToolConfig; config?: Connections | SlackWorkspace }>;
+export type AvailableToolsWithConfig = Record<
+  string,
+  { toolConfig: ToolConfig; config?: Connections | SlackWorkspace }
+>;
