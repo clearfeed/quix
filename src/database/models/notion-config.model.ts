@@ -19,6 +19,7 @@ import {
 } from 'sequelize';
 import { encrypt, decrypt } from '../../lib/utils/encryption';
 import { SlackWorkspace } from './slack-workspace.model';
+import { Nullable } from '@quix/lib/types/common';
 
 @Table({ tableName: 'notion_configs' })
 export class NotionConfig extends Model<
@@ -50,6 +51,19 @@ export class NotionConfig extends Model<
       return;
     }
     this.setDataValue('access_token', encrypt(value));
+  }
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true
+  })
+  get default_prompt(): Nullable<string> {
+    const value = this.getDataValue('default_prompt') as string;
+    if (!value) return null;
+    return decrypt(value);
+  }
+  set default_prompt(value: Nullable<string>) {
+    this.setDataValue('default_prompt', value ? encrypt(value) : value);
   }
 
   @BelongsTo(() => SlackWorkspace, {

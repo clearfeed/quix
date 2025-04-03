@@ -124,3 +124,12 @@ export type UpdateModalResponsePayload = {
   response_action: 'update';
   view: ModalView;
 };
+
+export type SalesforceConfigModalArgs = {
+  triggerId: string;
+  teamId: string;
+  initialValues?: {
+    id?: string;
+    defaultPrompt?: string | null;
+  };
+};
