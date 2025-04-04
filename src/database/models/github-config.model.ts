@@ -66,6 +66,19 @@ export class GithubConfig extends Model<
     owner?: string;
   }>;
 
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true
+  })
+  get default_prompt(): Nullable<string> {
+    const value = this.getDataValue('default_prompt') as string;
+    if (!value) return null;
+    return decrypt(value);
+  }
+  set default_prompt(value: Nullable<string>) {
+    this.setDataValue('default_prompt', value ? encrypt(value) : value);
+  }
+
   @BelongsTo(() => SlackWorkspace, {
     foreignKey: 'team_id',
     as: 'slackWorkspace'

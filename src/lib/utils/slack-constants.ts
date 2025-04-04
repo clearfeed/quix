@@ -45,6 +45,10 @@ export const SLACK_ACTIONS = {
     NAME: 'mcp-name',
     URL: 'mcp-url',
     API_TOKEN: 'mcp-api-token'
+  },
+  SALESFORCE_CONFIG_MODAL: {
+    DEFAULT_PROMPT: 'salesforce-default-prompt',
+    SUBMIT: 'submit-salesforce-config-modal'
   }
 } as const;
 
@@ -62,3 +66,8 @@ export const SLACK_SCOPES = [
 ] as const;
 
 export const SLACK_MESSAGE_MAX_LENGTH = 3000;
+
+/**
+ * The number of days a user can use Quix for free using our default OpenAI key.
+ */
+export const TRIAL_DAYS = 7;

@@ -117,7 +117,7 @@ export class SlackEventsHandlerService {
 
       if (event.text) {
         const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
-        const messages = await createLLMContext(event, userInfoMap, slackWorkspace);
+        const messages = await createLLMContext(event, userInfoMap, slackWorkspace, event.ts);
         if (!event.team) return;
         try {
           const response = await this.llmService.processMessage({
@@ -125,7 +125,8 @@ export class SlackEventsHandlerService {
             teamId: event.team,
             threadTs: event.thread_ts || event.ts,
             channelId: event.channel,
-            previousMessages: messages
+            previousMessages: messages,
+            authorName: userInfoMap[event.user]?.name || ''
           });
           await slackWorkspace.postMessage(response, event.channel, event.thread_ts);
           this.logger.log('Sent response to message', { channel: event.channel, response });
@@ -171,14 +172,15 @@ export class SlackEventsHandlerService {
       }
 
       const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
-      const messages = await createLLMContext(event, userInfoMap, slackWorkspace);
+      const messages = await createLLMContext(event, userInfoMap, slackWorkspace, event.ts);
       if (!event.team) return;
       const response = await this.llmService.processMessage({
         message: event.text,
         teamId: event.team,
         threadTs: event.thread_ts || event.ts,
         channelId: event.channel,
-        previousMessages: messages
+        previousMessages: messages,
+        authorName: event.user ? userInfoMap[event.user]?.name || '' : ''
       });
       await slackWorkspace.postMessage(response, event.channel, event.thread_ts);
       this.logger.log('Sent response to app mention', { channel: event.channel, response });

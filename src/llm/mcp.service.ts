@@ -137,68 +137,6 @@ export class McpService {
     return this.convertSingleMcpToLangchainTools(serverName, config, this.logger, defaultConfig);
   }
 
-  /**
-   * Initializes multiple MCP servers and converts them to LangChain tools
-   *
-   * @param configs Server configurations
-   * @param options Optional configuration
-   * @returns Tools and cleanup function
-   */
-  async convertMcpToLangchainTools(
-    configs: McpServersConfig,
-    options?: LogOptions & { logger?: McpToolsLogger }
-  ): Promise<{
-    tools: DynamicStructuredTool[];
-    cleanup: McpServerCleanupFn;
-  }> {
-    const allTools: DynamicStructuredTool<any>[] = [];
-    const cleanupCallbacks: McpServerCleanupFn[] = [];
-    const logger = options?.logger || this.logger;
-
-    const serverInitPromises = Object.entries(configs).map(async ([name, config]) => {
-      const result = await this.convertSingleMcpToLangchainTools(name, config, logger);
-      return { name, result };
-    });
-
-    // Track server names alongside their promises
-    const serverNames = Object.keys(configs);
-
-    // Concurrently initialize all the MCP servers
-    const results = await Promise.allSettled(serverInitPromises);
-
-    // Process successful initializations and log failures
-    results.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
-        const {
-          result: { tools, cleanup }
-        } = result.value;
-        allTools.push(...tools);
-        cleanupCallbacks.push(cleanup);
-      } else {
-        logger.error(
-          `MCP server "${serverNames[index]}": failed to initialize: ${result.reason.details}`
-        );
-        throw result.reason;
-      }
-    });
-
-    async function cleanup(): Promise<void> {
-      // Concurrently execute all the callbacks
-      const results = await Promise.allSettled(cleanupCallbacks.map((callback) => callback()));
-
-      // Log any cleanup failures
-      const failures = results.filter((result) => result.status === 'rejected');
-      failures.forEach((failure, index) => {
-        logger.error(`MCP server "${serverNames[index]}": failed to close: ${failure.reason}`);
-      });
-    }
-
-    logger.log(`MCP servers initialized: ${allTools.length} tool(s) available in total`);
-    allTools.forEach((tool) => logger.debug(`- ${tool.name}`));
-
-    return { tools: allTools, cleanup };
-  }
-
   private convertJsonToZod(
     schema: JsonSchema,
     defaultConfig?: Record<string, string>
