@@ -92,20 +92,22 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
         ticketId: z
           .number()
           .int()
-          .describe('The ID of the Zendesk ticket to add the internal note to'),
-        note: z.string().describe('The content of the internal note to add')
+          .describe('The ID of the Zendesk ticket to add the internal note (private comment) to'),
+        note: z.string().describe('The content of the internal note (private comment) to add')
       }),
       func: async (args: AddInternalNoteParams) =>
         service.addComment({ public: false, ticketId: args.ticketId, comment: args.note })
     }),
     new DynamicStructuredTool({
       name: 'get_zendesk_ticket_internal_notes',
-      description: 'Retrieve all internal notes from a Zendesk ticket',
+      description: 'Retrieve all internal notes (private comments) from a Zendesk ticket',
       schema: z.object({
         ticketId: z
           .number()
           .int()
-          .describe('The ID of the Zendesk ticket to retrieve internal notes from')
+          .describe(
+            'The ID of the Zendesk ticket to retrieve internal notes (private comments) from'
+          )
       }),
       func: async (args: Pick<GetCommentsParams, 'ticketId'>) =>
         service.getComments({ ...args, public: false })
