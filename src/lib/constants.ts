@@ -195,13 +195,7 @@ You MUST follow these instructions when planning your steps:
   {{ "type": "reason", "input": "..." }}
   {{ "type": "tool", "tool": "<toolName>", "args": {{ <toolArgs> }} }}
 
-Output ONLY valid JSON like:
-{{
-  "steps": [
-    {{ "type": "reason", "input": "..." }},
-    {{ "type": "tool", "tool": "toolName", "args": {{ ... }} }}
-  ]
-}}`;
+Output only structured JSON matching the required format.`;
 
     return `
 ${basePrompt}
