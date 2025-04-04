@@ -26,12 +26,19 @@ export interface SearchTicketsParams {
 export interface GetTicketWithRepliesParams {
   ticketId: number;
 }
+export interface AddInternalNoteParams {
+  ticketId: number;
+  note: string;
+}
+export interface GetInternalNotesParams {
+  ticketId: number;
+}
 export interface AddInternalCommentParams {
   ticketId: number;
   comment: string;
 }
 
-// Handle Return types
+// Handler Return types
 export type TicketWithRepliesResponse = {
   ticket: Ticket;
   comments: TicketComment[];
@@ -39,4 +46,15 @@ export type TicketWithRepliesResponse = {
 export type AddInternalCommentResponse = {
   ticket: Ticket;
   comment: string;
-}; 
+};
+export type AddInternalNoteResponse = {
+  ticket: Ticket;
+  note: string;
+};
+export type GetInternalNotesResponse = {
+  id: number;
+  type: 'internal_note';
+  body: string;
+  created_at: string;
+  author_id: number;
+}[];
