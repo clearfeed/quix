@@ -1,4 +1,9 @@
-import { INTEGRATIONS, SUPPORTED_INTEGRATIONS, HUBSPOT_SCOPES, GITHUB_SCOPES } from '@quix/lib/constants';
+import {
+  INTEGRATIONS,
+  SUPPORTED_INTEGRATIONS,
+  HUBSPOT_SCOPES,
+  GITHUB_SCOPES
+} from '@quix/lib/constants';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
@@ -7,8 +12,24 @@ import { Cache } from 'cache-manager';
 import { Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { HubspotTokenResponse, HubspotHubInfo, GithubTokenResponse, GitHubInfo, SalesforceTokenResponse, SalesforceTokenIntrospectionResponse } from './types';
-import { JiraConfig, HubspotConfig, PostgresConfig, GithubConfig, SalesforceConfig, NotionConfig, LinearConfig, McpConnection } from '../database/models';
+import {
+  HubspotTokenResponse,
+  HubspotHubInfo,
+  GithubTokenResponse,
+  GitHubInfo,
+  SalesforceTokenResponse,
+  SalesforceTokenIntrospectionResponse
+} from './types';
+import {
+  JiraConfig,
+  HubspotConfig,
+  PostgresConfig,
+  GithubConfig,
+  SalesforceConfig,
+  NotionConfig,
+  LinearConfig,
+  McpConnection
+} from '../database/models';
 import { ToolInstallState } from '@quix/lib/types/common';
 import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
 import { ViewSubmitAction } from '@slack/bolt';
@@ -45,7 +66,7 @@ export class IntegrationsInstallService {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
 
-  getInstallUrl(tool: typeof INTEGRATIONS[number]['value'], state: string): string {
+  getInstallUrl(tool: (typeof INTEGRATIONS)[number]['value'], state: string): string {
     switch (tool) {
       case 'jira':
         return `https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=${this.configService.get<string>('JIRA_CLIENT_ID')}&scope=${encodeURIComponent('read:jira-work read:jira-user write:jira-work offline_access')}&redirect_uri=${this.configService.get<string>('SELFSERVER_URL')}/integrations/connect/jira&response_type=code&prompt=consent&state=${state}`;
@@ -70,18 +91,24 @@ export class IntegrationsInstallService {
         throw new BadRequestException('Invalid state');
       }
       await this.cache.del(`install_jira`);
-      const response = await this.httpService.axiosRef.post(`https://auth.atlassian.com/oauth/token`, {
-        grant_type: 'authorization_code',
-        code,
-        client_id: this.configService.get<string>('JIRA_CLIENT_ID'),
-        client_secret: this.configService.get<string>('JIRA_CLIENT_SECRET'),
-        redirect_uri: `${this.configService.get<string>('SELFSERVER_URL')}/integrations/connect/jira`,
-      });
-      const accessibleResources = await this.httpService.axiosRef.get(`https://api.atlassian.com/oauth/token/accessible-resources`, {
-        headers: {
-          Authorization: `Bearer ${response.data.access_token}`
+      const response = await this.httpService.axiosRef.post(
+        `https://auth.atlassian.com/oauth/token`,
+        {
+          grant_type: 'authorization_code',
+          code,
+          client_id: this.configService.get<string>('JIRA_CLIENT_ID'),
+          client_secret: this.configService.get<string>('JIRA_CLIENT_SECRET'),
+          redirect_uri: `${this.configService.get<string>('SELFSERVER_URL')}/integrations/connect/jira`
         }
-      });
+      );
+      const accessibleResources = await this.httpService.axiosRef.get(
+        `https://api.atlassian.com/oauth/token/accessible-resources`,
+        {
+          headers: {
+            Authorization: `Bearer ${response.data.access_token}`
+          }
+        }
+      );
       const jiraSite = accessibleResources.data[0];
 
       await this.jiraConfigModel.upsert({
@@ -91,20 +118,20 @@ export class IntegrationsInstallService {
         scopes: jiraSite.scopes,
         access_token: response.data.access_token,
         refresh_token: response.data.refresh_token,
-        expires_at: new Date(Date.now() + (response.data.expires_in * 1000)),
-        team_id: stateData.teamId,
+        expires_at: new Date(Date.now() + response.data.expires_in * 1000),
+        team_id: stateData.teamId
       });
 
       this.eventEmitter.emit(EVENT_NAMES.JIRA_CONNECTED, {
         teamId: stateData.teamId,
         appId: stateData.appId,
-        type: SUPPORTED_INTEGRATIONS.JIRA,
+        type: SUPPORTED_INTEGRATIONS.JIRA
       } satisfies IntegrationConnectedEvent);
 
       return {
         appId: stateData.appId,
-        teamId: stateData.teamId,
-      }
+        teamId: stateData.teamId
+      };
     } catch (error) {
       this.logger.error(error);
       throw new BadRequestException('Failed to connect to Jira');
@@ -156,7 +183,7 @@ export class IntegrationsInstallService {
       await this.hubspotConfigModel.upsert({
         access_token: response.data.access_token,
         refresh_token: response.data.refresh_token,
-        expires_at: new Date(Date.now() + (response.data.expires_in * 1000)),
+        expires_at: new Date(Date.now() + response.data.expires_in * 1000),
         hub_domain: hubInfo.hub_domain,
         hub_id: hubInfo.hub_id,
         scopes: hubInfo.scopes,
@@ -166,7 +193,7 @@ export class IntegrationsInstallService {
       this.eventEmitter.emit(EVENT_NAMES.HUBSPOT_CONNECTED, {
         teamId: stateData.teamId,
         appId: stateData.appId,
-        type: SUPPORTED_INTEGRATIONS.HUBSPOT,
+        type: SUPPORTED_INTEGRATIONS.HUBSPOT
       } satisfies IntegrationConnectedEvent);
 
       return {
@@ -200,20 +227,25 @@ export class IntegrationsInstallService {
 
       // Step 2: Exchange code for an access token
       const response = await this.httpService.axiosRef.post<GithubTokenResponse>(
-        "https://github.com/login/oauth/access_token",
+        'https://github.com/login/oauth/access_token',
         { client_id: clientId, client_secret: clientSecret, code },
-        { headers: { Accept: "application/json" } }
+        { headers: { Accept: 'application/json' } }
       );
       const access_token = response.data.access_token as string;
       if (!response.data.scope) {
-        throw new BadRequestException('No scopes provided. Please ensure the app has necessary permissions.');
+        throw new BadRequestException(
+          'No scopes provided. Please ensure the app has necessary permissions.'
+        );
       }
-      const scopes = response.data.scope.split(",");
+      const scopes = response.data.scope.split(',');
 
       // Step 3: Fetch user details from GitHub
-      const userResponse = await this.httpService.axiosRef.get<GitHubInfo>('https://api.github.com/user', {
-        headers: { Authorization: `token ${access_token}` },
-      });
+      const userResponse = await this.httpService.axiosRef.get<GitHubInfo>(
+        'https://api.github.com/user',
+        {
+          headers: { Authorization: `token ${access_token}` }
+        }
+      );
       const { id, login, avatar_url } = userResponse.data;
 
       // Store GitHub authentication details
@@ -229,7 +261,7 @@ export class IntegrationsInstallService {
       this.eventEmitter.emit(EVENT_NAMES.GITHUB_CONNECTED, {
         teamId: stateData.teamId,
         appId: stateData.appId,
-        type: SUPPORTED_INTEGRATIONS.GITHUB,
+        type: SUPPORTED_INTEGRATIONS.GITHUB
       } satisfies IntegrationConnectedEvent);
 
       return {
@@ -248,30 +280,37 @@ export class IntegrationsInstallService {
       payload.view.state.values
     );
     const id = JSON.parse(payload.view.private_metadata).id;
-    if (![
-      SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.HOST,
-      SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PORT,
-      SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.USER,
-      SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PASSWORD,
-      SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DATABASE].every(field => parsedResponse[field].selectedValue)) {
+    if (
+      ![
+        SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.HOST,
+        SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PORT,
+        SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.USER,
+        SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PASSWORD,
+        SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DATABASE
+      ].every((field) => parsedResponse[field].selectedValue)
+    ) {
       throw new BadRequestException('Invalid response');
     }
     const sslResponse = parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.SSL].selectedValue;
     const [postgresConfig] = await this.postgresConfigModel.upsert({
       id,
       host: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.HOST].selectedValue as string,
-      port: parseInt(parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PORT].selectedValue as string),
+      port: parseInt(
+        parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PORT].selectedValue as string
+      ),
       user: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.USER].selectedValue as string,
-      password: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PASSWORD].selectedValue as string,
-      database: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DATABASE].selectedValue as string,
+      password: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.PASSWORD]
+        .selectedValue as string,
+      database: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DATABASE]
+        .selectedValue as string,
       team_id: payload.view.team_id,
-      ssl: sslResponse ? Boolean(sslResponse.length > 0) : false,
+      ssl: sslResponse ? Boolean(sslResponse.length > 0) : false
     });
     this.eventEmitter.emit(EVENT_NAMES.POSTGRES_CONNECTED, {
       teamId: payload.view.team_id,
       appId: payload.view.app_id!,
       type: SUPPORTED_INTEGRATIONS.POSTGRES,
-      userId: payload.user.id,
+      userId: payload.user.id
     } satisfies IntegrationConnectedEvent);
     return postgresConfig;
   }
@@ -315,34 +354,32 @@ export class IntegrationsInstallService {
       const { access_token, refresh_token, instance_url, token_type, scope } = response.data;
       const scopes = scope ? scope.split(' ') : [];
 
-      const tokenIntrospectionResponse = await this.httpService.axiosRef.post<SalesforceTokenIntrospectionResponse>(
-        `${instance_url}/services/oauth2/introspect`,
-        new URLSearchParams({
-          token: access_token,
-          token_type_hint: 'access_token',
-          client_id: clientId,
-          client_secret: clientSecret
-        }),
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+      const tokenIntrospectionResponse =
+        await this.httpService.axiosRef.post<SalesforceTokenIntrospectionResponse>(
+          `${instance_url}/services/oauth2/introspect`,
+          new URLSearchParams({
+            token: access_token,
+            token_type_hint: 'access_token',
+            client_id: clientId,
+            client_secret: clientSecret
+          }),
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
           }
-        }
-      );
+        );
 
       const userInfoResponse = await this.httpService.axiosRef.get<{
         organization_id: string;
         is_app_installed: boolean;
         email: string;
         active: boolean;
-      }>(
-        `https://login.salesforce.com/services/oauth2/userinfo`,
-        {
-          headers: {
-            Authorization: `Bearer ${access_token}`
-          }
+      }>(`https://login.salesforce.com/services/oauth2/userinfo`, {
+        headers: {
+          Authorization: `Bearer ${access_token}`
         }
-      );
+      });
 
       if (!userInfoResponse.data.active) {
         throw new BadRequestException('Salesforce user is not active');
@@ -363,7 +400,7 @@ export class IntegrationsInstallService {
       this.eventEmitter.emit(EVENT_NAMES.SALESFORCE_CONNECTED, {
         teamId: stateData.teamId,
         appId: stateData.appId,
-        type: SUPPORTED_INTEGRATIONS.SALESFORCE,
+        type: SUPPORTED_INTEGRATIONS.SALESFORCE
       } satisfies IntegrationConnectedEvent);
 
       return {
@@ -387,7 +424,8 @@ export class IntegrationsInstallService {
         throw new BadRequestException('Invalid response');
       }
 
-      const apiToken = parsedResponse[SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.API_TOKEN].selectedValue as string;
+      const apiToken = parsedResponse[SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.API_TOKEN]
+        .selectedValue as string;
 
       // Validate the token and get workspace details
       const userResponse = await this.httpService.axiosRef.get<{
@@ -406,7 +444,7 @@ export class IntegrationsInstallService {
         request_id: string;
       }>('https://api.notion.com/v1/users/me', {
         headers: {
-          'Authorization': `Bearer ${apiToken}`,
+          Authorization: `Bearer ${apiToken}`,
           'Notion-Version': '2022-06-28'
         }
       });
@@ -422,13 +460,15 @@ export class IntegrationsInstallService {
         teamId: payload.view.team_id,
         appId: payload.view.app_id!,
         type: SUPPORTED_INTEGRATIONS.NOTION,
-        userId: payload.user.id,
+        userId: payload.user.id
       } satisfies IntegrationConnectedEvent);
 
       return notionConfig;
     } catch (error) {
       this.logger.error('Failed to connect to Notion:', error);
-      throw new BadRequestException('Invalid Notion API token or unable to fetch workspace details');
+      throw new BadRequestException(
+        'Invalid Notion API token or unable to fetch workspace details'
+      );
     }
   }
 
@@ -443,11 +483,14 @@ export class IntegrationsInstallService {
         throw new BadRequestException('Invalid response');
       }
 
-      const apiToken = parsedResponse[SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.API_TOKEN].selectedValue as string;
+      const apiToken = parsedResponse[SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.API_TOKEN]
+        .selectedValue as string;
 
       // Validate the token and get workspace details
-      const response = await this.httpService.axiosRef.post('https://api.linear.app/graphql', {
-        query: `
+      const response = await this.httpService.axiosRef.post(
+        'https://api.linear.app/graphql',
+        {
+          query: `
           query {
             organization {
               id
@@ -455,12 +498,14 @@ export class IntegrationsInstallService {
             }
           }
         `
-      }, {
-        headers: {
-          'Authorization': apiToken,
-          'Content-Type': 'application/json'
+        },
+        {
+          headers: {
+            Authorization: apiToken,
+            'Content-Type': 'application/json'
+          }
         }
-      });
+      );
 
       if (!response.data?.data?.organization) {
         throw new BadRequestException('Invalid Linear API token');
@@ -478,13 +523,15 @@ export class IntegrationsInstallService {
         teamId: payload.view.team_id,
         appId: payload.view.app_id!,
         type: SUPPORTED_INTEGRATIONS.LINEAR,
-        userId: payload.user.id,
+        userId: payload.user.id
       } satisfies IntegrationConnectedEvent);
 
       return linearConfig;
     } catch (error) {
       this.logger.error('Failed to connect to Linear:', error);
-      throw new BadRequestException('Invalid Linear API token or unable to fetch workspace details');
+      throw new BadRequestException(
+        'Invalid Linear API token or unable to fetch workspace details'
+      );
     }
   }
 
@@ -496,16 +543,19 @@ export class IntegrationsInstallService {
     const privateMetadata = JSON.parse(payload.view.private_metadata || '{}');
 
     // Validate required fields
-    if (![
-      SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME,
-      SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL,
-      SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN
-    ].every(field => parsedResponse[field]?.selectedValue)) {
+    if (
+      ![
+        SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME,
+        SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL,
+        SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN
+      ].every((field) => parsedResponse[field]?.selectedValue)
+    ) {
       throw new BadRequestException('Missing required fields');
     }
 
     // Validate URL format
-    const urlString = parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL].selectedValue as string;
+    const urlString = parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL]
+      .selectedValue as string;
     try {
       const url = new URL(urlString);
       if (!['http:', 'https:'].includes(url.protocol)) {
@@ -520,7 +570,8 @@ export class IntegrationsInstallService {
       id: privateMetadata.id,
       name: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME].selectedValue as string,
       url: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL].selectedValue as string,
-      auth_token: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN].selectedValue as string,
+      auth_token: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN]
+        .selectedValue as string,
       team_id: payload.view.team_id
     });
 

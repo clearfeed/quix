@@ -29,7 +29,7 @@ export interface CreateDealParams {
 
 export type CreateDealResponse = BaseResponse<{
   dealId: string;
-}>
+}>;
 
 export interface CreateContactParams {
   firstName: string;
@@ -49,4 +49,4 @@ export type SearchDealsResponse = BaseResponse<{
 
 export type AddNoteToDealResponse = BaseResponse<{
   noteId: string;
-}>; 
+}>;

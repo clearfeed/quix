@@ -1,25 +1,27 @@
-import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
+import { BaseConfig } from '@clearfeed-ai/quix-common-agent';
 import { Ticket, TicketComment } from 'node-zendesk/dist/types/clients/core/tickets';
 
-// Authentication types
-export type ZendeskAuth = {
-  token: string;
-  username: string;
-} | {
-  oauthToken: string;
-};
+export type ZendeskAuth =
+  | {
+    token: string;
+    username: string;
+  }
+  | {
+    oauthToken: string;
+  };
+
 export interface ZendeskConfig extends BaseConfig {
   subdomain: string;
   auth: ZendeskAuth;
 }
 
-// Handle param types
+// Handler param types
 export interface GetTicketParams {
   ticketId: number;
 }
 export interface SearchTicketsParams {
   query: string;
-  limit?: number;
+  limit: number;
 }
 export interface GetTicketWithRepliesParams {
   ticketId: number;
@@ -34,9 +36,7 @@ export type TicketWithRepliesResponse = {
   ticket: Ticket;
   comments: TicketComment[];
 }
-export type GetTicketResponse = BaseResponse<Ticket>;
-export type SearchTicketsResponse = BaseResponse<Ticket[]>;
-export type AddInternalCommentResponse = BaseResponse<{
-  ticketId: number;
+export type AddInternalCommentResponse = {
+  ticket: Ticket;
   comment: string;
-}>; 
+}; 

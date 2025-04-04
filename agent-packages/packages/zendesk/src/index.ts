@@ -3,14 +3,13 @@ import {
   ZendeskConfig,
   GetTicketParams,
   SearchTicketsParams,
-  GetTicketResponse,
-  SearchTicketsResponse,
   GetTicketWithRepliesParams,
   AddInternalCommentParams,
   AddInternalCommentResponse,
   TicketWithRepliesResponse
 } from './types';
 import { BaseService, BaseResponse } from '@clearfeed-ai/quix-common-agent';
+import { Ticket } from 'node-zendesk/dist/types/clients/core/tickets';
 
 export * from './tools';
 export * from './types';
@@ -23,28 +22,32 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
       this.client = createClient({
         subdomain: config.subdomain,
         oauth: true,
-        token: config.auth.oauthToken,
+        token: config.auth.oauthToken
       });
     } else {
       this.client = createClient({
         subdomain: config.subdomain,
         token: config.auth.token,
-        username: config.auth.username,
+        username: config.auth.username
       });
     }
   }
 
-  validateConfig(config?: Record<string, any>): { isValid: boolean; error?: string; } & Record<string, any> {
-    return { isValid: true }
+  validateConfig(
+    config?: Record<string, any>
+  ): { isValid: boolean; error?: string } & Record<string, any> {
+    return { isValid: true };
   }
 
-  async searchTickets(params: SearchTicketsParams): Promise<BaseResponse<SearchTicketsResponse['data']>> {
+  async searchTickets(params: SearchTicketsParams): Promise<BaseResponse<Ticket[]>> {
     try {
       const response = await this.client.search.query(`type:ticket ${params.query}`);
-      const tickets = Array.isArray(response.result) ? response.result.slice(0, params.limit || 10) : [];
+      const tickets: Ticket[] = Array.isArray(response.result)
+        ? response.result.slice(0, params.limit)
+        : [];
       return {
         success: true,
-        data: tickets
+        data: tickets.map(this.processTicketObjectForResponse)
       };
     } catch (error: any) {
       console.error('Zendesk search error:', error);
@@ -55,12 +58,13 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
     }
   }
 
-  async getTicket(params: GetTicketParams): Promise<BaseResponse<GetTicketResponse['data']>> {
+  async getTicket(params: GetTicketParams): Promise<BaseResponse<Ticket>> {
     try {
       const response = await this.client.tickets.show(params.ticketId);
+      const ticket: Ticket = response.result;
       return {
         success: true,
-        data: response.result
+        data: this.processTicketObjectForResponse(ticket)
       };
     } catch (error: any) {
       console.error('Zendesk get ticket error:', error);
@@ -77,11 +81,11 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
         this.client.tickets.show(params.ticketId),
         this.client.tickets.getComments(params.ticketId)
       ]);
-
+      const ticket: Ticket = ticketResponse.result;
       return {
         success: true,
         data: {
-          ticket: ticketResponse.result,
+          ticket: this.processTicketObjectForResponse(ticket),
           comments: commentsResponse || []
         }
       };
@@ -94,9 +98,9 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
     }
   }
 
-  async addInternalComment(params: AddInternalCommentParams): Promise<BaseResponse<AddInternalCommentResponse['data']>> {
+  async addInternalComment(params: AddInternalCommentParams): Promise<BaseResponse<AddInternalCommentResponse>> {
     try {
-      await this.client.tickets.update(params.ticketId, {
+      const response = await this.client.tickets.update(params.ticketId, {
         ticket: {
           comment: {
             body: params.comment,
@@ -104,11 +108,11 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
           }
         }
       });
-
+      const ticket: Ticket = response.result;
       return {
         success: true,
         data: {
-          ticketId: params.ticketId,
+          ticket: this.processTicketObjectForResponse(ticket),
           comment: params.comment,
         }
       };
@@ -119,5 +123,10 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
         error: error instanceof Error ? error.message : 'Failed to add internal comment'
       };
     }
+  }
+
+  private processTicketObjectForResponse(ticket: Ticket): Ticket {
+    ticket.url = `https://${this.config.subdomain}.zendesk.com/agent/tickets/${ticket.id}`;
+    return ticket;
   }
 }

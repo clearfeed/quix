@@ -18,13 +18,8 @@
     "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@quix/*": [
-        "./src/*"
-      ]
+      "@quix/*": ["./src/*"]
     }
   },
-  "exclude": [
-    "node_modules",
-    "agent-packages/**/*"
-  ]
+  "exclude": ["node_modules", "agent-packages/**/*"]
 }

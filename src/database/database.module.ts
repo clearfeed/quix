@@ -21,19 +21,21 @@ import * as models from './models';
           autoLoadModels: true,
           synchronize: false,
           logging: process.env.NODE_ENV === 'production' ? false : console.log,
-          ...process.env.NODE_ENV === 'production' ? {
-            dialectOptions: {
-              ssl: {
-                require: true,
-                rejectUnauthorized: false,
+          ...(process.env.NODE_ENV === 'production'
+            ? {
+                dialectOptions: {
+                  ssl: {
+                    require: true,
+                    rejectUnauthorized: false
+                  }
+                }
               }
-            },
-          } : {}
-        }
-      },
+            : {})
+        };
+      }
     }),
-    SequelizeModule.forFeature(Object.values(models)),
+    SequelizeModule.forFeature(Object.values(models))
   ],
-  exports: [SequelizeModule],
+  exports: [SequelizeModule]
 })
-export class DatabaseModule { } 
+export class DatabaseModule {}

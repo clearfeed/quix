@@ -15,11 +15,11 @@ module.exports = {
       },
       avatar: {
         type: Sequelize.TEXT,
-        allowNull: true,
+        allowNull: true
       },
       username: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       scopes: {
         type: Sequelize.ARRAY(Sequelize.STRING),
@@ -39,7 +39,8 @@ module.exports = {
       default_config: {
         type: Sequelize.JSON,
         allowNull: true,
-        description: 'Default configuration for GitHub repositories (e.g., { repo: "default-repo", owner: "default-owner" })'
+        description:
+          'Default configuration for GitHub repositories (e.g., { repo: "default-repo", owner: "default-owner" })'
       },
       created_at: {
         type: Sequelize.DATE,
@@ -55,4 +56,4 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('github_configs');
   }
-}; 
+};

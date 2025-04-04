@@ -56,4 +56,4 @@ export class McpConnection extends Model<
     as: 'slack_workspace'
   })
   declare slack_workspace: NonAttribute<SlackWorkspace>;
-} 
+}

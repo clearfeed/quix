@@ -33,4 +33,4 @@ export type SearchOpportunitiesParams = {
   keyword?: string;
   stage?: string;
   ownerId?: string;
-}
+};
