@@ -56,7 +56,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
       console.error('Zendesk search error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to search tickets'
+        error: error.message || 'Failed to search tickets'
       };
     }
   }
@@ -73,7 +73,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
       console.error('Zendesk get ticket error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch ticket'
+        error: error.message || 'Failed to fetch ticket'
       };
     }
   }
@@ -98,7 +98,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
       console.error('Zendesk get ticket with replies error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch ticket with replies'
+        error: error.message || 'Failed to fetch ticket with replies'
       };
     }
   }
@@ -136,7 +136,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
       console.error('Zendesk add internal note error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to add internal note'
+        error: error.message || 'Failed to add internal note'
       };
     }
   }
@@ -157,7 +157,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
       console.error('Zendesk get internal notes error:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch internal notes'
+        error: error.message || 'Failed to fetch internal notes'
       };
     }
   }
