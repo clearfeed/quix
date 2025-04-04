@@ -5,7 +5,8 @@ import {
   GetTicketWithCommentsParams,
   AddInternalNoteParams,
   AddInternalCommentParams,
-  GetCommentsParams
+  GetCommentsParams,
+  CreateTicketParams
 } from './types';
 import { ZendeskService } from './index';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
@@ -123,6 +124,26 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
       }),
       func: async (args: Pick<GetCommentsParams, 'ticketId'>) =>
         service.getComments({ ...args, public: true })
+    }),
+    new DynamicStructuredTool({
+      name: 'create_zendesk_ticket',
+      description: 'Create a new Zendesk ticket with a subject and description',
+      schema: z.object({
+        subject: z.string().describe('Subject or title of the support ticket.').min(5),
+        description: z.string().describe('Description of the issue or request.').min(10),
+        requesterEmail: z.string().email().describe('Email address of the requester.').optional(),
+        priority: z
+          .enum(['low', 'normal', 'high', 'urgent'])
+          .optional()
+          .describe('Priority level.'),
+        assigneeId: z
+          .number()
+          .int()
+          .optional()
+          .describe('Zendesk agent ID to assign the ticket to.'),
+        tags: z.array(z.string()).optional().describe('Tags to categorize the ticket.')
+      }),
+      func: async (args: CreateTicketParams) => service.createTicket(args)
     })
   ];
 

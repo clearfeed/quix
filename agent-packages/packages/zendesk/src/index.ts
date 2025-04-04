@@ -8,7 +8,10 @@ import {
   AddCommentResponse,
   AddCommentParams,
   GetCommentsParams,
-  TicketWithCommentsResponse
+  TicketWithCommentsResponse,
+  CreateTicketParams,
+  CreateTicketResponse,
+  TicketPayload
 } from './types';
 import { BaseService, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import { TicketComment } from 'node-zendesk/dist/types/clients/core/tickets';
@@ -161,6 +164,41 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
       };
     }
   }
+
+  async createTicket(params: CreateTicketParams): Promise<BaseResponse<CreateTicketResponse>> {
+    try {
+      const { subject, description, requesterEmail, priority, assigneeId, tags } = params;
+
+      const ticketPayload: TicketPayload = {
+        subject,
+        comment: { body: description }
+      };
+
+      if (requesterEmail && requesterEmail.trim()) {
+        ticketPayload.requester = { email: requesterEmail };
+      }
+      if (priority) ticketPayload.priority = priority;
+      if (typeof assigneeId === 'number') ticketPayload.assignee_id = assigneeId;
+      if (Array.isArray(tags) && tags.length > 0) ticketPayload.tags = tags;
+
+      const response = await this.client.tickets.create({ ticket: ticketPayload });
+      const ticket: Ticket = response.result;
+
+      return {
+        success: true,
+        data: {
+          ticket: this.processTicketObjectForResponse(ticket)
+        }
+      };
+    } catch (error: any) {
+      console.error('Zendesk create ticket error:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to create ticket'
+      };
+    }
+  }
+
   private processTicketObjectForResponse(ticket: Ticket): Ticket {
     ticket.url = `https://${this.config.subdomain}.zendesk.com/agent/tickets/${ticket.id}`;
     return ticket;

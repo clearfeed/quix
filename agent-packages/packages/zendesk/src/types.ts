@@ -26,7 +26,6 @@ export interface SearchTicketsParams {
 export interface GetTicketWithCommentsParams {
   ticketId: number;
 }
-
 export interface AddCommentParams {
   ticketId: number;
   comment: string;
@@ -47,6 +46,14 @@ export interface AddInternalCommentParams {
   ticketId: number;
   comment: string;
 }
+export interface CreateTicketParams {
+  subject: string;
+  description: string;
+  requesterEmail?: string;
+  priority?: 'low' | 'normal' | 'high' | 'urgent';
+  assigneeId?: number;
+  tags?: string[];
+}
 
 // Handler Return types
 export type TicketWithCommentsResponse = {
@@ -60,4 +67,21 @@ export type AddCommentResponse = {
 export type AddInternalNoteResponse = {
   ticket: Ticket;
   note: string;
+};
+export interface CreateTicketResponse {
+  ticket: Ticket;
+}
+
+// Payload types
+export type TicketPayload = {
+  subject: string;
+  comment: {
+    body: string;
+  };
+  requester?: {
+    email: string;
+  };
+  priority?: 'low' | 'normal' | 'high' | 'urgent';
+  assignee_id?: number;
+  tags?: string[];
 };
