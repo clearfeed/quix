@@ -4,11 +4,9 @@ import {
   AvailableToolsWithConfig,
   LLMContext,
   MessageProcessingArgs,
-  SupportedChatModels,
-  ToolCategory
+  SupportedChatModels
 } from './types';
 import { LlmProviderService } from './llm.provider';
-import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import {
   ChatPromptTemplate,
@@ -17,7 +15,6 @@ import {
   MessagesPlaceholder
 } from '@langchain/core/prompts';
 import { RunnableSequence } from '@langchain/core/runnables';
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { QuixPrompts } from '../lib/constants';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { AIMessage } from '@langchain/core/messages';
@@ -25,7 +22,6 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { QuixCallBackManager } from './callback-manager';
 import { ConversationState } from '../database/models/conversation-state.model';
 import { InjectModel } from '@nestjs/sequelize';
-import { remove } from 'lodash';
 import slackify = require('slackify-markdown');
 @Injectable()
 export class LlmService {
@@ -99,67 +95,13 @@ export class LlmService {
       enhancedPreviousMessages = previousMessages;
     }
 
-    let availableFunctions: {
-      availableTools: AvailableToolsWithConfig[ToolCategory]['toolConfig']['tools'];
-      config?: AvailableToolsWithConfig[ToolCategory]['config'];
-    }[] = [];
-    /**
-     * If there is only one tool category overall or less than 2 tool categories apart from
-     * common and slack, then we can use all tools to generate the plan instad of first selecting
-     * the tool categories and then calling the tools.
-     */
-    if (
-      availableToolCategories.length === 1 ||
-      remove(availableToolCategories, [ToolCategory.COMMON, ToolCategory.SLACK]).length <= 1
-    ) {
-      availableFunctions = Object.values(tools).flatMap((tool) => ({
-        availableTools: tool.toolConfig.tools,
-        config: tool.config
-      }));
-      this.logger.log(
-        'Using all available tools instead of selecting tool categories before generating the plan',
-        { toolCategoriesUsed: availableToolCategories }
-      );
-    } else {
-      const toolSelection = await this.toolSelection(
-        message,
-        tools,
-        enhancedPreviousMessages,
-        llm,
-        authorName
-      );
-      this.logger.log(
-        `Selected tools: ${Array.isArray(toolSelection.selectedToolCategories) ? toolSelection.selectedToolCategories.join(', ') : 'none'}`
-      );
-
-      if (toolSelection.selectedToolCategories === 'none') {
-        return toolSelection.content || `I could not find any tools to fulfill your request.`;
-      }
-
-      availableFunctions = toolSelection.selectedToolCategories
-        .map((tool) => {
-          if (!tools[tool]) {
-            return [];
-          }
-          return {
-            availableTools: tools[tool].toolConfig.tools,
-            config: tools[tool].config
-          };
-        })
-        .flat();
-    }
-
-    if (availableFunctions.length === 0) {
-      return "I apologize, but I don't have any tools configured to help with your request at the moment.";
-    }
-
-    const plan = await this.generatePlan(
-      availableFunctions,
-      enhancedPreviousMessages,
+    const plan = await this.generatePlan({
       message,
+      tools,
+      previousMessages: enhancedPreviousMessages,
       llm,
-      QuixPrompts.basePrompt(authorName)
-    );
+      authorName
+    });
     const formattedPlan = plan
       .map((step, i) => {
         if (step.type === 'tool') {
@@ -179,7 +121,7 @@ export class LlmService {
 
     const agent = createReactAgent({
       llm,
-      tools: availableFunctions.flatMap((func) => func.availableTools),
+      tools: Object.values(tools).flatMap((tool) => tool.toolConfig.tools),
       prompt: QuixPrompts.multiStepBasePrompt(formattedPlan, authorName)
     });
 
@@ -248,108 +190,30 @@ export class LlmService {
     return slackify(finalContent);
   }
 
-  private async toolSelection(
-    message: string,
-    tools: Partial<AvailableToolsWithConfig>,
-    previousMessages: LLMContext[],
-    llm: BaseChatModel,
-    authorName: string
-  ): Promise<{
-    selectedToolCategories: (keyof typeof tools)[] | 'none';
-    content: string;
-  }> {
-    const availableCategories = Object.keys(tools);
-
-    const toolSelectionPrompts = availableCategories
-      .map((category: ToolCategory) => tools[category]?.toolConfig.prompts?.toolSelection)
-      .filter(Boolean)
-      .join('\n');
-    const customPrompts = availableCategories.map((category: ToolCategory) => {
-      if (tools[category]?.config && 'default_prompt' in tools[category].config) {
-        return tools[category].config.default_prompt;
-      }
-      return '';
-    });
-    const systemPrompt = QuixPrompts.basePrompt(authorName) + '\n' + toolSelectionPrompts;
-
-    const toolSelectionFunction = new DynamicStructuredTool({
-      name: 'selectTool',
-      description: QuixPrompts.baseToolSelection,
-      schema: z.object({
-        toolCategories: z.array(z.enum(availableCategories as [string, ...string[]])),
-        reason: z.string()
-      }),
-      func: async ({ toolCategories, reason }) => {
-        return { toolCategories, reason };
-      }
-    });
-
-    let llmProviderWithTools;
-    if ('bindTools' in llm && typeof llm.bindTools === 'function') {
-      llmProviderWithTools = llm.bindTools([toolSelectionFunction]);
-    }
-
-    const templateMessages = [
-      SystemMessagePromptTemplate.fromTemplate(systemPrompt),
-      new MessagesPlaceholder('chat_history')
-    ];
-    if (customPrompts.length > 0) {
-      templateMessages.push(HumanMessagePromptTemplate.fromTemplate('{custom_instructions}'));
-    }
-    templateMessages.push(HumanMessagePromptTemplate.fromTemplate('{input}'));
-
-    const promptTemplate = ChatPromptTemplate.fromMessages(templateMessages);
-
-    const agentChain = RunnableSequence.from([promptTemplate, llmProviderWithTools ?? llm]);
-
-    const result = await agentChain.invoke(
-      {
-        chat_history: previousMessages,
-        input: message,
-        tool_choice: 'auto',
-        ...(customPrompts.length > 0 && { custom_instructions: customPrompts.join('\n') })
-      },
-      {
-        callbacks: [new QuixCallBackManager()]
-      }
-    );
-
-    return {
-      selectedToolCategories: result.tool_calls?.[0]?.args?.toolCategories ?? 'none',
-      content: Array.isArray(result.content) ? result.content.join(' ') : result.content
-    };
-  }
-
-  private async generatePlan(
-    availableFunctions: {
-      availableTools: ToolConfig['tools'];
-      config?: AvailableToolsWithConfig[keyof AvailableToolsWithConfig]['config'];
-    }[],
-    previousMessages: LLMContext[],
-    message: string,
-    llm: BaseChatModel,
-    basePrompt: string
-  ) {
-    const allFunctions = availableFunctions
-      .map((func) => {
-        return func.availableTools.map((tool) => `${tool.name}: ${tool.description}`);
-      })
-      .flat();
-    const customPrompts = availableFunctions
-      .map((func) => {
-        return func.config && 'default_prompt' in func.config && func.config.default_prompt
-          ? func.config.default_prompt
-          : '';
-      })
-      .filter(Boolean);
+  private async generatePlan({
+    message,
+    tools,
+    previousMessages,
+    llm,
+    authorName
+  }: {
+    message: string;
+    tools: Partial<AvailableToolsWithConfig>;
+    previousMessages: LLMContext[];
+    llm: BaseChatModel;
+    authorName: string;
+  }) {
     const planPrompt = ChatPromptTemplate.fromMessages([
-      SystemMessagePromptTemplate.fromTemplate(basePrompt),
-      SystemMessagePromptTemplate.fromTemplate(
-        QuixPrompts.PLANNER_PROMPT(allFunctions, customPrompts)
-      ),
+      SystemMessagePromptTemplate.fromTemplate(QuixPrompts.basePrompt(authorName)),
+      SystemMessagePromptTemplate.fromTemplate(QuixPrompts.PLANNER_PROMPT(tools)),
       new MessagesPlaceholder('chat_history'),
       HumanMessagePromptTemplate.fromTemplate('{input}')
     ]);
+
+    console.log(`------------------------------------------------------------`);
+    var util = require('util');
+    console.log(util.inspect(planPrompt, { showHidden: false, depth: null, colors: true }));
+    console.log(`------------------------------------------------------------`);
 
     const planChain = RunnableSequence.from([
       planPrompt,
