@@ -1,9 +1,11 @@
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { SalesforceService } from './index';
+import { SalesforceConfig } from './index';
 import { CreateTaskParams, UpdateTaskParams } from './types/index';
+import { SalesforceTaskService } from './services/task';
 
-export const taskTools = (service: SalesforceService): DynamicStructuredTool<any>[] => {
+export const taskTools = (config: SalesforceConfig): DynamicStructuredTool<any>[] => {
+  const service = new SalesforceTaskService(config);
   return [
     tool(async (args: CreateTaskParams) => service.createTask(args), {
       name: 'create_task',

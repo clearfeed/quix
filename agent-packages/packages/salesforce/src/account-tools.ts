@@ -1,9 +1,11 @@
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
+import { SalesforceConfig } from './index';
 import { SalesforceObjectName, SearchAccountsParams } from './types/index';
-import { SalesforceService } from './index';
+import { SalesforceAccountService } from './services/account';
 
-export const accountTools = (service: SalesforceService): DynamicStructuredTool<any>[] => {
+export const accountTools = (config: SalesforceConfig): DynamicStructuredTool<any>[] => {
+  const service = new SalesforceAccountService(config);
   return [
     tool(async (args: SearchAccountsParams) => service.searchAccounts(args.keyword), {
       name: 'salesforce_search_accounts',
