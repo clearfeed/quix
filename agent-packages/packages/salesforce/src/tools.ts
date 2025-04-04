@@ -9,6 +9,8 @@ import {
   SalesforceObjectName,
   SearchAccountsParams
 } from './types/index';
+import { taskTools } from './task-tools';
+import { accountTools } from './account-tools';
 
 const SALESFORCE_TOOL_SELECTION_PROMPT = `
 Salesforce is a CRM platform that manages:
@@ -100,33 +102,6 @@ export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfi
         })
       }
     ),
-    tool(async (args: CreateTaskParams) => service.createTask(args), {
-      name: 'create_task',
-      description: 'Create a task in Salesforce',
-      schema: z.object({
-        subject: z.string().describe('The subject of the task'),
-        description: z.string().optional().describe('The description of the task'),
-        status: z.string().optional().describe('The status of the task'),
-        priority: z.string().optional().describe('The priority of the task'),
-        ownerId: z
-          .string()
-          .optional()
-          .describe(
-            'The ID of the person who will own the task, also referred to as Assignee. If you have a name or email, use the find_user tool to get the user ID first.'
-          ),
-        whatId: z.string().describe('The ID of the object to create the task for'),
-        type: z
-          .string()
-          .optional()
-          .describe(
-            'The type of the task. Possible values can be obtained from the describe_object tool'
-          ),
-        dueDate: z
-          .string()
-          .optional()
-          .describe('The due date of the task, also referred to as ActivityDate')
-      })
-    }),
     tool(
       async (args: { userIdentifier: { name?: string; email?: string } }) =>
         service.findUser(args.userIdentifier),
@@ -148,15 +123,20 @@ export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfi
         objectName: z.nativeEnum(SalesforceObjectName)
       })
     }),
-    tool(async (args: SearchAccountsParams) => service.searchAccounts(args.keyword), {
-      name: 'search_accounts',
-      description: 'Search for accounts in Salesforce based on a keyword',
+    tool(async (args: { objectId: string; objectType: SalesforceObjectName }) =>
+      service.getObjectDetails(args.objectType, args.objectId),
+    {
+      name: 'get_object_details',
+      description: 'Get details of an object in Salesforce',
       schema: z.object({
-        keyword: z.string().describe('The keyword to search for in Salesforce accounts')
+        objectId: z.string().describe('The ID of the object to get details for'),
+        objectType: z.nativeEnum(SalesforceObjectName)
       })
     })
   ];
 
+  tools.push(...taskTools(service));
+  tools.push(...accountTools(service));
   return {
     tools,
     prompts: {
