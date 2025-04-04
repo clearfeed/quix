@@ -19,6 +19,7 @@ import {
 } from 'sequelize';
 import { encrypt, decrypt } from '../../lib/utils/encryption';
 import { SlackWorkspace } from './slack-workspace.model';
+import { Nullable } from '@quix/lib/types/common';
 
 @Table({ tableName: 'hubspot_configs' })
 export class HubspotConfig extends Model<
@@ -82,6 +83,19 @@ export class HubspotConfig extends Model<
   @AllowNull(false)
   @Column(DataType.STRING)
   declare team_id: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true
+  })
+  get default_prompt(): Nullable<string> {
+    const value = this.getDataValue('default_prompt') as string;
+    if (!value) return null;
+    return decrypt(value);
+  }
+  set default_prompt(value: Nullable<string>) {
+    this.setDataValue('default_prompt', value ? encrypt(value) : value);
+  }
 
   @BelongsTo(() => SlackWorkspace, {
     foreignKey: 'team_id',

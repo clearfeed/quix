@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ToolService } from './tool.service';
-import { LLMContext, MessageProcessingArgs, SupportedChatModels } from './types';
+import {
+  AvailableToolsWithConfig,
+  LLMContext,
+  MessageProcessingArgs,
+  SupportedChatModels
+} from './types';
 import { LlmProviderService } from './llm.provider';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
@@ -16,11 +21,10 @@ import { QuixPrompts } from '../lib/constants';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { AIMessage } from '@langchain/core/messages';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import slackify = require('slackify-markdown');
 import { QuixCallBackManager } from './callback-manager';
 import { ConversationState } from '../database/models/conversation-state.model';
 import { InjectModel } from '@nestjs/sequelize';
-
+import slackify = require('slackify-markdown');
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);
@@ -31,10 +35,10 @@ export class LlmService {
     private readonly conversationStateModel: typeof ConversationState
   ) {}
 
-  private async enhanceMessagesWithToolContext(
+  private enhanceMessagesWithToolContext(
     previousMessages: LLMContext[],
     lastToolCalls: ConversationState['last_tool_calls']
-  ): Promise<LLMContext[]> {
+  ): LLMContext[] {
     const enhancedPreviousMessages = [...previousMessages];
 
     if (lastToolCalls) {
@@ -53,46 +57,36 @@ export class LlmService {
   }
 
   async processMessage(args: MessageProcessingArgs): Promise<string> {
-    const { message, teamId, threadTs, previousMessages, channelId } = args;
+    const { message, teamId, threadTs, previousMessages, channelId, authorName } = args;
 
-    // Load conversation state if it exists
-    let conversationState = await this.conversationStateModel.findOne({
-      where: {
-        team_id: teamId,
-        channel_id: channelId,
-        thread_ts: threadTs
-      }
-    });
-
-    // Create a new conversation state if it doesn't exist
-    if (!conversationState) {
-      conversationState = await this.conversationStateModel.create({
+    const [conversationState] = await this.conversationStateModel.upsert(
+      {
         team_id: teamId,
         channel_id: channelId,
         thread_ts: threadTs,
         last_tool_calls: null,
         last_plan: null,
         contextual_memory: {}
-      });
-    }
+      },
+      {
+        // on conflict, update nothing
+        fields: []
+      }
+    );
 
     const tools = await this.tool.getAvailableTools(teamId);
-    if (!tools) {
+    const availableCategories = Object.keys(tools ?? {});
+    if (!tools || availableCategories.length < 1) {
+      this.logger.log('No tool categories available, returning direct response');
       return "I apologize, but I don't have any tools configured to help with your request at the moment.";
     }
-    const availableCategories = Object.keys(tools);
     const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, teamId);
     this.logger.log(`Processing message: ${message} with tools: ${availableCategories.join(', ')}`);
-    if (availableCategories.length < 1) {
-      this.logger.log('No tool categories available, returning direct response');
-      const response = await this.generateResponse(message, {}, 'none', '', previousMessages, llm);
-      return response;
-    }
 
     // Add previous tool calls to system context for better continuity
     let enhancedPreviousMessages: LLMContext[] = [];
     try {
-      enhancedPreviousMessages = await this.enhanceMessagesWithToolContext(
+      enhancedPreviousMessages = this.enhanceMessagesWithToolContext(
         previousMessages,
         conversationState.last_tool_calls
       );
@@ -101,7 +95,13 @@ export class LlmService {
       enhancedPreviousMessages = previousMessages;
     }
 
-    const toolSelection = await this.toolSelection(message, tools, enhancedPreviousMessages, llm);
+    const toolSelection = await this.toolSelection(
+      message,
+      tools,
+      enhancedPreviousMessages,
+      llm,
+      authorName
+    );
     this.logger.log(
       `Selected tools: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}`
     );
@@ -110,8 +110,16 @@ export class LlmService {
       return toolSelection.content || `I could not find any tools to fulfill your request.`;
     }
 
-    const availableFunctions: ToolConfig['tools'] = toolSelection.selectedTools
-      .map((tool) => tools[tool].tools)
+    const availableFunctions: {
+      availableTools: AvailableToolsWithConfig[keyof AvailableToolsWithConfig]['toolConfig']['tools'];
+      config?: AvailableToolsWithConfig[keyof AvailableToolsWithConfig]['config'];
+    }[] = toolSelection.selectedTools
+      .map((tool) => {
+        return {
+          availableTools: tools[tool].toolConfig.tools,
+          config: tools[tool].config
+        };
+      })
       .flat();
 
     if (!availableFunctions) {
@@ -122,7 +130,8 @@ export class LlmService {
       availableFunctions,
       enhancedPreviousMessages,
       message,
-      llm
+      llm,
+      QuixPrompts.basePrompt(authorName)
     );
     const formattedPlan = plan
       .map((step, i) => {
@@ -140,15 +149,14 @@ export class LlmService {
       steps: plan,
       completed: false
     };
-    await conversationState.save();
 
     const agent = createReactAgent({
       llm,
-      tools: availableFunctions as any,
+      tools: availableFunctions.flatMap((func) => func.availableTools),
       prompt:
         toolSelection.selectedTools.length > 1
-          ? QuixPrompts.multiStepBasePrompt(formattedPlan)
-          : QuixPrompts.basePrompt
+          ? QuixPrompts.multiStepBasePrompt(formattedPlan, authorName)
+          : QuixPrompts.basePrompt(authorName)
     });
 
     // Create a callback to track tool calls
@@ -179,9 +187,8 @@ export class LlmService {
       if (conversationState.last_plan) {
         conversationState.last_plan.completed = true;
       }
-
-      await conversationState.save();
     }
+    await conversationState.save();
 
     const { totalTokens, toolCallCount, toolNames } = result.messages.reduce(
       (acc, msg) => {
@@ -219,9 +226,10 @@ export class LlmService {
 
   private async toolSelection(
     message: string,
-    tools: Record<string, ToolConfig>,
+    tools: AvailableToolsWithConfig,
     previousMessages: LLMContext[],
-    llm: BaseChatModel
+    llm: BaseChatModel,
+    authorName: string
   ): Promise<{
     selectedTools: (keyof typeof tools)[] | 'none';
     content: string;
@@ -229,10 +237,16 @@ export class LlmService {
     const availableCategories = Object.keys(tools);
 
     const toolSelectionPrompts = availableCategories
-      .map((category) => tools[category].prompts?.toolSelection)
+      .map((category) => tools[category].toolConfig.prompts?.toolSelection)
       .filter(Boolean)
       .join('\n');
-    const systemPrompt = `${QuixPrompts.basePrompt}\n${toolSelectionPrompts}`;
+    const customPrompts = availableCategories.map((category) => {
+      if (tools[category].config && 'default_prompt' in tools[category].config) {
+        return tools[category].config.default_prompt;
+      }
+      return '';
+    });
+    const systemPrompt = QuixPrompts.basePrompt(authorName) + '\n' + toolSelectionPrompts;
 
     const toolSelectionFunction = new DynamicStructuredTool({
       name: 'selectTool',
@@ -251,11 +265,16 @@ export class LlmService {
       llmProviderWithTools = llm.bindTools([toolSelectionFunction]);
     }
 
-    const promptTemplate = ChatPromptTemplate.fromMessages([
+    const templateMessages = [
       SystemMessagePromptTemplate.fromTemplate(systemPrompt),
-      new MessagesPlaceholder('chat_history'),
-      HumanMessagePromptTemplate.fromTemplate('{input}')
-    ]);
+      new MessagesPlaceholder('chat_history')
+    ];
+    if (customPrompts.length > 0) {
+      templateMessages.push(HumanMessagePromptTemplate.fromTemplate('{custom_instructions}'));
+    }
+    templateMessages.push(HumanMessagePromptTemplate.fromTemplate('{input}'));
+
+    const promptTemplate = ChatPromptTemplate.fromMessages(templateMessages);
 
     const agentChain = RunnableSequence.from([promptTemplate, llmProviderWithTools ?? llm]);
 
@@ -263,7 +282,8 @@ export class LlmService {
       {
         chat_history: previousMessages,
         input: message,
-        tool_choice: 'auto'
+        tool_choice: 'auto',
+        ...(customPrompts.length > 0 && { custom_instructions: customPrompts.join('\n') })
       },
       {
         callbacks: [new QuixCallBackManager()]
@@ -276,64 +296,33 @@ export class LlmService {
     };
   }
 
-  private async generateResponse(
-    message: string,
-    result: Record<string, any>,
-    functionName: string,
-    responseGenerationPrompt: string,
-    previousMessages: LLMContext[],
-    llm: BaseChatModel
-  ) {
-    const responsePrompt = ChatPromptTemplate.fromMessages([
-      SystemMessagePromptTemplate.fromTemplate(`
-              You are a business assistant. Given a user's query and structured API data, generate a response that directly answers the user's question in a clear and concise manner. Format the response as an standard markdown syntax:
-  
-            - Ensure proper line breaks by using \n\n between list items.
-            - Retain code blocks using triple backticks where needed.
-            - Ensure all output is correctly formatted to display properly in Slack.
-  
-            ${responseGenerationPrompt}
-          `),
-      new MessagesPlaceholder('chat_history'),
-      HumanMessagePromptTemplate.fromTemplate('{input}')
-    ]);
-
-    const responseChain = RunnableSequence.from([responsePrompt, llm]);
-
-    const response = await responseChain.invoke({
-      chat_history: previousMessages,
-      input: `The user's question is: "${message}". Here is the structured response from ${functionName}: ${JSON.stringify(result, null, 2)}`
-    });
-
-    const finalContent = Array.isArray(response.content)
-      ? response.content.join(' ')
-      : response.content;
-    return slackify(finalContent);
-  }
-
   private async generatePlan(
-    availableFunctions: ToolConfig['tools'],
+    availableFunctions: {
+      availableTools: ToolConfig['tools'];
+      config?: AvailableToolsWithConfig[keyof AvailableToolsWithConfig]['config'];
+    }[],
     previousMessages: LLMContext[],
     message: string,
-    llm: BaseChatModel
+    llm: BaseChatModel,
+    basePrompt: string
   ) {
+    const allFunctions = availableFunctions
+      .map((func) => {
+        return func.availableTools.map((tool) => `${tool.name}: ${tool.description}`);
+      })
+      .flat();
+    const customPrompts = availableFunctions
+      .map((func) => {
+        return func.config && 'default_prompt' in func.config && func.config.default_prompt
+          ? func.config.default_prompt
+          : '';
+      })
+      .filter(Boolean);
     const planPrompt = ChatPromptTemplate.fromMessages([
-      SystemMessagePromptTemplate.fromTemplate(`
-        You are a planner that breaks down the user's request into an ordered list of steps using available tools.
-Only use the following tools: ${availableFunctions
-        .map((func) => {
-          return `
-  ${func.name}: ${func.description}
-  `;
-        })
-        .join('\n')}.
-
-Each step must be:
-- a tool call: {{ "type": "tool", "tool": "toolName", "args": {{ ... }} }}
-- or a reasoning step: {{ "type": "reason", "input": "..." }}
-
-Output only structured JSON matching the required format.
-      `),
+      SystemMessagePromptTemplate.fromTemplate(basePrompt),
+      SystemMessagePromptTemplate.fromTemplate(
+        QuixPrompts.PLANNER_PROMPT(allFunctions, customPrompts)
+      ),
       new MessagesPlaceholder('chat_history'),
       HumanMessagePromptTemplate.fromTemplate('{input}')
     ]);

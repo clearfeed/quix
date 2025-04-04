@@ -11,7 +11,8 @@ import {
   DisplayErrorModalResponse,
   UpdateModalResponsePayload,
   McpConnectionModalArgs,
-  GithubDefaultConfigModalArgs
+  GithubDefaultConfigModalArgs,
+  SalesforceConfigModalArgs
 } from './types';
 import { WebClient } from '@slack/web-api';
 import { Surfaces } from 'slack-block-builder';
@@ -646,6 +647,51 @@ export const publishMcpConnectionModal = async (
     });
   } catch (error) {
     console.error('Error publishing MCP connection modal:', error);
+    throw error;
+  }
+};
+
+export const publishSalesforceConfigModal = async (
+  client: WebClient,
+  args: SalesforceConfigModalArgs
+): Promise<void> => {
+  try {
+    const blocks = [
+      Section({
+        text: 'Customize the way Quix interacts with Salesforce'
+      }),
+      Input({
+        label: 'Default Prompt',
+        blockId: 'salesforce_default_prompt',
+        hint: 'Please provide a default prompt for Salesforce. This will be used when Quix needs to interact with Salesforce.'
+      })
+        .optional(true)
+        .element(
+          Elements.TextInput({
+            placeholder: `When creating Salesforce tasks...`,
+            multiline: true,
+            actionId: SLACK_ACTIONS.SALESFORCE_CONFIG_MODAL.DEFAULT_PROMPT
+          }).initialValue(args.initialValues?.defaultPrompt || '')
+        )
+    ];
+
+    await client.views.open({
+      trigger_id: args.triggerId,
+      view: {
+        ...Surfaces.Modal({
+          title: 'Salesforce Connection',
+          submit: 'Submit',
+          close: 'Cancel',
+          callbackId: SLACK_ACTIONS.SALESFORCE_CONFIG_MODAL.SUBMIT
+        }).buildToObject(),
+        blocks: BlockCollection(blocks),
+        private_metadata: JSON.stringify({
+          id: args.initialValues?.id
+        })
+      }
+    });
+  } catch (error) {
+    console.error('Error publishing Salesforce connection modal:', error);
     throw error;
   }
 };

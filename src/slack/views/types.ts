@@ -1,29 +1,12 @@
-import {
-  HubspotConfig,
-  JiraConfig,
-  PostgresConfig,
-  SlackWorkspace,
-  GithubConfig,
-  SalesforceConfig,
-  NotionConfig,
-  LinearConfig,
-  McpConnection
-} from '@quix/database/models';
+import { SlackWorkspace } from '@quix/database/models';
 import { INTEGRATIONS } from '@quix/lib/constants';
+import { Connections } from '@quix/lib/types/common';
 import { ModalView, ViewsOpenResponse, ViewsUpdateResponse, WebClient } from '@slack/web-api';
 
 export type HomeViewArgs = {
   slackWorkspace: SlackWorkspace;
   selectedTool?: (typeof INTEGRATIONS)[number]['value'] | string; // string for MCP server IDs
-  connection?:
-    | JiraConfig
-    | HubspotConfig
-    | PostgresConfig
-    | GithubConfig
-    | SalesforceConfig
-    | NotionConfig
-    | LinearConfig
-    | McpConnection;
+  connection?: Connections;
   userId: string;
 };
 
@@ -123,4 +106,13 @@ export type DisplayErrorModalResponse =
 export type UpdateModalResponsePayload = {
   response_action: 'update';
   view: ModalView;
+};
+
+export type SalesforceConfigModalArgs = {
+  triggerId: string;
+  teamId: string;
+  initialValues?: {
+    id?: string;
+    defaultPrompt?: string | null;
+  };
 };

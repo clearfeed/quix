@@ -144,7 +144,11 @@ export class InteractionsService {
                 text: 'Notion connected successfully',
                 viewId: payload.view.id
               });
-              this.appHomeService.handleNotionConnected(payload.user.id, payload.view.team_id);
+              this.appHomeService.handleIntegrationConnected(
+                payload.user.id,
+                payload.view.team_id,
+                'notionConfig'
+              );
             })
             .catch((error) => {
               return displayErrorModal({
@@ -173,7 +177,11 @@ export class InteractionsService {
                 text: 'Linear connected successfully',
                 viewId: payload.view.id
               });
-              this.appHomeService.handleLinearConnected(payload.user.id, payload.view.team_id);
+              this.appHomeService.handleIntegrationConnected(
+                payload.user.id,
+                payload.view.team_id,
+                'linearConfig'
+              );
             })
             .catch((error) => {
               return displayErrorModal({
@@ -193,6 +201,29 @@ export class InteractionsService {
             web: new WebClient(slackWorkspace.bot_access_token)
           });
         }
+      case SLACK_ACTIONS.SALESFORCE_CONFIG_MODAL.SUBMIT:
+        try {
+          const defaultPrompt = payload.view.state.values.salesforce_default_prompt[
+            SLACK_ACTIONS.SALESFORCE_CONFIG_MODAL.DEFAULT_PROMPT
+          ].value as string;
+          const salesforceConfig = await slackWorkspace.$get('salesforceConfig');
+          if (!salesforceConfig) return;
+          await salesforceConfig.update({
+            default_prompt: defaultPrompt
+          });
+          this.appHomeService.handleIntegrationConnected(
+            payload.user.id,
+            payload.view.team_id,
+            'salesforceConfig'
+          );
+        } catch (error) {
+          console.error(error);
+          return displayErrorModal({
+            error,
+            backgroundCaller: false
+          });
+        }
+        break;
       case SLACK_ACTIONS.SUBMIT_MCP_CONNECTION:
         try {
           this.integrationsInstallService
@@ -202,7 +233,11 @@ export class InteractionsService {
                 text: 'MCP server connected successfully',
                 viewId: payload.view.id
               });
-              this.appHomeService.handleMcpConnected(payload.user.id, payload.view.team_id);
+              this.appHomeService.handleIntegrationConnected(
+                payload.user.id,
+                payload.view.team_id,
+                'mcpConnections'
+              );
             })
             .catch((error) => {
               return displayErrorModal({

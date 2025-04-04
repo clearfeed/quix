@@ -13,7 +13,8 @@ import {
   publishNotionConnectionModal,
   publishLinearConnectionModal,
   publishMcpConnectionModal,
-  publishGithubConfigModal
+  publishGithubConfigModal,
+  publishSalesforceConfigModal
 } from './views/modals';
 import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
@@ -300,6 +301,18 @@ export class AppHomeService {
                 }
               });
               break;
+            case SUPPORTED_INTEGRATIONS.SALESFORCE:
+              const { salesforceConfig } = slackWorkspace;
+              if (!salesforceConfig) return;
+              await publishSalesforceConfigModal(webClient, {
+                triggerId,
+                teamId,
+                initialValues: {
+                  id: salesforceConfig.id,
+                  defaultPrompt: salesforceConfig.default_prompt
+                }
+              });
+              break;
             default:
               break;
           }
@@ -504,28 +517,21 @@ export class AppHomeService {
     });
   }
 
-  async handleNotionConnected(userId: string, teamId: string) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['notionConfig']);
-    if (!slackWorkspace?.notionConfig) return;
-    const webClient = new WebClient(slackWorkspace.bot_access_token);
-    await webClient.views.publish({
-      user_id: userId,
-      view: getHomeView({
-        slackWorkspace,
-        userId
-      })
-    });
-  }
-
-  async handleLinearConnected(userId: string, teamId: string) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
+  async handleIntegrationConnected(
+    userId: string,
+    teamId: string,
+    relation?: keyof SlackWorkspace
+  ) {
+    const slackWorkspace = await this.slackService.getSlackWorkspace(
+      teamId,
+      relation ? [relation] : undefined
+    );
     if (!slackWorkspace) return;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
       view: getHomeView({
         slackWorkspace,
-        connection: slackWorkspace.linearConfig,
         userId
       })
     });
@@ -543,20 +549,6 @@ export class AppHomeService {
     await publishMcpConnectionModal(webClient, {
       triggerId,
       teamId
-    });
-  }
-
-  async handleMcpConnected(userId: string, teamId: string) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['mcpConnections']);
-    if (!slackWorkspace) return;
-
-    const webClient = new WebClient(slackWorkspace.bot_access_token);
-    await webClient.views.publish({
-      user_id: userId,
-      view: getHomeView({
-        slackWorkspace,
-        userId
-      })
     });
   }
 }
