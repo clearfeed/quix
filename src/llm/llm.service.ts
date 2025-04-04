@@ -87,7 +87,7 @@ export class LlmService {
     }
     const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, teamId);
     this.logger.log(
-      `Processing message: ${message} with tools: ${availableToolCategories.join(', ')}`
+      `Processing message: ${message} with tool categories: ${availableToolCategories.join(', ')}`
     );
 
     // Add previous tool calls to system context for better continuity
