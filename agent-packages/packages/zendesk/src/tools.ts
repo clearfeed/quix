@@ -39,8 +39,19 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
       name: 'search_zendesk_tickets',
       description: 'Search Zendesk tickets using a query string',
       schema: z.object({
-        query: z.string().describe('Search keywords or phrases to filter Zendesk tickets by title, description, or metadata'),
-        limit: z.number().describe('Limit on the number of tickets to return').default(10)
+        query: z
+          .string()
+          .describe(
+            'Search keywords or phrases to filter Zendesk tickets by title, description, or metadata'
+          ),
+        limit: z
+          .number()
+          .int()
+          .min(1)
+          .max(100)
+          .describe('Limit on the number of tickets to return')
+          .optional()
+          .default(10)
       }),
       func: async (args: SearchTicketsParams) => service.searchTickets(args)
     }),
@@ -48,7 +59,7 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
       name: 'get_zendesk_ticket',
       description: 'Retrieve a specific Zendesk ticket by ID',
       schema: z.object({
-        ticketId: z.number().describe('The unique ID of the Zendesk ticket to retrieve')
+        ticketId: z.number().int().describe('The ID of the Zendesk ticket to retrieve')
       }),
       func: async (args: GetTicketParams) => service.getTicket(args)
     }),
@@ -56,7 +67,7 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
       name: 'get_zendesk_ticket_with_replies',
       description: 'Retrieve a specific Zendesk ticket along with its replies and comments',
       schema: z.object({
-        ticketId: z.number().describe('The unique ID of the Zendesk ticket to retrieve along with its replies')
+        ticketId: z.number().int().describe('The ID of the Zendesk ticket to retrieve')
       }),
       func: async (args: GetTicketWithRepliesParams) => service.getTicketWithReplies(args)
     }),
@@ -64,7 +75,7 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
       name: 'add_zendesk_internal_note',
       description: 'Add an internal note (private comment) to a Zendesk ticket',
       schema: z.object({
-        ticketId: z.number().describe('The unique ID of the Zendesk ticket to add the internal note to'),
+        ticketId: z.number().int().describe('The ID of the Zendesk ticket to add the internal note to'),
         note: z.string().describe('The content of the internal note to add')
       }),
       func: async (args: AddInternalNoteParams) => service.addInternalNote(args)
@@ -73,15 +84,15 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
       name: 'get_zendesk_internal_notes',
       description: 'Retrieve all internal notes (private comments) from a Zendesk ticket',
       schema: z.object({
-        ticketId: z.number().describe('The unique ID of the Zendesk ticket to get internal notes from')
+        ticketId: z.number().int().describe('The ID of the Zendesk ticket to get internal notes from')
       }),
       func: async (args: GetInternalNotesParams) => service.getInternalNotes(args)
     }),
     new DynamicStructuredTool({
       name: 'add_zendesk_internal_comment',
-      description: 'Add an internal comment (private note) to a Zendesk ticket',
+      description: 'Add an internal comment (public note) to a Zendesk ticket',
       schema: z.object({
-        ticketId: z.number().describe('The unique ID of the Zendesk ticket to add the internal comment to'),
+        ticketId: z.number().int().describe('The ID of the Zendesk ticket to add the internal comment to'),
         comment: z.string().describe('The internal comment text to add to the ticket')
       }),
       func: async (args: AddInternalCommentParams) => service.addInternalComment(args)

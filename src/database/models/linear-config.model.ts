@@ -8,13 +8,13 @@ import {
   CreatedAt,
   UpdatedAt,
   PrimaryKey,
-  AllowNull,
+  AllowNull
 } from 'sequelize-typescript';
 import {
   CreationOptional,
   InferAttributes,
   InferCreationAttributes,
-  NonAttribute,
+  NonAttribute
 } from 'sequelize';
 import { encrypt, decrypt } from '../../lib/utils/encryption';
 import { SlackWorkspace } from './slack-workspace.model';
@@ -41,7 +41,7 @@ export class LinearConfig extends Model<
 
   @AllowNull(false)
   @Column({
-    type: DataType.TEXT,
+    type: DataType.TEXT
   })
   get access_token(): string {
     const value = this.getDataValue('access_token') as string;
@@ -58,7 +58,7 @@ export class LinearConfig extends Model<
 
   @Column({
     type: DataType.JSON,
-    allowNull: true,
+    allowNull: true
   })
   declare default_config: Nullable<{
     team_id?: string;

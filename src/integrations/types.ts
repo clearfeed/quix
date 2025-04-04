@@ -15,15 +15,15 @@ export interface HubspotHubInfo {
 }
 
 export interface GithubTokenResponse {
-  access_token: string,
-  token_type: string,
-  scope: string
+  access_token: string;
+  token_type: string;
+  scope: string;
 }
 
 export interface GitHubInfo {
-  id: number,
-  login: string,
-  avatar_url: string,
+  id: number;
+  login: string;
+  avatar_url: string;
 }
 
 export interface SalesforceTokenResponse {

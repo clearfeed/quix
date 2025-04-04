@@ -3,37 +3,39 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('mcp_connections', {
-      id: {
-        type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4,
-        primaryKey: true
-      },
+    await queryInterface.createTable('conversation_states', {
       team_id: {
         type: Sequelize.STRING,
+        primaryKey: true,
         allowNull: false,
         references: {
           model: 'slack_workspaces',
           key: 'team_id'
         },
+        onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      name: {
+      channel_id: {
         type: Sequelize.STRING,
+        primaryKey: true,
         allowNull: false
       },
-      url: {
+      thread_ts: {
         type: Sequelize.STRING,
+        primaryKey: true,
         allowNull: false
       },
-      auth_token: {
-        type: Sequelize.STRING,
-        allowNull: true
-      },
-      request_config: {
+      last_tool_calls: {
         type: Sequelize.JSON,
-        allowNull: true,
-        defaultValue: {}
+        defaultValue: []
+      },
+      last_plan: {
+        type: Sequelize.JSON,
+        defaultValue: null
+      },
+      contextual_memory: {
+        type: Sequelize.JSON,
+        defaultValue: null
       },
       created_at: {
         type: Sequelize.DATE,
@@ -45,10 +47,10 @@ module.exports = {
       }
     });
 
-    await queryInterface.addIndex('mcp_connections', ['team_id']);
+    await queryInterface.addIndex('conversation_states', ['updated_at']);
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('mcp_connections');
+    await queryInterface.dropTable('conversation_states');
   }
 };

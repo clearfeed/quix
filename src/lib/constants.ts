@@ -28,11 +28,7 @@ export const HUBSPOT_SCOPES = [
   'tickets'
 ] as const;
 
-export const GITHUB_SCOPES = [
-  'repo',
-  'user',
-  'read:org'
-] as const;
+export const GITHUB_SCOPES = ['repo', 'user', 'read:org'] as const;
 
 export const INTEGRATIONS: {
   name: string;
@@ -42,70 +38,77 @@ export const INTEGRATIONS: {
   relation: string;
   oauth: boolean;
 }[] = [
-    {
-      name: 'JIRA',
-      value: SUPPORTED_INTEGRATIONS.JIRA,
-      helpText: 'Connect JIRA to create, update, and view issues.',
-      connectedText: 'Jira has been successfully connected! You can now query Jira by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"',
-      relation: 'jiraConfig',
-      oauth: true,
-    },
-    {
-      name: 'GitHub',
-      value: SUPPORTED_INTEGRATIONS.GITHUB,
-      helpText: 'Connect GitHub to interact with issues and pull requests.',
-      connectedText: 'GitHub has been successfully connected! You can now query GitHub by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of issue #123?" or "List all open PRs in the auth-service repo."',
-      relation: 'githubConfig',
-      oauth: true,
-    },
-    {
-      name: 'Hubspot',
-      value: SUPPORTED_INTEGRATIONS.HUBSPOT,
-      helpText: 'Connect Hubspot to create, update, and view contacts, deals, and companies.',
-      connectedText: 'Hubspot has been successfully connected! You can now query Hubspot by chatting with me or mentioning me in any channel. Try asking me things like "What is the deal status for Quix" or "What is the contact name for Quix"',
-      relation: 'hubspotConfig',
-      oauth: true,
-    },
-    // {
-    //   name: 'Zendesk',
-    //   value: SUPPORTED_INTEGRATIONS.ZENDESK,
-    //   helpText: 'Connect Zendesk to create, update, and view tickets.',
-    //   connectedText: 'Zendesk has been successfully connected! You can now query Zendesk by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"',
-    //   relation: 'zendeskConfig',
-    // }
-    {
-      name: 'Postgres',
-      value: SUPPORTED_INTEGRATIONS.POSTGRES,
-      helpText: 'Connect Postgres to query a database.',
-      connectedText: 'Postgres has been successfully connected! You can now query Postgres by chatting with me or mentioning me in any channel. Try asking me things like "Query the accounts table and return the first 10 rows"',
-      relation: 'postgresConfig',
-      oauth: false,
-    },
-    {
-      name: 'Salesforce',
-      value: SUPPORTED_INTEGRATIONS.SALESFORCE,
-      helpText: 'Connect Salesforce to interact with your CRM.',
-      connectedText: 'Salesforce has been successfully connected! You can now query Salesforce by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of the deal for Quix" or "What is the contact name for Quix"',
-      relation: 'salesforceConfig',
-      oauth: true,
-    },
-    {
-      name: 'Notion',
-      value: SUPPORTED_INTEGRATIONS.NOTION,
-      helpText: 'Connect Notion to interact with your workspace.',
-      connectedText: 'Notion has been successfully connected! You can now query Notion by chatting with me or mentioning me in any channel. Try asking me things like "Show me my recent pages", "Search for documents about marketing", or "Get the content of page X".',
-      relation: 'notionConfig',
-      oauth: false,
-    },
-    {
-      name: 'Linear',
-      value: SUPPORTED_INTEGRATIONS.LINEAR,
-      helpText: 'Connect Linear to interact with your projects.',
-      connectedText: 'Linear has been successfully connected! You can now query Linear by chatting with me or mentioning me in any channel. Try asking me things like "Show me my recent issues", "Search for issues about marketing", or "Get the content of issue X".',
-      relation: 'linearConfig',
-      oauth: false,
-    }
-  ];
+  {
+    name: 'JIRA',
+    value: SUPPORTED_INTEGRATIONS.JIRA,
+    helpText: 'Connect JIRA to create, update, and view issues.',
+    connectedText:
+      'Jira has been successfully connected! You can now query Jira by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"',
+    relation: 'jiraConfig',
+    oauth: true
+  },
+  {
+    name: 'GitHub',
+    value: SUPPORTED_INTEGRATIONS.GITHUB,
+    helpText: 'Connect GitHub to interact with issues and pull requests.',
+    connectedText:
+      'GitHub has been successfully connected! You can now query GitHub by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of issue #123?" or "List all open PRs in the auth-service repo."',
+    relation: 'githubConfig',
+    oauth: true
+  },
+  {
+    name: 'Hubspot',
+    value: SUPPORTED_INTEGRATIONS.HUBSPOT,
+    helpText: 'Connect Hubspot to create, update, and view contacts, deals, and companies.',
+    connectedText:
+      'Hubspot has been successfully connected! You can now query Hubspot by chatting with me or mentioning me in any channel. Try asking me things like "What is the deal status for Quix" or "What is the contact name for Quix"',
+    relation: 'hubspotConfig',
+    oauth: true
+  },
+  // {
+  //   name: 'Zendesk',
+  //   value: SUPPORTED_INTEGRATIONS.ZENDESK,
+  //   helpText: 'Connect Zendesk to create, update, and view tickets.',
+  //   connectedText: 'Zendesk has been successfully connected! You can now query Zendesk by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"',
+  //   relation: 'zendeskConfig',
+  // }
+  {
+    name: 'Postgres',
+    value: SUPPORTED_INTEGRATIONS.POSTGRES,
+    helpText: 'Connect Postgres to query a database.',
+    connectedText:
+      'Postgres has been successfully connected! You can now query Postgres by chatting with me or mentioning me in any channel. Try asking me things like "Query the accounts table and return the first 10 rows"',
+    relation: 'postgresConfig',
+    oauth: false
+  },
+  {
+    name: 'Salesforce',
+    value: SUPPORTED_INTEGRATIONS.SALESFORCE,
+    helpText: 'Connect Salesforce to interact with your CRM.',
+    connectedText:
+      'Salesforce has been successfully connected! You can now query Salesforce by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of the deal for Quix" or "What is the contact name for Quix"',
+    relation: 'salesforceConfig',
+    oauth: true
+  },
+  {
+    name: 'Notion',
+    value: SUPPORTED_INTEGRATIONS.NOTION,
+    helpText: 'Connect Notion to interact with your workspace.',
+    connectedText:
+      'Notion has been successfully connected! You can now query Notion by chatting with me or mentioning me in any channel. Try asking me things like "Show me my recent pages", "Search for documents about marketing", or "Get the content of page X".',
+    relation: 'notionConfig',
+    oauth: false
+  },
+  {
+    name: 'Linear',
+    value: SUPPORTED_INTEGRATIONS.LINEAR,
+    helpText: 'Connect Linear to interact with your projects.',
+    connectedText:
+      'Linear has been successfully connected! You can now query Linear by chatting with me or mentioning me in any channel. Try asking me things like "Show me my recent issues", "Search for issues about marketing", or "Get the content of issue X".',
+    relation: 'linearConfig',
+    oauth: false
+  }
+];
 
 export const TimeInSeconds = {
   ONE_MINUTE: 60,
@@ -209,4 +212,4 @@ Respond in clear markdown.
     - Present deal values and stages clearly
     `
   }
-}
+};

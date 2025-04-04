@@ -33,7 +33,9 @@ export class GitHubService implements BaseService<GitHubConfig> {
   private client: Octokit;
   private config: GitHubConfig;
 
-  validateConfig(config?: Record<string, any>): { isValid: boolean; error?: string } & Record<string, any> {
+  validateConfig(
+    config?: Record<string, any>
+  ): { isValid: boolean; error?: string } & Record<string, any> {
     const repoOwner = config?.owner || this.config.owner;
     const repoName = config?.repo || this.config.repo;
 
@@ -55,7 +57,9 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  async searchIssues(params: SearchIssuesParams): Promise<BaseResponse<SearchIssuesResponse['data']>> {
+  async searchIssues(
+    params: SearchIssuesParams
+  ): Promise<BaseResponse<SearchIssuesResponse['data']>> {
     try {
       const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
       const repo = validation.repoName;
@@ -89,7 +93,10 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  async getIssue(issueNumber: number, params: { owner?: string; repo?: string }): Promise<BaseResponse<RestEndpointMethodTypes['issues']['get']['response']['data']>> {
+  async getIssue(
+    issueNumber: number,
+    params: { owner?: string; repo?: string }
+  ): Promise<BaseResponse<RestEndpointMethodTypes['issues']['get']['response']['data']>> {
     try {
       const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
       const repo = validation.repoName;
@@ -102,13 +109,18 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error fetching GitHub issue:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch GitHub issue' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch GitHub issue'
+      };
     }
   }
 
-  async addAssigneeToIssue(issueNumber: number, assignee: string, params: { owner?: string; repo?: string }): Promise<
-    BaseResponse<RestEndpointMethodTypes['issues']['addAssignees']['response']['data']>
-  > {
+  async addAssigneeToIssue(
+    issueNumber: number,
+    assignee: string,
+    params: { owner?: string; repo?: string }
+  ): Promise<BaseResponse<RestEndpointMethodTypes['issues']['addAssignees']['response']['data']>> {
     try {
       const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
       const repo = validation.repoName;
@@ -122,11 +134,18 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error assigning GitHub issue:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to assign GitHub issue' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to assign GitHub issue'
+      };
     }
   }
 
-  async removeAssigneeFromIssue(issueNumber: number, assignee: string, params: { owner?: string; repo?: string }): Promise<
+  async removeAssigneeFromIssue(
+    issueNumber: number,
+    assignee: string,
+    params: { owner?: string; repo?: string }
+  ): Promise<
     BaseResponse<RestEndpointMethodTypes['issues']['removeAssignees']['response']['data']>
   > {
     try {
@@ -142,11 +161,17 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error removing assignee from GitHub issue:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to remove assignee from GitHub issue' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to remove assignee from GitHub issue'
+      };
     }
   }
 
-  async getUsers(owner: string): Promise<BaseResponse<RestEndpointMethodTypes['orgs']['listMembers']['response']['data']>> {
+  async getUsers(
+    owner: string
+  ): Promise<BaseResponse<RestEndpointMethodTypes['orgs']['listMembers']['response']['data']>> {
     try {
       const orgOwner = owner || this.config.owner;
       if (!orgOwner) throw new Error('Owner must be provided when no default owner is configured.');
@@ -156,7 +181,10 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error fetching GitHub users:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch GitHub users' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch GitHub users'
+      };
     }
   }
 
@@ -179,11 +207,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       };
     } catch (error) {
       console.error('Error creating GitHub issue:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to create GitHub issue' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create GitHub issue'
+      };
     }
   }
 
-  async searchCode(params: CodeSearchParams): Promise<BaseResponse<RestEndpointMethodTypes['search']['code']['response']['data']['items']>> {
+  async searchCode(
+    params: CodeSearchParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['search']['code']['response']['data']['items']>> {
     try {
       const query = params.query;
       const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
@@ -208,7 +241,11 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  async createOrUpdateFile(params: CreateOrUpdateFileParams): Promise<BaseResponse<RestEndpointMethodTypes['repos']['createOrUpdateFileContents']['response']['data']>> {
+  async createOrUpdateFile(
+    params: CreateOrUpdateFileParams
+  ): Promise<
+    BaseResponse<RestEndpointMethodTypes['repos']['createOrUpdateFileContents']['response']['data']>
+  > {
     try {
       const { owner, repo, path, content, message, branch, sha } = params;
       const response = await this.client.repos.createOrUpdateFileContents({
@@ -223,11 +260,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error creating/updating GitHub file:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to create/update GitHub file' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create/update GitHub file'
+      };
     }
   }
 
-  async searchRepositories(params: SearchRepositoriesParams): Promise<BaseResponse<RestEndpointMethodTypes['search']['repos']['response']['data']>> {
+  async searchRepositories(
+    params: SearchRepositoriesParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['search']['repos']['response']['data']>> {
     try {
       const { query, page } = params;
       const response = await this.client.search.repos({
@@ -238,11 +280,18 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error searching GitHub repositories:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to search GitHub repositories' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to search GitHub repositories'
+      };
     }
   }
 
-  async createRepository(params: CreateRepositoryParams): Promise<BaseResponse<RestEndpointMethodTypes['repos']['createForAuthenticatedUser']['response']['data']>> {
+  async createRepository(
+    params: CreateRepositoryParams
+  ): Promise<
+    BaseResponse<RestEndpointMethodTypes['repos']['createForAuthenticatedUser']['response']['data']>
+  > {
     try {
       const { name, description, private: isPrivate, autoInit } = params;
       const response = await this.client.repos.createForAuthenticatedUser({
@@ -254,11 +303,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error creating GitHub repository:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to create GitHub repository' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create GitHub repository'
+      };
     }
   }
 
-  async getFileContents(params: GetFileContentsParams): Promise<BaseResponse<RestEndpointMethodTypes['repos']['getContent']['response']['data']>> {
+  async getFileContents(
+    params: GetFileContentsParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['repos']['getContent']['response']['data']>> {
     try {
       const { owner, repo, path, branch } = params;
       const response = await this.client.repos.getContent({
@@ -270,11 +324,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error getting GitHub file contents:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to get GitHub file contents' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get GitHub file contents'
+      };
     }
   }
 
-  async createPullRequest(params: CreatePullRequestParams): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['create']['response']['data']>> {
+  async createPullRequest(
+    params: CreatePullRequestParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['create']['response']['data']>> {
     try {
       const { owner, repo, title, head, base, body, draft, maintainer_can_modify } = params;
       const response = await this.client.pulls.create({
@@ -290,11 +349,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error creating GitHub pull request:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to create GitHub pull request' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create GitHub pull request'
+      };
     }
   }
 
-  async createBranch(params: CreateBranchParams): Promise<BaseResponse<RestEndpointMethodTypes['git']['createRef']['response']['data']>> {
+  async createBranch(
+    params: CreateBranchParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['git']['createRef']['response']['data']>> {
     try {
       const { owner, repo, branch, from_branch } = params;
       const ref = await this.client.git.getRef({
@@ -311,11 +375,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error creating GitHub branch:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to create GitHub branch' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create GitHub branch'
+      };
     }
   }
 
-  async listCommits(params: ListCommitsParams): Promise<BaseResponse<RestEndpointMethodTypes['repos']['listCommits']['response']['data']>> {
+  async listCommits(
+    params: ListCommitsParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['repos']['listCommits']['response']['data']>> {
     try {
       const { owner, repo, sha, page, perPage } = params;
       const response = await this.client.repos.listCommits({
@@ -328,11 +397,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error listing GitHub commits:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to list GitHub commits' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to list GitHub commits'
+      };
     }
   }
 
-  async listIssues(params: ListIssuesParams): Promise<BaseResponse<RestEndpointMethodTypes['issues']['listForRepo']['response']['data']>> {
+  async listIssues(
+    params: ListIssuesParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['issues']['listForRepo']['response']['data']>> {
     try {
       const { owner, repo, state, sort, direction, since, page, per_page, labels } = params;
       const response = await this.client.issues.listForRepo({
@@ -349,13 +423,19 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error listing GitHub issues:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to list GitHub issues' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to list GitHub issues'
+      };
     }
   }
 
-  async updateIssue(params: UpdateIssueParams): Promise<BaseResponse<RestEndpointMethodTypes['issues']['update']['response']['data']>> {
+  async updateIssue(
+    params: UpdateIssueParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['issues']['update']['response']['data']>> {
     try {
-      const { owner, repo, issue_number, title, body, state, labels, assignees, milestone } = params;
+      const { owner, repo, issue_number, title, body, state, labels, assignees, milestone } =
+        params;
       const response = await this.client.issues.update({
         owner,
         repo,
@@ -370,11 +450,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error updating GitHub issue:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to update GitHub issue' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update GitHub issue'
+      };
     }
   }
 
-  async addIssueComment(params: AddIssueCommentParams): Promise<BaseResponse<RestEndpointMethodTypes['issues']['createComment']['response']['data']>> {
+  async addIssueComment(
+    params: AddIssueCommentParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['issues']['createComment']['response']['data']>> {
     try {
       const { owner, repo, issue_number, body } = params;
       const response = await this.client.issues.createComment({
@@ -386,11 +471,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error adding GitHub issue comment:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to add GitHub issue comment' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to add GitHub issue comment'
+      };
     }
   }
 
-  async searchUsers(params: SearchUsersParams): Promise<BaseResponse<RestEndpointMethodTypes['search']['users']['response']['data']>> {
+  async searchUsers(
+    params: SearchUsersParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['search']['users']['response']['data']>> {
     try {
       const { q, sort, order, per_page, page } = params;
       const response = await this.client.search.users({
@@ -403,11 +493,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error searching GitHub users:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to search GitHub users' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to search GitHub users'
+      };
     }
   }
 
-  async getPullRequest(params: PullRequestParams): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['get']['response']['data']>> {
+  async getPullRequest(
+    params: PullRequestParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['get']['response']['data']>> {
     try {
       const { owner, repo, pull_number } = params;
       const response = await this.client.pulls.get({
@@ -418,11 +513,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error getting GitHub pull request:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to get GitHub pull request' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get GitHub pull request'
+      };
     }
   }
 
-  async listPullRequests(params: ListPullRequestsParams): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['list']['response']['data']>> {
+  async listPullRequests(
+    params: ListPullRequestsParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['list']['response']['data']>> {
     try {
       const { owner, repo, state, head, base, sort, direction, per_page, page } = params;
       const response = await this.client.pulls.list({
@@ -439,11 +539,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error listing GitHub pull requests:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to list GitHub pull requests' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to list GitHub pull requests'
+      };
     }
   }
 
-  async createPullRequestReview(params: CreatePullRequestReviewParams): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['createReview']['response']['data']>> {
+  async createPullRequestReview(
+    params: CreatePullRequestReviewParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['createReview']['response']['data']>> {
     try {
       const { owner, repo, pull_number, body, event, commit_id, comments } = params;
       const response = await this.client.pulls.createReview({
@@ -458,11 +563,17 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error creating GitHub pull request review:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to create GitHub pull request review' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to create GitHub pull request review'
+      };
     }
   }
 
-  async mergePullRequest(params: MergePullRequestParams): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['merge']['response']['data']>> {
+  async mergePullRequest(
+    params: MergePullRequestParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['merge']['response']['data']>> {
     try {
       const { owner, repo, pull_number, commit_title, commit_message, merge_method } = params;
       const response = await this.client.pulls.merge({
@@ -476,11 +587,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error merging GitHub pull request:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to merge GitHub pull request' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to merge GitHub pull request'
+      };
     }
   }
 
-  async getPullRequestFiles(params: PullRequestParams): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['listFiles']['response']['data']>> {
+  async getPullRequestFiles(
+    params: PullRequestParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['listFiles']['response']['data']>> {
     try {
       const { owner, repo, pull_number } = params;
       const response = await this.client.pulls.listFiles({
@@ -491,11 +607,18 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error getting GitHub pull request files:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to get GitHub pull request files' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get GitHub pull request files'
+      };
     }
   }
 
-  async getPullRequestStatus(params: PullRequestParams): Promise<BaseResponse<RestEndpointMethodTypes['repos']['getCombinedStatusForRef']['response']['data']>> {
+  async getPullRequestStatus(
+    params: PullRequestParams
+  ): Promise<
+    BaseResponse<RestEndpointMethodTypes['repos']['getCombinedStatusForRef']['response']['data']>
+  > {
     try {
       const { owner, repo, pull_number } = params;
       const pr = await this.client.pulls.get({
@@ -511,11 +634,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error getting GitHub pull request status:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to get GitHub pull request status' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get GitHub pull request status'
+      };
     }
   }
 
-  async updatePullRequestBranch(params: UpdatePullRequestBranchParams): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['updateBranch']['response']['data']>> {
+  async updatePullRequestBranch(
+    params: UpdatePullRequestBranchParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['updateBranch']['response']['data']>> {
     try {
       const { owner, repo, pull_number, expected_head_sha } = params;
       const response = await this.client.pulls.updateBranch({
@@ -527,11 +655,19 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error updating GitHub pull request branch:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to update GitHub pull request branch' };
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to update GitHub pull request branch'
+      };
     }
   }
 
-  async getPullRequestComments(params: PullRequestParams): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['listReviewComments']['response']['data']>> {
+  async getPullRequestComments(
+    params: PullRequestParams
+  ): Promise<
+    BaseResponse<RestEndpointMethodTypes['pulls']['listReviewComments']['response']['data']>
+  > {
     try {
       const { owner, repo, pull_number } = params;
       const response = await this.client.pulls.listReviewComments({
@@ -542,11 +678,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error getting GitHub pull request comments:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to get GitHub pull request comments' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get GitHub pull request comments'
+      };
     }
   }
 
-  async getPullRequestReviews(params: PullRequestParams): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['listReviews']['response']['data']>> {
+  async getPullRequestReviews(
+    params: PullRequestParams
+  ): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['listReviews']['response']['data']>> {
     try {
       const { owner, repo, pull_number } = params;
       const response = await this.client.pulls.listReviews({
@@ -557,7 +698,10 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error getting GitHub pull request reviews:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to get GitHub pull request reviews' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get GitHub pull request reviews'
+      };
     }
   }
 
@@ -572,11 +716,16 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error searching GitHub code globally:', error);
-      return { success: false, error: error instanceof Error ? error.message : 'Failed to search GitHub code globally' };
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to search GitHub code globally'
+      };
     }
   }
 
-  async searchIssuesGlobal(params: SearchIssuesGlobalParams): Promise<BaseResponse<SearchIssuesResponse['data']>> {
+  async searchIssuesGlobal(
+    params: SearchIssuesGlobalParams
+  ): Promise<BaseResponse<SearchIssuesResponse['data']>> {
     try {
       const response = await this.client.rest.search.issuesAndPullRequests({
         q: params.q,
@@ -599,4 +748,4 @@ export class GitHubService implements BaseService<GitHubConfig> {
       };
     }
   }
-} 
+}
