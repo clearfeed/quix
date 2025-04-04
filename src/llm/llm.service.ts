@@ -37,21 +37,28 @@ export class LlmService {
     previousMessages: LLMContext[],
     lastToolCalls: ConversationState['last_tool_calls']
   ): LLMContext[] {
-    const enhancedPreviousMessages = [...previousMessages];
+    try {
+      const enhancedPreviousMessages = [...previousMessages];
 
-    if (lastToolCalls) {
-      enhancedPreviousMessages.push({
-        role: 'system',
-        content: `Previous tools you have used in this conversation: ${Object.values(lastToolCalls)
-          .map(
-            (call) =>
-              `Tool "${call.name}" with args ${JSON.stringify(call.args)} returned: ${call.result}`
+      if (lastToolCalls) {
+        enhancedPreviousMessages.push({
+          role: 'system',
+          content: `Previous tools you have used in this conversation: ${Object.values(
+            lastToolCalls
           )
-          .join('; ')}`
-      });
-    }
+            .map(
+              (call) =>
+                `Tool "${call.name}" with args ${JSON.stringify(call.args)} returned: ${call.result}`
+            )
+            .join('; ')}`
+        });
+      }
 
-    return enhancedPreviousMessages;
+      return enhancedPreviousMessages;
+    } catch (error) {
+      this.logger.error(`Error enhancing messages with tool context: ${error}`);
+      return previousMessages;
+    }
   }
 
   async processMessage(args: MessageProcessingArgs): Promise<string> {
@@ -84,16 +91,10 @@ export class LlmService {
     );
 
     // Add previous tool calls to system context for better continuity
-    let enhancedPreviousMessages: LLMContext[] = [];
-    try {
-      enhancedPreviousMessages = this.enhanceMessagesWithToolContext(
-        previousMessages,
-        conversationState.last_tool_calls
-      );
-    } catch (error) {
-      this.logger.error(`Error enhancing messages with tool context: ${error}`);
-      enhancedPreviousMessages = previousMessages;
-    }
+    const enhancedPreviousMessages = this.enhanceMessagesWithToolContext(
+      previousMessages,
+      conversationState.last_tool_calls
+    );
 
     const plan = await this.generatePlan({
       message,
@@ -209,11 +210,6 @@ export class LlmService {
       new MessagesPlaceholder('chat_history'),
       HumanMessagePromptTemplate.fromTemplate('{input}')
     ]);
-
-    console.log(`------------------------------------------------------------`);
-    var util = require('util');
-    console.log(util.inspect(planPrompt, { showHidden: false, depth: null, colors: true }));
-    console.log(`------------------------------------------------------------`);
 
     const planChain = RunnableSequence.from([
       planPrompt,
