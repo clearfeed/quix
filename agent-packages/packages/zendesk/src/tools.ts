@@ -2,7 +2,10 @@ import {
   ZendeskConfig,
   SearchTicketsParams,
   GetTicketParams,
-  GetTicketWithRepliesParams
+  GetTicketWithRepliesParams,
+  AddInternalNoteParams,
+  GetInternalNotesParams,
+  AddInternalCommentParams
 } from './types';
 import { ZendeskService } from './index';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
@@ -68,7 +71,32 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
       }),
       func: async (args: GetTicketWithRepliesParams) => service.getTicketWithReplies(args)
     }),
-
+    new DynamicStructuredTool({
+      name: 'add_zendesk_internal_note',
+      description: 'Add an internal note (private comment) to a Zendesk ticket',
+      schema: z.object({
+        ticketId: z.number().int().describe('The ID of the Zendesk ticket to add the internal note to'),
+        note: z.string().describe('The content of the internal note to add')
+      }),
+      func: async (args: AddInternalNoteParams) => service.addInternalNote(args)
+    }),
+    new DynamicStructuredTool({
+      name: 'get_zendesk_internal_notes',
+      description: 'Retrieve all internal notes (private comments) from a Zendesk ticket',
+      schema: z.object({
+        ticketId: z.number().int().describe('The ID of the Zendesk ticket to get internal notes from')
+      }),
+      func: async (args: GetInternalNotesParams) => service.getInternalNotes(args)
+    }),
+    new DynamicStructuredTool({
+      name: 'add_zendesk_internal_comment',
+      description: 'Add an internal comment (public note) to a Zendesk ticket',
+      schema: z.object({
+        ticketId: z.number().int().describe('The ID of the Zendesk ticket to add the internal comment to'),
+        comment: z.string().describe('The internal comment text to add to the ticket')
+      }),
+      func: async (args: AddInternalCommentParams) => service.addInternalComment(args)
+    }),
   ];
 
   return {
