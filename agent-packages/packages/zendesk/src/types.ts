@@ -61,10 +61,3 @@ export type AddInternalNoteResponse = {
   ticket: Ticket;
   note: string;
 };
-export type GetInternalNotesResponse = {
-  id: number;
-  type: 'internal_note';
-  body: string;
-  created_at: string;
-  author_id: number;
-}[];
