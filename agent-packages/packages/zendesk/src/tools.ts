@@ -42,14 +42,14 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
         query: z
           .string()
           .describe(
-            'Search keywords or phrases to filter Zendesk tickets by title, description, or metadata'
+            'Search keywords or phrases to filter Zendesk tickets by subject (title), description, or metadata'
           ),
         limit: z
           .number()
           .int()
           .min(1)
           .max(100)
-          .describe('Limit on the number of tickets to return')
+          .describe('Maximum number of tickets to return')
           .optional()
           .default(10)
       }),
@@ -57,16 +57,16 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
     }),
     new DynamicStructuredTool({
       name: 'get_zendesk_ticket',
-      description: 'Retrieve a specific Zendesk ticket by ID',
+      description: 'Retrieve a Zendesk ticket by its ID',
       schema: z.object({
         ticketId: z.number().int().describe('The ID of the Zendesk ticket to retrieve')
       }),
       func: async (args: GetTicketParams) => service.getTicket(args)
     }),
     new DynamicStructuredTool({
-      name: 'get_zendesk_ticket_with_coments',
+      name: 'get_zendesk_ticket_with_comments',
       description:
-        'Retrieve a specific Zendesk ticket along with its public comments and internal notes',
+        'Retrieve a Zendesk ticket along with all its public comments and internal notes',
       schema: z.object({
         ticketId: z.number().int().describe('The ID of the Zendesk ticket to retrieve')
       }),
@@ -80,7 +80,7 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
           .number()
           .int()
           .describe('The ID of the Zendesk ticket to add the public comment to'),
-        comment: z.string().describe('The public comment text to add to the ticket')
+        comment: z.string().describe('The content of the public comment to add')
       }),
       func: async (args: AddInternalCommentParams) =>
         service.addComment({ public: true, ticketId: args.ticketId, comment: args.comment })
@@ -92,32 +92,32 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
         ticketId: z
           .number()
           .int()
-          .describe('The ID of the Zendesk ticket to add the internal note (private comment) to'),
-        note: z.string().describe('The content of the internal note (private comment) to add')
+          .describe('The ID of the Zendesk ticket to add the internal note to'),
+        note: z.string().describe('The content of the internal note to add')
       }),
       func: async (args: AddInternalNoteParams) =>
         service.addComment({ public: false, ticketId: args.ticketId, comment: args.note })
     }),
     new DynamicStructuredTool({
       name: 'get_zendesk_ticket_internal_notes',
-      description: 'Retrieve all internal notes (private comments) from a Zendesk ticket',
+      description: 'Retrieve all internal notes from a Zendesk ticket',
       schema: z.object({
         ticketId: z
           .number()
           .int()
-          .describe('The ID of the Zendesk ticket to get internal notes (private comments) from')
+          .describe('The ID of the Zendesk ticket to retrieve internal notes from')
       }),
       func: async (args: Pick<GetCommentsParams, 'ticketId'>) =>
         service.getComments({ ...args, public: false })
     }),
     new DynamicStructuredTool({
       name: 'get_zendesk_ticket_public_comments',
-      description: 'Retrieve all public comments of a Zendesk ticket',
+      description: 'Retrieve all public comments from a Zendesk ticket',
       schema: z.object({
         ticketId: z
           .number()
           .int()
-          .describe('The ID of the Zendesk ticket to get public comments from')
+          .describe('The ID of the Zendesk ticket to retrieve public comments from')
       }),
       func: async (args: Pick<GetCommentsParams, 'ticketId'>) =>
         service.getComments({ ...args, public: true })
