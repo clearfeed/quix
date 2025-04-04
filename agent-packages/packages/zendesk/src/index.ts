@@ -16,6 +16,7 @@ import {
 import { BaseService, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import { TicketComment } from 'node-zendesk/dist/types/clients/core/tickets';
 import { Ticket } from 'node-zendesk/dist/types/clients/core/tickets';
+import { User } from 'node-zendesk/dist/types/clients/core/users';
 
 export * from './tools';
 export * from './types';
@@ -195,6 +196,26 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
       return {
         success: false,
         error: error.message || 'Failed to create ticket'
+      };
+    }
+  }
+
+  async searchUsersByName(
+    name: string,
+    role?: 'end-user' | 'agent' | 'admin'
+  ): Promise<BaseResponse<User[]>> {
+    try {
+      const results: User[] = await this.client.users.search({ query: name });
+      const filteredUser = role ? results.filter((user: User) => user.role === role) : results;
+      return {
+        success: true,
+        data: filteredUser
+      };
+    } catch (error: any) {
+      console.error('Error searching Zendesk users by name:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to search Zendesk users'
       };
     }
   }

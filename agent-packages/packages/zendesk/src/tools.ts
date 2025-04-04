@@ -147,6 +147,25 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
           .describe('List of tags to categorize or label the ticket')
       }),
       func: async (args: CreateTicketParams) => service.createTicket(args)
+    }),
+    new DynamicStructuredTool({
+      name: 'search_zendesk_users_by_name',
+      description:
+        'Search for Zendesk users (agents or end users) by name. Useful for finding assignees or requesters.',
+      schema: z.object({
+        name: z
+          .string()
+          .min(2)
+          .describe('The name of the Zendesk user to search for. Partial names are supported.'),
+        role: z
+          .enum(['end-user', 'agent', 'admin'])
+          .optional()
+          .describe(
+            'Filter users by role. Use "agent" or "admin" when looking for assignees. Use "end-user" for requesters.'
+          )
+      }),
+      func: async (args: { name: string; role?: 'end-user' | 'agent' | 'admin' }) =>
+        service.searchUsersByName(args.name, args.role)
     })
   ];
 
