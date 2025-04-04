@@ -19,4 +19,4 @@ import { SlackWorkspace, SlackUserProfile } from '../database/models';
   providers: [SlackService, AppHomeService, InteractionsService, SlackEventsHandlerService],
   exports: [SlackService]
 })
-export class SlackModule { }
+export class SlackModule {}

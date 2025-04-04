@@ -13,22 +13,22 @@ export class SlackEventsHandlerService {
   constructor(
     private readonly appHomeService: AppHomeService,
     private readonly llmService: LlmService,
-    private readonly slackService: SlackService,
-  ) { }
+    private readonly slackService: SlackService
+  ) {}
 
   async handleEvent(body: AllSlackEvents) {
     switch (body.type) {
-    case 'url_verification':
-      return this.handleUrlVerification(body);
-    case 'event_callback':
-      this.handleEventCallback(body);
-      return;
+      case 'url_verification':
+        return this.handleUrlVerification(body);
+      case 'event_callback':
+        this.handleEventCallback(body);
+        return;
     }
   }
 
   private handleUrlVerification(body: UrlVerificationEvent) {
     return {
-      challenge: body.challenge,
+      challenge: body.challenge
     };
   }
 
@@ -36,19 +36,19 @@ export class SlackEventsHandlerService {
     const innerEvent = eventBody.event,
       teamId = eventBody.team_id;
     switch (innerEvent.type) {
-    case 'assistant_thread_started':
-      return this.handleAssistantThreadStarted(innerEvent, teamId);
-    case 'message':
-      if (innerEvent.subtype === undefined && !innerEvent.bot_id) {
-        return this.handleMessage(innerEvent);
-      }
-      break;
-    case 'app_mention':
-      return this.handleAppMention(innerEvent);
-    case 'app_home_opened':
-      return this.appHomeService.handleAppHomeOpened(innerEvent, eventBody.team_id);
-    default:
-      this.logger.log('Unhandled event', { event: eventBody });
+      case 'assistant_thread_started':
+        return this.handleAssistantThreadStarted(innerEvent, teamId);
+      case 'message':
+        if (innerEvent.subtype === undefined && !innerEvent.bot_id) {
+          return this.handleMessage(innerEvent);
+        }
+        break;
+      case 'app_mention':
+        return this.handleAppMention(innerEvent);
+      case 'app_home_opened':
+        return this.appHomeService.handleAppHomeOpened(innerEvent, eventBody.team_id);
+      default:
+        this.logger.log('Unhandled event', { event: eventBody });
     }
   }
 
@@ -66,19 +66,19 @@ export class SlackEventsHandlerService {
       await webClient.apiCall('assistant.threads.setSuggestedPrompts', {
         thread_ts: threadId,
         channel_id: channelId,
-        title: "Welcome to ClearFeed Agent. Here are some suggestions to get started:",
+        title: 'Welcome to ClearFeed Agent. Here are some suggestions to get started:',
         prompts: [
           {
-            title: "Get deal details from HubSpot",
-            message: "What's the status of my deal with Tesla?",
+            title: 'Get deal details from HubSpot',
+            message: "What's the status of my deal with Tesla?"
           },
           {
-            title: "Create a Jira issue",
-            message: "I need to create a new Jira task to build AI agents in the APP project.",
+            title: 'Create a Jira issue',
+            message: 'I need to create a new Jira task to build AI agents in the APP project.'
           },
           {
-            title: "Get Jira issue details",
-            message: "What's the status of my Jira issue APP-123?",
+            title: 'Get Jira issue details',
+            message: "What's the status of my Jira issue APP-123?"
           }
         ]
       });
@@ -120,15 +120,29 @@ export class SlackEventsHandlerService {
         const messages = await createLLMContext(event, userInfoMap, slackWorkspace);
         if (!event.team) return;
         try {
-          const response = await this.llmService.processMessage(event.text, event.team, messages);
+          const response = await this.llmService.processMessage({
+            message: event.text,
+            teamId: event.team,
+            threadTs: event.thread_ts || event.ts,
+            channelId: event.channel,
+            previousMessages: messages
+          });
           await slackWorkspace.postMessage(response, event.channel, event.thread_ts);
           this.logger.log('Sent response to message', { channel: event.channel, response });
         } catch (error) {
           this.logger.error('Error processing message:', error);
-          await slackWorkspace.postMessage('Sorry, I couldn\'t process that request. Please try again.', event.channel, event.thread_ts);
+          await slackWorkspace.postMessage(
+            "Sorry, I couldn't process that request. Please try again.",
+            event.channel,
+            event.thread_ts
+          );
         }
       } else {
-        await slackWorkspace.postMessage('Please provide more information...', event.channel, event.thread_ts);
+        await slackWorkspace.postMessage(
+          'Please provide more information...',
+          event.channel,
+          event.thread_ts
+        );
         this.logger.log('No text in message', { event });
       }
     } catch (error) {
@@ -159,7 +173,13 @@ export class SlackEventsHandlerService {
       const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
       const messages = await createLLMContext(event, userInfoMap, slackWorkspace);
       if (!event.team) return;
-      const response = await this.llmService.processMessage(event.text, event.team, messages);
+      const response = await this.llmService.processMessage({
+        message: event.text,
+        teamId: event.team,
+        threadTs: event.thread_ts || event.ts,
+        channelId: event.channel,
+        previousMessages: messages
+      });
       await slackWorkspace.postMessage(response, event.channel, event.thread_ts);
       this.logger.log('Sent response to app mention', { channel: event.channel, response });
     } catch (error) {

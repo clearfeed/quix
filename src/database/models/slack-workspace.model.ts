@@ -26,6 +26,7 @@ import { SLACK_MESSAGE_MAX_LENGTH } from '@quix/lib/utils/slack-constants';
 import { NotionConfig } from './notion-config.model';
 import { LinearConfig } from './linear-config.model';
 import { McpConnection } from './mcp-connection.model';
+import { ConversationState } from './conversation-state.model';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -145,7 +146,7 @@ export class SlackWorkspace extends Model<
 
   // Helper method to remove an admin
   removeAdmin(userId: string): void {
-    this.admin_user_ids = this.admin_user_ids.filter(id => id !== userId);
+    this.admin_user_ids = this.admin_user_ids.filter((id) => id !== userId);
   }
 
   @AllowNull(false)
@@ -166,7 +167,7 @@ export class SlackWorkspace extends Model<
   // Check if a channel is authorized
   isChannelAuthorized(channelId: string): boolean {
     const allowedIds = this.access_settings.allowedChannelIds || [];
-    return (!allowedIds.length || allowedIds.includes(channelId)) ? true : false;
+    return !allowedIds.length || allowedIds.includes(channelId) ? true : false;
   }
 
   // Update access level for interaction
@@ -213,6 +214,12 @@ export class SlackWorkspace extends Model<
   })
   declare mcpConnections: NonAttribute<McpConnection[]>;
 
+  @HasMany(() => ConversationState, {
+    foreignKey: 'team_id',
+    as: 'conversationStates'
+  })
+  declare conversationStates: NonAttribute<ConversationState[]>;
+
   async postMessage(message: string, channel: string, thread_ts?: string) {
     const webClient = new WebClient(this.bot_access_token);
     await webClient.chat.postMessage({
@@ -221,4 +228,4 @@ export class SlackWorkspace extends Model<
       thread_ts
     });
   }
-} 
+}

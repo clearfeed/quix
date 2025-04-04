@@ -17,6 +17,7 @@ export interface HubspotResponse<T> {
   error?: string;
 }
 
-export interface SearchDealsResponse extends HubspotResponse<{
-  deals: HubspotDeal[];
-}> { } 
+export interface SearchDealsResponse
+  extends HubspotResponse<{
+    deals: HubspotDeal[];
+  }> {}

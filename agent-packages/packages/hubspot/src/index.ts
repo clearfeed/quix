@@ -1,7 +1,16 @@
 import { Client } from '@hubspot/api-client';
 import { FilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/deals';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
-import { HubspotConfig, SearchDealsResponse, Deal, AddNoteToDealResponse, CreateContactParams, CreateContactResponse, CreateDealParams, CreateDealResponse } from './types';
+import {
+  HubspotConfig,
+  SearchDealsResponse,
+  Deal,
+  AddNoteToDealResponse,
+  CreateContactParams,
+  CreateContactResponse,
+  CreateDealParams,
+  CreateDealResponse
+} from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 import { validateRequiredFields } from './utils';
 
@@ -43,10 +52,10 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const response = await this.client.crm.pipelines.pipelinesApi.getAll('deals');
       return { success: true, data: response.results };
     } catch (error) {
-      console.error("Error fetching pipelines:", error);
+      console.error('Error fetching pipelines:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to fetch pipelines",
+        error: error instanceof Error ? error.message : 'Failed to fetch pipelines'
       };
     }
   }
@@ -56,15 +65,17 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const response = await this.client.crm.owners.ownersApi.getPage();
       return { success: true, data: response.results };
     } catch (error) {
-      console.error("Error fetching owners:", error);
+      console.error('Error fetching owners:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to fetch owners",
+        error: error instanceof Error ? error.message : 'Failed to fetch owners'
       };
     }
   }
 
-  async searchCompanies(keyword: string): Promise<{ success: boolean; data?: any; error?: string }> {
+  async searchCompanies(
+    keyword: string
+  ): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
       const response = await this.client.crm.companies.searchApi.doSearch({
         filterGroups: [
@@ -73,30 +84,30 @@ export class HubspotService implements BaseService<HubspotConfig> {
               {
                 propertyName: 'name',
                 operator: FilterOperatorEnum.ContainsToken,
-                value: keyword,
-              },
-            ],
-          },
+                value: keyword
+              }
+            ]
+          }
         ],
         properties: ['name', 'domain', 'industry', 'hs_lastmodifieddate'],
-        limit: 10,
+        limit: 10
       });
 
       return {
         success: true,
-        data: response.results.map(company => ({
+        data: response.results.map((company) => ({
           id: company.id,
           name: company.properties.name,
           domain: company.properties.domain,
           industry: company.properties.industry,
-          lastModified: company.properties.hs_lastmodifieddate,
-        })),
+          lastModified: company.properties.hs_lastmodifieddate
+        }))
       };
     } catch (error) {
-      console.error("Error searching companies:", error);
+      console.error('Error searching companies:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to search companies",
+        error: error instanceof Error ? error.message : 'Failed to search companies'
       };
     }
   }
@@ -110,13 +121,23 @@ export class HubspotService implements BaseService<HubspotConfig> {
               {
                 propertyName: 'dealname',
                 operator: FilterOperatorEnum.ContainsToken,
-                value: keyword,
-              },
-            ],
-          },
+                value: keyword
+              }
+            ]
+          }
         ],
-        properties: ['dealname', 'pipeline', 'dealstage', 'amount', 'closedate', 'hubspot_owner_id', 'createdate', 'hs_lastmodifieddate', 'associations.company'],
-        limit: 10,
+        properties: [
+          'dealname',
+          'pipeline',
+          'dealstage',
+          'amount',
+          'closedate',
+          'hubspot_owner_id',
+          'createdate',
+          'hs_lastmodifieddate',
+          'associations.company'
+        ],
+        limit: 10
       });
 
       const deals = await Promise.all(
@@ -152,7 +173,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
             owner,
             company,
             createdAt: hubspotDeal.properties.createdate || '',
-            lastModifiedDate: hubspotDeal.properties.hs_lastmodifieddate || '',
+            lastModifiedDate: hubspotDeal.properties.hs_lastmodifieddate || ''
           };
         })
       );
@@ -173,19 +194,19 @@ export class HubspotService implements BaseService<HubspotConfig> {
   async addNoteToDeal(dealId: string, note: string): Promise<AddNoteToDealResponse> {
     try {
       const response = await this.client.crm.objects.notes.basicApi.create({
-        "properties": {
-          "hs_note_body": note,
-          "hs_timestamp": new Date().toISOString()
+        properties: {
+          hs_note_body: note,
+          hs_timestamp: new Date().toISOString()
         },
-        "associations": [
+        associations: [
           {
-            "to": {
-              "id": dealId
+            to: {
+              id: dealId
             },
-            "types": [
+            types: [
               {
-                "associationCategory": AssociationSpecAssociationCategoryEnum.HubspotDefined,
-                "associationTypeId": 214
+                associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
+                associationTypeId: 214
               }
             ]
           }
@@ -205,13 +226,13 @@ export class HubspotService implements BaseService<HubspotConfig> {
     try {
       validateRequiredFields({
         params,
-        requiredFields: ['name', 'stage'],
+        requiredFields: ['name', 'stage']
       });
 
       const properties: Record<string, string> = {
         dealname: params.name,
         dealstage: params.stage,
-        pipeline: params.pipeline || 'default',
+        pipeline: params.pipeline || 'default'
       };
 
       if (params.amount !== undefined) {
@@ -231,26 +252,26 @@ export class HubspotService implements BaseService<HubspotConfig> {
           types: [
             {
               associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
-              associationTypeId: 5,
-            },
-          ],
+              associationTypeId: 5
+            }
+          ]
         });
       }
 
       const response = await this.client.crm.deals.basicApi.create({
         properties,
-        associations,
+        associations
       });
 
       return {
         success: true,
-        data: { dealId: response.id },
+        data: { dealId: response.id }
       };
     } catch (error) {
-      console.error("Error creating HubSpot deal:", error);
+      console.error('Error creating HubSpot deal:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to create HubSpot deal",
+        error: error instanceof Error ? error.message : 'Failed to create HubSpot deal'
       };
     }
   }
@@ -259,13 +280,13 @@ export class HubspotService implements BaseService<HubspotConfig> {
     try {
       validateRequiredFields({
         params,
-        requiredFields: ['firstName', 'lastName', 'email'],
+        requiredFields: ['firstName', 'lastName', 'email']
       });
 
       const properties: Record<string, string> = {
         firstname: params.firstName,
         lastname: params.lastName,
-        email: params.email,
+        email: params.email
       };
 
       if (params.phone) {
@@ -276,19 +297,19 @@ export class HubspotService implements BaseService<HubspotConfig> {
       }
 
       const response = await this.client.crm.contacts.basicApi.create({
-        properties,
+        properties
       });
 
       return {
         success: true,
-        data: { contactId: response.id },
+        data: { contactId: response.id }
       };
     } catch (error) {
-      console.error("Error creating HubSpot contact:", error);
+      console.error('Error creating HubSpot contact:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to create HubSpot contact",
+        error: error instanceof Error ? error.message : 'Failed to create HubSpot contact'
       };
     }
   }
-} 
+}

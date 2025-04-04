@@ -1,14 +1,17 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 
-export type JiraAuth = {
-  username: string;
-  password: string;
-} | {
-  bearerToken: string;
-} | {
-  sharedSecret: string;
-  atlassianConnectAppKey: string;
-}
+export type JiraAuth =
+  | {
+      username: string;
+      password: string;
+    }
+  | {
+      bearerToken: string;
+    }
+  | {
+      sharedSecret: string;
+      atlassianConnectAppKey: string;
+    };
 
 export interface JiraConfig extends BaseConfig {
   host: string;
@@ -98,7 +101,7 @@ export type SearchIssuesResponse = {
       status: JiraIssueResponse['fields']['status'];
       priority: JiraIssueResponse['fields']['priority'];
       assignee: JiraIssueResponse['fields']['assignee'];
-    }
+    };
   }[];
 };
 
@@ -135,7 +138,7 @@ export interface JiraUserResponse {
   emailAddress: string;
   displayName: string;
   active: boolean;
-};
+}
 
 export interface JiraCommentResponse {
   id: string;
