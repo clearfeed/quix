@@ -50,7 +50,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
         : [];
       return {
         success: true,
-        data: tickets.map(this.processTicketObjectForResponse)
+        data: tickets.map((ticket) => this.processTicketObjectForResponse(ticket))
       };
     } catch (error: any) {
       console.error('Zendesk search error:', error);
