@@ -106,7 +106,7 @@ export type SearchIssuesResponse = {
 };
 
 export type GetIssueResponse = BaseResponse<{
-  issue: JiraIssueResponse;
+  issue: JiraIssueResponse & { url: string };
 }>;
 
 export type AssignIssueResponse = BaseResponse<void>;
@@ -180,11 +180,11 @@ export type AddCommentParams = {
 };
 
 export type AddCommentResponse = BaseResponse<{
-  comment: JiraCommentResponse;
+  comment: JiraCommentResponse & { url: string };
 }>;
 
 export type GetCommentsResponse = BaseResponse<{
-  comments: JiraIssueComments;
+  comments: (JiraIssueComments['comments'][number] & { url: string })[];
 }>;
 
 export interface UpdateIssueFields {
