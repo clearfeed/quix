@@ -79,8 +79,8 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
         ticketId: z
           .number()
           .int()
-          .describe('The ID of the Zendesk ticket to add the internal comment to'),
-        comment: z.string().describe('The internal comment text to add to the ticket')
+          .describe('The ID of the Zendesk ticket to add the public comment to'),
+        comment: z.string().describe('The public comment text to add to the ticket')
       }),
       func: async (args: AddInternalCommentParams) =>
         service.addComment({ public: true, ticketId: args.ticketId, comment: args.comment })
@@ -92,8 +92,8 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
         ticketId: z
           .number()
           .int()
-          .describe('The ID of the Zendesk ticket to add the internal note to'),
-        note: z.string().describe('The content of the internal note to add')
+          .describe('The ID of the Zendesk ticket to add the internal note (private comment) to'),
+        note: z.string().describe('The content of the internal note (private comment) to add')
       }),
       func: async (args: AddInternalNoteParams) =>
         service.addComment({ public: false, ticketId: args.ticketId, comment: args.note })
@@ -105,14 +105,14 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
         ticketId: z
           .number()
           .int()
-          .describe('The ID of the Zendesk ticket to get internal notes from')
+          .describe('The ID of the Zendesk ticket to get internal notes (private comments) from')
       }),
       func: async (args: Pick<GetCommentsParams, 'ticketId'>) =>
         service.getComments({ ...args, public: false })
     }),
     new DynamicStructuredTool({
       name: 'get_zendesk_ticket_public_comments',
-      description: 'Retrieve all public comments from a Zendesk ticket',
+      description: 'Retrieve all public comments of a Zendesk ticket',
       schema: z.object({
         ticketId: z
           .number()
