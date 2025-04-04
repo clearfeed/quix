@@ -3,12 +3,12 @@ import { Ticket, TicketComment } from 'node-zendesk/dist/types/clients/core/tick
 
 export type ZendeskAuth =
   | {
-    token: string;
-    username: string;
-  }
+      token: string;
+      username: string;
+    }
   | {
-    oauthToken: string;
-  };
+      oauthToken: string;
+    };
 
 export interface ZendeskConfig extends BaseConfig {
   subdomain: string;
@@ -23,12 +23,22 @@ export interface SearchTicketsParams {
   query: string;
   limit: number;
 }
-export interface GetTicketWithRepliesParams {
+export interface GetTicketWithCommentsParams {
   ticketId: number;
+}
+
+export interface AddCommentParams {
+  ticketId: number;
+  comment: string;
+  public: boolean;
 }
 export interface AddInternalNoteParams {
   ticketId: number;
   note: string;
+}
+export interface GetCommentsParams {
+  ticketId: number;
+  public: boolean;
 }
 export interface GetInternalNotesParams {
   ticketId: number;
@@ -39,11 +49,11 @@ export interface AddInternalCommentParams {
 }
 
 // Handler Return types
-export type TicketWithRepliesResponse = {
+export type TicketWithCommentsResponse = {
   ticket: Ticket;
   comments: TicketComment[];
-}
-export type AddInternalCommentResponse = {
+};
+export type AddCommentResponse = {
   ticket: Ticket;
   comment: string;
 };

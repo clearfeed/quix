@@ -3,14 +3,12 @@ import {
   ZendeskConfig,
   GetTicketParams,
   SearchTicketsParams,
-  GetTicketWithRepliesParams,
-  AddInternalNoteParams,
-  GetInternalNotesResponse,
-  GetInternalNotesParams,
+  GetTicketWithCommentsParams,
   AddInternalNoteResponse,
-  AddInternalCommentParams,
-  AddInternalCommentResponse,
-  TicketWithRepliesResponse
+  AddCommentResponse,
+  AddCommentParams,
+  GetCommentsParams,
+  TicketWithCommentsResponse
 } from './types';
 import { BaseService, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import { TicketComment } from 'node-zendesk/dist/types/clients/core/tickets';
@@ -80,7 +78,9 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
     }
   }
 
-  async getTicketWithReplies(params: GetTicketWithRepliesParams): Promise<BaseResponse<TicketWithRepliesResponse>> {
+  async getTicketWithComments(
+    params: GetTicketWithCommentsParams
+  ): Promise<BaseResponse<TicketWithCommentsResponse>> {
     try {
       const [ticketResponse, commentsResponse] = await Promise.all([
         this.client.tickets.show(params.ticketId),
@@ -103,13 +103,24 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
     }
   }
 
-  async addInternalNote(params: AddInternalNoteParams): Promise<BaseResponse<AddInternalNoteResponse>> {
+  async addComment(
+    params: Extract<AddCommentParams, { public: false }>
+  ): Promise<BaseResponse<AddInternalNoteResponse>>;
+  async addComment(
+    params: Extract<AddCommentParams, { public: true }>
+  ): Promise<BaseResponse<AddCommentResponse>>;
+  async addComment(
+    params: AddCommentParams
+  ): Promise<BaseResponse<AddInternalNoteResponse | AddCommentResponse>>;
+  async addComment(
+    params: AddCommentParams
+  ): Promise<BaseResponse<AddInternalNoteResponse | AddCommentResponse>> {
     try {
       const response = await this.client.tickets.update(params.ticketId, {
         ticket: {
           comment: {
-            body: params.note,
-            public: false
+            body: params.comment,
+            public: params.public
           }
         }
       });
@@ -118,7 +129,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
         success: true,
         data: {
           ticket: this.processTicketObjectForResponse(ticket),
-          note: params.note
+          ...(params.public ? { note: params.comment } : { comment: params.comment })
         }
       };
     } catch (error: any) {
@@ -130,49 +141,17 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
     }
   }
 
-  async addInternalComment(params: AddInternalCommentParams): Promise<BaseResponse<AddInternalCommentResponse>> {
+  async getComments(params: GetCommentsParams): Promise<BaseResponse<TicketComment[]>> {
     try {
-      const response = await this.client.tickets.update(params.ticketId, {
-        ticket: {
-          comment: {
-            body: params.comment,
-            public: true
-          }
-        }
-      });
-      const ticket: Ticket = response.result;
-      return {
-        success: true,
-        data: {
-          ticket: this.processTicketObjectForResponse(ticket),
-          comment: params.comment,
-        }
-      };
-    } catch (error: any) {
-      console.error('Zendesk add internal comment error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to add internal comment'
-      };
-    }
-  }
+      const response: TicketComment[] = await this.client.tickets.getComments(params.ticketId);
 
-  async getInternalNotes(params: GetInternalNotesParams): Promise<BaseResponse<GetInternalNotesResponse>> {
-    try {
-      const response = await this.client.tickets.getComments(params.ticketId);
-      const internalNotes = response
-        .filter((comment: TicketComment) => !comment.public)
-        .map((comment: TicketComment) => ({
-          id: comment.id,
-          type: 'internal_note' as const,
-          body: comment.body,
-          created_at: comment.created_at,
-          author_id: comment.author_id
-        }));
+      const comments = response.filter(
+        (comment: TicketComment) => comment.public === params.public
+      );
 
       return {
         success: true,
-        data: internalNotes
+        data: comments
       };
     } catch (error: any) {
       console.error('Zendesk get internal notes error:', error);
