@@ -1,7 +1,7 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { SlackWorkspace } from '@quix/database/models';
 import { Connections } from '@quix/lib/types/common';
-import { Model } from 'sequelize';
+import { SUPPORTED_INTEGRATIONS } from '../lib/constants';
 
 export type LLMContext = {
   role: 'user' | 'assistant' | 'system';
@@ -22,7 +22,13 @@ export interface MessageProcessingArgs {
   authorName: string;
 }
 
+export const ToolCategory = {
+  COMMON: 'common',
+  ...SUPPORTED_INTEGRATIONS
+} as const;
+
+export type ToolCategory = (typeof ToolCategory)[keyof typeof ToolCategory];
 export type AvailableToolsWithConfig = Record<
-  string,
+  ToolCategory,
   { toolConfig: ToolConfig; config?: Connections | SlackWorkspace }
 >;
