@@ -127,21 +127,24 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
     }),
     new DynamicStructuredTool({
       name: 'create_zendesk_ticket',
-      description: 'Create a new Zendesk ticket with a subject and description',
+      description: 'Create a new Zendesk ticket with subject, description, and optional properties',
       schema: z.object({
-        subject: z.string().describe('Subject or title of the support ticket.').min(5),
-        description: z.string().describe('Description of the issue or request.').min(10),
-        requesterEmail: z.string().email().describe('Email address of the requester.').optional(),
+        subject: z.string().min(5).describe('Subject or title of the support ticket'),
+        description: z.string().min(10).describe('Detailed description of the issue or request'),
+        requesterEmail: z.string().email().optional().describe('Email address of the requester'),
         priority: z
           .enum(['low', 'normal', 'high', 'urgent'])
           .optional()
-          .describe('Priority level.'),
+          .describe('Priority level of the ticket'),
         assigneeId: z
           .number()
           .int()
           .optional()
-          .describe('Zendesk agent ID to assign the ticket to.'),
-        tags: z.array(z.string()).optional().describe('Tags to categorize the ticket.')
+          .describe('Zendesk agent ID to assign the ticket to'),
+        tags: z
+          .array(z.string())
+          .optional()
+          .describe('List of tags to categorize or label the ticket')
       }),
       func: async (args: CreateTicketParams) => service.createTicket(args)
     })
