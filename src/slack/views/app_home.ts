@@ -32,6 +32,14 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
     Blocks.Context().elements('Quix helps you talk to your business tools from Slack.'),
     Blocks.Divider()
   ];
+
+  // Add onboarding information for users without any connections
+  const hasAnyConnections = Boolean(connection || (mcpConnections && mcpConnections.length > 0));
+
+  if (!connection) {
+    blocks.push(...getOnboardingView());
+  }
+
   if (slackWorkspace.isAdmin(args.userId)) {
     blocks.push(...getAccessControlView());
     blocks.push(...getPreferencesView());
@@ -438,6 +446,32 @@ const getPreferencesView = (): BlockBuilder[] => {
         actionId: SLACK_ACTIONS.MANAGE_ADMINS
       })
     ),
+    Blocks.Divider()
+  ];
+};
+
+// New function to provide onboarding guidance when no connections are set up
+const getOnboardingView = (): BlockBuilder[] => {
+  return [
+    Blocks.Section({
+      text: `${Md.emoji('pushpin')} *Get Started with Quix*`
+    }),
+    Blocks.Section({
+      text: 'For quick access to Quix, we recommend pinning this app to your Slack workspace:'
+    }),
+    Blocks.Section({
+      text: `${Md.emoji('one')} Click on your workspace name in the top left\n${Md.emoji('two')} Select "Preferences > Navigation > App agents & assistants"\n${Md.emoji('three')} Find and select Quix to pin it to your sidebar`
+    }),
+    Blocks.Divider(),
+    Blocks.Section({
+      text: `${Md.emoji('speech_balloon')} *How to Use Quix*`
+    }),
+    Blocks.Section({
+      text: 'You can use Quix by:'
+    }),
+    Blocks.Section({
+      text: `• *Mention @Quix* in any channel where the app is added\n• *Direct message* Quix for private conversations`
+    }),
     Blocks.Divider()
   ];
 };
