@@ -73,6 +73,12 @@ export class ConversationState extends Model<
   })
   declare contextual_memory: Record<string, any> | null;
 
+  @Column({
+    type: DataType.INTEGER,
+    defaultValue: 0
+  })
+  declare message_count: number;
+
   @BelongsTo(() => SlackWorkspace, {
     foreignKey: 'team_id',
     onDelete: 'CASCADE',

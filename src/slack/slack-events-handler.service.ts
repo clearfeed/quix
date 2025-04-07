@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { AllSlackEvents, EventCallbackEvent, UrlVerificationEvent } from './types';
 import { AssistantThreadStartedEvent } from '@slack/types/dist/events/assistant';
 import { AppMentionEvent, GenericMessageEvent } from '@slack/web-api';
@@ -7,6 +7,7 @@ import { LlmService } from '@quix/llm/llm.service';
 import { WebClient } from '@slack/web-api';
 import { createLLMContext } from '@quix/lib/utils/slack';
 import { SlackService } from './slack.service';
+import { SlackWorkspace } from '../database/models';
 @Injectable()
 export class SlackEventsHandlerService {
   private readonly logger = new Logger(SlackEventsHandlerService.name);
@@ -122,7 +123,7 @@ export class SlackEventsHandlerService {
         try {
           const response = await this.llmService.processMessage({
             message: event.text,
-            teamId: event.team,
+            slackWorkspace,
             threadTs: event.thread_ts || event.ts,
             channelId: event.channel,
             previousMessages: messages,
@@ -132,11 +133,15 @@ export class SlackEventsHandlerService {
           this.logger.log('Sent response to message', { channel: event.channel, response });
         } catch (error) {
           this.logger.error('Error processing message:', error);
-          await slackWorkspace.postMessage(
-            "Sorry, I couldn't process that request. Please try again.",
-            event.channel,
-            event.thread_ts
-          );
+          if (error instanceof HttpException) {
+            await slackWorkspace.postMessage(error.message, event.channel, event.thread_ts);
+          } else {
+            await slackWorkspace.postMessage(
+              "Sorry, I couldn't process that request. Please try again.",
+              event.channel,
+              event.thread_ts
+            );
+          }
         }
       } else {
         await slackWorkspace.postMessage(
@@ -153,8 +158,9 @@ export class SlackEventsHandlerService {
 
   private async handleAppMention(event: AppMentionEvent) {
     if (!event.team) return;
+    let slackWorkspace: SlackWorkspace | undefined;
     try {
-      const slackWorkspace = await this.slackService.getSlackWorkspace(event.team);
+      slackWorkspace = await this.slackService.getSlackWorkspace(event.team);
       if (!slackWorkspace) {
         this.logger.error('Slack workspace not found', { teamId: event.team });
         return;
@@ -176,7 +182,7 @@ export class SlackEventsHandlerService {
       if (!event.team) return;
       const response = await this.llmService.processMessage({
         message: event.text,
-        teamId: event.team,
+        slackWorkspace,
         threadTs: event.thread_ts || event.ts,
         channelId: event.channel,
         previousMessages: messages,
@@ -186,6 +192,16 @@ export class SlackEventsHandlerService {
       this.logger.log('Sent response to app mention', { channel: event.channel, response });
     } catch (error) {
       this.logger.error('Error sending response:', error);
+      if (!slackWorkspace) return;
+      if (error instanceof HttpException) {
+        await slackWorkspace.postMessage(error.message, event.channel, event.thread_ts);
+      } else {
+        await slackWorkspace.postMessage(
+          "Sorry, I couldn't process that request. Please try again.",
+          event.channel,
+          event.thread_ts
+        );
+      }
     }
   }
 }
