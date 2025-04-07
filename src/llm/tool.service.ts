@@ -70,7 +70,7 @@ export class ToolService {
     const githubConfig = slackWorkspace.githubConfig;
     if (githubConfig) {
       tools.github = {
-        toolConfig: createGitHubToolsExport({
+        toolConfig: await createGitHubToolsExport({
           token: githubConfig.access_token,
           owner: githubConfig.default_config?.owner,
           repo: githubConfig.default_config?.repo
