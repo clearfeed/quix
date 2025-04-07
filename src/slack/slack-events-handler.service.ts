@@ -5,8 +5,10 @@ import { AppMentionEvent, GenericMessageEvent } from '@slack/web-api';
 import { AppHomeService } from './app_home.service';
 import { LlmService } from '@quix/llm/llm.service';
 import { WebClient } from '@slack/web-api';
-import { createLLMContext } from '@quix/lib/utils/slack';
+import { createLLMContext, getConnectedIntegrations } from '@quix/lib/utils/slack';
 import { SlackService } from './slack.service';
+import { INTEGRATIONS } from '@quix/lib/constants';
+import { keyBy, shuffle } from 'lodash';
 @Injectable()
 export class SlackEventsHandlerService {
   private readonly logger = new Logger(SlackEventsHandlerService.name);
@@ -57,32 +59,40 @@ export class SlackEventsHandlerService {
     const channelId = event.assistant_thread.channel_id;
 
     try {
-      const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
+      const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, undefined, true);
       if (!slackWorkspace) {
         this.logger.error('Slack workspace not found', { teamId });
         return;
       }
+      // Prompt for Slack
+      let prompts: { title: string; message: string }[] = [
+        {
+          title: 'Summarize conversations in any channel',
+          message: 'Summarize the latest conversation in #general'
+        }
+      ];
+      const connectedIntegrations = getConnectedIntegrations(slackWorkspace);
+      const integrationsByType = keyBy(INTEGRATIONS, 'value');
+      prompts.push(
+        ...connectedIntegrations.map(
+          (integration) => integrationsByType[integration].suggestedPrompt
+        )
+      );
+
       const webClient = new WebClient(slackWorkspace.bot_access_token);
       await webClient.apiCall('assistant.threads.setSuggestedPrompts', {
         thread_ts: threadId,
         channel_id: channelId,
         title: 'Welcome to ClearFeed Agent. Here are some suggestions to get started:',
-        prompts: [
-          {
-            title: 'Get deal details from HubSpot',
-            message: "What's the status of my deal with Tesla?"
-          },
-          {
-            title: 'Create a Jira issue',
-            message: 'I need to create a new Jira task to build AI agents in the APP project.'
-          },
-          {
-            title: 'Get Jira issue details',
-            message: "What's the status of my Jira issue APP-123?"
-          }
-        ]
+        // Pick 4 random prompts from the list
+        prompts: shuffle(prompts).slice(0, 4)
       });
-      this.logger.log('Successfully set suggested prompts for thread', { threadId, channelId });
+
+      this.logger.log('Successfully set suggested prompts for thread', {
+        threadId,
+        channelId,
+        promptCount: prompts.length
+      });
     } catch (error) {
       this.logger.error('Error setting suggested prompts:', error);
     }
