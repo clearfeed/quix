@@ -376,7 +376,8 @@ const getIntegrationInfo = (
   if (
     connection instanceof JiraConfig ||
     connection instanceof GithubConfig ||
-    connection instanceof SalesforceConfig
+    connection instanceof SalesforceConfig ||
+    connection instanceof HubspotConfig
   ) {
     overflowMenuOptions.unshift(
       Bits.Option({

@@ -17,38 +17,48 @@ export const SLACK_ACTIONS = {
     USER: 'postgres_user',
     PASSWORD: 'postgres_password',
     DATABASE: 'postgres_database',
-    SSL: 'postgres_ssl'
+    SSL: 'postgres_ssl',
+    DEFAULT_PROMPT: 'postgres-default-prompt'
   },
   CONNECTION_OVERFLOW_MENU: 'connection-overflow-menu',
   JIRA_CONFIG_MODAL: {
     SUBMIT: 'jira-config-modal-submit',
-    PROJECT_KEY_INPUT: 'jira-config-modal-project-key-input'
+    PROJECT_KEY_INPUT: 'jira-config-modal-project-key-input',
+    DEFAULT_PROMPT: 'jira-default-prompt'
   },
   GITHUB_CONFIG_MODAL: {
     SUBMIT: 'github-config-modal-submit',
     REPO_INPUT: 'github-config-modal-repo-input',
-    OWNER_INPUT: 'github-config-modal-owner-input'
+    OWNER_INPUT: 'github-config-modal-owner-input',
+    DEFAULT_PROMPT: 'github-default-prompt'
   },
   MANAGE_ACCESS_CONTROLS: 'manage-access-controls',
   ALLOWED_CHANNELS_SELECT: 'allowed-channels-select',
   ACCESS_LEVEL_SELECT: 'access-level-select',
   SUBMIT_NOTION_CONNECTION: 'submit-notion-connection',
   NOTION_CONNECTION_ACTIONS: {
-    API_TOKEN: 'notion-api-token'
+    API_TOKEN: 'notion-api-token',
+    DEFAULT_PROMPT: 'notion-default-prompt'
   },
   SUBMIT_LINEAR_CONNECTION: 'submit-linear-connection',
   LINEAR_CONNECTION_ACTIONS: {
-    API_TOKEN: 'linear-api-token'
+    API_TOKEN: 'linear-api-token',
+    DEFAULT_PROMPT: 'linear-default-prompt'
   },
   SUBMIT_MCP_CONNECTION: 'submit-mcp-connection',
   MCP_CONNECTION_ACTIONS: {
     NAME: 'mcp-name',
     URL: 'mcp-url',
-    API_TOKEN: 'mcp-api-token'
+    API_TOKEN: 'mcp-api-token',
+    DEFAULT_PROMPT: 'mcp-default-prompt'
   },
   SALESFORCE_CONFIG_MODAL: {
     DEFAULT_PROMPT: 'salesforce-default-prompt',
     SUBMIT: 'submit-salesforce-config-modal'
+  },
+  HUBSPOT_CONFIG_MODAL: {
+    DEFAULT_PROMPT: 'hubspot-default-prompt',
+    SUBMIT: 'submit-hubspot-config-modal'
   }
 } as const;
 
