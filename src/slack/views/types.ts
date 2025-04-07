@@ -116,3 +116,14 @@ export type SalesforceConfigModalArgs = {
     defaultPrompt?: string | null;
   };
 };
+
+export const SLACK_WORKSPACE_ALL_RELATIONS = [
+  'mcpConnections',
+  'githubConfig',
+  'jiraConfig',
+  'hubspotConfig',
+  'salesforceConfig',
+  'postgresConfig',
+  'notionConfig',
+  'linearConfig'
+];

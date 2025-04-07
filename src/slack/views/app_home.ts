@@ -38,7 +38,7 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
     blocks.push(...getOpenAIView(slackWorkspace));
     if (slackWorkspace.openai_key) {
       blocks.push(Blocks.Divider());
-      blocks.push(...getToolConnectionView(selectedTool, mcpConnections));
+      blocks.push(...getToolConnectionView(selectedTool, mcpConnections, slackWorkspace));
       if (selectedTool)
         blocks.push(
           ...getIntegrationInfo(selectedTool, slackWorkspace.team_id, connection, mcpConnections)
@@ -146,14 +146,39 @@ const getAvailableFns = (selectedTool: SUPPORTED_INTEGRATIONS) => {
 
 const getToolConnectionView = (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined,
-  mcpConnections: McpConnection[] = []
+  mcpConnections: McpConnection[] = [],
+  slackWorkspace?: SlackWorkspace
 ): BlockBuilder[] => {
   const select = Elements.StaticSelect({
     placeholder: 'Select a tool',
     actionId: SLACK_ACTIONS.CONNECT_TOOL
   });
 
-  const integrationOptions = INTEGRATIONS.map((integration) =>
+  // Always calculate connected tool values once and freeze
+  const connectedToolValues: SUPPORTED_INTEGRATIONS[] = [];
+  if (slackWorkspace?.githubConfig) connectedToolValues.push(SUPPORTED_INTEGRATIONS.GITHUB);
+  if (slackWorkspace?.jiraConfig) connectedToolValues.push(SUPPORTED_INTEGRATIONS.JIRA);
+  if (slackWorkspace?.hubspotConfig) connectedToolValues.push(SUPPORTED_INTEGRATIONS.HUBSPOT);
+  if (slackWorkspace?.salesforceConfig) connectedToolValues.push(SUPPORTED_INTEGRATIONS.SALESFORCE);
+  if (slackWorkspace?.postgresConfig) connectedToolValues.push(SUPPORTED_INTEGRATIONS.POSTGRES);
+  if (slackWorkspace?.notionConfig) connectedToolValues.push(SUPPORTED_INTEGRATIONS.NOTION);
+  if (slackWorkspace?.linearConfig) connectedToolValues.push(SUPPORTED_INTEGRATIONS.LINEAR);
+
+  // Use those to split integrations properly
+  const connectedIntegrations = INTEGRATIONS.filter((i) => connectedToolValues.includes(i.value));
+  const nonConnectedIntegrations = INTEGRATIONS.filter(
+    (i) => !connectedToolValues.includes(i.value)
+  );
+
+  // Build dropdown options
+  const connectedOptions = connectedIntegrations.map((integration) =>
+    Bits.Option({
+      text: integration.name,
+      value: integration.value
+    })
+  );
+
+  const integrationOptions = nonConnectedIntegrations.map((integration) =>
     Bits.Option({
       text: integration.name,
       value: integration.value
@@ -172,22 +197,38 @@ const getToolConnectionView = (
     value: 'add_mcp_server'
   });
 
-  // Add all option groups
-  select.optionGroups(
-    Bits.OptionGroup()
-      .label('Integrations')
-      .options(...integrationOptions),
-    ...(mcpConnections.length
-      ? [
-          Bits.OptionGroup()
-            .label('MCP Servers')
-            .options(...mcpOptions)
-        ]
-      : []),
-    Bits.OptionGroup().label('Add Your Own').options(addYourOwnOption)
-  );
+  // Build sections in correct order
+  const optionGroups = [];
 
-  // Set initial option if any
+  if (connectedOptions.length) {
+    optionGroups.push(
+      Bits.OptionGroup()
+        .label('Connected Tools')
+        .options(...connectedOptions)
+    );
+  }
+
+  if (integrationOptions.length) {
+    optionGroups.push(
+      Bits.OptionGroup()
+        .label('Integrations')
+        .options(...integrationOptions)
+    );
+  }
+
+  if (mcpOptions.length) {
+    optionGroups.push(
+      Bits.OptionGroup()
+        .label('MCP Servers')
+        .options(...mcpOptions)
+    );
+  }
+
+  optionGroups.push(Bits.OptionGroup().label('Add Your Own').options(addYourOwnOption));
+
+  select.optionGroups(...optionGroups);
+
+  // Set selected option properly
   if (selectedTool) {
     if (selectedTool.startsWith('mcp:')) {
       const mcpId = selectedTool.split(':')[1];
