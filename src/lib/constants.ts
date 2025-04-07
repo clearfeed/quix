@@ -30,7 +30,7 @@ export const HUBSPOT_SCOPES = [
   'tickets'
 ] as const;
 
-export const GITHUB_SCOPES = ['repo', 'user', 'read:org'] as const;
+export const GITHUB_SCOPES = ['repo', 'user', 'read:org', 'admin:org'] as const;
 
 export const INTEGRATIONS: {
   name: string;
