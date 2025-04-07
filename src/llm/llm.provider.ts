@@ -41,7 +41,7 @@ export class LlmProviderService {
         if (!slackWorkspace.openai_key) {
           this.logger.error('OpenAI key not found', { teamId: slackWorkspace.team_id });
           throw new BadRequestException(
-            `Your OpenAI API key is not set. Please set it ${Md.link(slackWorkspace.getAppHomeRedirectUrl('messages'), 'here')} to continue using Quix.`
+            `It looks like your trial has ended and you haven't set an OpenAI API key yet. You can add it ${Md.link(slackWorkspace.getAppHomeRedirectUrl('messages'), 'here')} to keep using Quix.`
           );
         }
         return new ChatOpenAI({
