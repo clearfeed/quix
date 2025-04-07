@@ -24,6 +24,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { QuixCallBackManager } from './callback-manager';
 import { ConversationState } from '../database/models/conversation-state.model';
 import { InjectModel } from '@nestjs/sequelize';
+import { encrypt } from '../lib/utils/encryption';
 import slackify = require('slackify-markdown');
 @Injectable()
 export class LlmService {
@@ -58,6 +59,9 @@ export class LlmService {
 
   async processMessage(args: MessageProcessingArgs): Promise<string> {
     const { message, teamId, threadTs, previousMessages, channelId, authorName } = args;
+    this.logger.log(`Processing message for team ${teamId}`, {
+      message: encrypt(message)
+    });
 
     const [conversationState] = await this.conversationStateModel.upsert(
       {
@@ -81,7 +85,9 @@ export class LlmService {
       return "I apologize, but I don't have any tools configured to help with your request at the moment.";
     }
     const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, teamId);
-    this.logger.log(`Processing message: ${message} with tools: ${availableCategories.join(', ')}`);
+    this.logger.log(`Processing message with tool categories`, {
+      availableCategories
+    });
 
     // Add previous tool calls to system context for better continuity
     let enhancedPreviousMessages: LLMContext[] = [];
@@ -91,7 +97,7 @@ export class LlmService {
         conversationState.last_tool_calls
       );
     } catch (error) {
-      this.logger.error(`Error enhancing messages with tool context: ${error}`);
+      this.logger.error(`Error enhancing messages with tool context`, error);
       enhancedPreviousMessages = previousMessages;
     }
 
@@ -103,7 +109,7 @@ export class LlmService {
       authorName
     );
     this.logger.log(
-      `Selected tools: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}`
+      `Selected tool categories: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}`
     );
 
     if (toolSelection.selectedTools === 'none') {
@@ -142,7 +148,9 @@ export class LlmService {
         }
       })
       .join('\n');
-    this.logger.log(`Generated plan: ${formattedPlan}`);
+    this.logger.log(`Plan generated for user's request`, {
+      plan: encrypt(formattedPlan)
+    });
 
     // Store the plan in conversation state
     conversationState.last_plan = {

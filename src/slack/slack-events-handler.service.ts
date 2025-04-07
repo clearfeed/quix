@@ -7,6 +7,8 @@ import { LlmService } from '@quix/llm/llm.service';
 import { WebClient } from '@slack/web-api';
 import { createLLMContext } from '@quix/lib/utils/slack';
 import { SlackService } from './slack.service';
+import { pick } from 'lodash';
+import { encrypt } from '../lib/utils/encryption';
 @Injectable()
 export class SlackEventsHandlerService {
   private readonly logger = new Logger(SlackEventsHandlerService.name);
@@ -89,7 +91,19 @@ export class SlackEventsHandlerService {
   }
 
   private async handleMessage(event: GenericMessageEvent) {
-    this.logger.log('Received message', { event });
+    this.logger.log('Received message event', {
+      event: pick(event, [
+        'event_ts',
+        'type',
+        'subtype',
+        'team',
+        'channel',
+        'channel_type',
+        'user',
+        'ts',
+        'thread_ts'
+      ])
+    });
     if (!event.team) return;
 
     try {
@@ -129,7 +143,10 @@ export class SlackEventsHandlerService {
             authorName: userInfoMap[event.user]?.name || ''
           });
           await slackWorkspace.postMessage(response, event.channel, event.thread_ts);
-          this.logger.log('Sent response to message', { channel: event.channel, response });
+          this.logger.log('Sent response to message', {
+            channel: event.channel,
+            response: encrypt(response)
+          });
         } catch (error) {
           this.logger.error('Error processing message:', error);
           await slackWorkspace.postMessage(
@@ -152,6 +169,9 @@ export class SlackEventsHandlerService {
   }
 
   private async handleAppMention(event: AppMentionEvent) {
+    this.logger.log('Received app mention event', {
+      event: pick(event, ['event_ts', 'type', 'team', 'channel', 'user', 'ts', 'thread_ts'])
+    });
     if (!event.team) return;
     try {
       const slackWorkspace = await this.slackService.getSlackWorkspace(event.team);
@@ -183,7 +203,10 @@ export class SlackEventsHandlerService {
         authorName: event.user ? userInfoMap[event.user]?.name || '' : ''
       });
       await slackWorkspace.postMessage(response, event.channel, event.thread_ts);
-      this.logger.log('Sent response to app mention', { channel: event.channel, response });
+      this.logger.log('Sent response to app mention', {
+        channel: event.channel,
+        response: encrypt(response)
+      });
     } catch (error) {
       this.logger.error('Error sending response:', error);
     }

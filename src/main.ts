@@ -3,9 +3,9 @@ import { AppModule } from './app.module';
 import { ConsoleLogger, LogLevel } from '@nestjs/common';
 
 async function bootstrap() {
-  const logLevels: LogLevel[] = ['error', 'warn', 'log', 'debug'];
+  const logLevels: LogLevel[] = ['error', 'warn', 'log'];
   if (process.env.NODE_ENV === 'development') {
-    logLevels.push('verbose');
+    logLevels.push('verbose', 'debug');
   }
   const logger = new ConsoleLogger({
     logLevels,

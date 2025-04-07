@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { SUPPORTED_INTEGRATIONS } from '../lib/constants';
 import { ConfigService } from '@nestjs/config';
 import * as _ from 'lodash';
+import { encrypt } from '@quix/lib/utils/encryption';
 /**
  * Interface for MCP servers configuration
  */
@@ -259,7 +260,9 @@ export class McpService {
             description: tool.description || '',
             schema: this.convertJsonToZod(tool.inputSchema as JsonSchema, defaultConfig),
             func: async function (input) {
-              logger.log(`MCP tool "${serverName}"/"${tool.name}" received input:`, input);
+              logger.log(`MCP tool "${serverName}"/"${tool.name}" received input:`, {
+                input: encrypt(JSON.stringify(input))
+              });
 
               try {
                 // Execute tool call
