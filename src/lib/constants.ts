@@ -165,51 +165,58 @@ Do not make up arguments or responses. Always call tools to get real data.
 Do not ask the user for more details unless absolutely necessary to call the tools.
 Respond in clear markdown.
   `,
-  baseToolSelection: `
-  Select the tool categories to use for the query.
-  If no specific tool is needed, respond with "none" and provide a direct answer.
-  `,
   PLANNER_PROMPT: (tools: Partial<AvailableToolsWithConfig>): string => {
     const basePrompt = `
-You are a planner that breaks down the user's request into an ordered list of steps using the available tools.
-Only use the tools listed in the <ToolCategory> tags below.`;
+You are a planner that breaks down the user's request into an ordered list of steps using available tools.
+You MUST only use the tools listed below.
+`.trim();
+    const customPrompts: string[] = [];
     const toolDescriptions = Object.entries(tools)
       .map(([category, { toolConfig, config }]) => {
-        const toolsHtml = (toolConfig?.tools ?? [])
-          .map((tool) => `<Tool name="${tool.name}">\n  ${tool.description}\n</Tool>`)
+        const categoryDescription = toolConfig?.prompts?.toolSelection ?? '';
+        const defaultPrompt = config && 'default_prompt' in config ? config.default_prompt : '';
+        if (defaultPrompt) {
+          customPrompts.push(defaultPrompt);
+        }
+        const toolsList = (toolConfig?.tools ?? [])
+          .map((tool) => `- ${tool.name}: ${tool.description}`)
           .join('\n');
 
-        const toolSelectionPrompt = toolConfig?.prompts?.toolSelection ?? '';
-        const defaultToolCategoryPrompt =
-          config && 'default_prompt' in config ? config.default_prompt : '';
-        const prompt = `
-<ToolCategory name="${category}">
-${toolSelectionPrompt ? `  <Description>${toolSelectionPrompt}</Description>` : ''}
-${toolsHtml}
-${defaultToolCategoryPrompt ? `  <DefaultPrompt>${defaultToolCategoryPrompt}</DefaultPrompt>` : ''}
-</ToolCategory>`;
-        return prompt;
+        return `
+---
+
+### Category: ${category}
+
+Description:
+${categoryDescription.trim()}
+
+Tools:
+${toolsList}
+`.trim();
       })
-      .join('\n\n');
+      .join('\n');
+    const customPrompt = `
+    You MUST follow these instructions when planning your steps:
+    ${customPrompts.join('\n')}
+    `;
 
     const outputInstructions = `
+---
+
 You MUST follow these instructions when planning your steps:
-- If the user says "I", "me", or "user", replace it with their actual name.
-- Use tools from the correct <ToolCategory> based on the request's context.
-- If a <ToolCategory> includes a <DefaultPrompt>, you must follow it when planning your steps.
-- Each step in your plan must be one of:
-  {{ "type": "reason", "input": "..." }}
-  {{ "type": "tool", "tool": "<toolName>", "args": {{ <toolArgs> }} }}
 
-Output only structured JSON matching the required format.`;
-
-    return `
-${basePrompt}
-
-${toolDescriptions}
-
-${outputInstructions}
+- You MUST generate a complete step-by-step plan that fully satisfies the user's request.
+- DO NOT stop after the first tool call or reasoning step. 
+- If you call a tool to retrieve context (e.g., current date or entity info), you MUST include a follow-up step that uses that context. Do not stop after fetching.
+- If the user references to themselves such as "I" or "me" or "user", you MUST use the user's name in your plan.
+- If the user request requires using today's date/time, you MUST use the \`get_current_date_time\` tool from the \`common\` category.
+- Each step must be either:
+  - a tool call: {{ "type": "tool", "tool": "toolName", "args": {{ ... }} }}
+  - or a reasoning step: {{ "type": "reason", "input": "..." }}
+- Output only structured JSON matching the required format.
+  
 `.trim();
+    return [basePrompt, toolDescriptions, customPrompt, outputInstructions].join('\n').trim();
   },
   NOTION: {
     toolSelection: `
