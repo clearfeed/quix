@@ -133,7 +133,7 @@ export class IntegrationsInstallService {
         teamId: stateData.teamId
       };
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error('Failed to connect to Jira:', error);
       throw new BadRequestException('Failed to connect to Jira');
     }
   }

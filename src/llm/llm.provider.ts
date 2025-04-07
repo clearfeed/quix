@@ -41,7 +41,7 @@ export class LlmProviderService {
       case SupportedChatModels.OPENAI:
         const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId);
         if (!slackWorkspace || !slackWorkspace.openai_key) {
-          this.logger.error('OpenAI key not found', { teamId });
+          this.logger.log('OpenAI key not found', { teamId });
           throw new Error('OpenAI key not found');
         }
         return new ChatOpenAI({

@@ -11,12 +11,7 @@ import { AppHomeService } from './app_home.service';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { IntegrationsInstallService } from '../integrations/integrations-install.service';
 import { QuixUserAccessLevel } from '@quix/lib/constants';
-import {
-  displayErrorModal,
-  displayLoadingModal,
-  displaySuccessModal,
-  publishNotionConnectionModal
-} from './views/modals';
+import { displayErrorModal, displayLoadingModal, displaySuccessModal } from './views/modals';
 import { WebClient } from '@slack/web-api';
 import { SlackService } from './slack.service';
 @Injectable()
@@ -75,7 +70,7 @@ export class InteractionsService {
       case SLACK_ACTIONS.OPENAI_API_KEY_MODAL.SUBMIT:
         const openaiApiKey = payload.view.state.values.openai_api_key.openai_api_key_input.value;
         if (!openaiApiKey) {
-          this.logger.error('OpenAI API key not found', { payload });
+          this.logger.warn('OpenAI API key not found', { payload });
           return;
         }
         this.appHomeService.handleOpenaiApiKeySubmitted(
