@@ -10,7 +10,8 @@ import {
   Redirect,
   Param,
   Inject,
-  BadRequestException
+  BadRequestException,
+  InternalServerErrorException
 } from '@nestjs/common';
 import { SlackService } from './slack.service';
 import { Request } from 'express';
@@ -70,8 +71,8 @@ export class SlackController {
     try {
       return await this.interactionsService.handleInteraction(JSON.parse(payload));
     } catch (error) {
-      console.log(error);
-      return error;
+      this.logger.error(error);
+      throw new InternalServerErrorException('Failed to handle interaction');
     }
   }
 
