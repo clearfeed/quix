@@ -1,12 +1,15 @@
-import { createClient } from 'node-zendesk';
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import {
-  GetTicketParams,
-  SearchTicketsParams,
   ZendeskConfig,
-  GetTicketResponse,
-  SearchTicketsResponse
+  SearchTicketsParams,
+  GetTicketParams,
+  GetTicketWithCommentsParams,
+  AddInternalNoteParams,
+  AddInternalCommentParams,
+  GetCommentsParams,
+  CreateTicketParams
 } from './types';
+import { ZendeskService } from './index';
+import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 
@@ -30,67 +33,139 @@ When formatting Zendesk responses:
 `;
 
 export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
-  const client = createClient({
-    subdomain: config.subdomain,
-    ...(config.auth.useOAuth
-      ? {
-          token: config.auth.token,
-          useOAuth: true
-        }
-      : {
-          username: config.auth.email,
-          token: config.auth.token
-        })
-  });
+  const service = new ZendeskService(config);
 
   const tools: DynamicStructuredTool<any>[] = [
     new DynamicStructuredTool({
       name: 'search_zendesk_tickets',
       description: 'Search Zendesk tickets using a query string',
       schema: z.object({
-        query: z.string().describe('The search query'),
-        limit: z.number().describe('Maximum number of tickets to return').optional()
+        query: z
+          .string()
+          .describe(
+            'Search keywords or phrases to filter Zendesk tickets by subject (title), description, or metadata'
+          ),
+        limit: z
+          .number()
+          .int()
+          .min(1)
+          .max(100)
+          .describe('Maximum number of tickets to return')
+          .optional()
+          .default(10)
       }),
-      func: async (args: SearchTicketsParams) => {
-        try {
-          const searchQuery = args.query;
-          const limit = args.limit || 10;
-
-          const response = await client.search.query(`type:ticket ${searchQuery}`);
-
-          const tickets = Array.isArray(response.result) ? response.result.slice(0, limit) : [];
-          return {
-            success: true,
-            data: tickets
-          };
-        } catch (error: any) {
-          return {
-            success: false,
-            error: `Failed to search tickets: ${error.message}`
-          };
-        }
-      }
+      func: async (args: SearchTicketsParams) => service.searchTickets(args)
     }),
     new DynamicStructuredTool({
       name: 'get_zendesk_ticket',
-      description: 'Retrieve a specific Zendesk ticket by ID',
+      description: 'Retrieve a Zendesk ticket by its ID',
       schema: z.object({
-        ticketId: z.number().describe('The ID of the ticket to retrieve')
+        ticketId: z.number().int().describe('The ID of the Zendesk ticket to retrieve')
       }),
-      func: async (args: GetTicketParams) => {
-        try {
-          const response = await client.tickets.show(args.ticketId);
-          return {
-            success: true,
-            data: response.result
-          };
-        } catch (error: any) {
-          return {
-            success: false,
-            error: `Failed to get ticket: ${error.message}`
-          };
-        }
-      }
+      func: async (args: GetTicketParams) => service.getTicket(args)
+    }),
+    new DynamicStructuredTool({
+      name: 'get_zendesk_ticket_with_comments',
+      description:
+        'Retrieve a Zendesk ticket along with all its public comments and internal notes',
+      schema: z.object({
+        ticketId: z.number().int().describe('The ID of the Zendesk ticket to retrieve')
+      }),
+      func: async (args: GetTicketWithCommentsParams) => service.getTicketWithComments(args)
+    }),
+    new DynamicStructuredTool({
+      name: 'add_zendesk_ticket_public_comment',
+      description: 'Add a public comment to a Zendesk ticket',
+      schema: z.object({
+        ticketId: z
+          .number()
+          .int()
+          .describe('The ID of the Zendesk ticket to add the public comment to'),
+        comment: z.string().describe('The content of the public comment to add')
+      }),
+      func: async (args: AddInternalCommentParams) =>
+        service.addComment({ public: true, ticketId: args.ticketId, comment: args.comment })
+    }),
+    new DynamicStructuredTool({
+      name: 'add_zendesk_ticket_internal_note',
+      description: 'Add an internal note (private comment) to a Zendesk ticket',
+      schema: z.object({
+        ticketId: z
+          .number()
+          .int()
+          .describe('The ID of the Zendesk ticket to add the internal note (private comment) to'),
+        note: z.string().describe('The content of the internal note (private comment) to add')
+      }),
+      func: async (args: AddInternalNoteParams) =>
+        service.addComment({ public: false, ticketId: args.ticketId, comment: args.note })
+    }),
+    new DynamicStructuredTool({
+      name: 'get_zendesk_ticket_internal_notes',
+      description: 'Retrieve all internal notes (private comments) from a Zendesk ticket',
+      schema: z.object({
+        ticketId: z
+          .number()
+          .int()
+          .describe(
+            'The ID of the Zendesk ticket to retrieve internal notes (private comments) from'
+          )
+      }),
+      func: async (args: Pick<GetCommentsParams, 'ticketId'>) =>
+        service.getComments({ ...args, public: false })
+    }),
+    new DynamicStructuredTool({
+      name: 'get_zendesk_ticket_public_comments',
+      description: 'Retrieve all public comments from a Zendesk ticket',
+      schema: z.object({
+        ticketId: z
+          .number()
+          .int()
+          .describe('The ID of the Zendesk ticket to retrieve public comments from')
+      }),
+      func: async (args: Pick<GetCommentsParams, 'ticketId'>) =>
+        service.getComments({ ...args, public: true })
+    }),
+    new DynamicStructuredTool({
+      name: 'create_zendesk_ticket',
+      description: 'Create a new Zendesk ticket with subject, description, and optional properties',
+      schema: z.object({
+        subject: z.string().min(5).describe('Subject or title of the support ticket'),
+        description: z.string().min(10).describe('Detailed description of the issue or request'),
+        requesterEmail: z.string().email().optional().describe('Email address of the requester'),
+        priority: z
+          .enum(['low', 'normal', 'high', 'urgent'])
+          .optional()
+          .describe('Priority level of the ticket'),
+        assigneeId: z
+          .number()
+          .int()
+          .optional()
+          .describe('Zendesk agent ID to assign the ticket to'),
+        tags: z
+          .array(z.string())
+          .optional()
+          .describe('List of tags to categorize or label the ticket')
+      }),
+      func: async (args: CreateTicketParams) => service.createTicket(args)
+    }),
+    new DynamicStructuredTool({
+      name: 'search_zendesk_users_by_name',
+      description:
+        'Search for Zendesk users (agents or end users) by name. Useful for finding assignees or requesters.',
+      schema: z.object({
+        name: z
+          .string()
+          .min(2)
+          .describe('The name of the Zendesk user to search for. Partial names are supported.'),
+        role: z
+          .enum(['end-user', 'agent', 'admin'])
+          .optional()
+          .describe(
+            'Filter users by role. Use "agent" or "admin" when looking for assignees. Use "end-user" for requesters.'
+          )
+      }),
+      func: async (args: { name: string; role?: 'end-user' | 'agent' | 'admin' }) =>
+        service.searchUsersByName(args.name, args.role)
     })
   ];
 

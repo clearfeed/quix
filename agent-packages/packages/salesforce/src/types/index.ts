@@ -52,6 +52,16 @@ export type CreateTaskParams = {
   dueDate?: string;
 };
 
+export type UpdateTaskParams = {
+  taskId: string;
+  subject?: string;
+  description?: string;
+  status?: string;
+  priority?: string;
+  ownerId?: string;
+  type?: string;
+};
+
 export type DescribeObjectParams = {
   objectName: SalesforceObjectName;
 };
@@ -61,7 +71,8 @@ export enum SalesforceObjectName {
   Contact = 'Contact',
   Opportunity = 'Opportunity',
   Case = 'Case',
-  Task = 'Task'
+  Task = 'Task',
+  Note = 'Note'
 }
 
 export type SearchAccountsParams = {

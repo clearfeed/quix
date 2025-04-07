@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-jira-agent",
-  "version": "1.2.9",
+  "version": "1.2.10",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -9,6 +9,7 @@
   "scripts": {
     "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
     "build": "yarn clean && tsc",
+    "watch": "tsc --watch",
     "test": "jest",
     "prepublishOnly": "yarn build"
   },

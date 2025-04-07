@@ -351,14 +351,7 @@
   resolved "https://registry.yarnpkg.com/@cfworker/json-schema/-/json-schema-4.1.1.tgz#4a2a3947ee9fa7b7c24be981422831b8674c3be6"
   integrity sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==
 
-"@clearfeed-ai/quix-common-agent@^1.1.0":
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.1.3.tgz#18a2cf902f67a15b536f1afbed2e7e0c26054399"
-  integrity sha512-jSbHaiOPmAxG4RfjRitCydsV47v2ilSPaBowZ/raLcDTqa0m8Fcn7Aez9XwPIOyrvoySCo9xj80+pnLmgYIYyA==
-  dependencies:
-    zod "^3.24.2"
-
-"@clearfeed-ai/quix-common-agent@^1.1.2":
+"@clearfeed-ai/quix-common-agent@^1.1.0", "@clearfeed-ai/quix-common-agent@^1.1.2":
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.1.4.tgz#7d6aac4cf2214b1a86658033e796b8f4dd17b63e"
   integrity sha512-8uYN+tRRJiejWpxfaZvVR0MKFCsMIT/myizmZKiVZIM//RSU+9oJN8E4T01ZbvpItk62wV6rpGs+50d+pod6fA==
@@ -379,10 +372,10 @@
   dependencies:
     "@hubspot/api-client" "^12.0.1"
 
-"@clearfeed-ai/quix-jira-agent@^1.2.7":
-  version "1.2.9"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.2.9.tgz#660b240c081bd1f34c7a22e3a2cbc658cedec004"
-  integrity sha512-w5+6K7l+eIAyeg4neTQ2paMkm3X6fu2Ayh/KDQo6lqKV3AzHZKsJnd2mplU0QVmlBr+f4S7cH652y/6QBlT+IQ==
+"@clearfeed-ai/quix-jira-agent@^1.2.10":
+  version "1.2.10"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.2.10.tgz#17424cac776b544a0e49b2427e3c74cc01af9eb3"
+  integrity sha512-62wpGcHXnhnp1NGP78AItuWpPBiUgoyLyoMuyb1XE9sa20v4/RPfgHFe58etb8KY/o6WNAMBedrfeG1qNBc1Qg==
   dependencies:
     atlassian-jwt "^2.0.3"
     axios "^1.8.2"
@@ -396,17 +389,17 @@
     pg "^8.14.0"
 
 "@clearfeed-ai/quix-salesforce-agent@^1.0.2":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-salesforce-agent/-/quix-salesforce-agent-1.0.6.tgz#7b3176443b43953b0d2120dee7068b09b68d1daf"
-  integrity sha512-PSVFeNsVYlT3Ji52YOWpxc4rr0+1l/LUMhjQz5y+99S1mnQSe/YpKt4BiOWrJdZLojNZQScBKAIMZJ5cy6eJag==
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-salesforce-agent/-/quix-salesforce-agent-1.0.7.tgz#2ffca6892f1ff5ec4e2b47714148e1bc062ea862"
+  integrity sha512-/NFE3QVxdaRi9O5pYkI/AbQ/mosW++CAR/x9FpHR7m1wNgUUPkay1+Kn87Ohb8jBU0dMo5ADWFtDxQ2HrvPgvQ==
   dependencies:
     "@clearfeed-ai/quix-common-agent" "^1.1.0"
     jsforce "^3.5.0"
 
-"@clearfeed-ai/quix-zendesk-agent@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-zendesk-agent/-/quix-zendesk-agent-1.1.0.tgz#8ea4d9adbe52de6ac9e489a57b3285caea890f4f"
-  integrity sha512-mellaHUVs70JEGRHx4cqZC7cm1Z3IUqSEXzC3pptVbvrnrOtkSndR+SuH2ODmJTtxiJ64eROGuEwerPt9h7ZqQ==
+"@clearfeed-ai/quix-zendesk-agent@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-zendesk-agent/-/quix-zendesk-agent-1.1.2.tgz#a8a7378335da0b2fdbd28994284d63d91fc6c85e"
+  integrity sha512-RJbW/aIgbZknpKYMLktRHs4xbW3VC+XXB2dNjuq1O97xtvMH+UFeRBpCPHMosrm0mrRPikyrcC+4so4cQM5X3Q==
   dependencies:
     "@clearfeed-ai/quix-common-agent" "^1.1.0"
     node-zendesk "^6.0.1"

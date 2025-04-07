@@ -41,7 +41,11 @@ export class JiraService implements BaseService<JiraConfig> {
     return { isValid: true };
   }
 
-  async searchIssues(keyword: string): Promise<BaseResponse<SearchIssuesResponse>> {
+  async searchIssues(
+    keyword: string
+  ): Promise<
+    BaseResponse<{ issues: (SearchIssuesResponse['issues'][number] & { url: string })[] }>
+  > {
     try {
       const validation = this.validateConfig();
       if (!validation.isValid) {
@@ -54,7 +58,10 @@ export class JiraService implements BaseService<JiraConfig> {
       return {
         success: true,
         data: {
-          issues: response.issues || []
+          issues: (response.issues || []).map((issue) => ({
+            ...issue,
+            url: this.getIssueUrl(issue)
+          }))
         }
       };
     } catch (error) {
@@ -78,7 +85,10 @@ export class JiraService implements BaseService<JiraConfig> {
       return {
         success: true,
         data: {
-          issue
+          issue: {
+            ...issue,
+            url: this.getIssueUrl(issue)
+          }
         }
       };
     } catch (error) {
@@ -88,6 +98,9 @@ export class JiraService implements BaseService<JiraConfig> {
         error: error instanceof Error ? error.message : 'Failed to fetch Jira issue'
       };
     }
+  }
+  private getIssueUrl(issue: { key: string }): string {
+    return `${this.config.host}/browse/${issue.key}`;
   }
 
   async createIssue(params: CreateIssueParams): Promise<GetIssueResponse> {
@@ -118,7 +131,10 @@ export class JiraService implements BaseService<JiraConfig> {
       return {
         success: true,
         data: {
-          issue
+          issue: {
+            ...issue,
+            url: this.getIssueUrl(issue)
+          }
         }
       };
     } catch (error) {
@@ -168,6 +184,10 @@ export class JiraService implements BaseService<JiraConfig> {
     }
   }
 
+  private getCommentUrl(payload: { issueId: string; commentId: string }): string {
+    return `${this.config.host}/browse/${payload.issueId}?focusedCommentId=${payload.commentId}`;
+  }
+
   async addComment(params: AddCommentParams): Promise<AddCommentResponse> {
     try {
       const validation = this.validateConfig();
@@ -180,7 +200,10 @@ export class JiraService implements BaseService<JiraConfig> {
       return {
         success: true,
         data: {
-          comment
+          comment: {
+            ...comment,
+            url: this.getCommentUrl({ issueId: params.issueId, commentId: comment.id })
+          }
         }
       };
     } catch (error) {
@@ -204,7 +227,10 @@ export class JiraService implements BaseService<JiraConfig> {
       return {
         success: true,
         data: {
-          comments
+          comments: (comments.comments || []).map((comment) => ({
+            ...comment,
+            url: this.getCommentUrl({ issueId, commentId: comment.id })
+          }))
         }
       };
     } catch (error) {
