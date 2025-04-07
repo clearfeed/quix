@@ -1,3 +1,5 @@
+import { AvailableToolsWithConfig } from '../llm/types';
+
 export const OPENAI_CONTEXT_SIZE = 30;
 
 export enum SUPPORTED_INTEGRATIONS {
@@ -163,32 +165,58 @@ Do not make up arguments or responses. Always call tools to get real data.
 Do not ask the user for more details unless absolutely necessary to call the tools.
 Respond in clear markdown.
   `,
-  baseToolSelection: `
-  Select the tool categories to use for the query.
-  If no specific tool is needed, respond with "none" and provide a direct answer.
-  `,
-  PLANNER_PROMPT: (allFunctions: string[], allCustomPrompts: string[]) => {
+  PLANNER_PROMPT: (tools: Partial<AvailableToolsWithConfig>): string => {
     const basePrompt = `
-    You are a planner that breaks down the user's request into an ordered list of steps using available tools.
-Only use the following tools:`;
-    const outputPrompt = `
-    If you see the get_current_date_time tool in the list above, you MUST use it in your plan.
-    If the user references to themselves such as "I" or "me" or "user", you MUST use the user's name in your plan.
-    Each step must be:
-- a tool call: {{ "type": "tool", "tool": "toolName", "args": {{ ... }} }}
-- or a reasoning step: {{ "type": "reason", "input": "..." }}
+You are a planner that breaks down the user's request into an ordered list of steps using available tools.
+You MUST only use the tools listed below.
+`.trim();
+    const customPrompts: string[] = [];
+    const toolDescriptions = Object.entries(tools)
+      .map(([category, { toolConfig, config }]) => {
+        const categoryDescription = toolConfig?.prompts?.toolSelection ?? '';
+        const defaultPrompt = config && 'default_prompt' in config ? config.default_prompt : '';
+        if (defaultPrompt) {
+          customPrompts.push(defaultPrompt);
+        }
+        const toolsList = (toolConfig?.tools ?? [])
+          .map((tool) => `- ${tool.name}: ${tool.description}`)
+          .join('\n');
 
-Output only structured JSON matching the required format.`;
+        return `
+---
+
+### Category: ${category}
+
+Description:
+${categoryDescription.trim()}
+
+Tools:
+${toolsList}
+`.trim();
+      })
+      .join('\n');
     const customPrompt = `
     You MUST follow these instructions when planning your steps:
-    ${allCustomPrompts.join('\n')}
+    ${customPrompts.join('\n')}
     `;
-    return `
-    ${basePrompt}
-    ${allFunctions.join('\n')}
-    ${customPrompt}
-    ${outputPrompt}
-    `;
+
+    const outputInstructions = `
+---
+
+You MUST follow these instructions when planning your steps:
+
+- You MUST generate a complete step-by-step plan that fully satisfies the user's request.
+- DO NOT stop after the first tool call or reasoning step. 
+- If you call a tool to retrieve context (e.g., current date or entity info), you MUST include a follow-up step that uses that context. Do not stop after fetching.
+- If the user references to themselves such as "I" or "me" or "user", you MUST use the user's name in your plan.
+- If the user request requires using today's date/time, you MUST use the \`get_current_date_time\` tool from the \`common\` category.
+- Each step must be either:
+  - a tool call: {{ "type": "tool", "tool": "toolName", "args": {{ ... }} }}
+  - or a reasoning step: {{ "type": "reason", "input": "..." }}
+- Output only structured JSON matching the required format.
+  
+`.trim();
+    return [basePrompt, toolDescriptions, customPrompt, outputInstructions].join('\n').trim();
   },
   NOTION: {
     toolSelection: `
