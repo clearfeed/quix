@@ -1,5 +1,5 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
-import { RestEndpointMethodTypes } from '@octokit/rest';
+import { RestEndpointMethodTypes } from './oktokit';
 
 export interface GitHubConfig extends BaseConfig {
   token: string;

@@ -46,8 +46,8 @@ When formatting GitHub responses:
 - Use bullet points for listing multiple items
 `;
 
-export function createGitHubToolsExport(config: GitHubConfig): ToolConfig {
-  const service = new GitHubService(config);
+export async function createGitHubToolsExport(config: GitHubConfig): Promise<ToolConfig> {
+  const service = await GitHubService.create(config);
 
   const tools: DynamicStructuredTool<any>[] = [
     new DynamicStructuredTool({
