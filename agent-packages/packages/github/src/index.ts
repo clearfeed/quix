@@ -1,4 +1,3 @@
-import { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 import { BaseResponse, BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   GitHubConfig,
@@ -25,12 +24,22 @@ import {
   SearchIssuesGlobalParams
 } from './types';
 import { CodeSearchParams, CreateIssueParams } from './types/index';
-
+import type { OctokitType, RestEndpointMethodTypes } from './types/oktokit';
 export * from './types';
 export * from './tools';
 
+let Octokit: typeof OctokitType;
+
+const loadOctokit = async (): Promise<typeof Octokit> => {
+  if (!Octokit) {
+    const { Octokit: OctokitClass } = await import('@octokit/rest');
+    Octokit = OctokitClass;
+  }
+  return Octokit;
+};
+
 export class GitHubService implements BaseService<GitHubConfig> {
-  private client: Octokit;
+  private client: OctokitType;
   private config: GitHubConfig;
 
   validateConfig(
@@ -49,12 +58,17 @@ export class GitHubService implements BaseService<GitHubConfig> {
     return { isValid: true, repoOwner, repoName };
   }
 
-  constructor(config: GitHubConfig) {
+  private constructor(config: GitHubConfig) {
     this.config = config;
     this.client = new Octokit({ auth: config.token });
     if (!config.token) {
       throw new Error('GitHub integration is not configured. Please pass in a token.');
     }
+  }
+
+  static async create(config: GitHubConfig): Promise<GitHubService> {
+    await loadOctokit();
+    return new GitHubService(config);
   }
 
   async searchIssues(

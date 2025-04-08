@@ -19,7 +19,7 @@ import {
 } from './views/modals';
 import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
-import { SlackWorkspace, PostgresConfig, McpConnection } from '@quix/database/models';
+import { SlackWorkspace, PostgresConfig } from '@quix/database/models';
 import { IntegrationsService } from 'src/integrations/integrations.service';
 import { GithubDefaultConfig } from './views/types';
 
@@ -40,7 +40,7 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: event.user,
-      view: getHomeView({ slackWorkspace, userId: event.user })
+      view: await getHomeView({ slackWorkspace, userId: event.user })
     });
   }
 
@@ -116,7 +116,7 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
-      view: getHomeView({
+      view: await getHomeView({
         slackWorkspace,
         userId
       })
@@ -135,7 +135,7 @@ export class AppHomeService {
 
     await webClient.views.publish({
       user_id: userId,
-      view: getHomeView({
+      view: await getHomeView({
         selectedTool,
         slackWorkspace,
         connection: integration
@@ -370,7 +370,7 @@ export class AppHomeService {
           });
           await webClient.views.publish({
             user_id: userId,
-            view: getHomeView({
+            view: await getHomeView({
               slackWorkspace,
               connection: undefined,
               userId
@@ -397,7 +397,7 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId!,
-      view: getHomeView({
+      view: await getHomeView({
         slackWorkspace,
         selectedTool: SUPPORTED_INTEGRATIONS.POSTGRES,
         connection: postgresConfig,
@@ -429,7 +429,7 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
-      view: getHomeView({
+      view: await getHomeView({
         slackWorkspace,
         connection: undefined,
         userId
@@ -460,7 +460,7 @@ export class AppHomeService {
         await slackWorkspace.save();
         await webClient.views.publish({
           user_id: userId,
-          view: getHomeView({
+          view: await getHomeView({
             slackWorkspace,
             connection: undefined,
             userId
@@ -494,7 +494,7 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
-      view: getHomeView({
+      view: await getHomeView({
         slackWorkspace,
         userId
       })
@@ -518,7 +518,7 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
-      view: getHomeView({
+      view: await getHomeView({
         slackWorkspace,
         userId
       })
@@ -540,7 +540,7 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
-      view: getHomeView({
+      view: await getHomeView({
         slackWorkspace,
         userId
       })
@@ -560,7 +560,7 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
-      view: getHomeView({
+      view: await getHomeView({
         slackWorkspace,
         userId
       })

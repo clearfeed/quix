@@ -22,7 +22,7 @@ import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
 import { Tool } from '@clearfeed-ai/quix-common-agent';
 
-export const getHomeView = (args: HomeViewArgs): HomeView => {
+export const getHomeView = async (args: HomeViewArgs): Promise<HomeView> => {
   const { selectedTool, slackWorkspace, connection } = args;
   const mcpConnections = slackWorkspace.mcpConnections;
   const blocks = [
@@ -59,7 +59,7 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
   blocks.push(Blocks.Divider());
 
   if (selectedTool) {
-    const toolData = getToolData(selectedTool);
+    const toolData = await getToolData(selectedTool);
 
     if (toolData.availableFns && toolData.availableFns.length) {
       blocks.push(
@@ -77,7 +77,9 @@ export const getHomeView = (args: HomeViewArgs): HomeView => {
   };
 };
 
-const getToolData = (selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined) => {
+const getToolData = async (
+  selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined
+) => {
   let tool, availableFns;
 
   // Only process standard integrations
@@ -89,7 +91,7 @@ const getToolData = (selectedTool: (typeof INTEGRATIONS)[number]['value'] | stri
   ) {
     const integrationValue = selectedTool as SUPPORTED_INTEGRATIONS;
     tool = INTEGRATIONS.find((integration) => integration.value === integrationValue);
-    availableFns = getAvailableFns(integrationValue);
+    availableFns = await getAvailableFns(integrationValue);
   }
 
   return {
@@ -97,7 +99,7 @@ const getToolData = (selectedTool: (typeof INTEGRATIONS)[number]['value'] | stri
   };
 };
 
-const getAvailableFns = (selectedTool: SUPPORTED_INTEGRATIONS) => {
+const getAvailableFns = async (selectedTool: SUPPORTED_INTEGRATIONS) => {
   if (selectedTool === SUPPORTED_INTEGRATIONS.JIRA) {
     const tools = createJiraToolsExport({
       host: 'test-url',
@@ -108,11 +110,13 @@ const getAvailableFns = (selectedTool: SUPPORTED_INTEGRATIONS) => {
   }
 
   if (selectedTool === SUPPORTED_INTEGRATIONS.GITHUB) {
-    const tools = createGitHubToolsExport({
-      token: 'test-access-token',
-      owner: 'test-github-owner',
-      repo: 'test-github-repo'
-    }).tools;
+    const tools = (
+      await createGitHubToolsExport({
+        token: 'test-access-token',
+        owner: 'test-github-owner',
+        repo: 'test-github-repo'
+      })
+    ).tools;
 
     return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
   }
