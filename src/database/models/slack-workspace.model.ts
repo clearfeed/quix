@@ -109,7 +109,7 @@ export class SlackWorkspace extends Model<
   declare salesforceConfig?: NonAttribute<SalesforceConfig>;
 
   /**
-   * Returns true if the Slack Workspace was created in the last week and the openai key is not set.
+   * Returns true if the openai key is not set and the Slack Workspace was created in the last week.
    * This is to allow the users to be in the trial mode and use our default openai key.
    */
   get isTrialMode(): NonAttribute<boolean> {
