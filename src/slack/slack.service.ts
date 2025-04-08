@@ -27,9 +27,17 @@ export class SlackService {
     this.webClient = new WebClient(this.configService.get('SLACK_BOT_TOKEN'));
   }
 
-  async getSlackWorkspace(teamId: string, include?: string[], includeAllConfigs = false) {
+  /**
+   * Fetches a Slack workspace by team ID
+   * @param teamId The Slack team ID
+   * @param include An array of associations to include in the query, if passed
+   * then @param includeAllIntegrations is ignored
+   * @param includeAllIntegrations Whether to include all integrations
+   * @returns The Slack workspace
+   */
+  async getSlackWorkspace(teamId: string, include?: string[], includeAllIntegrations = false) {
     let slackWorkspaceIncludeables: Includeable[] | undefined = include;
-    if (!include?.length && includeAllConfigs) {
+    if (!include?.length && includeAllIntegrations) {
       slackWorkspaceIncludeables = INTEGRATIONS.map((integration) => integration.relation);
     }
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
