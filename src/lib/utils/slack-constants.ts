@@ -72,3 +72,9 @@ export const SLACK_MESSAGE_MAX_LENGTH = 3000;
  * The number of days a user can use Quix for free using our default OpenAI key.
  */
 export const TRIAL_DAYS = 7;
+
+/**
+ * The maximum number of messages a user can send in a conversation during the trial period when
+ * the user has not set their own OpenAI key.
+ */
+export const TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT = 5;

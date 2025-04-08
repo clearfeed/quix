@@ -1,5 +1,3 @@
-import { AvailableToolsWithConfig } from '../llm/types';
-
 export const OPENAI_CONTEXT_SIZE = 30;
 
 export enum SUPPORTED_INTEGRATIONS {
@@ -169,47 +167,28 @@ Respond in clear markdown.
   Select the tool categories to use for the query.
   If no specific tool is needed, respond with "none" and provide a direct answer.
   `,
-  PLANNER_PROMPT: (tools: Partial<AvailableToolsWithConfig>): string => {
+  PLANNER_PROMPT: (allFunctions: string[], allCustomPrompts: string[]) => {
     const basePrompt = `
-You are a planner that breaks down the user's request into an ordered list of steps using the available tools.
-Only use the tools listed in the <ToolCategory> tags below.`;
-    const toolDescriptions = Object.entries(tools)
-      .map(([category, { toolConfig, config }]) => {
-        const toolsHtml = (toolConfig?.tools ?? [])
-          .map((tool) => `<Tool name="${tool.name}">\n  ${tool.description}\n</Tool>`)
-          .join('\n');
-
-        const toolSelectionPrompt = toolConfig?.prompts?.toolSelection ?? '';
-        const defaultToolCategoryPrompt =
-          config && 'default_prompt' in config ? config.default_prompt : '';
-        const prompt = `
-<ToolCategory name="${category}">
-${toolSelectionPrompt ? `  <Description>${toolSelectionPrompt}</Description>` : ''}
-${toolsHtml}
-${defaultToolCategoryPrompt ? `  <DefaultPrompt>${defaultToolCategoryPrompt}</DefaultPrompt>` : ''}
-</ToolCategory>`;
-        return prompt;
-      })
-      .join('\n\n');
-
-    const outputInstructions = `
-You MUST follow these instructions when planning your steps:
-- If the user says "I", "me", or "user", replace it with their actual name.
-- Use tools from the correct <ToolCategory> based on the request's context.
-- If a <ToolCategory> includes a <DefaultPrompt>, you must follow it when planning your steps.
-- Each step in your plan must be one of:
-  {{ "type": "reason", "input": "..." }}
-  {{ "type": "tool", "tool": "<toolName>", "args": {{ <toolArgs> }} }}
+    You are a planner that breaks down the user's request into an ordered list of steps using available tools.
+Only use the following tools:`;
+    const outputPrompt = `
+    If you see the get_current_date_time tool in the list above, you MUST use it in your plan.
+    If the user references to themselves such as "I" or "me" or "user", you MUST use the user's name in your plan.
+    Each step must be:
+- a tool call: {{ "type": "tool", "tool": "toolName", "args": {{ ... }} }}
+- or a reasoning step: {{ "type": "reason", "input": "..." }}
 
 Output only structured JSON matching the required format.`;
-
+    const customPrompt = `
+    You MUST follow these instructions when planning your steps:
+    ${allCustomPrompts.join('\n')}
+    `;
     return `
-${basePrompt}
-
-${toolDescriptions}
-
-${outputInstructions}
-`.trim();
+    ${basePrompt}
+    ${allFunctions.join('\n')}
+    ${customPrompt}
+    ${outputPrompt}
+    `;
   },
   NOTION: {
     toolSelection: `

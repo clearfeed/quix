@@ -1,6 +1,7 @@
 import { createHubspotToolsExport } from '@clearfeed-ai/quix-hubspot-agent';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
+import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { SlackWorkspace } from '../database/models';
@@ -16,14 +17,16 @@ import { createSlackToolsExport } from '@clearfeed-ai/quix-slack-agent';
 @Injectable()
 export class ToolService {
   constructor(
-    @InjectModel(SlackWorkspace) private readonly slackWorkspaceModel: typeof SlackWorkspace,
+    private readonly config: ConfigService,
+    @InjectModel(SlackWorkspace)
+    private readonly slackWorkspaceModel: typeof SlackWorkspace,
     private readonly integrationsService: IntegrationsService,
     private readonly mcpService: McpService
   ) {}
 
   private runningTools: McpServerCleanupFn[] = [];
 
-  async getAvailableTools(teamId: string): Promise<Partial<AvailableToolsWithConfig> | undefined> {
+  async getAvailableTools(teamId: string): Promise<AvailableToolsWithConfig | undefined> {
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
       include: [
         'jiraConfig',
@@ -36,7 +39,7 @@ export class ToolService {
       ]
     });
     if (!slackWorkspace) return;
-    const tools: Partial<AvailableToolsWithConfig> = {
+    const tools: AvailableToolsWithConfig = {
       common: {
         toolConfig: createCommonToolsExport(),
         config: slackWorkspace
@@ -77,7 +80,7 @@ export class ToolService {
     const githubConfig = slackWorkspace.githubConfig;
     if (githubConfig) {
       tools.github = {
-        toolConfig: createGitHubToolsExport({
+        toolConfig: await createGitHubToolsExport({
           token: githubConfig.access_token,
           owner: githubConfig.default_config?.owner,
           repo: githubConfig.default_config?.repo

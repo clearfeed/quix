@@ -1,19 +1,20 @@
 {
   "name": "@clearfeed-ai/quix-github-agent",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
+    "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" \\) ! -path \"*/node_modules/*\" -delete",
     "build": "yarn clean && tsc",
     "test": "jest",
+    "watch": "tsc --watch",
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "@octokit/rest": "^19.0.13"
+    "@octokit/rest": "^21.1.1"
   },
   "peerDependencies": {
     "@langchain/core": "0.3.40"
