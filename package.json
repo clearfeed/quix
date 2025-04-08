@@ -37,7 +37,7 @@
     "@clearfeed-ai/quix-jira-agent": "^1.2.10",
     "@clearfeed-ai/quix-postgres-agent": "^1.0.0",
     "@clearfeed-ai/quix-salesforce-agent": "^1.0.2",
-    "@clearfeed-ai/quix-zendesk-agent": "^1.1.2",
+    "@clearfeed-ai/quix-zendesk-agent": "^1.1.3",
     "@google/generative-ai": "^0.21.0",
     "@langchain/core": "0.3.40",
     "@langchain/google-genai": "^0.1.8",
