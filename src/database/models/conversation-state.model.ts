@@ -1,5 +1,10 @@
 import { Column, Model, Table, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { InferAttributes, InferCreationAttributes, NonAttribute } from 'sequelize';
+import {
+  InferAttributes,
+  InferCreationAttributes,
+  NonAttribute,
+  CreationOptional
+} from 'sequelize';
 import { SlackWorkspace } from './slack-workspace.model';
 import { Nullable } from 'slack-block-builder/dist/internal';
 
@@ -77,7 +82,7 @@ export class ConversationState extends Model<
     type: DataType.INTEGER,
     defaultValue: 0
   })
-  declare message_count: number;
+  declare message_count: CreationOptional<number>;
 
   @BelongsTo(() => SlackWorkspace, {
     foreignKey: 'team_id',

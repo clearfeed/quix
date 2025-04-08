@@ -68,8 +68,7 @@ export class LlmService {
         thread_ts: threadTs,
         last_tool_calls: null,
         last_plan: null,
-        contextual_memory: {},
-        message_count: 0
+        contextual_memory: {}
       },
       {
         // on conflict, update nothing
