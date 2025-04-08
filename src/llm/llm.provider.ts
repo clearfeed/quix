@@ -1,21 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { SupportedChatModels } from './types';
 import { ChatOpenAI } from '@langchain/openai';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { SlackWorkspace } from '../database/models';
-import { InjectModel } from '@nestjs/sequelize';
+import { Md } from 'slack-block-builder';
 
 @Injectable()
 export class LlmProviderService {
   private readonly logger = new Logger(LlmProviderService.name);
   private providers: Map<SupportedChatModels, BaseChatModel>;
-  constructor(
-    private readonly config: ConfigService,
-    @InjectModel(SlackWorkspace)
-    private readonly slackWorkspaceModel: typeof SlackWorkspace
-  ) {
+  constructor(private readonly config: ConfigService) {
     this.providers = new Map();
     this.providers.set(
       SupportedChatModels.OPENAI,
@@ -36,13 +32,17 @@ export class LlmProviderService {
     }
   }
 
-  async getProvider(model: SupportedChatModels, teamId: string): Promise<BaseChatModel> {
+  async getProvider(
+    model: SupportedChatModels,
+    slackWorkspace: SlackWorkspace
+  ): Promise<BaseChatModel> {
     switch (model) {
       case SupportedChatModels.OPENAI:
-        const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId);
-        if (!slackWorkspace || !slackWorkspace.openai_key) {
-          this.logger.error('OpenAI key not found', { teamId });
-          throw new Error('OpenAI key not found');
+        if (!slackWorkspace.openai_key) {
+          this.logger.error('OpenAI key not found', { teamId: slackWorkspace.team_id });
+          throw new BadRequestException(
+            `It looks like your trial has ended and you haven't set an OpenAI API key yet. You can add it ${Md.link(slackWorkspace.getAppHomeRedirectUrl('messages'), 'here')} to keep using Quix.`
+          );
         }
         return new ChatOpenAI({
           model: 'gpt-4o',
