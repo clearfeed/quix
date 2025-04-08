@@ -10,6 +10,7 @@ import { sendMessage } from '@quix/lib/utils/slack';
 import { ParseSlackMentionsUserMap } from '@quix/lib/types/slack';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { shuffle } from 'lodash';
+import { SLACK_WORKSPACE_ALL_RELATIONS } from './views/types';
 
 @Injectable()
 export class SlackService {
@@ -27,8 +28,9 @@ export class SlackService {
   }
 
   async getSlackWorkspace(teamId: string, include?: string[]) {
+    const relationsToInclude = include?.length ? include : SLACK_WORKSPACE_ALL_RELATIONS;
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
-      include
+      include: relationsToInclude
     });
     if (!slackWorkspace) {
       this.logger.error('Slack workspace not found', { teamId });

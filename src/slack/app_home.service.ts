@@ -33,10 +33,7 @@ export class AppHomeService {
   async handleAppHomeOpened(event: AppHomeOpenedEvent, teamId: string) {
     if (event.tab !== 'home') return;
 
-    const slackWorkspace = await this.slackService.getSlackWorkspace(
-      teamId,
-      SLACK_WORKSPACE_ALL_RELATIONS
-    );
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
 
     const webClient = new WebClient(slackWorkspace.bot_access_token);
@@ -110,10 +107,7 @@ export class AppHomeService {
     allowedChannels: string[],
     accessLevel: QuixUserAccessLevel
   ) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(
-      teamId,
-      SLACK_WORKSPACE_ALL_RELATIONS
-    );
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
     slackWorkspace.addChannels(allowedChannels);
     slackWorkspace.setAccessLevel(accessLevel || 'everyone');
@@ -133,10 +127,7 @@ export class AppHomeService {
     const integration = INTEGRATIONS.find((integration) => integration.value === selectedTool);
     const relations = ['mcpConnections'];
     if (integration) relations.push(integration.relation);
-    const slackWorkspace = await this.slackService.getSlackWorkspace(
-      teamId,
-      SLACK_WORKSPACE_ALL_RELATIONS
-    );
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     this.logger.log('Publishing home view', { selectedTool });
@@ -228,10 +219,7 @@ export class AppHomeService {
       );
       const relations = ['mcpConnections'];
       if (integration) relations.push(integration.relation);
-      const slackWorkspace = await this.slackService.getSlackWorkspace(
-        teamId,
-        SLACK_WORKSPACE_ALL_RELATIONS
-      );
+      const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
       if (!slackWorkspace) return;
       const webClient = new WebClient(slackWorkspace.bot_access_token);
       switch (selectedOption) {
@@ -378,10 +366,7 @@ export class AppHomeService {
   }
 
   async handlePostgresConnected(userId: string, teamId: string, postgresConfig: PostgresConfig) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(
-      teamId,
-      SLACK_WORKSPACE_ALL_RELATIONS
-    );
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
@@ -411,10 +396,7 @@ export class AppHomeService {
   }
 
   async handleOpenaiApiKeySubmitted(userId: string, teamId: string, openaiApiKey: string) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(
-      teamId,
-      SLACK_WORKSPACE_ALL_RELATIONS
-    );
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
     slackWorkspace.openai_key = openaiApiKey;
     await slackWorkspace.save();
@@ -437,10 +419,7 @@ export class AppHomeService {
   ) {
     const selectedOption = action.selected_option?.value as 'edit' | 'remove' | undefined;
     if (!selectedOption) return;
-    const slackWorkspace = await this.slackService.getSlackWorkspace(
-      teamId,
-      SLACK_WORKSPACE_ALL_RELATIONS
-    );
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     switch (selectedOption) {
@@ -482,10 +461,7 @@ export class AppHomeService {
   }
 
   async handleManageAdminsSubmitted(userId: string, teamId: string, adminUserIds: string[]) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(
-      teamId,
-      SLACK_WORKSPACE_ALL_RELATIONS
-    );
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
     slackWorkspace.admin_user_ids = adminUserIds;
     await slackWorkspace.save();
@@ -504,10 +480,7 @@ export class AppHomeService {
     teamId: string,
     defaultProjectKey: string
   ) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(
-      teamId,
-      SLACK_WORKSPACE_ALL_RELATIONS
-    );
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace?.jiraConfig) return;
     const jiraConfig = slackWorkspace.jiraConfig;
     jiraConfig.default_config = {
@@ -529,10 +502,7 @@ export class AppHomeService {
     teamId: string,
     defaultConfig: GithubDefaultConfig
   ) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(
-      teamId,
-      SLACK_WORKSPACE_ALL_RELATIONS
-    );
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace?.githubConfig) return;
     const githubConfig = slackWorkspace.githubConfig;
     githubConfig.default_config = defaultConfig;
@@ -552,10 +522,7 @@ export class AppHomeService {
     teamId: string,
     relation?: keyof SlackWorkspace
   ) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(
-      teamId,
-      SLACK_WORKSPACE_ALL_RELATIONS
-    );
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({

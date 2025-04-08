@@ -168,13 +168,12 @@ const getToolConnectionView = (
 
   // Always calculate connected tool values once and freeze
   const connectedToolValues: SUPPORTED_INTEGRATIONS[] = [];
-  if (slackWorkspace?.githubConfig) connectedToolValues.push(SUPPORTED_INTEGRATIONS.GITHUB);
-  if (slackWorkspace?.jiraConfig) connectedToolValues.push(SUPPORTED_INTEGRATIONS.JIRA);
-  if (slackWorkspace?.hubspotConfig) connectedToolValues.push(SUPPORTED_INTEGRATIONS.HUBSPOT);
-  if (slackWorkspace?.salesforceConfig) connectedToolValues.push(SUPPORTED_INTEGRATIONS.SALESFORCE);
-  if (slackWorkspace?.postgresConfig) connectedToolValues.push(SUPPORTED_INTEGRATIONS.POSTGRES);
-  if (slackWorkspace?.notionConfig) connectedToolValues.push(SUPPORTED_INTEGRATIONS.NOTION);
-  if (slackWorkspace?.linearConfig) connectedToolValues.push(SUPPORTED_INTEGRATIONS.LINEAR);
+  INTEGRATIONS.forEach((integration) => {
+    const relationKey = integration.relation as keyof SlackWorkspace;
+    if (slackWorkspace?.[relationKey]) {
+      connectedToolValues.push(integration.value);
+    }
+  });
 
   // Use those to split integrations properly
   const connectedIntegrations = INTEGRATIONS.filter((i) => connectedToolValues.includes(i.value));
