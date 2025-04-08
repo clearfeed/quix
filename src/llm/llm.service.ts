@@ -24,6 +24,8 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { QuixCallBackManager } from './callback-manager';
 import { ConversationState } from '../database/models/conversation-state.model';
 import { InjectModel } from '@nestjs/sequelize';
+import { TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT } from '../lib/utils/slack-constants';
+import { Md } from 'slack-block-builder';
 import slackify = require('slackify-markdown');
 @Injectable()
 export class LlmService {
@@ -57,11 +59,11 @@ export class LlmService {
   }
 
   async processMessage(args: MessageProcessingArgs): Promise<string> {
-    const { message, teamId, threadTs, previousMessages, channelId, authorName } = args;
-
+    const { message, threadTs, previousMessages, channelId, authorName, slackWorkspace } = args;
+    const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, slackWorkspace);
     const [conversationState] = await this.conversationStateModel.upsert(
       {
-        team_id: teamId,
+        team_id: slackWorkspace.team_id,
         channel_id: channelId,
         thread_ts: threadTs,
         last_tool_calls: null,
@@ -73,14 +75,21 @@ export class LlmService {
         fields: []
       }
     );
+    if (
+      slackWorkspace.isTrialMode &&
+      conversationState.message_count >= TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT
+    ) {
+      return `You've reached the limit of ${TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT} messages per conversation during the trial period.
+To continue, you can start a new conversation or ${Md.link(slackWorkspace.getAppHomeRedirectUrl(), 'set your OpenAI API key here')} to remove this restriction.`;
+    }
 
-    const tools = await this.tool.getAvailableTools(teamId);
+    const tools = await this.tool.getAvailableTools(slackWorkspace.team_id);
     const availableCategories = Object.keys(tools ?? {});
     if (!tools || availableCategories.length < 1) {
       this.logger.log('No tool categories available, returning direct response');
       return "I apologize, but I don't have any tools configured to help with your request at the moment.";
     }
-    const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, teamId);
+
     this.logger.log(`Processing message: ${message} with tools: ${availableCategories.join(', ')}`);
 
     // Add previous tool calls to system context for better continuity
@@ -188,6 +197,7 @@ export class LlmService {
         conversationState.last_plan.completed = true;
       }
     }
+    conversationState.message_count++;
     await conversationState.save();
 
     const { totalTokens, toolCallCount, toolNames } = result.messages.reduce(
