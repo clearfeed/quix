@@ -8,7 +8,7 @@ import {
   GetThreadRepliesParams,
   GetUsersParams,
   GetUserProfileParams
-} from './schema';
+} from './types';
 import {
   listChannelsParamsSchema,
   postMessageParamsSchema,

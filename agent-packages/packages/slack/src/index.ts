@@ -22,7 +22,6 @@ import {
   ListChannelsParams,
   PostMessageParams,
   ReplyToThreadParams,
-  SlackChannel,
   SlackConfig
 } from './types';
 export * from './schema';
@@ -78,7 +77,10 @@ export class SlackService implements BaseService<SlackConfig> {
         cursor: params.cursor
       });
 
-      return { success: true, data: (result.channels as unknown as SlackChannel[]) || [] };
+      return {
+        success: true,
+        data: result.channels
+      };
     } catch (error) {
       return {
         success: false,
