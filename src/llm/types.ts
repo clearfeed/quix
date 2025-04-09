@@ -1,7 +1,6 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { SlackWorkspace } from '@quix/database/models';
 import { Connections } from '@quix/lib/types/common';
-import { Model } from 'sequelize';
 
 export type LLMContext = {
   role: 'user' | 'assistant' | 'system';
@@ -15,7 +14,7 @@ export enum SupportedChatModels {
 
 export interface MessageProcessingArgs {
   message: string;
-  teamId: string;
+  slackWorkspace: SlackWorkspace;
   threadTs: string;
   previousMessages: LLMContext[];
   channelId: string;
