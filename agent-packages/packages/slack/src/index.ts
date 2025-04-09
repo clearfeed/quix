@@ -1,6 +1,5 @@
 import { BaseService, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import {
-  SlackConfig,
   ListChannelsParams,
   PostMessageParams,
   ReplyToThreadParams,
@@ -11,23 +10,28 @@ import {
   GetUserProfileParams,
   SlackChannel,
   SlackMessage,
-  SlackUser
+  SlackUser,
+  SlackPostMessageResponse,
+  SlackReactionResponse,
+  SlackUserProfileResponse,
+  SlackHistoryResponse,
+  SlackUsersListResponse,
+  SlackChannelsListResponse,
+  SlackUserProfileObject,
+  SlackConfig
 } from './types';
-import fetch from 'node-fetch';
-
-export * from './types';
+import { WebClient } from '@slack/web-api';
+export * from './schema';
 export * from './tools';
+export * from './types';
 
 export class SlackService implements BaseService<SlackConfig> {
   private config: SlackConfig;
-  private headers: { Authorization: string; 'Content-Type': string };
+  private client: WebClient;
 
   constructor(config: SlackConfig) {
     this.config = config;
-    this.headers = {
-      Authorization: `Bearer ${config.token}`,
-      'Content-Type': 'application/json'
-    };
+    this.client = new WebClient(config.token);
   }
 
   validateConfig(
@@ -38,19 +42,15 @@ export class SlackService implements BaseService<SlackConfig> {
 
   async listChannels(params: ListChannelsParams): Promise<BaseResponse<SlackChannel[]>> {
     try {
-      const search = new URLSearchParams({
+      const result = (await this.client.conversations.list({
         types: 'public_channel',
-        exclude_archived: 'true',
+        exclude_archived: true,
         team_id: this.config.teamId,
-        limit: (params.limit || 100).toString()
-      });
-      if (params.cursor) search.append('cursor', params.cursor);
+        limit: params.limit || 100,
+        cursor: params.cursor
+      })) as SlackChannelsListResponse;
 
-      const res = await fetch(`https://slack.com/api/conversations.list?${search}`, {
-        headers: this.headers
-      });
-      const json = await res.json();
-      return { success: true, data: json.channels || [] };
+      return { success: true, data: (result.channels as unknown as SlackChannel[]) || [] };
     } catch (error) {
       return {
         success: false,
@@ -59,17 +59,22 @@ export class SlackService implements BaseService<SlackConfig> {
     }
   }
 
-  async postMessage(
-    params: PostMessageParams
-  ): Promise<BaseResponse<{ ok: boolean; [key: string]: unknown }>> {
+  async postMessage(params: PostMessageParams): Promise<BaseResponse<SlackPostMessageResponse>> {
     try {
-      const res = await fetch('https://slack.com/api/chat.postMessage', {
-        method: 'POST',
-        headers: this.headers,
-        body: JSON.stringify({ channel: params.channel_id, text: params.text })
-      });
-      const json = await res.json();
-      return { success: true, data: json };
+      const result = (await this.client.chat.postMessage({
+        channel: params.channel_id,
+        text: params.text
+      })) as SlackPostMessageResponse;
+
+      return {
+        success: true,
+        data: {
+          ok: !!result.ok,
+          channel: result.channel,
+          ts: result.ts,
+          message: result.message
+        }
+      };
     } catch (error) {
       return {
         success: false,
@@ -80,19 +85,23 @@ export class SlackService implements BaseService<SlackConfig> {
 
   async replyToThread(
     params: ReplyToThreadParams
-  ): Promise<BaseResponse<{ ok: boolean; [key: string]: unknown }>> {
+  ): Promise<BaseResponse<SlackPostMessageResponse>> {
     try {
-      const res = await fetch('https://slack.com/api/chat.postMessage', {
-        method: 'POST',
-        headers: this.headers,
-        body: JSON.stringify({
-          channel: params.channel_id,
-          thread_ts: params.thread_ts,
-          text: params.text
-        })
-      });
-      const json = await res.json();
-      return { success: true, data: json };
+      const result = (await this.client.chat.postMessage({
+        channel: params.channel_id,
+        thread_ts: params.thread_ts,
+        text: params.text
+      })) as SlackPostMessageResponse;
+
+      return {
+        success: true,
+        data: {
+          ok: !!result.ok,
+          channel: result.channel,
+          ts: result.ts,
+          message: result.message
+        }
+      };
     } catch (error) {
       return {
         success: false,
@@ -101,21 +110,22 @@ export class SlackService implements BaseService<SlackConfig> {
     }
   }
 
-  async addReaction(
-    params: AddReactionParams
-  ): Promise<BaseResponse<{ ok: boolean; [key: string]: unknown }>> {
+  async addReaction(params: AddReactionParams): Promise<BaseResponse<SlackReactionResponse>> {
     try {
-      const res = await fetch('https://slack.com/api/reactions.add', {
-        method: 'POST',
-        headers: this.headers,
-        body: JSON.stringify({
+      const result = (await this.client.reactions.add({
+        channel: params.channel_id,
+        timestamp: params.timestamp,
+        name: params.reaction
+      })) as SlackReactionResponse;
+
+      return {
+        success: true,
+        data: {
+          ok: !!result.ok,
           channel: params.channel_id,
-          timestamp: params.timestamp,
-          name: params.reaction
-        })
-      });
-      const json = await res.json();
-      return { success: true, data: json };
+          ts: params.timestamp
+        }
+      };
     } catch (error) {
       return {
         success: false,
@@ -126,15 +136,15 @@ export class SlackService implements BaseService<SlackConfig> {
 
   async getChannelHistory(params: GetChannelHistoryParams): Promise<BaseResponse<SlackMessage[]>> {
     try {
-      const search = new URLSearchParams({
+      const result = (await this.client.conversations.history({
         channel: params.channel_id,
-        limit: (params.limit || 10).toString()
-      });
-      const res = await fetch(`https://slack.com/api/conversations.history?${search}`, {
-        headers: this.headers
-      });
-      const json = await res.json();
-      return { success: true, data: json.messages || [] };
+        limit: params.limit || 10
+      })) as SlackHistoryResponse;
+
+      return {
+        success: true,
+        data: (result.messages as unknown as SlackMessage[]) || []
+      };
     } catch (error) {
       return {
         success: false,
@@ -145,15 +155,15 @@ export class SlackService implements BaseService<SlackConfig> {
 
   async getThreadReplies(params: GetThreadRepliesParams): Promise<BaseResponse<SlackMessage[]>> {
     try {
-      const search = new URLSearchParams({
+      const result = (await this.client.conversations.replies({
         channel: params.channel_id,
         ts: params.thread_ts
-      });
-      const res = await fetch(`https://slack.com/api/conversations.replies?${search}`, {
-        headers: this.headers
-      });
-      const json = await res.json();
-      return { success: true, data: json.messages || [] };
+      })) as SlackHistoryResponse;
+
+      return {
+        success: true,
+        data: (result.messages as unknown as SlackMessage[]) || []
+      };
     } catch (error) {
       return {
         success: false,
@@ -164,16 +174,16 @@ export class SlackService implements BaseService<SlackConfig> {
 
   async getUsers(params: GetUsersParams): Promise<BaseResponse<SlackUser[]>> {
     try {
-      const search = new URLSearchParams({
+      const result = (await this.client.users.list({
         team_id: this.config.teamId,
-        limit: (params.limit || 100).toString()
-      });
-      if (params.cursor) search.append('cursor', params.cursor);
-      const res = await fetch(`https://slack.com/api/users.list?${search}`, {
-        headers: this.headers
-      });
-      const json = await res.json();
-      return { success: true, data: json.members || [] };
+        limit: params.limit || 100,
+        cursor: params.cursor
+      })) as SlackUsersListResponse;
+
+      return {
+        success: true,
+        data: (result.members as unknown as SlackUser[]) || []
+      };
     } catch (error) {
       return {
         success: false,
@@ -184,14 +194,17 @@ export class SlackService implements BaseService<SlackConfig> {
 
   async getUserProfile(
     params: GetUserProfileParams
-  ): Promise<BaseResponse<Record<string, unknown>>> {
+  ): Promise<BaseResponse<SlackUserProfileObject>> {
     try {
-      const search = new URLSearchParams({ user: params.user_id, include_labels: 'true' });
-      const res = await fetch(`https://slack.com/api/users.profile.get?${search}`, {
-        headers: this.headers
-      });
-      const json = await res.json();
-      return { success: true, data: json.profile };
+      const result = (await this.client.users.profile.get({
+        user: params.user_id,
+        include_labels: true
+      })) as SlackUserProfileResponse;
+
+      return {
+        success: true,
+        data: result.profile
+      };
     } catch (error) {
       return {
         success: false,
