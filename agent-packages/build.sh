@@ -8,20 +8,38 @@ yarn install
 yarn build
 yarn link
 
-# Link and build hubspot package
-cd ../hubspot
-yarn install
-yarn link "@clearfeed-ai/quix-common-agent"
-yarn build
-
 # Link and build github package
 cd ../github
 yarn install
 yarn link "@clearfeed-ai/quix-common-agent"
 yarn build
 
+# Link and build hubspot package
+cd ../hubspot
+yarn install
+yarn link "@clearfeed-ai/quix-common-agent"
+yarn build
+
 # Link and build jira package
 cd ../jira
+yarn install
+yarn link "@clearfeed-ai/quix-common-agent"
+yarn build
+
+# Link and build postgres package
+cd ../postgres
+yarn install
+yarn link "@clearfeed-ai/quix-common-agent"
+yarn build
+
+# Link and build salesforce package
+cd ../salesforce
+yarn install
+yarn link "@clearfeed-ai/quix-common-agent"
+yarn build
+
+# Link and build slack package
+cd ../slack
 yarn install
 yarn link "@clearfeed-ai/quix-common-agent"
 yarn build
