@@ -35,7 +35,8 @@ export class ToolService {
         'githubConfig',
         'salesforceConfig',
         'notionConfig',
-        'linearConfig'
+        'linearConfig',
+        'mcpConnections'
       ]
     });
     if (!slackWorkspace) return;
@@ -161,6 +162,24 @@ export class ToolService {
               }
             },
             config: slackWorkspace.linearConfig
+          };
+        }
+      }
+      if (slackWorkspace.mcpConnections?.length) {
+        const mcpTools = await this.mcpService.getMcpServerToolsFromConnections(
+          slackWorkspace.mcpConnections
+        );
+        for (const mcpTool of mcpTools) {
+          this.runningTools.push(mcpTool.cleanup);
+          tools[mcpTool.mcpConnection.name] = {
+            toolConfig: {
+              tools: mcpTool.tools,
+              prompts: {
+                toolSelection: mcpTool.mcpConnection.default_prompt!,
+                responseGeneration: mcpTool.mcpConnection.default_prompt!
+              }
+            },
+            config: mcpTool.mcpConnection
           };
         }
       }
