@@ -2,6 +2,17 @@ import { SlackWorkspace } from '@quix/database/models';
 import { INTEGRATIONS } from '@quix/lib/constants';
 import { Connections } from '@quix/lib/types/common';
 import { ModalView, ViewsOpenResponse, ViewsUpdateResponse, WebClient } from '@slack/web-api';
+import {
+  McpConnection,
+  GithubConfig,
+  JiraConfig,
+  HubspotConfig,
+  SalesforceConfig,
+  PostgresConfig,
+  NotionConfig,
+  LinearConfig
+} from '@quix/database/models';
+import { Includeable } from 'sequelize';
 
 export type HomeViewArgs = {
   slackWorkspace: SlackWorkspace;
@@ -117,13 +128,13 @@ export type SalesforceConfigModalArgs = {
   };
 };
 
-export const SLACK_WORKSPACE_ALL_RELATIONS = [
-  'mcpConnections',
-  'githubConfig',
-  'jiraConfig',
-  'hubspotConfig',
-  'salesforceConfig',
-  'postgresConfig',
-  'notionConfig',
-  'linearConfig'
+export const SLACK_WORKSPACE_ALL_RELATIONS: Includeable[] = [
+  McpConnection,
+  GithubConfig,
+  JiraConfig,
+  HubspotConfig,
+  SalesforceConfig,
+  PostgresConfig,
+  NotionConfig,
+  LinearConfig
 ];
