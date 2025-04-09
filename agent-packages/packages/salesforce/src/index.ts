@@ -1,21 +1,9 @@
-import { DescribeObjectParams, SalesforceObjectName, UpdateTaskParams } from './types/index';
+import { DescribeObjectParams, SalesforceObjectName } from './types/index';
 import { Connection } from 'jsforce';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
-import {
-  SalesforceConfig,
-  SearchOpportunitiesResponse,
-  AddNoteToOpportunityResponse,
-  SearchOpportunitiesParams
-} from './types';
+import { SalesforceConfig } from './types';
 import { BaseResponse } from '@clearfeed-ai/quix-common-agent';
 
-import {
-  SalesforceOpportunity,
-  SalesforceNote,
-  CreateTaskParams,
-  SalesforceTask
-} from './types/index';
-import { filterOpportunities } from './utils';
 // Export all types
 export * from './types';
 

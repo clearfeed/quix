@@ -118,16 +118,15 @@ export class JiraService implements BaseService<JiraConfig> {
         };
       }
 
-      const issueData = {
+      const issue = await this.client.createIssue({
         summary: params.summary,
         description: params.description,
         projectKey,
         issueType: params.issueType,
         priority: params.priority,
-        assignee: params.assignee
-      };
-
-      const issue = await this.client.createIssue(issueData);
+        assignee: params.assignee,
+        additionalDescription: this.config.defaultConfig?.additionalDescription
+      });
       return {
         success: true,
         data: {

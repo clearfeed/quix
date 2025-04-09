@@ -7,7 +7,7 @@ import {
 import { SalesforceService } from '../index';
 import { BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import { filterOpportunities } from '../utils';
-import { SalesforceOpportunity, SalesforceNote } from '../types/index';
+import { SalesforceOpportunity } from '../types/index';
 
 export class SalesforceOpportunityService extends SalesforceService {
   constructor(config: SalesforceConfig) {
@@ -155,11 +155,16 @@ export class SalesforceOpportunityService extends SalesforceService {
     title?: string
   ): Promise<AddNoteToOpportunityResponse> {
     try {
-      const userInfo = await this.connection.identity();
+      // Prepare note with additional context if configured
+      let noteBody = note;
+      if (this.config.defaultConfig?.additionalDescription) {
+        noteBody = `${note}\n\n${this.config.defaultConfig.additionalDescription}`;
+      }
 
-      const noteData: SalesforceNote = {
+      const userInfo = await this.connection.identity();
+      const noteData = {
         Title: title || 'Note from Quix',
-        Body: note,
+        Body: noteBody,
         ParentId: opportunityId,
         OwnerId: userInfo.user_id
       };

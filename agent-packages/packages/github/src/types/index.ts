@@ -5,6 +5,14 @@ export interface GitHubConfig extends BaseConfig {
   token: string;
   owner?: string;
   repo?: string;
+  defaultConfig?: {
+    /**
+     * If this is included, it will be added at the end of the description when creating issues
+     * or when adding comments to existing PRs/issues.
+     * This is useful for adding more context to the issues created by the agent.
+     */
+    additionalDescription?: string;
+  };
 }
 
 export interface GitHubPR {

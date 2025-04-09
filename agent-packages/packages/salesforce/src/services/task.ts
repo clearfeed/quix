@@ -11,9 +11,13 @@ export class SalesforceTaskService extends SalesforceService {
     params: CreateTaskParams
   ): Promise<BaseResponse<{ taskId: string; whatId: string }>> {
     try {
+      let description = params.description || '';
+      if (this.config.defaultConfig?.additionalDescription && description) {
+        description = `${description}\n\n${this.config.defaultConfig.additionalDescription}`;
+      }
       const taskData: SalesforceTask = {
         Subject: params.subject,
-        Description: params.description || '',
+        Description: description,
         WhatId: params.whatId
       };
       if (params.status) {

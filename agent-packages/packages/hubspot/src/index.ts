@@ -4,7 +4,6 @@ import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   HubspotConfig,
   SearchDealsResponse,
-  Deal,
   AddNoteToDealResponse,
   CreateContactParams,
   CreateContactResponse,
@@ -193,6 +192,10 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async addNoteToDeal(dealId: string, note: string): Promise<AddNoteToDealResponse> {
     try {
+      // Append additional description if configured
+      if (this.config.defaultConfig?.additionalDescription) {
+        note = `${note}\n\n${this.config.defaultConfig.additionalDescription}`;
+      }
       const response = await this.client.crm.objects.notes.basicApi.create({
         properties: {
           hs_note_body: note,

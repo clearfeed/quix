@@ -2,6 +2,13 @@ import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 
 export interface HubspotConfig extends BaseConfig {
   accessToken: string;
+  defaultConfig?: {
+    /**
+     * If this is included, it will be added at the end of notes or descriptions.
+     * This is useful for adding more context to the content created by the agent.
+     */
+    additionalDescription?: string;
+  };
 }
 
 export interface Deal {

@@ -6,6 +6,11 @@ export interface GitHubConfig extends BaseConfig {
   token: string;
   owner?: string;
   repo?: string;
+  /**
+   * If this is included, it will be added at the end of the description when creating issues.
+   * This is useful for adding more context to the issues created by the agent.
+   */
+  additionalDescription?: string;
 }
 
 // Search types

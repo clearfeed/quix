@@ -8,7 +8,8 @@ import {
   JiraCommentResponse,
   JiraIssueComments,
   UpdateIssueFields,
-  UpdateIssueResponse
+  UpdateIssueResponse,
+  ADFNode
 } from './types';
 import axios, { AxiosInstance } from 'axios';
 import * as jwt from 'atlassian-jwt';
@@ -114,8 +115,18 @@ export class JiraClient {
     return response;
   }
 
-  async createIssue(params: CreateIssueParams): Promise<JiraIssueResponse> {
-    const { projectKey, summary, description, issueType, priority, assignee } = params;
+  async createIssue(
+    params: CreateIssueParams & { additionalDescription?: ADFNode[] }
+  ): Promise<JiraIssueResponse> {
+    const {
+      projectKey,
+      summary,
+      description,
+      issueType,
+      priority,
+      assignee,
+      additionalDescription
+    } = params;
     if (!projectKey) {
       throw new Error('Project key is required');
     }
@@ -140,7 +151,10 @@ export class JiraClient {
             ? {
                 type: 'doc',
                 version: 1,
-                content: [{ type: 'paragraph', content: [{ type: 'text', text: description }] }]
+                content: [
+                  { type: 'paragraph', content: [{ type: 'text', text: description }] },
+                  ...(additionalDescription ? additionalDescription : [])
+                ]
               }
             : undefined,
           issuetype: { id: issueTypeObj.id }

@@ -13,6 +13,13 @@ export type ZendeskAuth =
 export interface ZendeskConfig extends BaseConfig {
   subdomain: string;
   auth: ZendeskAuth;
+  defaultConfig?: {
+    /**
+     * If this is included, it will be added at the end of ticket descriptions.
+     * This is useful for adding more context to the tickets created by the agent.
+     */
+    additionalDescription?: string;
+  };
 }
 
 // Handler param types

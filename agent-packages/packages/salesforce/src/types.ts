@@ -3,6 +3,13 @@ import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 export interface SalesforceConfig extends BaseConfig {
   instanceUrl: string;
   accessToken: string;
+  defaultConfig?: {
+    /**
+     * If this is included, it will be added at the end of descriptions when creating content.
+     * This is useful for adding more context to the content created by the agent.
+     */
+    additionalDescription?: string;
+  };
 }
 
 export interface Opportunity {

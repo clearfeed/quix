@@ -168,7 +168,11 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
 
   async createTicket(params: CreateTicketParams): Promise<BaseResponse<CreateTicketResponse>> {
     try {
-      const { subject, description, requesterEmail, priority, assigneeId, tags } = params;
+      const { subject, requesterEmail, priority, assigneeId, tags } = params;
+      let description = params.description || '';
+      if (this.config.defaultConfig?.additionalDescription && description) {
+        description = `${description}\n\n${this.config.defaultConfig.additionalDescription}`;
+      }
 
       const ticketPayload: TicketPayload = {
         subject,

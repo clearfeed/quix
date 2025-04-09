@@ -17,6 +17,11 @@ export interface JiraConfig extends BaseConfig {
   host: string;
   defaultConfig?: {
     projectKey?: string;
+    /**
+     * If this is included, it will be added at the end of the description when filing issues.
+     * This is useful for adding more context to the issues created by the agent.
+     */
+    additionalDescription?: ADFNode[];
   };
   auth: JiraAuth;
   apiHost?: string;
@@ -200,3 +205,69 @@ export type UpdateIssueResponse = BaseResponse<void>;
 export type SearchUsersResponse = BaseResponse<{
   users: JiraUserResponse[];
 }>;
+
+export type ADFDocument = {
+  version: 1;
+  type: 'doc';
+  content: ADFNode[];
+};
+
+export type ADFNode =
+  | ParagraphNode
+  | TextNode
+  | HeadingNode
+  | BulletListNode
+  | OrderedListNode
+  | ListItemNode
+  | RuleNode;
+
+export type ParagraphNode = {
+  type: 'paragraph';
+  content?: ADFNode[];
+};
+
+export type TextNode = {
+  type: 'text';
+  text: string;
+  marks?: Mark[];
+};
+
+export type HeadingNode = {
+  type: 'heading';
+  attrs: {
+    level: 1 | 2 | 3 | 4 | 5 | 6;
+  };
+  content?: ADFNode[];
+};
+
+export type BulletListNode = {
+  type: 'bulletList';
+  content: ListItemNode[];
+};
+
+export type OrderedListNode = {
+  type: 'orderedList';
+  content: ListItemNode[];
+};
+
+export type ListItemNode = {
+  type: 'listItem';
+  content: ADFNode[];
+};
+
+export type RuleNode = {
+  type: 'rule';
+};
+
+export type Mark =
+  | { type: 'strong' }
+  | { type: 'em' }
+  | { type: 'underline' }
+  | { type: 'code' }
+  | {
+      type: 'link';
+      attrs: {
+        href: string;
+        title?: string;
+      };
+    };

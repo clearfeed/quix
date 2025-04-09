@@ -207,11 +207,15 @@ export class GitHubService implements BaseService<GitHubConfig> {
       const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
       const repo = validation.repoName;
       const owner = validation.repoOwner;
+      let description = params.description || '';
+      if (this.config.additionalDescription) {
+        description = `${description}\n\n${this.config.additionalDescription}`;
+      }
       const response = await this.client.issues.create({
         owner,
         repo,
         title: params.title,
-        body: params.description || ''
+        body: description
       });
       return {
         success: true,
@@ -476,11 +480,15 @@ export class GitHubService implements BaseService<GitHubConfig> {
   ): Promise<BaseResponse<RestEndpointMethodTypes['issues']['createComment']['response']['data']>> {
     try {
       const { owner, repo, issue_number, body } = params;
+      let commentBody = body;
+      if (this.config.additionalDescription) {
+        commentBody = `${commentBody}\n\n${this.config.additionalDescription}`;
+      }
       const response = await this.client.issues.createComment({
         owner,
         repo,
         issue_number,
-        body
+        body: commentBody
       });
       return { success: true, data: response.data };
     } catch (error) {
@@ -564,7 +572,11 @@ export class GitHubService implements BaseService<GitHubConfig> {
     params: CreatePullRequestReviewParams
   ): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['createReview']['response']['data']>> {
     try {
-      const { owner, repo, pull_number, body, event, commit_id, comments } = params;
+      const { owner, repo, pull_number, event, commit_id, comments } = params;
+      let body = params.body;
+      if (this.config.additionalDescription) {
+        body = `${body}\n\n${this.config.additionalDescription}`;
+      }
       const response = await this.client.pulls.createReview({
         owner,
         repo,
