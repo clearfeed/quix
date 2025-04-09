@@ -57,7 +57,7 @@ export function createSlackToolsExport(config: SlackConfig): ToolConfig {
 
     new DynamicStructuredTool({
       name: 'slack_reply_to_thread',
-      description: 'Reply to a message thread in a channel',
+      description: 'Reply to a specific message thread in Slack',
       schema: replyToThreadParamsSchema,
       func: async (args: ReplyToThreadParams) => service.replyToThread(args)
     }),
