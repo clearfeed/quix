@@ -37,10 +37,11 @@ export class LlmService {
     private readonly conversationStateModel: typeof ConversationState
   ) {}
 
-  private enhanceMessagesWithToolContext(
+  private async enhanceMessagesWithToolContext(
     previousMessages: LLMContext[],
-    lastToolCalls: ConversationState['last_tool_calls']
-  ): LLMContext[] {
+    lastToolCalls: ConversationState['last_tool_calls'],
+    messageProcessingArgs: MessageProcessingArgs
+  ): Promise<LLMContext[]> {
     const enhancedPreviousMessages = [...previousMessages];
 
     if (lastToolCalls) {
@@ -52,6 +53,23 @@ export class LlmService {
               `Tool "${call.name}" with args ${JSON.stringify(call.args)} returned: ${call.result}`
           )
           .join('; ')}`
+      });
+    }
+    let messageURL: undefined | string = undefined;
+    try {
+      messageURL = await messageProcessingArgs.slackWorkspace.getMessageURL({
+        channel: messageProcessingArgs.channelId,
+        messageTs: messageProcessingArgs.threadTs
+      });
+    } catch (error) {
+      this.logger.error(
+        `Error getting message URL for channel ${messageProcessingArgs.channelId} and thread ${messageProcessingArgs.threadTs}: ${error}`
+      );
+    }
+    if (messageURL) {
+      enhancedPreviousMessages.push({
+        role: 'system',
+        content: `This is the link to ths Slack Conversation where the user's request is located. ${messageURL}. You should use this link when creating context for the actions. Like adding links to the description and comments posted on issues.`
       });
     }
 
@@ -95,9 +113,10 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
     // Add previous tool calls to system context for better continuity
     let enhancedPreviousMessages: LLMContext[] = [];
     try {
-      enhancedPreviousMessages = this.enhanceMessagesWithToolContext(
+      enhancedPreviousMessages = await this.enhanceMessagesWithToolContext(
         previousMessages,
-        conversationState.last_tool_calls
+        conversationState.last_tool_calls,
+        args
       );
     } catch (error) {
       this.logger.error(`Error enhancing messages with tool context: ${error}`);

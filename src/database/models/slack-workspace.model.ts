@@ -254,6 +254,16 @@ export class SlackWorkspace extends Model<
       thread_ts
     });
   }
+
+  async getMessageURL({ channel, messageTs }: { channel: string; messageTs: string }) {
+    const webClient = new WebClient(this.bot_access_token);
+    const result = await webClient.chat.getPermalink({
+      channel,
+      message_ts: messageTs
+    });
+    return result.permalink;
+  }
+
   getAppHomeRedirectUrl(tab: 'home' | 'messages' | 'about' = 'home'): string {
     return `slack://app?team=${this.team_id}&id=${this.app_id}&tab=${tab}`;
   }
