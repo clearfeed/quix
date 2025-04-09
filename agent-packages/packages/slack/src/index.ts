@@ -30,7 +30,7 @@ export * from './tools';
 /**
  * Handles Slack API errors and returns appropriate error message
  */
-function handleSlackError(error: unknown): string {
+function handleSlackError(error: unknown): string | void {
   if ((error as WebAPIPlatformError).data?.error) {
     const platformError = error as WebAPIPlatformError;
     return `Slack Platform error: ${platformError.data.error}`;
@@ -45,8 +45,6 @@ function handleSlackError(error: unknown): string {
     return `Slack Rate Limited: Retry after ${rateLimitError.retryAfter} seconds`;
   } else if (error instanceof Error) {
     return error.message;
-  } else {
-    return String(error);
   }
 }
 
@@ -84,7 +82,7 @@ export class SlackService implements BaseService<SlackConfig> {
     } catch (error) {
       return {
         success: false,
-        error: handleSlackError(error)
+        error: handleSlackError(error) || 'Failed to list channels'
       };
     }
   }
@@ -108,7 +106,7 @@ export class SlackService implements BaseService<SlackConfig> {
     } catch (error) {
       return {
         success: false,
-        error: handleSlackError(error)
+        error: handleSlackError(error) || 'Failed to post message'
       };
     }
   }
@@ -133,7 +131,7 @@ export class SlackService implements BaseService<SlackConfig> {
     } catch (error) {
       return {
         success: false,
-        error: handleSlackError(error)
+        error: handleSlackError(error) || 'Failed to reply to thread'
       };
     }
   }
@@ -155,7 +153,7 @@ export class SlackService implements BaseService<SlackConfig> {
     } catch (error) {
       return {
         success: false,
-        error: handleSlackError(error)
+        error: handleSlackError(error) || 'Failed to add reaction'
       };
     }
   }
@@ -176,7 +174,7 @@ export class SlackService implements BaseService<SlackConfig> {
     } catch (error) {
       return {
         success: false,
-        error: handleSlackError(error)
+        error: handleSlackError(error) || 'Failed to get channel history'
       };
     }
   }
@@ -197,7 +195,7 @@ export class SlackService implements BaseService<SlackConfig> {
     } catch (error) {
       return {
         success: false,
-        error: handleSlackError(error)
+        error: handleSlackError(error) || 'Failed to get thread replies'
       };
     }
   }
@@ -217,7 +215,7 @@ export class SlackService implements BaseService<SlackConfig> {
     } catch (error) {
       return {
         success: false,
-        error: handleSlackError(error)
+        error: handleSlackError(error) || 'Failed to get users'
       };
     }
   }
@@ -238,7 +236,7 @@ export class SlackService implements BaseService<SlackConfig> {
     } catch (error) {
       return {
         success: false,
-        error: handleSlackError(error)
+        error: handleSlackError(error) || 'Failed to get user profile'
       };
     }
   }
