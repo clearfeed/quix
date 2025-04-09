@@ -28,6 +28,7 @@ oauth_config:
       - users:read
       - users:read.email
       - channels:read
+      - reactions:write
 settings:
   event_subscriptions:
     request_url: <YOUR_EVENTS_URL>
