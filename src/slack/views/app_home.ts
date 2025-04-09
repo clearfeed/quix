@@ -159,7 +159,7 @@ const getAvailableFns = async (selectedTool: SUPPORTED_INTEGRATIONS) => {
 const getToolConnectionView = (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined,
   mcpConnections: McpConnection[] = [],
-  slackWorkspace?: SlackWorkspace
+  slackWorkspace: SlackWorkspace
 ): BlockBuilder[] => {
   const select = Elements.StaticSelect({
     placeholder: 'Select a tool',
