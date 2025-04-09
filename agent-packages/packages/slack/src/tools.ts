@@ -24,10 +24,19 @@ import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 
 const SLACK_TOOL_SELECTION_PROMPT = `
-Slack is a messaging tool that manages:
-- Messages: Text, images, videos, and files in channels and direct messages.
-- Channels: Public and private spaces for team communication.
-- Users: Individuals with profiles, roles, and settings.
+Slack is a team communication platform that manages:
+- Messages: Text, files, images, and videos shared in channels and direct messages.
+- Threads: Message replies that keep discussions organized.
+- Channels: Public or private spaces for focused conversations.
+- Users: Workspace members with profiles, roles, and contact details.
+- Reactions: Emoji responses to messages for quick feedback.
+
+Consider using Slack tools when the user wants to:
+- List available public channels in the workspace
+- Post a message to a channel or reply to a thread
+- Retrieve message history from a channel or thread
+- Add a reaction (emoji) to an existing message
+- Look up users or view detailed user profiles
 `;
 
 const SLACK_RESPONSE_GENERATION_PROMPT = `
