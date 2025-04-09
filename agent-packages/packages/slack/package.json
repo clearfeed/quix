@@ -22,7 +22,6 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@slack/web-api": "^6.9.0",
-    "zod": "^3.22.2"
+    "@slack/web-api": "^6.9.0"
   }
 }
