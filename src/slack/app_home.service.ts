@@ -25,12 +25,7 @@ import {
   publishSalesforceConfigModal,
   publishOpenaiKeyModal
 } from './views/modals';
-import {
-  INTEGRATIONS,
-  QuixUserAccessLevel,
-  SUPPORTED_INTEGRATIONS,
-  TOOL_CONNECTION_MODELS
-} from '@quix/lib/constants';
+import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
 import { SlackWorkspace, PostgresConfig } from '@quix/database/models';
 import { IntegrationsService } from 'src/integrations/integrations.service';
@@ -39,6 +34,7 @@ import { Md } from 'slack-block-builder';
 import { Blocks } from 'slack-block-builder';
 import { BlockCollection } from 'slack-block-builder';
 import { McpService } from '../integrations/mcp.service';
+import { TOOL_CONNECTION_MODELS } from './constants';
 
 @Injectable()
 export class AppHomeService {

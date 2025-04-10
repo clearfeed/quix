@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { WebClient } from '@slack/web-api';
 import { InjectModel } from '@nestjs/sequelize';
 import { SlackWorkspace, SlackUserProfile } from '../database/models';
-import { INTEGRATIONS, TOOL_CONNECTION_MODELS } from '@quix/lib/constants';
+import { INTEGRATIONS } from '@quix/lib/constants';
 import { OnEvent } from '@nestjs/event-emitter';
 import { IntegrationConnectedEvent } from '@quix/types/events';
 import { sendMessage } from '@quix/lib/utils/slack';
@@ -11,6 +11,7 @@ import { ParseSlackMentionsUserMap } from '@quix/lib/types/slack';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { shuffle } from 'lodash';
 import { Includeable } from 'sequelize';
+import { TOOL_CONNECTION_MODELS } from './constants';
 
 @Injectable()
 export class SlackService {
@@ -41,7 +42,7 @@ export class SlackService {
       slackWorkspaceIncludeables = TOOL_CONNECTION_MODELS;
     }
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
-      include: slackWorkspaceIncludeables
+      include: TOOL_CONNECTION_MODELS
     });
     if (!slackWorkspace) {
       this.logger.error('Slack workspace not found', { teamId });

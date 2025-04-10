@@ -1,13 +1,3 @@
-import {
-  McpConnection,
-  GithubConfig,
-  HubspotConfig,
-  JiraConfig,
-  LinearConfig,
-  NotionConfig,
-  PostgresConfig,
-  SalesforceConfig
-} from '../database/models';
 export const OPENAI_CONTEXT_SIZE = 30;
 
 export enum SUPPORTED_INTEGRATIONS {
@@ -272,14 +262,3 @@ Output only structured JSON matching the required format.`;
     `
   }
 };
-
-export const TOOL_CONNECTION_MODELS = [
-  GithubConfig,
-  HubspotConfig,
-  JiraConfig,
-  LinearConfig,
-  McpConnection,
-  NotionConfig,
-  PostgresConfig,
-  SalesforceConfig
-];
