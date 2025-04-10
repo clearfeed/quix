@@ -562,7 +562,7 @@ export class IntegrationsInstallService {
     try {
       const url = new URL(urlString);
       if (
-        !['https:', ...(process.env.NODE_ENV === 'development' ? ['http:'] : [])].includes(
+        !['https:', ...(process.env.NODE_ENV !== 'production' ? ['http:'] : [])].includes(
           url.protocol
         )
       ) {
