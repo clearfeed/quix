@@ -112,7 +112,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       authorName
     );
     this.logger.log(
-      `Selected tools: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}`
+      `Selected tools: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}. Reason: ${toolSelection.reason}`
     );
 
     if (toolSelection.selectedTools === 'none') {
@@ -243,6 +243,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
   ): Promise<{
     selectedTools: (keyof typeof tools)[] | 'none';
     content: string;
+    reason: string;
   }> {
     const availableCategories = Object.keys(tools);
 
@@ -263,7 +264,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       description: QuixPrompts.baseToolSelection,
       schema: z.object({
         toolCategories: z.array(z.enum(availableCategories as [string, ...string[]])),
-        reason: z.string()
+        reason: z.string().describe('The reason for selecting the tools')
       }),
       func: async ({ toolCategories, reason }) => {
         return { toolCategories, reason };
@@ -302,7 +303,8 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
 
     return {
       selectedTools: result.tool_calls?.[0]?.args?.toolCategories ?? 'none',
-      content: Array.isArray(result.content) ? result.content.join(' ') : result.content
+      content: Array.isArray(result.content) ? result.content.join(' ') : result.content,
+      reason: result.tool_calls?.[0]?.args?.reason ?? 'No reason provided'
     };
   }
 
