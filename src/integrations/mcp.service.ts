@@ -31,13 +31,6 @@ export interface McpToolsLogger {
 }
 
 /**
- * Log options interface
- */
-interface LogOptions {
-  logLevel?: 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace';
-}
-
-/**
  * MCP error interface
  */
 interface McpError extends Error {
@@ -141,7 +134,7 @@ export class McpService {
     return this.convertSingleMcpToLangchainTools(serverName, transport, this.logger, defaultConfig);
   }
 
-  async getMcpServerToolsFromConnections(connections: McpConnection[]): Promise<
+  async getToolsFromMCPConnections(connections: McpConnection[]): Promise<
     {
       mcpConnection: McpConnection;
       tools: DynamicStructuredTool<any>[];
