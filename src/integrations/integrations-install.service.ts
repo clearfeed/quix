@@ -597,7 +597,7 @@ export class IntegrationsInstallService {
         );
         try {
           [mcpToolConfig] = await this.mcpService.getToolsFromMCPConnections([mcpConnection]);
-          if (!mcpToolConfig || mcpToolConfig.tools.length === 0) {
+          if (mcpToolConfig?.tools.length === 0) {
             throw new BadRequestException('Failed to retrieve tools from the MCP server.');
           }
         } catch (error) {
