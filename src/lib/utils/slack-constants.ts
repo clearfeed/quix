@@ -44,7 +44,8 @@ export const SLACK_ACTIONS = {
   MCP_CONNECTION_ACTIONS: {
     NAME: 'mcp-name',
     URL: 'mcp-url',
-    API_TOKEN: 'mcp-api-token'
+    API_TOKEN: 'mcp-api-token',
+    TOOL_SELECTION_PROMPT: 'mcp-tool-selection-prompt'
   },
   SALESFORCE_CONFIG_MODAL: {
     DEFAULT_PROMPT: 'salesforce-default-prompt',
