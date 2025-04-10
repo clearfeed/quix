@@ -171,7 +171,7 @@ export class ToolService {
         );
         for (const mcpTool of mcpTools) {
           this.runningTools.push(mcpTool.cleanup);
-          tools[mcpTool.mcpConnection.name] = {
+          tools[`${mcpTool.mcpConnection.name}-${mcpTool.mcpConnection.id}`] = {
             toolConfig: {
               tools: mcpTool.tools,
               prompts: {
