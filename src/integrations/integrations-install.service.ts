@@ -4,7 +4,7 @@ import {
   HUBSPOT_SCOPES,
   GITHUB_SCOPES
 } from '@quix/lib/constants';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -611,6 +611,7 @@ export class IntegrationsInstallService {
       return mcpConnection;
     } catch (error) {
       this.logger.error('Failed to setup MCP connection:', error);
+      if (error instanceof HttpException) throw error;
       throw new BadRequestException('Failed to setup MCP connection');
     } finally {
       mcpToolConfig?.cleanup();
