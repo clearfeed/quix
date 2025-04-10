@@ -550,7 +550,8 @@ export class IntegrationsInstallService {
       ![
         SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME,
         SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL,
-        SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN
+        SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN,
+        SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.TOOL_SELECTION_PROMPT
       ].every((field) => parsedResponse[field]?.selectedValue)
     ) {
       throw new BadRequestException('Missing required fields');

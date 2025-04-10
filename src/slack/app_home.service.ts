@@ -311,7 +311,8 @@ export class AppHomeService {
                   id: mcpConnection.id,
                   url: mcpConnection.url,
                   name: mcpConnection.name,
-                  apiToken: mcpConnection.auth_token || undefined
+                  apiToken: mcpConnection.auth_token || undefined,
+                  toolSelectionPrompt: mcpConnection.request_config.tool_selection_prompt
                 }
               });
               break;
