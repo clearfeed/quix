@@ -9,7 +9,6 @@ import { CallToolResultSchema, ListToolsResultSchema } from '@modelcontextprotoc
 import { jsonSchemaToZod, JsonSchema } from '@n8n/json-schema-to-zod';
 import { z } from 'zod';
 import { SUPPORTED_INTEGRATIONS } from '../lib/constants';
-import { ConfigService } from '@nestjs/config';
 import * as _ from 'lodash';
 /**
  * Interface for MCP servers configuration
@@ -77,13 +76,11 @@ export class McpService {
    * Static for testing and extension outside the class
    */
   static readonly INTEGRATION_TO_MCP_SERVER = {
-    // Add new mappings as new MCP servers are installed
-    [SUPPORTED_INTEGRATIONS.SLACK]: '@modelcontextprotocol/server-slack',
     [SUPPORTED_INTEGRATIONS.NOTION]: '@suekou/mcp-notion-server',
     [SUPPORTED_INTEGRATIONS.LINEAR]: '@ibraheem4/linear-mcp'
   } as const satisfies Partial<Record<SUPPORTED_INTEGRATIONS, string>>;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor() {}
 
   /**
    * Gets tools from an MCP server for a specified integration
@@ -92,13 +89,6 @@ export class McpService {
    * @param envVars Optional environment variables to pass to the MCP server
    * @returns A promise resolving to tools and cleanup function
    */
-  async getMcpServerTools(
-    integration: SUPPORTED_INTEGRATIONS.SLACK,
-    envVars: { SLACK_BOT_TOKEN: string; SLACK_TEAM_ID: string }
-  ): Promise<{
-    tools: DynamicStructuredTool<any>[];
-    cleanup: McpServerCleanupFn;
-  }>;
   async getMcpServerTools(
     integration: SUPPORTED_INTEGRATIONS.NOTION,
     envVars: { NOTION_API_TOKEN: string }

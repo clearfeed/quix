@@ -1,0 +1,27 @@
+{
+  "name": "@clearfeed-ai/quix-slack-agent",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
+    "build": "yarn clean && tsc",
+    "test": "jest",
+    "prepublishOnly": "yarn build",
+    "watch": "tsc --watch"
+  },
+  "peerDependencies": {
+    "@langchain/core": "^0.3.40"
+  },
+  "devDependencies": {
+    "@langchain/core": "^0.3.40",
+    "typescript": "^5.8.3"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@slack/web-api": "^6.9.0"
+  }
+}

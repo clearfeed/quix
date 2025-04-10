@@ -217,20 +217,6 @@ Output only structured JSON matching the required format.`;
     - Format dates in a human-readable format
     `
   },
-  SLACK: {
-    toolSelection: `
-    Slack is a messaging tool that manages:
-    - Messages: Text, images, videos, and files in channels and direct messages.
-    - Channels: Public and private spaces for team communication.
-    - Users: Individuals with profiles, roles, and settings.
-    `,
-    responseGeneration: `
-    When formatting Slack responses:
-    - Include channel/user IDs when referencing specific records
-    - Format important contact details in bold
-    - Present deal values and stages clearly
-    `
-  },
   LINEAR: {
     toolSelection: `
     Linear is a project management tool that manages:
