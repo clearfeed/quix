@@ -10,7 +10,6 @@ import { sendMessage } from '@quix/lib/utils/slack';
 import { ParseSlackMentionsUserMap } from '@quix/lib/types/slack';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { shuffle } from 'lodash';
-import { SLACK_WORKSPACE_ALL_RELATIONS } from './views/types';
 import { Includeable } from 'sequelize';
 
 @Injectable()
@@ -28,12 +27,21 @@ export class SlackService {
     this.webClient = new WebClient(this.configService.get('SLACK_BOT_TOKEN'));
   }
 
-  async getSlackWorkspace(teamId: string, include?: Includeable[]) {
-    const relationsToInclude: Includeable[] = include?.length
-      ? include
-      : SLACK_WORKSPACE_ALL_RELATIONS;
+  /**
+   * Fetches a Slack workspace by team ID
+   * @param teamId The Slack team ID
+   * @param include An array of associations to include in the query, if passed
+   * then @param includeAllIntegrations is ignored
+   * @param includeAllIntegrations Whether to include all integrations
+   * @returns The Slack workspace
+   */
+  async getSlackWorkspace(teamId: string, include?: string[], includeAllIntegrations = true) {
+    let slackWorkspaceIncludeables: Includeable[] | undefined = include;
+    if (!include?.length && includeAllIntegrations) {
+      slackWorkspaceIncludeables = INTEGRATIONS.map((integration) => integration.relation);
+    }
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
-      include: relationsToInclude
+      include: slackWorkspaceIncludeables
     });
     if (!slackWorkspace) {
       this.logger.error('Slack workspace not found', { teamId });
