@@ -1,6 +1,6 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { HubspotService } from './index';
-import { CreateContactParams, HubspotConfig, CreateDealParams } from './types';
+import { CreateContactParams, HubspotConfig, CreateDealParams, HubspotEntityType } from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
@@ -43,15 +43,31 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         keyword: z.string().describe('The keyword to search for in HubSpot deals')
       })
     }),
+    tool(async (args: { keyword: string }) => service.searchContacts(args.keyword), {
+      name: 'search_hubspot_contacts',
+      description: 'Search for contacts in HubSpot based on name or email',
+      schema: z.object({
+        keyword: z
+          .string()
+          .describe('The keyword to search for in contact names or email addresses')
+      })
+    }),
     tool(
-      async (args: { dealId: string; note: string }) =>
-        service.addNoteToDeal(args.dealId, args.note),
+      async (args: { entityType: string; entityId: string; note: string }) =>
+        service.createNote({
+          entityType: args.entityType as HubspotEntityType,
+          entityId: args.entityId,
+          note: args.note
+        }),
       {
-        name: 'add_note_to_deal',
-        description: 'Add a note to a deal in HubSpot',
+        name: 'create_hubspot_note',
+        description: 'Create a note for a deal, company, or contact in HubSpot',
         schema: z.object({
-          dealId: z.string().describe('The ID of the deal to add a note to'),
-          note: z.string().describe('The note to add to the deal')
+          entityType: z
+            .enum(['deals', 'companies', 'contacts'])
+            .describe('The type of entity to add the note to (deals, companies, or contacts)'),
+          entityId: z.string().describe('The ID of the entity to add the note to'),
+          note: z.string().describe('The content of the note')
         })
       }
     ),

@@ -17,6 +17,21 @@ export interface Deal {
   lastModifiedDate: string;
 }
 
+export interface Contact {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  createdAt: string;
+  lastModifiedDate: string;
+}
+
+export type SearchContactsResponse = BaseResponse<{
+  contacts: Contact[];
+}>;
+
 export interface CreateDealParams {
   name: string;
   amount?: number;
@@ -47,6 +62,20 @@ export type SearchDealsResponse = BaseResponse<{
   deals: Deal[];
 }>;
 
-export type AddNoteToDealResponse = BaseResponse<{
+export enum HubspotEntityType {
+  DEAL = 'deals',
+  COMPANY = 'companies',
+  CONTACT = 'contacts'
+}
+
+export interface CreateNoteParams {
+  entityType: HubspotEntityType;
+  entityId: string;
+  note: string;
+}
+
+export type AddNoteResponse = BaseResponse<{
   noteId: string;
 }>;
+
+export type AddNoteToDealResponse = AddNoteResponse;

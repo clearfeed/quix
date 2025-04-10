@@ -4,12 +4,14 @@ import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   HubspotConfig,
   SearchDealsResponse,
-  Deal,
-  AddNoteToDealResponse,
   CreateContactParams,
   CreateContactResponse,
   CreateDealParams,
-  CreateDealResponse
+  CreateDealResponse,
+  CreateNoteParams,
+  AddNoteResponse,
+  HubspotEntityType,
+  SearchContactsResponse
 } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 import { validateRequiredFields } from './utils';
@@ -18,6 +20,18 @@ export * from './types';
 export * from './tools';
 
 interface HubspotDeal {
+  id: string;
+  properties: Record<string, string | null>;
+  associations?: {
+    companies?: {
+      results: Array<{
+        id: string;
+      }>;
+    };
+  };
+}
+
+interface HubspotContact {
   id: string;
   properties: Record<string, string | null>;
   associations?: {
@@ -112,6 +126,94 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
+  async searchContacts(keyword: string): Promise<SearchContactsResponse> {
+    try {
+      const response = await this.client.crm.contacts.searchApi.doSearch({
+        filterGroups: [
+          {
+            // Search by email
+            filters: [
+              {
+                propertyName: 'email',
+                operator: FilterOperatorEnum.ContainsToken,
+                value: keyword
+              }
+            ]
+          },
+          {
+            // Search by first name
+            filters: [
+              {
+                propertyName: 'firstname',
+                operator: FilterOperatorEnum.ContainsToken,
+                value: keyword
+              }
+            ]
+          },
+          {
+            // Search by last name
+            filters: [
+              {
+                propertyName: 'lastname',
+                operator: FilterOperatorEnum.ContainsToken,
+                value: keyword
+              }
+            ]
+          }
+        ],
+        properties: [
+          'firstname',
+          'lastname',
+          'email',
+          'phone',
+          'company',
+          'createdate',
+          'hs_lastmodifieddate'
+        ],
+        sorts: ['createdate'],
+        limit: 100,
+        after: '0'
+      });
+
+      const contacts = await Promise.all(
+        response.results.map(async (contact) => {
+          const hubspotContact = contact as unknown as HubspotContact;
+          let company = hubspotContact.properties.company || 'Unknown';
+
+          // Get company name if associated
+          if (hubspotContact.associations?.companies?.results?.[0]?.id) {
+            const companyResponse = await this.client.crm.companies.basicApi.getById(
+              hubspotContact.associations.companies.results[0].id
+            );
+            company = companyResponse.properties.name || company;
+          }
+
+          return {
+            id: hubspotContact.id,
+            firstName: hubspotContact.properties.firstname || '',
+            lastName: hubspotContact.properties.lastname || '',
+            email: hubspotContact.properties.email || '',
+            phone: hubspotContact.properties.phone || undefined,
+            company,
+            createdAt: hubspotContact.properties.createdate || '',
+            lastModifiedDate: hubspotContact.properties.hs_lastmodifieddate || ''
+          };
+        })
+      );
+
+      return {
+        success: true,
+        data: { contacts }
+      };
+    } catch (error) {
+      console.error('Error searching HubSpot contacts:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to search HubSpot contacts'
+      };
+    }
+  }
+
   async searchDeals(keyword: string): Promise<SearchDealsResponse> {
     try {
       const response = await this.client.crm.deals.searchApi.doSearch({
@@ -191,8 +293,17 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
-  async addNoteToDeal(dealId: string, note: string): Promise<AddNoteToDealResponse> {
+  async createNote(params: CreateNoteParams): Promise<AddNoteResponse> {
     try {
+      const { entityType, entityId, note } = params;
+
+      // Map of entity types to their association type IDs
+      const associationTypeIds = {
+        [HubspotEntityType.DEAL]: 214,
+        [HubspotEntityType.COMPANY]: 190,
+        [HubspotEntityType.CONTACT]: 202
+      };
+
       const response = await this.client.crm.objects.notes.basicApi.create({
         properties: {
           hs_note_body: note,
@@ -200,25 +311,27 @@ export class HubspotService implements BaseService<HubspotConfig> {
         },
         associations: [
           {
-            to: {
-              id: dealId
-            },
+            to: { id: entityId },
             types: [
               {
                 associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
-                associationTypeId: 214
+                associationTypeId: associationTypeIds[entityType]
               }
             ]
           }
         ]
       });
+
       return {
         success: true,
         data: { noteId: response.id }
       };
     } catch (error) {
-      console.error('Error adding note to deal:', error);
-      throw error;
+      console.error('Error creating note:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create note'
+      };
     }
   }
 
