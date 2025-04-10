@@ -147,12 +147,19 @@ export class McpService {
       cleanup: McpServerCleanupFn;
     }[] = [];
     for (const connection of connections) {
+      const authHeader = `Bearer ${connection.auth_token}`;
+      const fetchWithAuth = (url: string | URL, init?: RequestInit) => {
+        const headers = new Headers(init?.headers);
+        headers.set('Authorization', authHeader);
+        return fetch(url.toString(), { ...init, headers });
+      };
       const transport = new SSEClientTransport(new URL(connection.url), {
-        requestInit: {
-          headers: {
-            Authorization: `Bearer ${connection.auth_token}`
-          }
-        }
+        // required for initial connection
+        eventSourceInit: {
+          fetch: fetchWithAuth
+        },
+        // required for tool calls and other requests to the MCP server
+        requestInit: { headers: { Authorization: authHeader } }
       });
       const payload = await this.convertSingleMcpToLangchainTools(
         connection.name,
