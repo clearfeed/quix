@@ -594,7 +594,7 @@ export class IntegrationsInstallService {
       } catch (error) {
         this.logger.error('Failed to get tools from MCP connection:', error);
         throw new BadRequestException(
-          'Failed to get tools from MCP server. Make sure the MCP server is up and configured correctly.'
+          'Failed to retrieve tools from the MCP server. Please ensure the MCP server is running and properly configured.'
         );
       }
       return mcpConnection;
