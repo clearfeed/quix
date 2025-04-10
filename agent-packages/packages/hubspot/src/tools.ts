@@ -101,8 +101,8 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
   return {
     tools,
     prompts: {
-      toolSelection: HUBSPOT_TOOL_SELECTION_PROMPT,
-      responseGeneration: HUBSPOT_RESPONSE_GENERATION_PROMPT
+      toolSelection: config.toolSelectionPrompt ?? HUBSPOT_TOOL_SELECTION_PROMPT,
+      responseGeneration: config.responseGenerationPrompt ?? HUBSPOT_RESPONSE_GENERATION_PROMPT
     }
   };
 }

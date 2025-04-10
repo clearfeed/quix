@@ -20,6 +20,8 @@ export interface JiraConfig extends BaseConfig {
   };
   auth: JiraAuth;
   apiHost?: string;
+  toolSelectionPrompt?: string;
+  responseGenerationPrompt?: string;
 }
 
 export interface JiraIssueResponse {

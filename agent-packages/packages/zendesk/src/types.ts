@@ -13,6 +13,8 @@ export type ZendeskAuth =
 export interface ZendeskConfig extends BaseConfig {
   subdomain: string;
   auth: ZendeskAuth;
+  toolSelectionPrompt?: string;
+  responseGenerationPrompt?: string;
 }
 
 // Handler param types

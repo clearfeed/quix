@@ -172,8 +172,8 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
   return {
     tools,
     prompts: {
-      toolSelection: ZENDESK_TOOL_SELECTION_PROMPT,
-      responseGeneration: ZENDESK_RESPONSE_GENERATION_PROMPT
+      toolSelection: config.toolSelectionPrompt ?? ZENDESK_TOOL_SELECTION_PROMPT,
+      responseGeneration: config.responseGenerationPrompt ?? ZENDESK_RESPONSE_GENERATION_PROMPT
     }
   };
 }

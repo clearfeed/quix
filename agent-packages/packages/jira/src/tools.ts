@@ -147,8 +147,8 @@ export function createJiraToolsExport(config: JiraConfig): ToolConfig {
   return {
     tools: createJiraTools(config),
     prompts: {
-      toolSelection: JIRA_TOOL_SELECTION_PROMPT,
-      responseGeneration: getJiraResponsePrompt(config)
+      toolSelection: config.toolSelectionPrompt ?? JIRA_TOOL_SELECTION_PROMPT,
+      responseGeneration: config.responseGenerationPrompt ?? getJiraResponsePrompt(config)
     }
   };
 }

@@ -6,6 +6,8 @@ export interface GitHubConfig extends BaseConfig {
   token: string;
   owner?: string;
   repo?: string;
+  toolSelectionPrompt?: string;
+  responseGenerationPrompt?: string;
 }
 
 // Search types

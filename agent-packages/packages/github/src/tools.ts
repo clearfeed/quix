@@ -857,8 +857,8 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
   return {
     tools,
     prompts: {
-      toolSelection: GITHUB_TOOL_SELECTION_PROMPT,
-      responseGeneration: GITHUB_RESPONSE_GENERATION_PROMPT
+      toolSelection: config.toolSelectionPrompt ?? GITHUB_TOOL_SELECTION_PROMPT,
+      responseGeneration: config.responseGenerationPrompt ?? GITHUB_RESPONSE_GENERATION_PROMPT
     }
   };
 }
