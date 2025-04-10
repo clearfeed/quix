@@ -25,11 +25,16 @@ import {
   publishSalesforceConfigModal,
   publishOpenaiKeyModal
 } from './views/modals';
-import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
+import {
+  INTEGRATIONS,
+  QuixUserAccessLevel,
+  SUPPORTED_INTEGRATIONS,
+  TOOL_CONNECTION_MODELS
+} from '@quix/lib/constants';
 import { SlackService } from './slack.service';
 import { SlackWorkspace, PostgresConfig } from '@quix/database/models';
 import { IntegrationsService } from 'src/integrations/integrations.service';
-import { HomeViewArgs, GithubDefaultConfig, SLACK_WORKSPACE_ALL_RELATIONS } from './views/types';
+import { HomeViewArgs, GithubDefaultConfig } from './views/types';
 import { Md } from 'slack-block-builder';
 import { Blocks } from 'slack-block-builder';
 import { BlockCollection } from 'slack-block-builder';
@@ -362,7 +367,7 @@ export class AppHomeService {
               break;
           }
           await slackWorkspace.reload({
-            include: SLACK_WORKSPACE_ALL_RELATIONS
+            include: TOOL_CONNECTION_MODELS
           });
           await webClient.views.publish({
             user_id: userId,
