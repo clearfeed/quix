@@ -605,9 +605,12 @@ export class AppHomeService {
     let availableFunctionsWithDescriptions: string[] = [];
 
     if (selectedTool?.startsWith('mcp:')) {
+      let mcpToolConfig:
+        | Awaited<ReturnType<typeof this.mcpService.getToolsFromMCPConnections>>[number]
+        | undefined;
       try {
-        const [{ tools }] = await this.mcpService.getToolsFromMCPConnections(mcpConnections);
-        availableFunctionsWithDescriptions = tools.map((tool) => {
+        [mcpToolConfig] = await this.mcpService.getToolsFromMCPConnections(mcpConnections);
+        availableFunctionsWithDescriptions = mcpToolConfig.tools.map((tool) => {
           return `• ${Md.codeInline(tool.name)}: ${tool.description}`;
         });
       } catch (error) {
@@ -617,6 +620,8 @@ export class AppHomeService {
             text: `${Md.emoji('warning')} Error fetching tools from this MCP server.`
           })
         );
+      } finally {
+        mcpToolConfig?.cleanup();
       }
     } else {
       const toolData = await getToolData(selectedTool);
