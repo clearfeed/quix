@@ -2,7 +2,12 @@ import { AppMentionEvent, ErrorCode, GenericMessageEvent, KnownBlock } from '@sl
 import { LLMContext } from '@quix/llm/types';
 import { WebClient } from '@slack/web-api';
 import { MessageElement } from '@slack/web-api/dist/types/response/ConversationsHistoryResponse';
-import { INTEGRATIONS, OPENAI_CONTEXT_SIZE, SlackMessageUserIdRegex } from '../constants';
+import {
+  INTEGRATIONS,
+  OPENAI_CONTEXT_SIZE,
+  SlackMessageUserIdRegex,
+  SUPPORTED_INTEGRATIONS
+} from '../constants';
 import { SLACK_SCOPES } from './slack-constants';
 import { SlackWorkspace } from '@quix/database/models';
 import {
@@ -213,3 +218,22 @@ export const parseInputBlocksSubmission = (
 export function isSlackWebClientError(error: any): boolean {
   return Object.values(ErrorCode).includes(error.code);
 }
+
+/**
+ * Get the connected integrations for a slack workspace
+ * @param slackWorkspace
+ * @returns
+ * Note: This function assumes that all the supported integrations are already loaded on the instance
+ * of the slack workspace.
+ */
+export const getConnectedIntegrations = (
+  slackWorkspace: SlackWorkspace
+): SUPPORTED_INTEGRATIONS[] => {
+  const connectedIntegration: SUPPORTED_INTEGRATIONS[] = [];
+  for (const integration of INTEGRATIONS) {
+    if (slackWorkspace[integration.relation as keyof SlackWorkspace]) {
+      connectedIntegration.push(integration.value);
+    }
+  }
+  return connectedIntegration;
+};
