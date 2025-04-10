@@ -561,8 +561,12 @@ export class IntegrationsInstallService {
       .selectedValue as string;
     try {
       const url = new URL(urlString);
-      if (!['http:', 'https:'].includes(url.protocol)) {
-        throw new BadRequestException('URL must use http or https protocol');
+      if (
+        !['https:', ...(process.env.NODE_ENV === 'development' ? ['http:'] : [])].includes(
+          url.protocol
+        )
+      ) {
+        throw new BadRequestException('URL must use https protocol');
       }
     } catch (error) {
       throw new BadRequestException('Invalid URL format');
