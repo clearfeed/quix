@@ -15,6 +15,7 @@ import { displayErrorModal, displayLoadingModal, displaySuccessModal } from './v
 import { WebClient } from '@slack/web-api';
 import { SlackService } from './slack.service';
 import { getMCPConnectionDropDownValue } from './views/app_home';
+import { OktaConfig } from '@quix/database/models';
 @Injectable()
 export class InteractionsService {
   private readonly logger = new Logger(InteractionsService.name);
@@ -261,7 +262,7 @@ export class InteractionsService {
         try {
           this.integrationsInstallService
             .okta(payload)
-            .then(async () => {
+            .then(async (oktaConfig: OktaConfig) => {
               await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
                 text: 'Okta connected successfully',
                 viewId: payload.view.id
@@ -269,7 +270,8 @@ export class InteractionsService {
               this.appHomeService.handleIntegrationConnected(
                 payload.user.id,
                 payload.view.team_id,
-                'oktaConfig'
+                SUPPORTED_INTEGRATIONS.OKTA,
+                oktaConfig
               );
             })
             .catch((error) => {
