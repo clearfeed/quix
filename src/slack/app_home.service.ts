@@ -248,6 +248,7 @@ export class AppHomeService {
                 triggerId,
                 teamId,
                 initialValues: {
+                  id: postgresConfig.id,
                   host: postgresConfig.host,
                   port: postgresConfig.port.toString(),
                   username: postgresConfig.user,
