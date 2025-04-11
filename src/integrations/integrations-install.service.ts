@@ -645,7 +645,8 @@ export class IntegrationsInstallService {
 
       try {
         const url = new URL(cleanedOrgUrl);
-        if (!url.hostname.includes('okta.com') && !url.hostname.includes('oktapreview.com')) {
+        const allowedHosts = ['okta.com', 'oktapreview.com'];
+        if (!allowedHosts.includes(url.hostname)) {
           throw new BadRequestException(
             'Invalid Okta domain. Must be an okta.com or oktapreview.com domain.'
           );
