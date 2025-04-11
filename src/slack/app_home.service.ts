@@ -1,12 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { BlockElementAction, ButtonAction, StaticSelectAction, OverflowAction } from '@slack/bolt';
-import { AppHomeOpenedEvent } from '@slack/web-api';
+import { AppHomeOpenedEvent, HomeView } from '@slack/web-api';
 import { WebClient } from '@slack/web-api';
-import { getHomeView } from './views/app_home';
+import {
+  getAccessControlView,
+  getPreferencesView,
+  getOnboardingView,
+  getOpenAIView,
+  getToolConnectionView,
+  getIntegrationInfo,
+  getNonAdminView,
+  getToolData
+} from './views/app_home';
 import {
   publishPostgresConnectionModal,
-  publishOpenaiKeyModal,
   publishManageAdminsModal,
   publishAccessControlModal,
   publishJiraConfigModal,
@@ -14,32 +22,39 @@ import {
   publishLinearConnectionModal,
   publishMcpConnectionModal,
   publishGithubConfigModal,
-  publishSalesforceConfigModal
+  publishSalesforceConfigModal,
+  publishOpenaiKeyModal
 } from './views/modals';
 import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
 import { SlackWorkspace, PostgresConfig } from '@quix/database/models';
 import { IntegrationsService } from 'src/integrations/integrations.service';
-import { GithubDefaultConfig } from './views/types';
+import { HomeViewArgs, GithubDefaultConfig } from './views/types';
+import { Md } from 'slack-block-builder';
+import { Blocks } from 'slack-block-builder';
+import { BlockCollection } from 'slack-block-builder';
+import { McpService } from '../integrations/mcp.service';
+import { TOOL_CONNECTION_MODELS } from './constants';
 
 @Injectable()
 export class AppHomeService {
   private readonly logger = new Logger(AppHomeService.name);
   constructor(
     private readonly slackService: SlackService,
-    private readonly integrationsService: IntegrationsService
+    private readonly integrationsService: IntegrationsService,
+    private readonly mcpService: McpService
   ) {}
 
   async handleAppHomeOpened(event: AppHomeOpenedEvent, teamId: string) {
     if (event.tab !== 'home') return;
 
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['mcpConnections']);
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
 
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: event.user,
-      view: await getHomeView({ slackWorkspace, userId: event.user })
+      view: await this.getHomeView({ slackWorkspace, userId: event.user })
     });
   }
 
@@ -115,7 +130,7 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
-      view: await getHomeView({
+      view: await this.getHomeView({
         slackWorkspace,
         userId
       })
@@ -127,14 +142,14 @@ export class AppHomeService {
     const integration = INTEGRATIONS.find((integration) => integration.value === selectedTool);
     const relations = ['mcpConnections'];
     if (integration) relations.push(integration.relation);
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, relations);
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     this.logger.log('Publishing home view', { selectedTool });
 
     await webClient.views.publish({
       user_id: userId,
-      view: await getHomeView({
+      view: await this.getHomeView({
         selectedTool,
         slackWorkspace,
         connection: integration
@@ -219,7 +234,7 @@ export class AppHomeService {
       );
       const relations = ['mcpConnections'];
       if (integration) relations.push(integration.relation);
-      const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, relations);
+      const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
       if (!slackWorkspace) return;
       const webClient = new WebClient(slackWorkspace.bot_access_token);
       switch (selectedOption) {
@@ -297,7 +312,8 @@ export class AppHomeService {
                   id: mcpConnection.id,
                   url: mcpConnection.url,
                   name: mcpConnection.name,
-                  apiToken: mcpConnection.auth_token || undefined
+                  apiToken: mcpConnection.auth_token || undefined,
+                  toolSelectionPrompt: mcpConnection.request_config.tool_selection_prompt
                 }
               });
               break;
@@ -347,11 +363,11 @@ export class AppHomeService {
               break;
           }
           await slackWorkspace.reload({
-            include: ['mcpConnections']
+            include: TOOL_CONNECTION_MODELS
           });
           await webClient.views.publish({
             user_id: userId,
-            view: await getHomeView({
+            view: await this.getHomeView({
               slackWorkspace,
               connection: undefined,
               userId
@@ -371,7 +387,7 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId!,
-      view: await getHomeView({
+      view: await this.getHomeView({
         slackWorkspace,
         selectedTool: SUPPORTED_INTEGRATIONS.POSTGRES,
         connection: postgresConfig,
@@ -403,7 +419,7 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
-      view: await getHomeView({
+      view: await this.getHomeView({
         slackWorkspace,
         connection: undefined,
         userId
@@ -434,7 +450,7 @@ export class AppHomeService {
         await slackWorkspace.save();
         await webClient.views.publish({
           user_id: userId,
-          view: await getHomeView({
+          view: await this.getHomeView({
             slackWorkspace,
             connection: undefined,
             userId
@@ -468,7 +484,7 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
-      view: await getHomeView({
+      view: await this.getHomeView({
         slackWorkspace,
         userId
       })
@@ -480,7 +496,7 @@ export class AppHomeService {
     teamId: string,
     defaultProjectKey: string
   ) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['jiraConfig']);
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace?.jiraConfig) return;
     const jiraConfig = slackWorkspace.jiraConfig;
     jiraConfig.default_config = {
@@ -490,9 +506,11 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
-      view: await getHomeView({
+      view: await this.getHomeView({
         slackWorkspace,
-        userId
+        userId,
+        selectedTool: SUPPORTED_INTEGRATIONS.JIRA,
+        connection: jiraConfig
       })
     });
   }
@@ -502,7 +520,7 @@ export class AppHomeService {
     teamId: string,
     defaultConfig: GithubDefaultConfig
   ) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['githubConfig']);
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace?.githubConfig) return;
     const githubConfig = slackWorkspace.githubConfig;
     githubConfig.default_config = defaultConfig;
@@ -510,9 +528,11 @@ export class AppHomeService {
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
-      view: await getHomeView({
+      view: await this.getHomeView({
         slackWorkspace,
-        userId
+        userId,
+        selectedTool: SUPPORTED_INTEGRATIONS.GITHUB,
+        connection: githubConfig
       })
     });
   }
@@ -520,19 +540,19 @@ export class AppHomeService {
   async handleIntegrationConnected(
     userId: string,
     teamId: string,
-    relation?: keyof SlackWorkspace
+    selectedTool: HomeViewArgs['selectedTool'],
+    connection: HomeViewArgs['connection']
   ) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(
-      teamId,
-      relation ? [relation] : undefined
-    );
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
-      view: await getHomeView({
+      view: await this.getHomeView({
         slackWorkspace,
-        userId
+        userId,
+        selectedTool,
+        connection
       })
     });
   }
@@ -550,5 +570,80 @@ export class AppHomeService {
       triggerId,
       teamId
     });
+  }
+
+  private async getHomeView(args: HomeViewArgs): Promise<HomeView> {
+    const { selectedTool, slackWorkspace, connection } = args;
+    const mcpConnections = slackWorkspace.mcpConnections;
+    const blocks = [
+      Blocks.Header({
+        text: ':wave: Welcome to Quix'
+      }),
+      Blocks.Context().elements('Quix helps you talk to your business tools from Slack.'),
+      Blocks.Divider()
+    ];
+
+    // Add onboarding information for users without any connections
+    const hasAnyConnections = Boolean(connection || (mcpConnections && mcpConnections.length > 0));
+
+    if (!connection) {
+      blocks.push(...getOnboardingView());
+    }
+
+    if (slackWorkspace.isAdmin(args.userId)) {
+      blocks.push(...getAccessControlView());
+      blocks.push(...getPreferencesView());
+      blocks.push(...getOpenAIView(slackWorkspace));
+      if (slackWorkspace.openai_key) {
+        blocks.push(Blocks.Divider());
+        blocks.push(...getToolConnectionView(selectedTool, mcpConnections, slackWorkspace));
+        if (selectedTool)
+          blocks.push(
+            ...getIntegrationInfo(selectedTool, slackWorkspace.team_id, connection, mcpConnections)
+          );
+      }
+    } else {
+      blocks.push(...getNonAdminView(slackWorkspace));
+    }
+
+    blocks.push(Blocks.Divider());
+    let availableFunctionsWithDescriptions: string[] = [];
+
+    if (selectedTool?.startsWith('mcp:')) {
+      let mcpToolConfig:
+        | Awaited<ReturnType<typeof this.mcpService.getToolsFromMCPConnections>>[number]
+        | undefined;
+      try {
+        [mcpToolConfig] = await this.mcpService.getToolsFromMCPConnections(mcpConnections);
+        availableFunctionsWithDescriptions = mcpToolConfig.tools.map((tool) => {
+          return `• ${Md.codeInline(tool.name)}: ${tool.description}`;
+        });
+      } catch (error) {
+        this.logger.error('Error getting tools from MCP connections', { error });
+        blocks.push(
+          Blocks.Section({
+            text: `${Md.emoji('warning')} Error fetching tools from this MCP server.`
+          })
+        );
+      } finally {
+        mcpToolConfig?.cleanup();
+      }
+    } else {
+      const toolData = await getToolData(selectedTool);
+      availableFunctionsWithDescriptions = toolData.availableFns || [];
+    }
+    if (availableFunctionsWithDescriptions.length) {
+      blocks.push(
+        Blocks.Section({
+          text: `${Md.emoji('bulb')} *Available Functions:*\n\n${availableFunctionsWithDescriptions.join('\n\n')}`
+        }),
+        Blocks.Section({ text: '\n\n\n' })
+      );
+    }
+
+    return {
+      type: 'home',
+      blocks: BlockCollection(blocks)
+    };
   }
 }

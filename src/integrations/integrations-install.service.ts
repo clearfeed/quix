@@ -4,7 +4,7 @@ import {
   HUBSPOT_SCOPES,
   GITHUB_SCOPES
 } from '@quix/lib/constants';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -36,7 +36,8 @@ import { ViewSubmitAction } from '@slack/bolt';
 import { parseInputBlocksSubmission } from '@quix/lib/utils/slack';
 import { KnownBlock } from '@slack/web-api';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
-
+import { Sequelize } from 'sequelize-typescript';
+import { McpService } from './mcp.service';
 @Injectable()
 export class IntegrationsInstallService {
   private readonly logger = new Logger(IntegrationsInstallService.name);
@@ -61,7 +62,9 @@ export class IntegrationsInstallService {
     private readonly mcpConnectionModel: typeof McpConnection,
     private readonly eventEmitter: EventEmitter2,
     @InjectModel(PostgresConfig)
-    private readonly postgresConfigModel: typeof PostgresConfig
+    private readonly postgresConfigModel: typeof PostgresConfig,
+    private readonly sequelize: Sequelize,
+    private readonly mcpService: McpService
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
@@ -536,45 +539,82 @@ export class IntegrationsInstallService {
   }
 
   async mcp(payload: ViewSubmitAction): Promise<McpConnection> {
-    const parsedResponse = parseInputBlocksSubmission(
-      payload.view.blocks as KnownBlock[],
-      payload.view.state.values
-    );
-    const privateMetadata = JSON.parse(payload.view.private_metadata || '{}');
-
-    // Validate required fields
-    if (
-      ![
-        SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME,
-        SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL,
-        SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN
-      ].every((field) => parsedResponse[field]?.selectedValue)
-    ) {
-      throw new BadRequestException('Missing required fields');
-    }
-
-    // Validate URL format
-    const urlString = parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL]
-      .selectedValue as string;
-    try {
-      const url = new URL(urlString);
-      if (!['http:', 'https:'].includes(url.protocol)) {
-        throw new BadRequestException('URL must use http or https protocol');
-      }
-    } catch (error) {
-      throw new BadRequestException('Invalid URL format');
-    }
-
     // Create or update MCP connection
-    const [mcpConnection] = await this.mcpConnectionModel.upsert({
-      id: privateMetadata.id,
-      name: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME].selectedValue as string,
-      url: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL].selectedValue as string,
-      auth_token: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN]
-        .selectedValue as string,
-      team_id: payload.view.team_id
-    });
+    let mcpToolConfig:
+      | Awaited<ReturnType<typeof this.mcpService.getToolsFromMCPConnections>>[number]
+      | undefined;
+    try {
+      const parsedResponse = parseInputBlocksSubmission(
+        payload.view.blocks as KnownBlock[],
+        payload.view.state.values
+      );
+      const privateMetadata = JSON.parse(payload.view.private_metadata || '{}');
 
-    return mcpConnection;
+      // Validate required fields
+      if (
+        ![
+          SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME,
+          SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL,
+          SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN,
+          SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.TOOL_SELECTION_PROMPT
+        ].every((field) => parsedResponse[field]?.selectedValue)
+      ) {
+        throw new BadRequestException('Missing required fields');
+      }
+
+      // Validate URL format
+      const urlString = parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL]
+        .selectedValue as string;
+      try {
+        const url = new URL(urlString);
+        if (
+          !['https:', ...(process.env.NODE_ENV !== 'production' ? ['http:'] : [])].includes(
+            url.protocol
+          )
+        ) {
+          throw new BadRequestException('URL must use https protocol');
+        }
+      } catch (error) {
+        throw new BadRequestException('Invalid URL format');
+      }
+
+      const mcpConnection = await this.sequelize.transaction(async (transaction) => {
+        const [mcpConnection] = await this.mcpConnectionModel.upsert(
+          {
+            id: privateMetadata.id,
+            name: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME].selectedValue as string,
+            url: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL].selectedValue as string,
+            auth_token: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN]
+              .selectedValue as string,
+            request_config: {
+              tool_selection_prompt: parsedResponse[
+                SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.TOOL_SELECTION_PROMPT
+              ].selectedValue as string
+            },
+            team_id: payload.view.team_id
+          },
+          { transaction }
+        );
+        try {
+          [mcpToolConfig] = await this.mcpService.getToolsFromMCPConnections([mcpConnection]);
+          if (mcpToolConfig?.tools.length === 0) {
+            throw new BadRequestException('Failed to retrieve tools from the MCP server.');
+          }
+        } catch (error) {
+          this.logger.error('Failed to get tools from MCP connection:', error);
+          throw new BadRequestException(
+            'Failed to retrieve tools from the MCP server. Please ensure the MCP server is running and properly configured.'
+          );
+        }
+        return mcpConnection;
+      });
+      return mcpConnection;
+    } catch (error) {
+      this.logger.error('Failed to setup MCP connection:', error);
+      if (error instanceof HttpException) throw error;
+      throw new BadRequestException('Failed to setup MCP connection');
+    } finally {
+      mcpToolConfig?.cleanup();
+    }
   }
 }

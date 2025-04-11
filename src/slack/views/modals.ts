@@ -601,7 +601,7 @@ export const getMcpConnectionModal = (args: McpConnectionModalArgs): Block[] => 
       blockId: 'mcp_url'
     }).element(
       Elements.TextInput({
-        placeholder: 'e.g., https://mcp.example.com',
+        placeholder: 'e.g., https://mcp.example.com/sse',
         actionId: SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL
       }).initialValue(initialValues?.url || '')
     ),
@@ -613,9 +613,20 @@ export const getMcpConnectionModal = (args: McpConnectionModalArgs): Block[] => 
         : 'Your token is stored securely and cannot be accessed by anyone.'
     }).element(
       Elements.TextInput({
-        placeholder: 'Your MCP server API token',
+        placeholder: 'Used as a Bearer token in all requests to the MCP server.',
         actionId: SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN
       })
+    ),
+    Input({
+      label: 'When to invoke this server?',
+      blockId: 'mcp_tool_selection_prompt',
+      hint: 'This will help us determine when to invoke tools from this server.'
+    }).element(
+      Elements.TextInput({
+        placeholder: `e.g. Use these tools when the user asks about the weather or when they want to know the news.`,
+        multiline: true,
+        actionId: SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.TOOL_SELECTION_PROMPT
+      }).initialValue(initialValues?.toolSelectionPrompt || '')
     )
   ]);
 };
