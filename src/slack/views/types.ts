@@ -15,7 +15,6 @@ export type PostgresConnectionModalArgs = {
   teamId: string;
   callbackId?: string;
   initialValues?: {
-    id?: string;
     host?: string;
     port?: string;
     database?: string;
@@ -49,7 +48,6 @@ export type NotionConnectionModalArgs = {
   triggerId: string;
   teamId: string;
   initialValues?: {
-    id?: string;
     apiToken?: string;
     defaultPrompt?: string | null;
   };
@@ -59,7 +57,6 @@ export type LinearConnectionModalArgs = {
   triggerId: string;
   teamId: string;
   initialValues?: {
-    id?: string;
     apiToken?: string;
     defaultPrompt?: string | null;
   };
@@ -119,7 +116,6 @@ export type SalesforceConfigModalArgs = {
   triggerId: string;
   teamId: string;
   initialValues?: {
-    id?: string;
     defaultPrompt?: string | null;
   };
 };
@@ -129,6 +125,5 @@ export type HubspotConfigModalArgs = {
   teamId: string;
   initialValues?: {
     defaultPrompt?: string | null;
-    id?: string;
   };
 };

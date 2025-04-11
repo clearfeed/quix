@@ -248,7 +248,6 @@ export class AppHomeService {
                 triggerId,
                 teamId,
                 initialValues: {
-                  id: postgresConfig.id,
                   host: postgresConfig.host,
                   port: postgresConfig.port.toString(),
                   username: postgresConfig.user,
@@ -288,7 +287,6 @@ export class AppHomeService {
                 triggerId,
                 teamId,
                 initialValues: {
-                  id: notionConfig.id,
                   apiToken: notionConfig.access_token,
                   defaultPrompt: notionConfig.default_prompt
                 }
@@ -301,7 +299,6 @@ export class AppHomeService {
                 triggerId,
                 teamId,
                 initialValues: {
-                  id: linearConfig.id,
                   apiToken: linearConfig.access_token,
                   defaultPrompt: linearConfig.default_prompt
                 }
@@ -331,7 +328,6 @@ export class AppHomeService {
                 triggerId,
                 teamId,
                 initialValues: {
-                  id: salesforceConfig.id,
                   defaultPrompt: salesforceConfig.default_prompt
                 }
               });
@@ -343,7 +339,6 @@ export class AppHomeService {
                 triggerId,
                 teamId,
                 initialValues: {
-                  id: hubspotConfig.id,
                   defaultPrompt: hubspotConfig.default_prompt
                 }
               });

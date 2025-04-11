@@ -137,10 +137,7 @@ export const publishPostgresConnectionModal = async (
           close: 'Cancel',
           callbackId: SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.SUBMIT
         }).buildToObject(),
-        blocks: modal,
-        private_metadata: JSON.stringify({
-          id: args.initialValues?.id
-        })
+        blocks: modal
       }
     });
   } catch (error) {
@@ -467,10 +464,7 @@ export const publishNotionConnectionModal = async (
           close: 'Cancel',
           callbackId: SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.SUBMIT
         }).buildToObject(),
-        blocks: BlockCollection(blocks),
-        private_metadata: JSON.stringify({
-          id: args.initialValues?.id
-        })
+        blocks: BlockCollection(blocks)
       }
     });
   } catch (error) {
@@ -528,10 +522,7 @@ export const publishLinearConnectionModal = async (
                 initialValue: args.initialValues?.defaultPrompt || ''
               })
             )
-        ]),
-        private_metadata: JSON.stringify({
-          id: args.initialValues?.id
-        })
+        ])
       }
     });
   } catch (error) {
@@ -780,10 +771,7 @@ export const publishSalesforceConfigModal = async (
           close: 'Cancel',
           callbackId: SLACK_ACTIONS.SALESFORCE_CONFIG_MODAL.SUBMIT
         }).buildToObject(),
-        blocks: BlockCollection(blocks),
-        private_metadata: JSON.stringify({
-          id: args.initialValues?.id
-        })
+        blocks: BlockCollection(blocks)
       }
     });
   } catch (error) {
@@ -825,10 +813,7 @@ export const publishHubspotConfigModal = async (
           close: 'Cancel',
           callbackId: SLACK_ACTIONS.HUBSPOT_CONFIG_MODAL.SUBMIT
         }).buildToObject(),
-        blocks: BlockCollection(blocks),
-        private_metadata: JSON.stringify({
-          id: args.initialValues?.id
-        })
+        blocks: BlockCollection(blocks)
       }
     });
   } catch (error) {
