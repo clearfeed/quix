@@ -11,6 +11,7 @@ import { ParseSlackMentionsUserMap } from '@quix/lib/types/slack';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { shuffle } from 'lodash';
 import { Includeable } from 'sequelize';
+import { TOOL_CONNECTION_MODELS } from './constants';
 
 @Injectable()
 export class SlackService {
@@ -35,10 +36,10 @@ export class SlackService {
    * @param includeAllIntegrations Whether to include all integrations
    * @returns The Slack workspace
    */
-  async getSlackWorkspace(teamId: string, include?: string[], includeAllIntegrations = false) {
+  async getSlackWorkspace(teamId: string, include?: string[], includeAllIntegrations = true) {
     let slackWorkspaceIncludeables: Includeable[] | undefined = include;
     if (!include?.length && includeAllIntegrations) {
-      slackWorkspaceIncludeables = INTEGRATIONS.map((integration) => integration.relation);
+      slackWorkspaceIncludeables = TOOL_CONNECTION_MODELS;
     }
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
       include: slackWorkspaceIncludeables
