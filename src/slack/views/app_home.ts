@@ -11,7 +11,8 @@ import {
   SalesforceConfig,
   NotionConfig,
   LinearConfig,
-  McpConnection
+  McpConnection,
+  OktaConfig
 } from '@quix/database/models';
 import {
   Elements,
@@ -289,6 +290,8 @@ export const getConnectionInfo = (connection: HomeViewArgs['connection']): strin
       return `Connected to ${connection.workspace_name}`;
     case connection instanceof LinearConfig:
       return `Connected to ${connection.workspace_name}`;
+    case connection instanceof OktaConfig:
+      return `Connected to ${connection.org_url}`;
     default:
       return '';
   }

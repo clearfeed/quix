@@ -13,6 +13,7 @@ import { QuixPrompts, SUPPORTED_INTEGRATIONS } from '../lib/constants';
 import { createCommonToolsExport } from '@clearfeed-ai/quix-common-agent';
 import { AvailableToolsWithConfig } from './types';
 import { createSlackToolsExport } from '@clearfeed-ai/quix-slack-agent';
+import { createOktaToolsExport } from '@clearfeed-ai/quix-okta-agent';
 
 @Injectable()
 export class ToolService {
@@ -36,7 +37,8 @@ export class ToolService {
         'salesforceConfig',
         'notionConfig',
         'linearConfig',
-        'mcpConnections'
+        'mcpConnections',
+        'oktaConfig'
       ]
     });
     if (!slackWorkspace) return;
@@ -113,6 +115,16 @@ export class ToolService {
           accessToken: updatedSalesforceConfig.access_token
         }),
         config: salesforceConfig
+      };
+    }
+    const oktaConfig = slackWorkspace.oktaConfig;
+    if (oktaConfig) {
+      tools.okta = {
+        toolConfig: createOktaToolsExport({
+          token: oktaConfig.api_token,
+          orgUrl: oktaConfig.org_url
+        }),
+        config: oktaConfig
       };
     }
 

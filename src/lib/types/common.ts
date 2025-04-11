@@ -7,7 +7,8 @@ import {
   GithubConfig,
   NotionConfig,
   SalesforceConfig,
-  PostgresConfig
+  PostgresConfig,
+  OktaConfig
 } from '@quix/database/models';
 
 import { McpConnection } from '@quix/database/models';
@@ -28,4 +29,5 @@ export type Connections =
   | SalesforceConfig
   | NotionConfig
   | LinearConfig
-  | McpConnection;
+  | McpConnection
+  | OktaConfig;

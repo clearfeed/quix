@@ -7,7 +7,8 @@ import {
   GithubConfig,
   NotionConfig,
   LinearConfig,
-  McpConnection
+  McpConnection,
+  OktaConfig
 } from '../database/models';
 import { TimeInMilliSeconds } from '@quix/lib/constants';
 import { HttpService } from '@nestjs/axios';
@@ -36,7 +37,9 @@ export class IntegrationsService {
     @InjectModel(LinearConfig)
     private readonly linearConfigModel: typeof LinearConfig,
     @InjectModel(McpConnection)
-    private readonly mcpConnectionModel: typeof McpConnection
+    private readonly mcpConnectionModel: typeof McpConnection,
+    @InjectModel(OktaConfig)
+    private readonly oktaConfigModel: typeof OktaConfig
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
@@ -182,5 +185,20 @@ export class IntegrationsService {
         id
       }
     });
+  }
+
+  async removeOktaConfig(teamId: string) {
+    // Find the configuration to delete
+    const config = await this.oktaConfigModel.findOne({
+      where: {
+        team_id: teamId
+      }
+    });
+
+    if (config) {
+      // Delete the configuration
+      await config.destroy();
+      this.logger.log(`Removed Okta config for team ${teamId}`);
+    }
   }
 }

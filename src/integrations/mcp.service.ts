@@ -72,7 +72,8 @@ export class McpService {
    */
   static readonly INTEGRATION_TO_MCP_SERVER = {
     [SUPPORTED_INTEGRATIONS.NOTION]: '@suekou/mcp-notion-server',
-    [SUPPORTED_INTEGRATIONS.LINEAR]: '@ibraheem4/linear-mcp'
+    [SUPPORTED_INTEGRATIONS.LINEAR]: '@ibraheem4/linear-mcp',
+    [SUPPORTED_INTEGRATIONS.OKTA]: '@yiyang.1i/okta-mcp-server'
   } as const satisfies Partial<Record<SUPPORTED_INTEGRATIONS, string>>;
 
   constructor() {}
@@ -100,8 +101,16 @@ export class McpService {
     cleanup: McpServerCleanupFn;
   }>;
   async getMcpServerTools(
+    integration: SUPPORTED_INTEGRATIONS.OKTA,
+    envVars: { API_TOKEN: string; OKTA_DOMAIN: string },
+    defaultConfig?: Record<string, string>
+  ): Promise<{
+    tools: DynamicStructuredTool<any>[];
+    cleanup: McpServerCleanupFn;
+  }>;
+  async getMcpServerTools(
     integration: keyof typeof McpService.INTEGRATION_TO_MCP_SERVER,
-    envVars?: Record<string, string>,
+    envVars: Record<string, string>,
     defaultConfig?: Record<string, string>
   ): Promise<{
     tools: DynamicStructuredTool<any>[];
