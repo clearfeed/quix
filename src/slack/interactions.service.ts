@@ -282,7 +282,7 @@ export class InteractionsService {
           this.appHomeService.handleIntegrationConnected(
             payload.user.id,
             payload.view.team_id,
-            'hubspotConfig',
+            SUPPORTED_INTEGRATIONS.HUBSPOT,
             hubspotConfig
           );
         } catch (error) {
