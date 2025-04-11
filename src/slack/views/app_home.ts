@@ -126,14 +126,8 @@ export const getToolConnectionView = (
   );
 
   // Build dropdown options
-  const connectedOptions = connectedIntegrations.map((integration) =>
-    Bits.Option({
-      text: integration.name,
-      value: integration.value
-    })
-  );
-
-  const integrationOptions = nonConnectedIntegrations.map((integration) =>
+  let connectedOptions = [];
+  const connectedIntegrationOptions = connectedIntegrations.map((integration) =>
     Bits.Option({
       text: integration.name,
       value: integration.value
@@ -144,6 +138,21 @@ export const getToolConnectionView = (
     Bits.Option({
       text: conn.name,
       value: `mcp:${conn.id}`
+    })
+  );
+
+  if (connectedIntegrationOptions.length) {
+    connectedOptions.push(connectedIntegrationOptions);
+  }
+
+  if (mcpOptions.length) {
+    connectedOptions.push(mcpOptions);
+  }
+
+  const integrationOptions = nonConnectedIntegrations.map((integration) =>
+    Bits.Option({
+      text: integration.name,
+      value: integration.value
     })
   );
 
@@ -168,14 +177,6 @@ export const getToolConnectionView = (
       Bits.OptionGroup()
         .label('Integrations')
         .options(...integrationOptions)
-    );
-  }
-
-  if (mcpOptions.length) {
-    optionGroups.push(
-      Bits.OptionGroup()
-        .label('MCP Servers')
-        .options(...mcpOptions)
     );
   }
 
