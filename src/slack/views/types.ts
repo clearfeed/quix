@@ -70,6 +70,7 @@ export type OktaConnectionModalArgs = {
     id?: string;
     orgUrl?: string;
     apiToken?: string;
+    defaultPrompt?: string | null;
   };
 };
 
