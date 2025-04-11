@@ -47,6 +47,7 @@ export class SlackEventsHandlerService {
         }
         break;
       case 'app_mention':
+        if (innerEvent.thread_ts && innerEvent.text.includes('added you to the channel')) return;
         return this.handleAppMention(innerEvent);
       case 'app_home_opened':
         return this.appHomeService.handleAppHomeOpened(innerEvent, eventBody.team_id);
