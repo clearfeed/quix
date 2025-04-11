@@ -12,7 +12,9 @@ import {
   UpdateModalResponsePayload,
   McpConnectionModalArgs,
   GithubDefaultConfigModalArgs,
-  SalesforceConfigModalArgs
+  SalesforceConfigModalArgs,
+  HubspotConfigModalArgs,
+  OktaConnectionModalArgs
 } from './types';
 import { WebClient } from '@slack/web-api';
 import { Surfaces } from 'slack-block-builder';
@@ -99,7 +101,21 @@ export const getPostgresConnectionModal = (args: PostgresConnectionModalArgs): B
       .optional(true),
     Section({
       text: 'Your credentials are securely stored and only used to connect to your database.'
+    }),
+    Input({
+      label: 'Default Prompt',
+      blockId: 'postgres_default_prompt',
+      hint: 'Please provide a default prompt for PostgreSQL. This will be used when Quix needs to query or update the database.'
     })
+      .optional(true)
+      .element(
+        Elements.TextInput({
+          placeholder: 'When querying data from the PostgreSQL database...',
+          multiline: true,
+          actionId: SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DEFAULT_PROMPT,
+          initialValue: args.initialValues?.defaultPrompt || ''
+        })
+      )
   ]);
 };
 
@@ -120,7 +136,7 @@ export const publishPostgresConnectionModal = async (
           title: 'PostgreSQL Connection',
           submit: 'Submit',
           close: 'Cancel',
-          callbackId: SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION
+          callbackId: SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.SUBMIT
         }).buildToObject(),
         blocks: modal,
         private_metadata: JSON.stringify({
@@ -239,6 +255,20 @@ export const publishJiraConfigModal = async (
               actionId: SLACK_ACTIONS.JIRA_CONFIG_MODAL.PROJECT_KEY_INPUT,
               initialValue: projectKey
             })
+          ),
+        Input({
+          label: 'Default Prompt',
+          blockId: 'jira_default_prompt',
+          hint: 'Please provide a default prompt for Jira. This will be used when Quix needs to create, fetch, or update issues in Jira.'
+        })
+          .optional(true)
+          .element(
+            Elements.TextInput({
+              placeholder: 'When creating or searching Jira issues...',
+              multiline: true,
+              actionId: SLACK_ACTIONS.JIRA_CONFIG_MODAL.DEFAULT_PROMPT,
+              initialValue: args.defaultPrompt || ''
+            })
           )
       ])
     }
@@ -288,6 +318,20 @@ export const publishGithubConfigModal = async (
               placeholder: 'e.g., org-name',
               actionId: SLACK_ACTIONS.GITHUB_CONFIG_MODAL.OWNER_INPUT,
               initialValue: initialValues?.owner || ''
+            })
+          ),
+        Input({
+          label: 'Default Prompt',
+          blockId: 'github_default_prompt',
+          hint: 'Please provide a default prompt for GitHub. This will be used when Quix needs to interact with repositories, issues, or pull requests.'
+        })
+          .optional(true)
+          .element(
+            Elements.TextInput({
+              placeholder: 'When searching issues or PRs on GitHub...',
+              multiline: true,
+              actionId: SLACK_ACTIONS.GITHUB_CONFIG_MODAL.DEFAULT_PROMPT,
+              initialValue: args.initialValues?.defaultPrompt || ''
             })
           )
       ])
@@ -399,7 +443,21 @@ export const publishNotionConnectionModal = async (
       }),
       Section({
         text: 'After connecting, make sure to share your Notion pages with the integration as shown in the image above.'
+      }),
+      Input({
+        label: 'Default Prompt',
+        blockId: 'notion_default_prompt',
+        hint: 'Please provide a default prompt for Notion. This will be used when Quix needs to search, create, or update Notion pages or databases.'
       })
+        .optional(true)
+        .element(
+          Elements.TextInput({
+            placeholder: 'When retrieving notes or project data from Notion...',
+            multiline: true,
+            actionId: SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.DEFAULT_PROMPT,
+            initialValue: args.initialValues?.defaultPrompt || ''
+          })
+        )
     ];
     await client.views.open({
       trigger_id: args.triggerId,
@@ -408,12 +466,9 @@ export const publishNotionConnectionModal = async (
           title: 'Notion Connection',
           submit: 'Submit',
           close: 'Cancel',
-          callbackId: SLACK_ACTIONS.SUBMIT_NOTION_CONNECTION
+          callbackId: SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.SUBMIT
         }).buildToObject(),
-        blocks: BlockCollection(blocks),
-        private_metadata: JSON.stringify({
-          id: args.initialValues?.id
-        })
+        blocks: BlockCollection(blocks)
       }
     });
   } catch (error) {
@@ -434,7 +489,7 @@ export const publishLinearConnectionModal = async (
           title: 'Linear Connection',
           submit: 'Submit',
           close: 'Cancel',
-          callbackId: SLACK_ACTIONS.SUBMIT_LINEAR_CONNECTION
+          callbackId: SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.SUBMIT
         }).buildToObject(),
         blocks: BlockCollection([
           Section({
@@ -456,11 +511,22 @@ export const publishLinearConnectionModal = async (
           ),
           Section({
             text: 'You can find your Linear API key in Linear settings > Security & Access > Personal API keys'
+          }),
+          Input({
+            label: 'Default Prompt',
+            blockId: 'linear_default_prompt',
+            hint: 'Please provide a default prompt for Linear. This will be used when Quix interacts with Linear issues, cycles, or projects.'
           })
-        ]),
-        private_metadata: JSON.stringify({
-          id: args.initialValues?.id
-        })
+            .optional(true)
+            .element(
+              Elements.TextInput({
+                placeholder: 'When listing or creating issues in Linear...',
+                multiline: true,
+                actionId: SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.DEFAULT_PROMPT,
+                initialValue: args.initialValues?.defaultPrompt || ''
+              })
+            )
+        ])
       }
     });
   } catch (error) {
@@ -618,6 +684,20 @@ export const getMcpConnectionModal = (args: McpConnectionModalArgs): Block[] => 
       })
     ),
     Input({
+      label: 'Default Prompt',
+      blockId: 'mcp_default_prompt',
+      hint: 'Please provide a default prompt for MCP. This will be used when Quix communicates with your custom MCP server.'
+    })
+      .optional(true)
+      .element(
+        Elements.TextInput({
+          placeholder: 'When sending data to the MCP server...',
+          multiline: true,
+          actionId: SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.DEFAULT_PROMPT,
+          initialValue: args.initialValues?.defaultPrompt || ''
+        })
+      ),
+    Input({
       label: 'When to invoke this server?',
       blockId: 'mcp_tool_selection_prompt',
       hint: 'This will help us determine when to invoke tools from this server.'
@@ -648,7 +728,7 @@ export const publishMcpConnectionModal = async (
           title: 'MCP Server Connection',
           submit: 'Submit',
           close: 'Cancel',
-          callbackId: SLACK_ACTIONS.SUBMIT_MCP_CONNECTION
+          callbackId: SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.SUBMIT
         }).buildToObject(),
         blocks: modal,
         private_metadata: JSON.stringify({
@@ -695,10 +775,7 @@ export const publishSalesforceConfigModal = async (
           close: 'Cancel',
           callbackId: SLACK_ACTIONS.SALESFORCE_CONFIG_MODAL.SUBMIT
         }).buildToObject(),
-        blocks: BlockCollection(blocks),
-        private_metadata: JSON.stringify({
-          id: args.initialValues?.id
-        })
+        blocks: BlockCollection(blocks)
       }
     });
   } catch (error) {
@@ -707,16 +784,47 @@ export const publishSalesforceConfigModal = async (
   }
 };
 
-// Add this interface with the other modal args
-export interface OktaConnectionModalArgs {
-  triggerId: string;
-  teamId: string;
-  initialValues?: {
-    id?: string;
-    orgUrl?: string;
-    apiToken?: string;
-  };
-}
+export const publishHubspotConfigModal = async (
+  client: WebClient,
+  args: HubspotConfigModalArgs
+): Promise<void> => {
+  try {
+    const blocks = [
+      Section({
+        text: 'Customize the way Quix interacts with Hubspot'
+      }),
+      Input({
+        label: 'Default Prompt',
+        blockId: 'hubspot_default_prompt',
+        hint: 'Please provide a default prompt for Hubspot. This will be used when Quix needs to interact with Hubspot.'
+      })
+        .optional(true)
+        .element(
+          Elements.TextInput({
+            placeholder: `When creating Hubspot tickets...`,
+            multiline: true,
+            actionId: SLACK_ACTIONS.HUBSPOT_CONFIG_MODAL.DEFAULT_PROMPT
+          }).initialValue(args.initialValues?.defaultPrompt || '')
+        )
+    ];
+
+    await client.views.open({
+      trigger_id: args.triggerId,
+      view: {
+        ...Surfaces.Modal({
+          title: 'Hubspot Connection',
+          submit: 'Submit',
+          close: 'Cancel',
+          callbackId: SLACK_ACTIONS.HUBSPOT_CONFIG_MODAL.SUBMIT
+        }).buildToObject(),
+        blocks: BlockCollection(blocks)
+      }
+    });
+  } catch (error) {
+    console.error('Error publishing Hubspot connection modal:', error);
+    throw error;
+  }
+};
 
 export const publishOktaConnectionModal = async (
   client: WebClient,
