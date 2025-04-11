@@ -260,7 +260,7 @@ export const publishJiraConfigModal = async (
           .optional(true)
           .element(
             Elements.TextInput({
-              placeholder: 'When creating or searching Jira tickets...',
+              placeholder: 'When creating or searching Jira issues...',
               multiline: true,
               actionId: SLACK_ACTIONS.JIRA_CONFIG_MODAL.DEFAULT_PROMPT,
               initialValue: args.defaultPrompt || ''
@@ -797,7 +797,7 @@ export const publishHubspotConfigModal = async (
         .optional(true)
         .element(
           Elements.TextInput({
-            placeholder: `When creating Hubspot tasks...`,
+            placeholder: `When creating Hubspot tickets...`,
             multiline: true,
             actionId: SLACK_ACTIONS.HUBSPOT_CONFIG_MODAL.DEFAULT_PROMPT
           }).initialValue(args.initialValues?.defaultPrompt || '')
