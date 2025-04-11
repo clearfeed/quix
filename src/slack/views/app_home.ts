@@ -360,7 +360,8 @@ export const getIntegrationInfo = (
     connection instanceof JiraConfig ||
     connection instanceof GithubConfig ||
     connection instanceof SalesforceConfig ||
-    connection instanceof HubspotConfig
+    connection instanceof HubspotConfig ||
+    connection instanceof LinearConfig
   ) {
     overflowMenuOptions.unshift(
       Bits.Option({
