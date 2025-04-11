@@ -74,6 +74,7 @@ export type McpConnectionModalArgs = {
     url?: string;
     apiToken?: string;
     defaultPrompt?: string | null;
+    toolSelectionPrompt?: string;
   };
 };
 

@@ -8,7 +8,7 @@ import { SlackWorkspace } from '../database/models';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
-import { McpServerCleanupFn, McpService } from './mcp.service';
+import { McpServerCleanupFn, McpService } from '../integrations/mcp.service';
 import { QuixPrompts, SUPPORTED_INTEGRATIONS } from '../lib/constants';
 import { createCommonToolsExport } from '@clearfeed-ai/quix-common-agent';
 import { AvailableToolsWithConfig } from './types';
@@ -35,7 +35,8 @@ export class ToolService {
         'githubConfig',
         'salesforceConfig',
         'notionConfig',
-        'linearConfig'
+        'linearConfig',
+        'mcpConnections'
       ]
     });
     if (!slackWorkspace) return;
@@ -161,6 +162,23 @@ export class ToolService {
               }
             },
             config: slackWorkspace.linearConfig
+          };
+        }
+      }
+      if (slackWorkspace.mcpConnections?.length) {
+        const mcpTools = await this.mcpService.getToolsFromMCPConnections(
+          slackWorkspace.mcpConnections
+        );
+        for (const mcpTool of mcpTools) {
+          this.runningTools.push(mcpTool.cleanup);
+          tools[`${mcpTool.mcpConnection.name}-${mcpTool.mcpConnection.id}`] = {
+            toolConfig: {
+              tools: mcpTool.tools,
+              prompts: {
+                toolSelection: mcpTool.mcpConnection.request_config.tool_selection_prompt
+              }
+            },
+            config: mcpTool.mcpConnection
           };
         }
       }

@@ -1,4 +1,3 @@
-import { HomeView } from '@slack/web-api';
 import { SLACK_ACTIONS, TRIAL_DAYS } from '@quix/lib/utils/slack-constants';
 import { HomeViewArgs } from './types';
 import { INTEGRATIONS, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
@@ -14,7 +13,7 @@ import {
   LinearConfig,
   McpConnection
 } from '@quix/database/models';
-import { BlockCollection, Elements, Bits, Blocks, Md, BlockBuilder } from 'slack-block-builder';
+import { Elements, Bits, Blocks, Md, BlockBuilder } from 'slack-block-builder';
 import { createHubspotToolsExport } from '@clearfeed-ai/quix-hubspot-agent';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
@@ -22,62 +21,7 @@ import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
 import { Tool } from '@clearfeed-ai/quix-common-agent';
 
-export const getHomeView = async (args: HomeViewArgs): Promise<HomeView> => {
-  const { selectedTool, slackWorkspace, connection } = args;
-  const mcpConnections = slackWorkspace.mcpConnections;
-  const blocks = [
-    Blocks.Header({
-      text: ':wave: Welcome to Quix'
-    }),
-    Blocks.Context().elements('Quix helps you talk to your business tools from Slack.'),
-    Blocks.Divider()
-  ];
-
-  // Add onboarding information for users without any connections
-  const hasAnyConnections = Boolean(connection || (mcpConnections && mcpConnections.length > 0));
-
-  if (!connection) {
-    blocks.push(...getOnboardingView());
-  }
-
-  if (slackWorkspace.isAdmin(args.userId)) {
-    blocks.push(...getAccessControlView());
-    blocks.push(...getPreferencesView());
-    blocks.push(...getOpenAIView(slackWorkspace));
-    if (slackWorkspace.openai_key) {
-      blocks.push(Blocks.Divider());
-      blocks.push(...getToolConnectionView(selectedTool, mcpConnections));
-      if (selectedTool)
-        blocks.push(
-          ...getIntegrationInfo(selectedTool, slackWorkspace.team_id, connection, mcpConnections)
-        );
-    }
-  } else {
-    blocks.push(...getNonAdminView(slackWorkspace));
-  }
-
-  blocks.push(Blocks.Divider());
-
-  if (selectedTool) {
-    const toolData = await getToolData(selectedTool);
-
-    if (toolData.availableFns && toolData.availableFns.length) {
-      blocks.push(
-        Blocks.Section({
-          text: `${Md.emoji('bulb')} *Available Functions:*\n\n${toolData.availableFns?.join('\n\n')}`
-        }),
-        Blocks.Section({ text: '\n\n\n' })
-      );
-    }
-  }
-
-  return {
-    type: 'home',
-    blocks: BlockCollection(blocks)
-  };
-};
-
-const getToolData = async (
+export const getToolData = async (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined
 ) => {
   let tool, availableFns;
@@ -156,7 +100,7 @@ const getAvailableFns = async (selectedTool: SUPPORTED_INTEGRATIONS) => {
   return [];
 };
 
-const getToolConnectionView = (
+export const getToolConnectionView = (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined,
   mcpConnections: McpConnection[] = []
 ): BlockBuilder[] => {
@@ -236,7 +180,7 @@ const getToolConnectionView = (
   ];
 };
 
-const getOpenAIView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
+export const getOpenAIView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
   if (slackWorkspace.isOpenAIKeySet)
     return [
       Blocks.Section({
@@ -286,7 +230,7 @@ const getOpenAIView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
   ];
 };
 
-const getConnectionInfo = (connection: HomeViewArgs['connection']): string => {
+export const getConnectionInfo = (connection: HomeViewArgs['connection']): string => {
   if (!connection) return '';
   switch (true) {
     case connection instanceof JiraConfig:
@@ -308,7 +252,7 @@ const getConnectionInfo = (connection: HomeViewArgs['connection']): string => {
   }
 };
 
-const getIntegrationInfo = (
+export const getIntegrationInfo = (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string,
   teamId: string,
   connection?: HomeViewArgs['connection'],
@@ -413,7 +357,7 @@ const getIntegrationInfo = (
   ];
 };
 
-const getNonAdminView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
+export const getNonAdminView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
   let warningText = '';
   if (slackWorkspace.admin_user_ids.length) {
     warningText += `Please contact one of the admins (${slackWorkspace.admin_user_ids.map((admin) => `<@${admin}>`).join(', ')}) to get access.`;
@@ -427,7 +371,7 @@ const getNonAdminView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
   ];
 };
 
-const getAccessControlView = (): BlockBuilder[] => {
+export const getAccessControlView = (): BlockBuilder[] => {
   return [
     Blocks.Section({
       text: 'Allow team members to access Quix across channels and DMs.'
@@ -441,7 +385,7 @@ const getAccessControlView = (): BlockBuilder[] => {
   ];
 };
 
-const getPreferencesView = (): BlockBuilder[] => {
+export const getPreferencesView = (): BlockBuilder[] => {
   return [
     Blocks.Section({
       text: 'Allow team members to configure tools that Quix uses.'
@@ -456,7 +400,7 @@ const getPreferencesView = (): BlockBuilder[] => {
 };
 
 // New function to provide onboarding guidance when no connections are set up
-const getOnboardingView = (): BlockBuilder[] => {
+export const getOnboardingView = (): BlockBuilder[] => {
   return [
     Blocks.Section({
       text: `${Md.emoji('pushpin')} *Get Started with Quix*`

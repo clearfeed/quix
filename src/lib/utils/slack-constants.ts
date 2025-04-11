@@ -50,7 +50,8 @@ export const SLACK_ACTIONS = {
     NAME: 'mcp-name',
     URL: 'mcp-url',
     API_TOKEN: 'mcp-api-token',
-    DEFAULT_PROMPT: 'mcp-default-prompt'
+    DEFAULT_PROMPT: 'mcp-default-prompt',
+    TOOL_SELECTION_PROMPT: 'mcp-tool-selection-prompt'
   },
   SALESFORCE_CONFIG_MODAL: {
     DEFAULT_PROMPT: 'salesforce-default-prompt',
