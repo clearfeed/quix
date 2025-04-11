@@ -62,14 +62,10 @@ export class InteractionsService {
     switch (payload.view.callback_id) {
       case SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.SUBMIT:
         const postgresConfig = await this.integrationsInstallService.postgres(payload);
-        const postgresDefaultPrompt = payload.view.state.values.postgres_default_prompt[
-          SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DEFAULT_PROMPT
-        ].value as string;
         this.appHomeService.handlePostgresConnected(
           payload.user.id,
           payload.view.team_id,
-          postgresConfig,
-          postgresDefaultPrompt
+          postgresConfig
         );
         break;
       case SLACK_ACTIONS.OPENAI_API_KEY_MODAL.SUBMIT:

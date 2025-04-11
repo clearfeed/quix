@@ -307,7 +307,9 @@ export class IntegrationsInstallService {
       database: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DATABASE]
         .selectedValue as string,
       team_id: payload.view.team_id,
-      ssl: sslResponse ? Boolean(sslResponse.length > 0) : false
+      ssl: sslResponse ? Boolean(sslResponse.length > 0) : false,
+      default_prompt: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DEFAULT_PROMPT]
+        .selectedValue as string
     });
     this.eventEmitter.emit(EVENT_NAMES.POSTGRES_CONNECTED, {
       teamId: payload.view.team_id,

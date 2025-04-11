@@ -396,16 +396,9 @@ export class AppHomeService {
     }
   }
 
-  async handlePostgresConnected(
-    userId: string,
-    teamId: string,
-    postgresConfig: PostgresConfig,
-    postgresDefaultPrompt: string
-  ) {
+  async handlePostgresConnected(userId: string, teamId: string, postgresConfig: PostgresConfig) {
     const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
-    postgresConfig.default_prompt = postgresDefaultPrompt;
-    postgresConfig.save();
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId!,
