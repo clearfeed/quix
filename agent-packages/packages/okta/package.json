@@ -1,22 +1,20 @@
 {
-  "name": "@clearfeed-ai/quix-jira-agent",
-  "version": "1.2.11",
+  "name": "@clearfeed-ai/quix-okta-agent",
+  "version": "1.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
     "build": "yarn clean && tsc",
-    "watch": "tsc --watch",
     "test": "jest",
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "atlassian-jwt": "^2.0.3",
-    "axios": "^1.8.2"
+    "@okta/okta-sdk-nodejs": "^7.0.1"
   },
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "typescript": "^5.7.3"
   },

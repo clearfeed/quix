@@ -8,11 +8,12 @@ import { SlackWorkspace } from '../database/models';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
-import { McpServerCleanupFn, McpService } from './mcp.service';
+import { McpServerCleanupFn, McpService } from '../integrations/mcp.service';
 import { QuixPrompts, SUPPORTED_INTEGRATIONS } from '../lib/constants';
 import { createCommonToolsExport } from '@clearfeed-ai/quix-common-agent';
 import { AvailableToolsWithConfig } from './types';
 import { createSlackToolsExport } from '@clearfeed-ai/quix-slack-agent';
+import { createOktaToolsExport } from '@clearfeed-ai/quix-okta-agent';
 
 @Injectable()
 export class ToolService {
@@ -35,7 +36,9 @@ export class ToolService {
         'githubConfig',
         'salesforceConfig',
         'notionConfig',
-        'linearConfig'
+        'linearConfig',
+        'mcpConnections',
+        'oktaConfig'
       ]
     });
     if (!slackWorkspace) return;
@@ -114,6 +117,16 @@ export class ToolService {
         config: salesforceConfig
       };
     }
+    const oktaConfig = slackWorkspace.oktaConfig;
+    if (oktaConfig) {
+      tools.okta = {
+        toolConfig: createOktaToolsExport({
+          token: oktaConfig.api_token,
+          orgUrl: oktaConfig.org_url
+        }),
+        config: oktaConfig
+      };
+    }
 
     // Handle MCP-based integrations
     try {
@@ -161,6 +174,23 @@ export class ToolService {
               }
             },
             config: slackWorkspace.linearConfig
+          };
+        }
+      }
+      if (slackWorkspace.mcpConnections?.length) {
+        const mcpTools = await this.mcpService.getToolsFromMCPConnections(
+          slackWorkspace.mcpConnections
+        );
+        for (const mcpTool of mcpTools) {
+          this.runningTools.push(mcpTool.cleanup);
+          tools[`${mcpTool.mcpConnection.name}-${mcpTool.mcpConnection.id}`] = {
+            toolConfig: {
+              tools: mcpTool.tools,
+              prompts: {
+                toolSelection: mcpTool.mcpConnection.request_config.tool_selection_prompt
+              }
+            },
+            config: mcpTool.mcpConnection
           };
         }
       }
