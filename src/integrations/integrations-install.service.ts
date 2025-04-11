@@ -545,54 +545,6 @@ export class IntegrationsInstallService {
   }
 
   async mcp(payload: ViewSubmitAction): Promise<McpConnection> {
-    const parsedResponse = parseInputBlocksSubmission(
-      payload.view.blocks as KnownBlock[],
-      payload.view.state.values
-    );
-    const privateMetadata = JSON.parse(payload.view.private_metadata || '{}');
-
-    // Validate required fields
-    if (
-      ![
-        SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME,
-        SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL,
-        SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN
-      ].every((field) => parsedResponse[field]?.selectedValue)
-    ) {
-      throw new BadRequestException('Missing required fields');
-    }
-
-    // Validate URL format
-    const urlString = parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL]
-      .selectedValue as string;
-
-    const defaultPrompt = parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.DEFAULT_PROMPT]
-      .selectedValue as string;
-
-    try {
-      const url = new URL(urlString);
-      if (!['http:', 'https:'].includes(url.protocol)) {
-        throw new BadRequestException('URL must use http or https protocol');
-      }
-    } catch (error) {
-      throw new BadRequestException('Invalid URL format');
-    }
-
-    // Create or update MCP connection
-    const [mcpConnection] = await this.mcpConnectionModel.upsert({
-      id: privateMetadata.id,
-      name: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME].selectedValue as string,
-      url: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL].selectedValue as string,
-      auth_token: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN]
-        .selectedValue as string,
-      team_id: payload.view.team_id,
-      default_prompt: defaultPrompt,
-      request_config: {
-        tool_selection_prompt: parsedResponse[
-          SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.TOOL_SELECTION_PROMPT
-        ].selectedValue as string
-      }
-    });
     // Create or update MCP connection
     let mcpToolConfig:
       | Awaited<ReturnType<typeof this.mcpService.getToolsFromMCPConnections>>[number]
@@ -618,6 +570,8 @@ export class IntegrationsInstallService {
 
       // Validate URL format
       const urlString = parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL]
+        .selectedValue as string;
+      const defaultPrompt = parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.DEFAULT_PROMPT]
         .selectedValue as string;
       try {
         const url = new URL(urlString);
@@ -645,7 +599,8 @@ export class IntegrationsInstallService {
                 SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.TOOL_SELECTION_PROMPT
               ].selectedValue as string
             },
-            team_id: payload.view.team_id
+            team_id: payload.view.team_id,
+            default_prompt: defaultPrompt
           },
           { transaction }
         );
