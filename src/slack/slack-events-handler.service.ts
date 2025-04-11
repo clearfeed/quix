@@ -111,7 +111,7 @@ export class SlackEventsHandlerService {
       }
       const webClient = new WebClient(slackWorkspace.bot_access_token);
       await webClient.apiCall('assistant.threads.setStatus', {
-        thread_ts: event.thread_ts,
+        thread_ts: event.thread_ts || event.ts,
         channel_id: event.channel,
         status: 'Looking up information...'
       });
@@ -120,7 +120,7 @@ export class SlackEventsHandlerService {
         await webClient.chat.postMessage({
           channel: event.channel,
           text: "You don't have permissions to use Quix, please ask an admin to grant you access.",
-          thread_ts: event.thread_ts
+          thread_ts: event.thread_ts || event.ts
         });
         this.logger.log('Unauthorized user.', { event: event.user });
         return;
@@ -139,17 +139,21 @@ export class SlackEventsHandlerService {
             previousMessages: messages,
             authorName: userInfoMap[event.user]?.name || ''
           });
-          await slackWorkspace.postMessage(response, event.channel, event.thread_ts);
+          await slackWorkspace.postMessage(response, event.channel, event.thread_ts || event.ts);
           this.logger.log('Sent response to message', { channel: event.channel, response });
         } catch (error) {
           this.logger.error('Error processing message:', error);
           if (error instanceof HttpException) {
-            await slackWorkspace.postMessage(error.message, event.channel, event.thread_ts);
+            await slackWorkspace.postMessage(
+              error.message,
+              event.channel,
+              event.thread_ts || event.ts
+            );
           } else {
             await slackWorkspace.postMessage(
               "Sorry, I couldn't process that request. Please try again.",
               event.channel,
-              event.thread_ts
+              event.thread_ts || event.ts
             );
           }
         }
@@ -157,7 +161,7 @@ export class SlackEventsHandlerService {
         await slackWorkspace.postMessage(
           'Please provide more information...',
           event.channel,
-          event.thread_ts
+          event.thread_ts || event.ts
         );
         this.logger.log('No text in message', { event });
       }
@@ -181,7 +185,7 @@ export class SlackEventsHandlerService {
         await webClient.chat.postMessage({
           channel: event.channel,
           text: "I'm not allowed to respond on this channel, please have an admin whitelist this channel if you wish to use Quix here",
-          thread_ts: event.thread_ts
+          thread_ts: event.thread_ts || event.ts
         });
         this.logger.log('Unauthorized channel.', { event: event.channel });
         return;
@@ -198,18 +202,18 @@ export class SlackEventsHandlerService {
         previousMessages: messages,
         authorName: event.user ? userInfoMap[event.user]?.name || '' : ''
       });
-      await slackWorkspace.postMessage(response, event.channel, event.thread_ts);
+      await slackWorkspace.postMessage(response, event.channel, event.thread_ts || event.ts);
       this.logger.log('Sent response to app mention', { channel: event.channel, response });
     } catch (error) {
       this.logger.error('Error sending response:', error);
       if (!slackWorkspace) return;
       if (error instanceof HttpException) {
-        await slackWorkspace.postMessage(error.message, event.channel, event.thread_ts);
+        await slackWorkspace.postMessage(error.message, event.channel, event.thread_ts || event.ts);
       } else {
         await slackWorkspace.postMessage(
           "Sorry, I couldn't process that request. Please try again.",
           event.channel,
-          event.thread_ts
+          event.thread_ts || event.ts
         );
       }
     }
