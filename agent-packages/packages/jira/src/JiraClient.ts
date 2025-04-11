@@ -71,9 +71,12 @@ export class JiraClient {
     }
 
     if ('sharedSecret' in this.config.auth) {
+      const queryParams = metadata?.params
+        ? `?${new URLSearchParams(metadata.params).toString()}`
+        : '';
       const token = await this.getToken({
         method,
-        path,
+        path: `${path}${queryParams}`,
         sharedSecret: this.config.auth.sharedSecret,
         atlassianConnectAppKey: this.config.auth.atlassianConnectAppKey
       });
