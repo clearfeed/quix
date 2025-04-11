@@ -9,3 +9,4 @@ export * from './notion-config.model';
 export * from './linear-config.model';
 export * from './mcp-connection.model';
 export * from './conversation-state.model';
+export * from './okta-config.model';

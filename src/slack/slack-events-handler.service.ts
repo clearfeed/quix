@@ -5,8 +5,10 @@ import { AppMentionEvent, GenericMessageEvent } from '@slack/web-api';
 import { AppHomeService } from './app_home.service';
 import { LlmService } from '@quix/llm/llm.service';
 import { WebClient } from '@slack/web-api';
-import { createLLMContext } from '@quix/lib/utils/slack';
+import { createLLMContext, getConnectedIntegrations } from '@quix/lib/utils/slack';
 import { SlackService } from './slack.service';
+import { INTEGRATIONS } from '@quix/lib/constants';
+import { keyBy, shuffle } from 'lodash';
 import { SlackWorkspace } from '../database/models';
 @Injectable()
 export class SlackEventsHandlerService {
@@ -63,27 +65,35 @@ export class SlackEventsHandlerService {
         this.logger.error('Slack workspace not found', { teamId });
         return;
       }
+      // Prompt for Slack
+      let prompts: { title: string; message: string }[] = [
+        {
+          title: 'Summarize conversations in any channel',
+          message: 'Summarize the latest conversation in #general'
+        }
+      ];
+      const connectedIntegrations = getConnectedIntegrations(slackWorkspace);
+      const integrationsByType = keyBy(INTEGRATIONS, 'value');
+      prompts.push(
+        ...connectedIntegrations.map(
+          (integration) => integrationsByType[integration].suggestedPrompt
+        )
+      );
+
       const webClient = new WebClient(slackWorkspace.bot_access_token);
       await webClient.apiCall('assistant.threads.setSuggestedPrompts', {
         thread_ts: threadId,
         channel_id: channelId,
         title: 'Welcome to ClearFeed Agent. Here are some suggestions to get started:',
-        prompts: [
-          {
-            title: 'Get deal details from HubSpot',
-            message: "What's the status of my deal with Tesla?"
-          },
-          {
-            title: 'Create a Jira issue',
-            message: 'I need to create a new Jira task to build AI agents in the APP project.'
-          },
-          {
-            title: 'Get Jira issue details',
-            message: "What's the status of my Jira issue APP-123?"
-          }
-        ]
+        // Pick 4 random prompts from the list
+        prompts: shuffle(prompts).slice(0, 4)
       });
-      this.logger.log('Successfully set suggested prompts for thread', { threadId, channelId });
+
+      this.logger.log('Successfully set suggested prompts for thread', {
+        threadId,
+        channelId,
+        promptCount: prompts.length
+      });
     } catch (error) {
       this.logger.error('Error setting suggested prompts:', error);
     }
@@ -92,7 +102,7 @@ export class SlackEventsHandlerService {
   private async handleMessage(event: GenericMessageEvent) {
     this.logger.log('Received message', { event });
     if (!event.team) return;
-
+    const replyThreadTs = event.thread_ts || event.ts;
     try {
       const slackWorkspace = await this.slackService.getSlackWorkspace(event.team);
       if (!slackWorkspace) {
@@ -101,7 +111,7 @@ export class SlackEventsHandlerService {
       }
       const webClient = new WebClient(slackWorkspace.bot_access_token);
       await webClient.apiCall('assistant.threads.setStatus', {
-        thread_ts: event.thread_ts,
+        thread_ts: replyThreadTs,
         channel_id: event.channel,
         status: 'Looking up information...'
       });
@@ -110,7 +120,7 @@ export class SlackEventsHandlerService {
         await webClient.chat.postMessage({
           channel: event.channel,
           text: "You don't have permissions to use Quix, please ask an admin to grant you access.",
-          thread_ts: event.thread_ts
+          thread_ts: replyThreadTs
         });
         this.logger.log('Unauthorized user.', { event: event.user });
         return;
@@ -124,22 +134,22 @@ export class SlackEventsHandlerService {
           const response = await this.llmService.processMessage({
             message: event.text,
             slackWorkspace,
-            threadTs: event.thread_ts || event.ts,
+            threadTs: replyThreadTs,
             channelId: event.channel,
             previousMessages: messages,
             authorName: userInfoMap[event.user]?.name || ''
           });
-          await slackWorkspace.postMessage(response, event.channel, event.thread_ts);
+          await slackWorkspace.postMessage(response, event.channel, replyThreadTs);
           this.logger.log('Sent response to message', { channel: event.channel, response });
         } catch (error) {
           this.logger.error('Error processing message:', error);
           if (error instanceof HttpException) {
-            await slackWorkspace.postMessage(error.message, event.channel, event.thread_ts);
+            await slackWorkspace.postMessage(error.message, event.channel, replyThreadTs);
           } else {
             await slackWorkspace.postMessage(
               "Sorry, I couldn't process that request. Please try again.",
               event.channel,
-              event.thread_ts
+              replyThreadTs
             );
           }
         }
@@ -147,7 +157,7 @@ export class SlackEventsHandlerService {
         await slackWorkspace.postMessage(
           'Please provide more information...',
           event.channel,
-          event.thread_ts
+          replyThreadTs
         );
         this.logger.log('No text in message', { event });
       }
@@ -159,6 +169,7 @@ export class SlackEventsHandlerService {
   private async handleAppMention(event: AppMentionEvent) {
     if (!event.team) return;
     let slackWorkspace: SlackWorkspace | undefined;
+    const replyThreadTs = event.thread_ts || event.ts;
     try {
       slackWorkspace = await this.slackService.getSlackWorkspace(event.team);
       if (!slackWorkspace) {
@@ -171,7 +182,7 @@ export class SlackEventsHandlerService {
         await webClient.chat.postMessage({
           channel: event.channel,
           text: "I'm not allowed to respond on this channel, please have an admin whitelist this channel if you wish to use Quix here",
-          thread_ts: event.thread_ts
+          thread_ts: replyThreadTs
         });
         this.logger.log('Unauthorized channel.', { event: event.channel });
         return;
@@ -183,23 +194,23 @@ export class SlackEventsHandlerService {
       const response = await this.llmService.processMessage({
         message: event.text,
         slackWorkspace,
-        threadTs: event.thread_ts || event.ts,
+        threadTs: replyThreadTs,
         channelId: event.channel,
         previousMessages: messages,
         authorName: event.user ? userInfoMap[event.user]?.name || '' : ''
       });
-      await slackWorkspace.postMessage(response, event.channel, event.thread_ts);
+      await slackWorkspace.postMessage(response, event.channel, replyThreadTs);
       this.logger.log('Sent response to app mention', { channel: event.channel, response });
     } catch (error) {
       this.logger.error('Error sending response:', error);
       if (!slackWorkspace) return;
       if (error instanceof HttpException) {
-        await slackWorkspace.postMessage(error.message, event.channel, event.thread_ts);
+        await slackWorkspace.postMessage(error.message, event.channel, replyThreadTs);
       } else {
         await slackWorkspace.postMessage(
           "Sorry, I couldn't process that request. Please try again.",
           event.channel,
-          event.thread_ts
+          replyThreadTs
         );
       }
     }

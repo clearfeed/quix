@@ -27,6 +27,7 @@ import { NotionConfig } from './notion-config.model';
 import { LinearConfig } from './linear-config.model';
 import { McpConnection } from './mcp-connection.model';
 import { ConversationState } from './conversation-state.model';
+import { OktaConfig } from './okta-config.model';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -233,6 +234,12 @@ export class SlackWorkspace extends Model<
     as: 'linearConfig'
   })
   declare linearConfig: NonAttribute<LinearConfig>;
+
+  @HasOne(() => OktaConfig, {
+    foreignKey: 'team_id',
+    as: 'oktaConfig'
+  })
+  declare oktaConfig: NonAttribute<OktaConfig>;
 
   @HasMany(() => McpConnection, {
     foreignKey: 'team_id',

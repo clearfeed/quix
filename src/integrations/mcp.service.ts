@@ -5,11 +5,13 @@ import {
   StdioClientTransport,
   StdioServerParameters
 } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import { CallToolResultSchema, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js';
 import { jsonSchemaToZod, JsonSchema } from '@n8n/json-schema-to-zod';
 import { z } from 'zod';
 import { SUPPORTED_INTEGRATIONS } from '../lib/constants';
 import * as _ from 'lodash';
+import { McpConnection } from '../database/models/mcp-connection.model';
 /**
  * Interface for MCP servers configuration
  */
@@ -26,13 +28,6 @@ export interface McpToolsLogger {
   warn(message: string, ...args: any[]): void;
   error(message: string, ...args: any[]): void;
   verbose?(message: string, ...args: any[]): void;
-}
-
-/**
- * Log options interface
- */
-interface LogOptions {
-  logLevel?: 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace';
 }
 
 /**
@@ -77,7 +72,8 @@ export class McpService {
    */
   static readonly INTEGRATION_TO_MCP_SERVER = {
     [SUPPORTED_INTEGRATIONS.NOTION]: '@suekou/mcp-notion-server',
-    [SUPPORTED_INTEGRATIONS.LINEAR]: '@ibraheem4/linear-mcp'
+    [SUPPORTED_INTEGRATIONS.LINEAR]: '@ibraheem4/linear-mcp',
+    [SUPPORTED_INTEGRATIONS.OKTA]: '@yiyang.1i/okta-mcp-server'
   } as const satisfies Partial<Record<SUPPORTED_INTEGRATIONS, string>>;
 
   constructor() {}
@@ -105,8 +101,16 @@ export class McpService {
     cleanup: McpServerCleanupFn;
   }>;
   async getMcpServerTools(
+    integration: SUPPORTED_INTEGRATIONS.OKTA,
+    envVars: { API_TOKEN: string; OKTA_DOMAIN: string },
+    defaultConfig?: Record<string, string>
+  ): Promise<{
+    tools: DynamicStructuredTool<any>[];
+    cleanup: McpServerCleanupFn;
+  }>;
+  async getMcpServerTools(
     integration: keyof typeof McpService.INTEGRATION_TO_MCP_SERVER,
-    envVars?: Record<string, string>,
+    envVars: Record<string, string>,
     defaultConfig?: Record<string, string>
   ): Promise<{
     tools: DynamicStructuredTool<any>[];
@@ -123,8 +127,60 @@ export class McpService {
       args: ['-y', `${serverName}`], // Use the package name from package.json
       env: envVars || {}
     };
+    // Merge provided env with PATH to ensure commands work properly
+    const env = { ...config.env };
+    if (!env.PATH) {
+      env.PATH = process.env.PATH || '';
+    }
+    const transport = new StdioClientTransport({
+      command: config.command,
+      args: config.args as string[],
+      env: env,
+      stderr: config.stderr
+    });
+    this.logger.debug(`MCP server "${serverName}": initializing with: ${JSON.stringify(config)}`);
 
-    return this.convertSingleMcpToLangchainTools(serverName, config, this.logger, defaultConfig);
+    return this.convertSingleMcpToLangchainTools(serverName, transport, this.logger, defaultConfig);
+  }
+
+  async getToolsFromMCPConnections(connections: McpConnection[]): Promise<
+    {
+      mcpConnection: McpConnection;
+      tools: DynamicStructuredTool<any>[];
+      cleanup: McpServerCleanupFn;
+    }[]
+  > {
+    const tools: {
+      mcpConnection: McpConnection;
+      tools: DynamicStructuredTool<any>[];
+      cleanup: McpServerCleanupFn;
+    }[] = [];
+    for (const connection of connections) {
+      const authHeader = `Bearer ${connection.auth_token}`;
+      const fetchWithAuth = (url: string | URL, init?: RequestInit) => {
+        const headers = new Headers(init?.headers);
+        headers.set('Authorization', authHeader);
+        return fetch(url.toString(), { ...init, headers });
+      };
+      const transport = new SSEClientTransport(new URL(connection.url), {
+        // required for initial connection
+        eventSourceInit: {
+          fetch: fetchWithAuth
+        },
+        // required for tool calls and other requests to the MCP server
+        requestInit: { headers: { Authorization: authHeader } }
+      });
+      const payload = await this.convertSingleMcpToLangchainTools(
+        connection.name,
+        transport,
+        this.logger
+      );
+      tools.push({
+        mcpConnection: connection,
+        ...payload
+      });
+    }
+    return tools;
   }
 
   private convertJsonToZod(
@@ -201,32 +257,16 @@ export class McpService {
    */
   private async convertSingleMcpToLangchainTools(
     serverName: string,
-    config: StdioServerParameters,
+    transport: StdioClientTransport | SSEClientTransport,
     logger: McpToolsLogger,
     defaultConfig?: Record<string, string>
   ): Promise<{
     tools: DynamicStructuredTool[];
     cleanup: McpServerCleanupFn;
   }> {
-    let transport: StdioClientTransport | null = null;
     let client: Client | null = null;
 
-    logger.debug(`MCP server "${serverName}": initializing with: ${JSON.stringify(config)}`);
-
-    // Merge provided env with PATH to ensure commands work properly
-    const env = { ...config.env };
-    if (!env.PATH) {
-      env.PATH = process.env.PATH || '';
-    }
-
     try {
-      transport = new StdioClientTransport({
-        command: config.command,
-        args: config.args as string[],
-        env: env,
-        stderr: config.stderr
-      });
-
       client = new Client(
         {
           name: 'mcp-client',
