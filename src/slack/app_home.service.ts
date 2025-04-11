@@ -508,7 +508,8 @@ export class AppHomeService {
       user_id: userId,
       view: await this.getHomeView({
         slackWorkspace,
-        userId
+        userId,
+        selectedTool: SUPPORTED_INTEGRATIONS.JIRA
       })
     });
   }
@@ -528,7 +529,8 @@ export class AppHomeService {
       user_id: userId,
       view: await this.getHomeView({
         slackWorkspace,
-        userId
+        userId,
+        selectedTool: SUPPORTED_INTEGRATIONS.GITHUB
       })
     });
   }
