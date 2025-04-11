@@ -354,16 +354,9 @@ export const getIntegrationInfo = (
     })
   ];
 
-  if (connection instanceof PostgresConfig || connection instanceof NotionConfig) {
-    overflowMenuOptions.unshift(
-      Bits.Option({
-        text: `${Md.emoji('pencil')} Edit`,
-        value: 'edit'
-      })
-    );
-  }
-
   if (
+    connection instanceof PostgresConfig ||
+    connection instanceof NotionConfig ||
     connection instanceof JiraConfig ||
     connection instanceof GithubConfig ||
     connection instanceof SalesforceConfig ||
