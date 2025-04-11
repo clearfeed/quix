@@ -135,7 +135,7 @@ export class InteractionsService {
         try {
           this.integrationsInstallService
             .notion(payload)
-            .then(async () => {
+            .then(async (notionConfig) => {
               await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
                 text: 'Notion connected successfully',
                 viewId: payload.view.id
@@ -143,7 +143,8 @@ export class InteractionsService {
               this.appHomeService.handleIntegrationConnected(
                 payload.user.id,
                 payload.view.team_id,
-                SUPPORTED_INTEGRATIONS.NOTION
+                SUPPORTED_INTEGRATIONS.NOTION,
+                notionConfig
               );
             })
             .catch((error) => {
@@ -168,7 +169,7 @@ export class InteractionsService {
         try {
           this.integrationsInstallService
             .linear(payload)
-            .then(async () => {
+            .then(async (linearConfig) => {
               await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
                 text: 'Linear connected successfully',
                 viewId: payload.view.id
@@ -176,7 +177,8 @@ export class InteractionsService {
               this.appHomeService.handleIntegrationConnected(
                 payload.user.id,
                 payload.view.team_id,
-                SUPPORTED_INTEGRATIONS.LINEAR
+                SUPPORTED_INTEGRATIONS.LINEAR,
+                linearConfig
               );
             })
             .catch((error) => {
@@ -210,7 +212,8 @@ export class InteractionsService {
           this.appHomeService.handleIntegrationConnected(
             payload.user.id,
             payload.view.team_id,
-            SUPPORTED_INTEGRATIONS.SALESFORCE
+            SUPPORTED_INTEGRATIONS.SALESFORCE,
+            salesforceConfig
           );
         } catch (error) {
           console.error(error);
@@ -232,7 +235,8 @@ export class InteractionsService {
               this.appHomeService.handleIntegrationConnected(
                 payload.user.id,
                 payload.view.team_id,
-                getMCPConnectionDropDownValue(mcpConnection)
+                getMCPConnectionDropDownValue(mcpConnection),
+                mcpConnection
               );
             })
             .catch((error) => {

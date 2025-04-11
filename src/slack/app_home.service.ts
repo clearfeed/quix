@@ -509,7 +509,8 @@ export class AppHomeService {
       view: await this.getHomeView({
         slackWorkspace,
         userId,
-        selectedTool: SUPPORTED_INTEGRATIONS.JIRA
+        selectedTool: SUPPORTED_INTEGRATIONS.JIRA,
+        connection: jiraConfig
       })
     });
   }
@@ -530,7 +531,8 @@ export class AppHomeService {
       view: await this.getHomeView({
         slackWorkspace,
         userId,
-        selectedTool: SUPPORTED_INTEGRATIONS.GITHUB
+        selectedTool: SUPPORTED_INTEGRATIONS.GITHUB,
+        connection: githubConfig
       })
     });
   }
@@ -538,7 +540,8 @@ export class AppHomeService {
   async handleIntegrationConnected(
     userId: string,
     teamId: string,
-    selectedTool: HomeViewArgs['selectedTool']
+    selectedTool: HomeViewArgs['selectedTool'],
+    connection: HomeViewArgs['connection']
   ) {
     const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
@@ -548,7 +551,8 @@ export class AppHomeService {
       view: await this.getHomeView({
         slackWorkspace,
         userId,
-        selectedTool
+        selectedTool,
+        connection
       })
     });
   }
