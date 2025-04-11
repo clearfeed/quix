@@ -60,7 +60,7 @@ export class InteractionsService {
     if (!slackWorkspace) return;
 
     switch (payload.view.callback_id) {
-      case SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION:
+      case SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.SUBMIT:
         const postgresConfig = await this.integrationsInstallService.postgres(payload);
         this.appHomeService.handlePostgresConnected(
           payload.user.id,
@@ -94,10 +94,14 @@ export class InteractionsService {
         const defaultProjectKey = payload.view.state.values.project_key[
           SLACK_ACTIONS.JIRA_CONFIG_MODAL.PROJECT_KEY_INPUT
         ].value as string;
+        const defaultJiraPrompt = payload.view.state.values.jira_default_prompt[
+          SLACK_ACTIONS.JIRA_CONFIG_MODAL.DEFAULT_PROMPT
+        ].value as string;
         this.appHomeService.handleJiraConfigurationSubmitted(
           payload.user.id,
           payload.view.team_id,
-          defaultProjectKey
+          defaultProjectKey,
+          defaultJiraPrompt
         );
         break;
       case SLACK_ACTIONS.GITHUB_CONFIG_MODAL.SUBMIT:
@@ -107,6 +111,9 @@ export class InteractionsService {
         const defaultOwner = payload.view.state.values.owner[
           SLACK_ACTIONS.GITHUB_CONFIG_MODAL.OWNER_INPUT
         ].value as string;
+        const defaultGithubPrompt = payload.view.state.values.github_default_prompt[
+          SLACK_ACTIONS.GITHUB_CONFIG_MODAL.DEFAULT_PROMPT
+        ].value as string;
         const default_config = {
           repo: defaultRepo,
           owner: defaultOwner
@@ -114,7 +121,8 @@ export class InteractionsService {
         this.appHomeService.handleGithubConfigurationSubmitted(
           payload.user.id,
           payload.view.team_id,
-          default_config
+          default_config,
+          defaultGithubPrompt
         );
         break;
       case SLACK_ACTIONS.MANAGE_ACCESS_CONTROLS:
@@ -131,7 +139,7 @@ export class InteractionsService {
           accessLevel
         );
         break;
-      case SLACK_ACTIONS.SUBMIT_NOTION_CONNECTION:
+      case SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.SUBMIT:
         try {
           this.integrationsInstallService
             .notion(payload)
@@ -165,7 +173,7 @@ export class InteractionsService {
             web: new WebClient(slackWorkspace.bot_access_token)
           });
         }
-      case SLACK_ACTIONS.SUBMIT_LINEAR_CONNECTION:
+      case SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.SUBMIT:
         try {
           this.integrationsInstallService
             .linear(payload)
@@ -223,7 +231,7 @@ export class InteractionsService {
           });
         }
         break;
-      case SLACK_ACTIONS.SUBMIT_MCP_CONNECTION:
+      case SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.SUBMIT:
         try {
           this.integrationsInstallService
             .mcp(payload)
@@ -257,6 +265,30 @@ export class InteractionsService {
             web: new WebClient(slackWorkspace.bot_access_token)
           });
         }
+      case SLACK_ACTIONS.HUBSPOT_CONFIG_MODAL.SUBMIT:
+        try {
+          const defaultPrompt = payload.view.state.values.hubspot_default_prompt[
+            SLACK_ACTIONS.HUBSPOT_CONFIG_MODAL.DEFAULT_PROMPT
+          ].value as string;
+          const hubspotConfig = await slackWorkspace.$get('hubspotConfig');
+          if (!hubspotConfig) return;
+          await hubspotConfig.update({
+            default_prompt: defaultPrompt
+          });
+          this.appHomeService.handleIntegrationConnected(
+            payload.user.id,
+            payload.view.team_id,
+            SUPPORTED_INTEGRATIONS.HUBSPOT,
+            hubspotConfig
+          );
+        } catch (error) {
+          console.error(error);
+          return displayErrorModal({
+            error,
+            backgroundCaller: false
+          });
+        }
+        break;
       default:
         return;
     }
