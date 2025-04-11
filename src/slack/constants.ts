@@ -5,6 +5,7 @@ import {
   LinearConfig,
   McpConnection,
   NotionConfig,
+  OktaConfig,
   PostgresConfig,
   SalesforceConfig
 } from '../database/models';
@@ -17,5 +18,6 @@ export const TOOL_CONNECTION_MODELS = [
   McpConnection,
   NotionConfig,
   PostgresConfig,
-  SalesforceConfig
+  SalesforceConfig,
+  OktaConfig
 ];

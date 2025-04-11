@@ -57,6 +57,11 @@ export const SLACK_ACTIONS = {
     DEFAULT_PROMPT: 'salesforce-default-prompt',
     SUBMIT: 'submit-salesforce-config-modal'
   },
+  SUBMIT_OKTA_CONNECTION: 'submit-okta-connection',
+  OKTA_CONNECTION_ACTIONS: {
+    ORG_URL: 'okta-org-url',
+    API_TOKEN: 'okta-api-token'
+  },
   HUBSPOT_CONFIG_MODAL: {
     DEFAULT_PROMPT: 'hubspot-default-prompt',
     SUBMIT: 'submit-hubspot-config-modal'

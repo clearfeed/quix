@@ -28,7 +28,8 @@ import {
   SalesforceConfig,
   NotionConfig,
   LinearConfig,
-  McpConnection
+  McpConnection,
+  OktaConfig
 } from '../database/models';
 import { ToolInstallState } from '@quix/lib/types/common';
 import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
@@ -60,9 +61,11 @@ export class IntegrationsInstallService {
     private readonly linearConfigModel: typeof LinearConfig,
     @InjectModel(McpConnection)
     private readonly mcpConnectionModel: typeof McpConnection,
-    private readonly eventEmitter: EventEmitter2,
     @InjectModel(PostgresConfig)
     private readonly postgresConfigModel: typeof PostgresConfig,
+    @InjectModel(OktaConfig)
+    private readonly oktaConfigModel: typeof OktaConfig,
+    private readonly eventEmitter: EventEmitter2,
     private readonly sequelize: Sequelize,
     private readonly mcpService: McpService
   ) {
@@ -626,6 +629,72 @@ export class IntegrationsInstallService {
       throw new BadRequestException('Failed to setup MCP connection');
     } finally {
       mcpToolConfig?.cleanup();
+    }
+  }
+
+  async okta(payload: ViewSubmitAction): Promise<OktaConfig> {
+    try {
+      const parsedResponse = parseInputBlocksSubmission(
+        payload.view.blocks as KnownBlock[],
+        payload.view.state.values
+      );
+
+      if (
+        !parsedResponse[SLACK_ACTIONS.OKTA_CONNECTION_ACTIONS.ORG_URL].selectedValue ||
+        !parsedResponse[SLACK_ACTIONS.OKTA_CONNECTION_ACTIONS.API_TOKEN].selectedValue
+      ) {
+        throw new BadRequestException('Missing required fields');
+      }
+
+      const orgUrl = parsedResponse[SLACK_ACTIONS.OKTA_CONNECTION_ACTIONS.ORG_URL]
+        .selectedValue as string;
+      const apiToken = parsedResponse[SLACK_ACTIONS.OKTA_CONNECTION_ACTIONS.API_TOKEN]
+        .selectedValue as string;
+
+      // Clean and validate the org URL
+      const cleanedOrgUrl = orgUrl.trim().replace(/\/$/, '');
+
+      try {
+        const url = new URL(cleanedOrgUrl);
+        const allowedDomains = ['okta.com', 'oktapreview.com'];
+        if (!allowedDomains.some((domain) => url.hostname.endsWith(domain))) {
+          throw new BadRequestException(
+            'Invalid Okta domain. Must be an okta.com or oktapreview.com domain.'
+          );
+        }
+      } catch (error) {
+        throw new BadRequestException('Invalid URL format for Okta organization URL');
+      }
+
+      // Validate the token by making a test API call to get the organization
+      try {
+        const response = await this.httpService.axiosRef.get(`${cleanedOrgUrl}/api/v1/org`, {
+          headers: {
+            Authorization: `SSWS ${apiToken}`,
+            Accept: 'application/json'
+          }
+        });
+
+        if (!response.data || !response.data.id) {
+          throw new BadRequestException('Failed to authenticate with Okta');
+        }
+
+        // If the API call succeeds, save the configuration
+        const [oktaConfig] = await this.oktaConfigModel.upsert({
+          org_id: response.data.id,
+          org_url: cleanedOrgUrl,
+          api_token: apiToken,
+          team_id: payload.view.team_id
+        });
+
+        return oktaConfig;
+      } catch (error) {
+        this.logger.error('Failed to authenticate with Okta API:', error);
+        throw new BadRequestException('Invalid Okta API token or unable to connect to Okta');
+      }
+    } catch (error) {
+      this.logger.error('Failed to connect to Okta:', error);
+      throw new BadRequestException('Failed to connect to Okta');
     }
   }
 }
