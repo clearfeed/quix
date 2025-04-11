@@ -307,7 +307,9 @@ export class IntegrationsInstallService {
       database: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DATABASE]
         .selectedValue as string,
       team_id: payload.view.team_id,
-      ssl: sslResponse ? Boolean(sslResponse.length > 0) : false
+      ssl: sslResponse ? Boolean(sslResponse.length > 0) : false,
+      default_prompt: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DEFAULT_PROMPT]
+        .selectedValue as string
     });
     this.eventEmitter.emit(EVENT_NAMES.POSTGRES_CONNECTED, {
       teamId: payload.view.team_id,
@@ -429,6 +431,8 @@ export class IntegrationsInstallService {
 
       const apiToken = parsedResponse[SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.API_TOKEN]
         .selectedValue as string;
+      const defaultPrompt = parsedResponse[SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.DEFAULT_PROMPT]
+        .selectedValue as string;
 
       // Validate the token and get workspace details
       const userResponse = await this.httpService.axiosRef.get<{
@@ -456,7 +460,8 @@ export class IntegrationsInstallService {
       const [notionConfig] = await this.notionConfigModel.upsert({
         workspace_name: userResponse.data.bot.workspace_name,
         access_token: apiToken,
-        team_id: payload.view.team_id
+        team_id: payload.view.team_id,
+        default_prompt: defaultPrompt
       });
 
       this.eventEmitter.emit(EVENT_NAMES.NOTION_CONNECTED, {
@@ -487,6 +492,8 @@ export class IntegrationsInstallService {
       }
 
       const apiToken = parsedResponse[SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.API_TOKEN]
+        .selectedValue as string;
+      const defaultPrompt = parsedResponse[SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.DEFAULT_PROMPT]
         .selectedValue as string;
 
       // Validate the token and get workspace details
@@ -519,7 +526,8 @@ export class IntegrationsInstallService {
         workspace_name: response.data.data.organization.name,
         linear_org_id: response.data.data.organization.id,
         access_token: apiToken,
-        team_id: payload.view.team_id
+        team_id: payload.view.team_id,
+        default_prompt: defaultPrompt
       });
 
       this.eventEmitter.emit(EVENT_NAMES.LINEAR_CONNECTED, {
@@ -565,6 +573,8 @@ export class IntegrationsInstallService {
       // Validate URL format
       const urlString = parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL]
         .selectedValue as string;
+      const defaultPrompt = parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.DEFAULT_PROMPT]
+        .selectedValue as string;
       try {
         const url = new URL(urlString);
         if (
@@ -591,7 +601,8 @@ export class IntegrationsInstallService {
                 SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.TOOL_SELECTION_PROMPT
               ].selectedValue as string
             },
-            team_id: payload.view.team_id
+            team_id: payload.view.team_id,
+            default_prompt: defaultPrompt
           },
           { transaction }
         );

@@ -23,6 +23,7 @@ import {
   publishMcpConnectionModal,
   publishGithubConfigModal,
   publishSalesforceConfigModal,
+  publishHubspotConfigModal,
   publishOpenaiKeyModal
 } from './views/modals';
 import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
@@ -253,7 +254,8 @@ export class AppHomeService {
                   username: postgresConfig.user,
                   password: postgresConfig.password,
                   database: postgresConfig.database,
-                  ssl: postgresConfig.ssl
+                  ssl: postgresConfig.ssl,
+                  defaultPrompt: postgresConfig.default_prompt
                 }
               });
               break;
@@ -263,7 +265,8 @@ export class AppHomeService {
               await publishJiraConfigModal(webClient, {
                 triggerId,
                 teamId,
-                projectKey: jiraConfig.default_config?.projectKey || ''
+                projectKey: jiraConfig.default_config?.projectKey || '',
+                defaultPrompt: jiraConfig.default_prompt
               });
               break;
             case SUPPORTED_INTEGRATIONS.GITHUB:
@@ -273,7 +276,8 @@ export class AppHomeService {
                 triggerId,
                 initialValues: {
                   repo: githubConfig.default_config?.repo || '',
-                  owner: githubConfig.default_config?.owner || ''
+                  owner: githubConfig.default_config?.owner || '',
+                  defaultPrompt: githubConfig.default_prompt
                 }
               });
               break;
@@ -284,8 +288,8 @@ export class AppHomeService {
                 triggerId,
                 teamId,
                 initialValues: {
-                  id: notionConfig.id,
-                  apiToken: notionConfig.access_token
+                  apiToken: notionConfig.access_token,
+                  defaultPrompt: notionConfig.default_prompt
                 }
               });
               break;
@@ -296,8 +300,8 @@ export class AppHomeService {
                 triggerId,
                 teamId,
                 initialValues: {
-                  id: linearConfig.id,
-                  apiToken: linearConfig.access_token
+                  apiToken: linearConfig.access_token,
+                  defaultPrompt: linearConfig.default_prompt
                 }
               });
               break;
@@ -313,6 +317,7 @@ export class AppHomeService {
                   url: mcpConnection.url,
                   name: mcpConnection.name,
                   apiToken: mcpConnection.auth_token || undefined,
+                  defaultPrompt: mcpConnection.default_prompt,
                   toolSelectionPrompt: mcpConnection.request_config.tool_selection_prompt
                 }
               });
@@ -324,8 +329,18 @@ export class AppHomeService {
                 triggerId,
                 teamId,
                 initialValues: {
-                  id: salesforceConfig.id,
                   defaultPrompt: salesforceConfig.default_prompt
+                }
+              });
+              break;
+            case SUPPORTED_INTEGRATIONS.HUBSPOT:
+              const { hubspotConfig } = slackWorkspace;
+              if (!hubspotConfig) return;
+              await publishHubspotConfigModal(webClient, {
+                triggerId,
+                teamId,
+                initialValues: {
+                  defaultPrompt: hubspotConfig.default_prompt
                 }
               });
               break;
@@ -494,7 +509,8 @@ export class AppHomeService {
   async handleJiraConfigurationSubmitted(
     userId: string,
     teamId: string,
-    defaultProjectKey: string
+    defaultProjectKey: string,
+    defaultJiraPrompt: string
   ) {
     const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace?.jiraConfig) return;
@@ -502,6 +518,7 @@ export class AppHomeService {
     jiraConfig.default_config = {
       projectKey: defaultProjectKey
     };
+    jiraConfig.default_prompt = defaultJiraPrompt;
     await jiraConfig.save();
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
@@ -518,12 +535,14 @@ export class AppHomeService {
   async handleGithubConfigurationSubmitted(
     userId: string,
     teamId: string,
-    defaultConfig: GithubDefaultConfig
+    defaultConfig: GithubDefaultConfig,
+    defaultGithubPrompt: string
   ) {
     const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace?.githubConfig) return;
     const githubConfig = slackWorkspace.githubConfig;
     githubConfig.default_config = defaultConfig;
+    githubConfig.default_prompt = defaultGithubPrompt;
     await githubConfig.save();
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
