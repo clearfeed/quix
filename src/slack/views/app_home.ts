@@ -13,13 +13,22 @@ import {
   LinearConfig,
   McpConnection
 } from '@quix/database/models';
-import { Elements, Bits, Blocks, Md, BlockBuilder } from 'slack-block-builder';
+import {
+  Elements,
+  Bits,
+  Blocks,
+  Md,
+  BlockBuilder,
+  OptionBuilder,
+  OptionGroupBuilder
+} from 'slack-block-builder';
 import { createHubspotToolsExport } from '@clearfeed-ai/quix-hubspot-agent';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
 import { Tool } from '@clearfeed-ai/quix-common-agent';
+import { partition, isEmpty } from 'lodash';
 
 export const getToolData = async (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined
@@ -110,44 +119,32 @@ export const getToolConnectionView = (
     actionId: SLACK_ACTIONS.CONNECT_TOOL
   });
 
-  // Always calculate connected tool values once and freeze
-  const connectedToolValues: SUPPORTED_INTEGRATIONS[] = [];
-  INTEGRATIONS.forEach((integration) => {
-    const relationKey = integration.relation as keyof SlackWorkspace;
-    if (slackWorkspace?.[relationKey]) {
-      connectedToolValues.push(integration.value);
+  const [connectedIntegrations, nonConnectedIntegrations] = partition(
+    INTEGRATIONS,
+    (integration) => {
+      const relationKey = integration.relation as keyof SlackWorkspace;
+      return !isEmpty(slackWorkspace[relationKey]);
     }
+  );
+
+  let connectedOptions: OptionBuilder[] = [];
+  connectedIntegrations.forEach((integration) => {
+    connectedOptions.push(
+      Bits.Option({
+        text: integration.name,
+        value: integration.value
+      })
+    );
   });
 
-  // Use those to split integrations properly
-  const connectedIntegrations = INTEGRATIONS.filter((i) => connectedToolValues.includes(i.value));
-  const nonConnectedIntegrations = INTEGRATIONS.filter(
-    (i) => !connectedToolValues.includes(i.value)
+  mcpConnections.forEach((conn) =>
+    connectedOptions.push(
+      Bits.Option({
+        text: conn.name,
+        value: `mcp:${conn.id}`
+      })
+    )
   );
-
-  // Build dropdown options
-  let connectedOptions = [];
-  const connectedIntegrationOptions = connectedIntegrations.map((integration) =>
-    Bits.Option({
-      text: integration.name,
-      value: integration.value
-    })
-  );
-
-  const mcpOptions = mcpConnections.map((conn) =>
-    Bits.Option({
-      text: conn.name,
-      value: `mcp:${conn.id}`
-    })
-  );
-
-  if (connectedIntegrationOptions.length) {
-    connectedOptions.push(connectedIntegrationOptions);
-  }
-
-  if (mcpOptions.length) {
-    connectedOptions.push(mcpOptions);
-  }
 
   const integrationOptions = nonConnectedIntegrations.map((integration) =>
     Bits.Option({
@@ -162,7 +159,7 @@ export const getToolConnectionView = (
   });
 
   // Build sections in correct order
-  const optionGroups = [];
+  const optionGroups: OptionGroupBuilder[] = [];
 
   if (connectedOptions.length) {
     optionGroups.push(
