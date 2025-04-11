@@ -30,11 +30,12 @@ import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix
 import { SlackService } from './slack.service';
 import { SlackWorkspace, PostgresConfig } from '@quix/database/models';
 import { IntegrationsService } from 'src/integrations/integrations.service';
-import { GithubDefaultConfig, HomeViewArgs } from './views/types';
+import { HomeViewArgs, GithubDefaultConfig } from './views/types';
 import { Md } from 'slack-block-builder';
 import { Blocks } from 'slack-block-builder';
 import { BlockCollection } from 'slack-block-builder';
 import { McpService } from '../integrations/mcp.service';
+import { TOOL_CONNECTION_MODELS } from './constants';
 
 @Injectable()
 export class AppHomeService {
@@ -48,7 +49,7 @@ export class AppHomeService {
   async handleAppHomeOpened(event: AppHomeOpenedEvent, teamId: string) {
     if (event.tab !== 'home') return;
 
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['mcpConnections']);
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
 
     const webClient = new WebClient(slackWorkspace.bot_access_token);
@@ -142,7 +143,7 @@ export class AppHomeService {
     const integration = INTEGRATIONS.find((integration) => integration.value === selectedTool);
     const relations = ['mcpConnections'];
     if (integration) relations.push(integration.relation);
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, relations);
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     this.logger.log('Publishing home view', { selectedTool });
@@ -234,7 +235,7 @@ export class AppHomeService {
       );
       const relations = ['mcpConnections'];
       if (integration) relations.push(integration.relation);
-      const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, relations);
+      const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
       if (!slackWorkspace) return;
       const webClient = new WebClient(slackWorkspace.bot_access_token);
       switch (selectedOption) {
@@ -381,7 +382,7 @@ export class AppHomeService {
               break;
           }
           await slackWorkspace.reload({
-            include: ['mcpConnections']
+            include: TOOL_CONNECTION_MODELS
           });
           await webClient.views.publish({
             user_id: userId,
@@ -522,7 +523,7 @@ export class AppHomeService {
     defaultProjectKey: string,
     defaultJiraPrompt: string
   ) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['jiraConfig']);
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace?.jiraConfig) return;
     const jiraConfig = slackWorkspace.jiraConfig;
     jiraConfig.default_config = {
@@ -535,7 +536,9 @@ export class AppHomeService {
       user_id: userId,
       view: await this.getHomeView({
         slackWorkspace,
-        userId
+        userId,
+        selectedTool: SUPPORTED_INTEGRATIONS.JIRA,
+        connection: jiraConfig
       })
     });
   }
@@ -546,7 +549,7 @@ export class AppHomeService {
     defaultConfig: GithubDefaultConfig,
     defaultGithubPrompt: string
   ) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, ['githubConfig']);
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace?.githubConfig) return;
     const githubConfig = slackWorkspace.githubConfig;
     githubConfig.default_config = defaultConfig;
@@ -557,7 +560,9 @@ export class AppHomeService {
       user_id: userId,
       view: await this.getHomeView({
         slackWorkspace,
-        userId
+        userId,
+        selectedTool: SUPPORTED_INTEGRATIONS.GITHUB,
+        connection: githubConfig
       })
     });
   }
@@ -565,19 +570,19 @@ export class AppHomeService {
   async handleIntegrationConnected(
     userId: string,
     teamId: string,
-    relation?: keyof SlackWorkspace
+    selectedTool: HomeViewArgs['selectedTool'],
+    connection: HomeViewArgs['connection']
   ) {
-    const slackWorkspace = await this.slackService.getSlackWorkspace(
-      teamId,
-      relation ? [relation] : undefined
-    );
+    const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
     const webClient = new WebClient(slackWorkspace.bot_access_token);
     await webClient.views.publish({
       user_id: userId,
       view: await this.getHomeView({
         slackWorkspace,
-        userId
+        userId,
+        selectedTool,
+        connection
       })
     });
   }
@@ -621,7 +626,7 @@ export class AppHomeService {
       blocks.push(...getOpenAIView(slackWorkspace));
       if (slackWorkspace.openai_key) {
         blocks.push(Blocks.Divider());
-        blocks.push(...getToolConnectionView(selectedTool, mcpConnections));
+        blocks.push(...getToolConnectionView(selectedTool, mcpConnections, slackWorkspace));
         if (selectedTool)
           blocks.push(
             ...getIntegrationInfo(selectedTool, slackWorkspace.team_id, connection, mcpConnections)
