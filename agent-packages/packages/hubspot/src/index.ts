@@ -175,31 +175,87 @@ export class HubspotService implements BaseService<HubspotConfig> {
         after: '0'
       });
 
-      const contacts = await Promise.all(
-        response.results.map(async (contact) => {
-          const hubspotContact = contact as unknown as HubspotContact;
-          let company = hubspotContact.properties.company || 'Unknown';
+      // First, collect all company IDs from all contacts
+      const contactCompanyMap = new Map<string, Set<string>>();
+      const allCompanyIds = new Set<string>();
 
-          // Get company name if associated
-          if (hubspotContact.associations?.companies?.results?.[0]?.id) {
-            const companyResponse = await this.client.crm.companies.basicApi.getById(
-              hubspotContact.associations.companies.results[0].id
-            );
-            company = companyResponse.properties.name || company;
+      // Get all associations in parallel
+      const associationsPromises = response.results.map(async (contact) => {
+        const contactId = contact.id;
+        const { results } = await this.client.crm.associations.v4.basicApi.getPage(
+          'contact',
+          contactId,
+          'companies'
+        );
+
+        // Store the company IDs for this contact
+        const companyIds = new Set(results.map((r) => r.toObjectId));
+        contactCompanyMap.set(contactId, companyIds);
+        results.forEach((r) => allCompanyIds.add(r.toObjectId));
+      });
+
+      await Promise.all(associationsPromises);
+
+      // Batch fetch all unique companies
+      const companyPromises = Array.from(allCompanyIds).map(async (companyId) => {
+        const company = await this.client.crm.companies.basicApi.getById(companyId, [
+          'name',
+          'domain',
+          'industry',
+          'website',
+          'description'
+        ]);
+        return {
+          id: companyId,
+          name: company.properties.name || '',
+          domain: company.properties.domain || '',
+          industry: company.properties.industry || '',
+          website: company.properties.website || '',
+          description: company.properties.description || ''
+        };
+      });
+
+      const companies = await Promise.all(companyPromises);
+      const companyMap = new Map(
+        companies.map((c) => [
+          c.id,
+          {
+            name: c.name,
+            domain: c.domain,
+            industry: c.industry,
+            website: c.website,
+            description: c.description
           }
-
-          return {
-            id: hubspotContact.id,
-            firstName: hubspotContact.properties.firstname || '',
-            lastName: hubspotContact.properties.lastname || '',
-            email: hubspotContact.properties.email || '',
-            phone: hubspotContact.properties.phone || undefined,
-            company,
-            createdAt: hubspotContact.properties.createdate || '',
-            lastModifiedDate: hubspotContact.properties.hs_lastmodifieddate || ''
-          };
-        })
+        ])
       );
+
+      // Map contacts with their associated companies
+      const contacts = response.results.map((contact) => {
+        const contactCompanies = Array.from(contactCompanyMap.get(contact.id) || [])
+          .map((companyId) => companyMap.get(companyId))
+          .filter(
+            (
+              company
+            ): company is {
+              name: string;
+              domain: string;
+              industry: string;
+              website: string;
+              description: string;
+            } => company !== undefined
+          );
+
+        return {
+          id: contact.id,
+          firstName: contact.properties.firstname || '',
+          lastName: contact.properties.lastname || '',
+          email: contact.properties.email || '',
+          phone: contact.properties.phone || undefined,
+          companies: contactCompanies,
+          createdAt: contact.properties.createdate || '',
+          lastModifiedDate: contact.properties.hs_lastmodifieddate || ''
+        };
+      });
 
       return {
         success: true,

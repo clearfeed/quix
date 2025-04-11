@@ -28,8 +28,18 @@ export interface Contact {
   lastModifiedDate: string;
 }
 
+export type ContactWithCompanies = Contact & {
+  companies: {
+    name: string;
+    domain: string;
+    industry: string;
+    website: string;
+    description: string;
+  }[];
+};
+
 export type SearchContactsResponse = BaseResponse<{
-  contacts: Contact[];
+  contacts: ContactWithCompanies[];
 }>;
 
 export interface CreateDealParams {
