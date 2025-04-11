@@ -100,6 +100,10 @@ const getAvailableFns = async (selectedTool: SUPPORTED_INTEGRATIONS) => {
   return [];
 };
 
+export const getMCPConnectionDropDownValue = (mcpConnection: McpConnection): string => {
+  return `mcp:${mcpConnection.id}`;
+};
+
 export const getToolConnectionView = (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined,
   mcpConnections: McpConnection[] = [],
@@ -137,7 +141,7 @@ export const getToolConnectionView = (
   const mcpOptions = mcpConnections.map((conn) =>
     Bits.Option({
       text: conn.name,
-      value: `mcp:${conn.id}`
+      value: getMCPConnectionDropDownValue(conn)
     })
   );
 

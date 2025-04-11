@@ -536,7 +536,7 @@ export class AppHomeService {
   async handleIntegrationConnected(
     userId: string,
     teamId: string,
-    relation?: keyof SlackWorkspace
+    selectedTool: HomeViewArgs['selectedTool']
   ) {
     const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
     if (!slackWorkspace) return;
@@ -545,7 +545,8 @@ export class AppHomeService {
       user_id: userId,
       view: await this.getHomeView({
         slackWorkspace,
-        userId
+        userId,
+        selectedTool
       })
     });
   }
