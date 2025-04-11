@@ -10,15 +10,11 @@ import {
 import { AppHomeService } from './app_home.service';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { IntegrationsInstallService } from '../integrations/integrations-install.service';
-import { QuixUserAccessLevel } from '@quix/lib/constants';
-import {
-  displayErrorModal,
-  displayLoadingModal,
-  displaySuccessModal,
-  publishNotionConnectionModal
-} from './views/modals';
+import { QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
+import { displayErrorModal, displayLoadingModal, displaySuccessModal } from './views/modals';
 import { WebClient } from '@slack/web-api';
 import { SlackService } from './slack.service';
+import { getMCPConnectionDropDownValue } from './views/app_home';
 @Injectable()
 export class InteractionsService {
   private readonly logger = new Logger(InteractionsService.name);
@@ -139,7 +135,7 @@ export class InteractionsService {
         try {
           this.integrationsInstallService
             .notion(payload)
-            .then(async () => {
+            .then(async (notionConfig) => {
               await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
                 text: 'Notion connected successfully',
                 viewId: payload.view.id
@@ -147,7 +143,8 @@ export class InteractionsService {
               this.appHomeService.handleIntegrationConnected(
                 payload.user.id,
                 payload.view.team_id,
-                'notionConfig'
+                SUPPORTED_INTEGRATIONS.NOTION,
+                notionConfig
               );
             })
             .catch((error) => {
@@ -172,7 +169,7 @@ export class InteractionsService {
         try {
           this.integrationsInstallService
             .linear(payload)
-            .then(async () => {
+            .then(async (linearConfig) => {
               await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
                 text: 'Linear connected successfully',
                 viewId: payload.view.id
@@ -180,7 +177,8 @@ export class InteractionsService {
               this.appHomeService.handleIntegrationConnected(
                 payload.user.id,
                 payload.view.team_id,
-                'linearConfig'
+                SUPPORTED_INTEGRATIONS.LINEAR,
+                linearConfig
               );
             })
             .catch((error) => {
@@ -214,7 +212,8 @@ export class InteractionsService {
           this.appHomeService.handleIntegrationConnected(
             payload.user.id,
             payload.view.team_id,
-            'salesforceConfig'
+            SUPPORTED_INTEGRATIONS.SALESFORCE,
+            salesforceConfig
           );
         } catch (error) {
           console.error(error);
@@ -228,7 +227,7 @@ export class InteractionsService {
         try {
           this.integrationsInstallService
             .mcp(payload)
-            .then(async () => {
+            .then(async (mcpConnection) => {
               await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
                 text: 'MCP server connected successfully',
                 viewId: payload.view.id
@@ -236,7 +235,8 @@ export class InteractionsService {
               this.appHomeService.handleIntegrationConnected(
                 payload.user.id,
                 payload.view.team_id,
-                'mcpConnections'
+                getMCPConnectionDropDownValue(mcpConnection),
+                mcpConnection
               );
             })
             .catch((error) => {

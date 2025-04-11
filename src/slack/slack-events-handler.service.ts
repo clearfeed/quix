@@ -60,7 +60,7 @@ export class SlackEventsHandlerService {
     const channelId = event.assistant_thread.channel_id;
 
     try {
-      const slackWorkspace = await this.slackService.getSlackWorkspace(teamId, undefined, true);
+      const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
       if (!slackWorkspace) {
         this.logger.error('Slack workspace not found', { teamId });
         return;

@@ -14,13 +14,22 @@ import {
   McpConnection,
   OktaConfig
 } from '@quix/database/models';
-import { Elements, Bits, Blocks, Md, BlockBuilder } from 'slack-block-builder';
+import {
+  Elements,
+  Bits,
+  Blocks,
+  Md,
+  BlockBuilder,
+  OptionBuilder,
+  OptionGroupBuilder
+} from 'slack-block-builder';
 import { createHubspotToolsExport } from '@clearfeed-ai/quix-hubspot-agent';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
 import { Tool } from '@clearfeed-ai/quix-common-agent';
+import { partition, isEmpty } from 'lodash';
 
 export const getToolData = async (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined
@@ -101,26 +110,51 @@ const getAvailableFns = async (selectedTool: SUPPORTED_INTEGRATIONS) => {
   return [];
 };
 
+export const getMCPConnectionDropDownValue = (mcpConnection: McpConnection): string => {
+  return `mcp:${mcpConnection.id}`;
+};
+
 export const getToolConnectionView = (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined,
-  mcpConnections: McpConnection[] = []
+  mcpConnections: McpConnection[] = [],
+  slackWorkspace: SlackWorkspace
 ): BlockBuilder[] => {
   const select = Elements.StaticSelect({
     placeholder: 'Select a tool',
     actionId: SLACK_ACTIONS.CONNECT_TOOL
   });
 
-  const integrationOptions = INTEGRATIONS.map((integration) =>
+  const [connectedIntegrations, nonConnectedIntegrations] = partition(
+    INTEGRATIONS,
+    (integration) => {
+      const relationKey = integration.relation as keyof SlackWorkspace;
+      return !isEmpty(slackWorkspace[relationKey]);
+    }
+  );
+
+  let connectedOptions: OptionBuilder[] = [];
+  connectedIntegrations.forEach((integration) => {
+    connectedOptions.push(
+      Bits.Option({
+        text: integration.name,
+        value: integration.value
+      })
+    );
+  });
+
+  mcpConnections.forEach((conn) =>
+    connectedOptions.push(
+      Bits.Option({
+        text: conn.name,
+        value: `mcp:${conn.id}`
+      })
+    )
+  );
+
+  const integrationOptions = nonConnectedIntegrations.map((integration) =>
     Bits.Option({
       text: integration.name,
       value: integration.value
-    })
-  );
-
-  const mcpOptions = mcpConnections.map((conn) =>
-    Bits.Option({
-      text: conn.name,
-      value: `mcp:${conn.id}`
     })
   );
 
@@ -129,22 +163,30 @@ export const getToolConnectionView = (
     value: 'add_mcp_server'
   });
 
-  // Add all option groups
-  select.optionGroups(
-    Bits.OptionGroup()
-      .label('Integrations')
-      .options(...integrationOptions),
-    ...(mcpConnections.length
-      ? [
-          Bits.OptionGroup()
-            .label('MCP Servers')
-            .options(...mcpOptions)
-        ]
-      : []),
-    Bits.OptionGroup().label('Add Your Own').options(addYourOwnOption)
-  );
+  // Build sections in correct order
+  const optionGroups: OptionGroupBuilder[] = [];
 
-  // Set initial option if any
+  if (connectedOptions.length) {
+    optionGroups.push(
+      Bits.OptionGroup()
+        .label('Connected Tools')
+        .options(...connectedOptions)
+    );
+  }
+
+  if (integrationOptions.length) {
+    optionGroups.push(
+      Bits.OptionGroup()
+        .label('Integrations')
+        .options(...integrationOptions)
+    );
+  }
+
+  optionGroups.push(Bits.OptionGroup().label('Add Your Own').options(addYourOwnOption));
+
+  select.optionGroups(...optionGroups);
+
+  // Set selected option properly
   if (selectedTool) {
     if (selectedTool.startsWith('mcp:')) {
       const mcpId = selectedTool.split(':')[1];
