@@ -42,7 +42,7 @@ export class SlackService {
       slackWorkspaceIncludeables = TOOL_CONNECTION_MODELS;
     }
     const slackWorkspace = await this.slackWorkspaceModel.findByPk(teamId, {
-      include: TOOL_CONNECTION_MODELS
+      include: slackWorkspaceIncludeables
     });
     if (!slackWorkspace) {
       this.logger.error('Slack workspace not found', { teamId });
