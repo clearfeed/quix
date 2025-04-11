@@ -7,10 +7,14 @@
     "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
     "build": "yarn clean && tsc",
     "test": "jest",
-    "prepublishOnly": "yarn build"
+    "prepublishOnly": "yarn build",
+    "watch": "tsc --watch"
   },
   "dependencies": {
     "@hubspot/api-client": "^12.0.1"
+  },
+  "peerDependencies": {
+    "@langchain/core": "^0.3.40"
   },
   "files": [
     "dist"
