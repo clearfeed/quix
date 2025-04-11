@@ -50,6 +50,11 @@ export const SLACK_ACTIONS = {
   SALESFORCE_CONFIG_MODAL: {
     DEFAULT_PROMPT: 'salesforce-default-prompt',
     SUBMIT: 'submit-salesforce-config-modal'
+  },
+  SUBMIT_OKTA_CONNECTION: 'submit-okta-connection',
+  OKTA_CONNECTION_ACTIONS: {
+    ORG_URL: 'okta-org-url',
+    API_TOKEN: 'okta-api-token'
   }
 } as const;
 

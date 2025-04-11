@@ -257,6 +257,39 @@ export class InteractionsService {
             web: new WebClient(slackWorkspace.bot_access_token)
           });
         }
+      case SLACK_ACTIONS.SUBMIT_OKTA_CONNECTION:
+        try {
+          this.integrationsInstallService
+            .okta(payload)
+            .then(async () => {
+              await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
+                text: 'Okta connected successfully',
+                viewId: payload.view.id
+              });
+              this.appHomeService.handleIntegrationConnected(
+                payload.user.id,
+                payload.view.team_id,
+                'oktaConfig'
+              );
+            })
+            .catch((error) => {
+              return displayErrorModal({
+                error,
+                backgroundCaller: true,
+                viewId: payload.view.id,
+                web: new WebClient(slackWorkspace.bot_access_token)
+              });
+            });
+          return displayLoadingModal('Please Wait');
+        } catch (error) {
+          console.error(error);
+          return displayErrorModal({
+            error,
+            backgroundCaller: true,
+            viewId: payload.view.id,
+            web: new WebClient(slackWorkspace.bot_access_token)
+          });
+        }
       default:
         return;
     }

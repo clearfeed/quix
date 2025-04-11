@@ -9,7 +9,8 @@ export enum SUPPORTED_INTEGRATIONS {
   SALESFORCE = 'salesforce',
   SLACK = 'slack',
   NOTION = 'notion',
-  LINEAR = 'linear'
+  LINEAR = 'linear',
+  OKTA = 'okta'
 }
 
 export enum QuixUserAccessLevel {
@@ -138,6 +139,19 @@ export const INTEGRATIONS: {
     suggestedPrompt: {
       title: 'Check Linear issues',
       message: 'Show me all high priority issues assigned to me'
+    }
+  },
+  {
+    name: 'Okta',
+    value: SUPPORTED_INTEGRATIONS.OKTA,
+    helpText: 'Connect Okta to manage users, groups, and applications.',
+    connectedText:
+      'Okta has been successfully connected! You can now query Okta by chatting with me or mentioning me in any channel. Try asking me things like "List all users in Okta", "Search for a user by email", or "Get details for a specific group".',
+    relation: 'oktaConfig',
+    oauth: false,
+    suggestedPrompt: {
+      title: 'Search Okta users',
+      message: 'Find all Okta users in the Engineering department'
     }
   }
 ];

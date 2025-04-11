@@ -706,3 +706,71 @@ export const publishSalesforceConfigModal = async (
     throw error;
   }
 };
+
+// Add this interface with the other modal args
+export interface OktaConnectionModalArgs {
+  triggerId: string;
+  teamId: string;
+  initialValues?: {
+    id?: string;
+    orgUrl?: string;
+    apiToken?: string;
+  };
+}
+
+export const publishOktaConnectionModal = async (
+  client: WebClient,
+  args: OktaConnectionModalArgs
+): Promise<void> => {
+  try {
+    const blocks = [
+      Section({
+        text: 'Please provide your Okta organization URL and API token:'
+      }),
+      Input({
+        label: 'Organization URL',
+        blockId: 'okta_org_url',
+        hint: 'e.g., https://your-org.okta.com'
+      }).element(
+        Elements.TextInput({
+          placeholder: 'https://your-org.okta.com',
+          actionId: SLACK_ACTIONS.OKTA_CONNECTION_ACTIONS.ORG_URL,
+          initialValue: args.initialValues?.orgUrl
+        })
+      ),
+      Input({
+        label: 'API Token',
+        blockId: 'okta_token',
+        hint: args.initialValues?.apiToken
+          ? 'Current token is not displayed for security reasons. Enter a new token to update it.'
+          : 'API token from your Okta admin console'
+      }).element(
+        Elements.TextInput({
+          placeholder: args.initialValues?.apiToken ? 'Enter new token to update' : '00a...',
+          actionId: SLACK_ACTIONS.OKTA_CONNECTION_ACTIONS.API_TOKEN
+        })
+      ),
+      Section({
+        text: 'The API token must have read and write permissions for Users, Groups, and Applications.'
+      })
+    ];
+    await client.views.open({
+      trigger_id: args.triggerId,
+      view: {
+        ...Surfaces.Modal({
+          title: 'Okta Connection',
+          submit: 'Submit',
+          close: 'Cancel',
+          callbackId: SLACK_ACTIONS.SUBMIT_OKTA_CONNECTION
+        }).buildToObject(),
+        blocks: BlockCollection(blocks),
+        private_metadata: JSON.stringify({
+          id: args.initialValues?.id
+        })
+      }
+    });
+  } catch (error) {
+    console.error('Error publishing Okta connection modal:', error);
+    throw error;
+  }
+};

@@ -23,7 +23,8 @@ import {
   publishMcpConnectionModal,
   publishGithubConfigModal,
   publishSalesforceConfigModal,
-  publishOpenaiKeyModal
+  publishOpenaiKeyModal,
+  publishOktaConnectionModal
 } from './views/modals';
 import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
@@ -209,6 +210,19 @@ export class AppHomeService {
         teamId,
         initialValues
       });
+    } else if (selectedTool === SUPPORTED_INTEGRATIONS.OKTA) {
+      const initialValues = slackWorkspace.oktaConfig
+        ? {
+            id: slackWorkspace.oktaConfig.org_id,
+            orgUrl: slackWorkspace.oktaConfig.org_url,
+            apiToken: slackWorkspace.oktaConfig.api_token
+          }
+        : undefined;
+      await publishOktaConnectionModal(webClient, {
+        triggerId,
+        teamId,
+        initialValues
+      });
     }
   }
 
@@ -328,6 +342,19 @@ export class AppHomeService {
                 }
               });
               break;
+            case SUPPORTED_INTEGRATIONS.OKTA:
+              const { oktaConfig } = slackWorkspace;
+              if (!oktaConfig) return;
+              await publishOktaConnectionModal(webClient, {
+                triggerId,
+                teamId,
+                initialValues: {
+                  id: oktaConfig.org_id,
+                  orgUrl: oktaConfig.org_url,
+                  apiToken: oktaConfig.api_token
+                }
+              });
+              break;
             default:
               break;
           }
@@ -357,6 +384,9 @@ export class AppHomeService {
               break;
             case 'mcp':
               await this.integrationsService.removeMcpConnection(teamId, connectionInfo.id);
+              break;
+            case SUPPORTED_INTEGRATIONS.OKTA:
+              await this.integrationsService.removeOktaConfig(teamId);
               break;
             default:
               break;

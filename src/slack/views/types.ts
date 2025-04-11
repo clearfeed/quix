@@ -60,6 +60,16 @@ export type LinearConnectionModalArgs = {
   };
 };
 
+export type OktaConnectionModalArgs = {
+  triggerId: string;
+  teamId: string;
+  initialValues?: {
+    id?: string;
+    orgUrl?: string;
+    apiToken?: string;
+  };
+};
+
 export type McpConnectionModalArgs = {
   triggerId: string;
   teamId: string;
