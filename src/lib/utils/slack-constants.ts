@@ -10,7 +10,6 @@ export const SLACK_ACTIONS = {
     SUBMIT: 'submit-openai-key',
     OPENAI_API_KEY_INPUT: 'openai_api_key_input'
   },
-  SUBMIT_POSTGRES_CONNECTION: 'submit-postgres-connection',
   POSTGRES_CONNECTION_ACTIONS: {
     HOST: 'postgres_host',
     PORT: 'postgres_port',
@@ -18,7 +17,8 @@ export const SLACK_ACTIONS = {
     PASSWORD: 'postgres_password',
     DATABASE: 'postgres_database',
     SSL: 'postgres_ssl',
-    DEFAULT_PROMPT: 'postgres-default-prompt'
+    DEFAULT_PROMPT: 'postgres-default-prompt',
+    SUBMIT: 'submit-postgres-connection'
   },
   CONNECTION_OVERFLOW_MENU: 'connection-overflow-menu',
   JIRA_CONFIG_MODAL: {
@@ -35,23 +35,23 @@ export const SLACK_ACTIONS = {
   MANAGE_ACCESS_CONTROLS: 'manage-access-controls',
   ALLOWED_CHANNELS_SELECT: 'allowed-channels-select',
   ACCESS_LEVEL_SELECT: 'access-level-select',
-  SUBMIT_NOTION_CONNECTION: 'submit-notion-connection',
   NOTION_CONNECTION_ACTIONS: {
     API_TOKEN: 'notion-api-token',
-    DEFAULT_PROMPT: 'notion-default-prompt'
+    DEFAULT_PROMPT: 'notion-default-prompt',
+    SUBMIT: 'submit-notion-connection'
   },
-  SUBMIT_LINEAR_CONNECTION: 'submit-linear-connection',
   LINEAR_CONNECTION_ACTIONS: {
     API_TOKEN: 'linear-api-token',
-    DEFAULT_PROMPT: 'linear-default-prompt'
+    DEFAULT_PROMPT: 'linear-default-prompt',
+    SUBMIT: 'submit-linear-connection'
   },
-  SUBMIT_MCP_CONNECTION: 'submit-mcp-connection',
   MCP_CONNECTION_ACTIONS: {
     NAME: 'mcp-name',
     URL: 'mcp-url',
     API_TOKEN: 'mcp-api-token',
     DEFAULT_PROMPT: 'mcp-default-prompt',
-    TOOL_SELECTION_PROMPT: 'mcp-tool-selection-prompt'
+    TOOL_SELECTION_PROMPT: 'mcp-tool-selection-prompt',
+    SUBMIT: 'submit-mcp-connection'
   },
   SALESFORCE_CONFIG_MODAL: {
     DEFAULT_PROMPT: 'salesforce-default-prompt',

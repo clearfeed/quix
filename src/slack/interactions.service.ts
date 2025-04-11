@@ -60,7 +60,7 @@ export class InteractionsService {
     if (!slackWorkspace) return;
 
     switch (payload.view.callback_id) {
-      case SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION:
+      case SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.SUBMIT:
         const postgresConfig = await this.integrationsInstallService.postgres(payload);
         const postgresDefaultPrompt = payload.view.state.values.postgres_default_prompt[
           SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DEFAULT_PROMPT
@@ -143,7 +143,7 @@ export class InteractionsService {
           accessLevel
         );
         break;
-      case SLACK_ACTIONS.SUBMIT_NOTION_CONNECTION:
+      case SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.SUBMIT:
         try {
           this.integrationsInstallService
             .notion(payload)
@@ -177,7 +177,7 @@ export class InteractionsService {
             web: new WebClient(slackWorkspace.bot_access_token)
           });
         }
-      case SLACK_ACTIONS.SUBMIT_LINEAR_CONNECTION:
+      case SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.SUBMIT:
         try {
           this.integrationsInstallService
             .linear(payload)
@@ -235,7 +235,7 @@ export class InteractionsService {
           });
         }
         break;
-      case SLACK_ACTIONS.SUBMIT_MCP_CONNECTION:
+      case SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.SUBMIT:
         try {
           this.integrationsInstallService
             .mcp(payload)

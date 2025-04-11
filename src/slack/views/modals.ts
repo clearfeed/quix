@@ -135,7 +135,7 @@ export const publishPostgresConnectionModal = async (
           title: 'PostgreSQL Connection',
           submit: 'Submit',
           close: 'Cancel',
-          callbackId: SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION
+          callbackId: SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.SUBMIT
         }).buildToObject(),
         blocks: modal,
         private_metadata: JSON.stringify({
@@ -465,7 +465,7 @@ export const publishNotionConnectionModal = async (
           title: 'Notion Connection',
           submit: 'Submit',
           close: 'Cancel',
-          callbackId: SLACK_ACTIONS.SUBMIT_NOTION_CONNECTION
+          callbackId: SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.SUBMIT
         }).buildToObject(),
         blocks: BlockCollection(blocks),
         private_metadata: JSON.stringify({
@@ -491,7 +491,7 @@ export const publishLinearConnectionModal = async (
           title: 'Linear Connection',
           submit: 'Submit',
           close: 'Cancel',
-          callbackId: SLACK_ACTIONS.SUBMIT_LINEAR_CONNECTION
+          callbackId: SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.SUBMIT
         }).buildToObject(),
         blocks: BlockCollection([
           Section({
@@ -733,7 +733,7 @@ export const publishMcpConnectionModal = async (
           title: 'MCP Server Connection',
           submit: 'Submit',
           close: 'Cancel',
-          callbackId: SLACK_ACTIONS.SUBMIT_MCP_CONNECTION
+          callbackId: SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.SUBMIT
         }).buildToObject(),
         blocks: modal,
         private_metadata: JSON.stringify({
