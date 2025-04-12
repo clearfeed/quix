@@ -18,6 +18,7 @@ export interface SalesforceOpportunity {
 }
 
 export interface SalesforceTask {
+  Id?: string;
   Subject: string;
   Description?: string;
   Status?: string;
@@ -60,6 +61,18 @@ export type UpdateTaskParams = {
   priority?: string;
   ownerId?: string;
   type?: string;
+  dueDate?: string;
+};
+
+export type GetTasksParams = {
+  ownerId?: string;
+  subject?: string;
+  status?: string;
+  priority?: string;
+  type?: string;
+  dueDate?: string;
+  orderBy?: string;
+  limit?: number;
 };
 
 export type DescribeObjectParams = {
