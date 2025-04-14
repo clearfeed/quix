@@ -154,8 +154,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
         }
       );
 
-      associationsResponse.results.forEach((result, index) => {
-        contactCompanyMap.set(allContactIds[index], new Set(result.to.map((c) => c.toObjectId)));
+      associationsResponse.results.forEach((result) => {
+        contactCompanyMap.set(result._from.id, new Set(result.to.map((c) => c.toObjectId)));
         result.to.forEach((c) => allCompanyIds.add(c.toObjectId));
       });
 
