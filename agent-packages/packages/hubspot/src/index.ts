@@ -1,5 +1,9 @@
 import { Client } from '@hubspot/api-client';
 import { FilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/deals';
+import {
+  SimplePublicObjectInputForCreate,
+  SimplePublicObjectInput
+} from '@hubspot/api-client/lib/codegen/crm/objects/tasks';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   HubspotConfig,
@@ -11,7 +15,13 @@ import {
   CreateNoteParams,
   AddNoteResponse,
   HubspotEntityType,
-  SearchContactsResponse
+  SearchContactsResponse,
+  CreateTaskParams,
+  CreateTaskResponse,
+  UpdateTaskParams,
+  UpdateTaskResponse,
+  SearchTasksResponse,
+  Task
 } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 import { validateRequiredFields } from './utils';
@@ -417,6 +427,165 @@ export class HubspotService implements BaseService<HubspotConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to create HubSpot contact'
+      };
+    }
+  }
+
+  async createTask(params: CreateTaskParams): Promise<CreateTaskResponse> {
+    try {
+      const {
+        title,
+        status,
+        priority,
+        body,
+        dueDate,
+        ownerId,
+        associatedObjectType,
+        associatedObjectId
+      } = params;
+
+      // Map of entity types to their association type IDs
+      const associationTypeIds = {
+        [HubspotEntityType.DEAL]: 216,
+        [HubspotEntityType.COMPANY]: 192,
+        [HubspotEntityType.CONTACT]: 204
+      };
+
+      const taskInput: SimplePublicObjectInputForCreate = {
+        properties: {
+          hs_task_subject: title,
+          hs_task_status: status || 'NOT_STARTED',
+          hs_task_priority: priority || 'MEDIUM',
+          hs_timestamp: dueDate
+        },
+        associations: []
+      };
+
+      if (body) {
+        taskInput.properties.hs_task_body = body;
+      }
+
+      if (ownerId) {
+        taskInput.properties.hubspot_owner_id = ownerId;
+      }
+
+      // If there's an associated object, create the association
+      if (associatedObjectType && associatedObjectId) {
+        taskInput.associations.push({
+          to: { id: associatedObjectId },
+          types: [
+            {
+              associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
+              associationTypeId: associationTypeIds[associatedObjectType]
+            }
+          ]
+        });
+      }
+
+      const response = await this.client.crm.objects.tasks.basicApi.create(taskInput);
+
+      return {
+        success: true,
+        data: { taskId: response.id }
+      };
+    } catch (error) {
+      console.error('Error creating HubSpot task:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create HubSpot task'
+      };
+    }
+  }
+
+  async updateTask(params: UpdateTaskParams): Promise<UpdateTaskResponse> {
+    try {
+      const properties: Record<string, string> = {};
+
+      if (params.title) {
+        properties.hs_task_subject = params.title;
+      }
+      if (params.status) {
+        properties.hs_task_status = params.status;
+      }
+      if (params.priority) {
+        properties.hs_task_priority = params.priority;
+      }
+      if (params.body) {
+        properties.hs_task_body = params.body;
+      }
+      if (params.dueDate) {
+        properties.hs_timestamp = params.dueDate;
+      }
+      if (params.ownerId) {
+        properties.hubspot_owner_id = params.ownerId;
+      }
+
+      const updateInput: SimplePublicObjectInput = { properties };
+
+      const response = await this.client.crm.objects.tasks.basicApi.update(
+        params.taskId,
+        updateInput
+      );
+
+      return {
+        success: true,
+        data: { taskId: response.id }
+      };
+    } catch (error) {
+      console.error('Error updating HubSpot task:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update HubSpot task'
+      };
+    }
+  }
+
+  async searchTasks(keyword: string): Promise<SearchTasksResponse> {
+    try {
+      const response = await this.client.crm.objects.tasks.searchApi.doSearch({
+        filterGroups: ['hs_task_subject', 'hs_task_body'].map((property) => {
+          return {
+            filters: [
+              { propertyName: property, operator: FilterOperatorEnum.ContainsToken, value: keyword }
+            ]
+          };
+        }),
+        properties: [
+          'hs_task_subject',
+          'hs_task_body',
+          'hs_task_status',
+          'hs_task_priority',
+          'hs_task_due_date',
+          'hubspot_owner_id',
+          'createdate',
+          'hs_lastmodifieddate'
+        ],
+        limit: 10
+      });
+
+      const tasks = response.results.map((task) => {
+        return {
+          id: task.id,
+          title: task.properties.hs_task_subject || '',
+          body: task.properties.hs_task_body || undefined,
+          status: task.properties.hs_task_status as Task['status'],
+          priority: task.properties.hs_task_priority as Task['priority'],
+          dueDate: task.properties.hs_task_due_date || undefined,
+          ownerId: task.properties.hubspot_owner_id || undefined,
+          createdAt: task.properties.createdate || '',
+          lastModifiedDate: task.properties.hs_lastmodifieddate || ''
+        };
+      });
+
+      return {
+        success: true,
+        data: { tasks }
+      };
+    } catch (error) {
+      console.error('Error searching HubSpot tasks:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to search HubSpot tasks'
       };
     }
   }

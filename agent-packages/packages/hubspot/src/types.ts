@@ -72,6 +72,47 @@ export type SearchDealsResponse = BaseResponse<{
   deals: Deal[];
 }>;
 
+export interface Task {
+  id: string;
+  title: string;
+  body?: string;
+  status?: 'NOT_STARTED' | 'IN_PROGRESS' | 'WAITING' | 'COMPLETED';
+  priority?: 'HIGH' | 'MEDIUM' | 'LOW';
+  dueDate?: string;
+  ownerId?: string;
+  associatedObjectType?: HubspotEntityType;
+  associatedObjectId?: string;
+  createdAt: string;
+  lastModifiedDate: string;
+}
+
+export interface CreateTaskParams {
+  title: string;
+  body?: string;
+  status?: 'NOT_STARTED' | 'IN_PROGRESS' | 'WAITING' | 'COMPLETED';
+  priority?: 'HIGH' | 'MEDIUM' | 'LOW';
+  dueDate: string;
+  ownerId?: string;
+  associatedObjectType?: HubspotEntityType;
+  associatedObjectId?: string;
+}
+
+export interface UpdateTaskParams extends Partial<CreateTaskParams> {
+  taskId: string;
+}
+
+export type CreateTaskResponse = BaseResponse<{
+  taskId: string;
+}>;
+
+export type UpdateTaskResponse = BaseResponse<{
+  taskId: string;
+}>;
+
+export type SearchTasksResponse = BaseResponse<{
+  tasks: Task[];
+}>;
+
 export enum HubspotEntityType {
   DEAL = 'deals',
   COMPANY = 'companies',

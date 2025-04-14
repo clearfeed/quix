@@ -1,6 +1,13 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { HubspotService } from './index';
-import { CreateContactParams, HubspotConfig, CreateDealParams, HubspotEntityType } from './types';
+import {
+  CreateContactParams,
+  HubspotConfig,
+  CreateDealParams,
+  HubspotEntityType,
+  CreateTaskParams,
+  UpdateTaskParams
+} from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
@@ -9,14 +16,16 @@ HubSpot is a CRM platform that manages:
 - Contacts: People and leads with properties like name, email, phone, title, etc.
 - Companies: Organizations with properties like name, domain, industry, size, etc.
 - Deals: Sales opportunities with stages, amounts, close dates, etc.
+- Tasks: To-do items and reminders with title, status, priority, due dates, etc.
 - Tickets: Support cases with priority, status, category, etc.
 - Marketing: Campaigns, emails, forms, landing pages, etc.
 
 Consider using HubSpot tools when the user wants to:
-- Find specific contacts, companies or deals by name/ID/properties
+- Find specific contacts, companies, deals, or tasks by name/ID/properties
 - Look up contact details like email, phone, job title
 - Check company information like industry, size, revenue
 - View deal status, amount, pipeline stage, close date
+- Create, update, or search tasks and reminders
 - Access ticket details, support history, resolutions
 - Get marketing campaign performance and engagement metrics
 - View and manage deals
@@ -139,6 +148,55 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       description: 'Search companies in HubSpot based on a keyword (e.g., company name)',
       schema: z.object({
         keyword: z.string().describe('The keyword to search for in company names')
+      })
+    }),
+    tool(async (args: CreateTaskParams) => service.createTask(args), {
+      name: 'create_hubspot_task',
+      description: 'Create a new task in HubSpot',
+      schema: z.object({
+        title: z.string().describe('The title/subject of the task'),
+        body: z.string().optional().describe('The detailed description of the task'),
+        status: z
+          .enum(['NOT_STARTED', 'IN_PROGRESS', 'WAITING', 'COMPLETED'])
+          .describe('The status of the task')
+          .default('NOT_STARTED'),
+        priority: z
+          .enum(['HIGH', 'MEDIUM', 'LOW'])
+          .optional()
+          .describe('The priority level of the task'),
+        dueDate: z.string().describe('The due date of the task (YYYY-MM-DD)'),
+        ownerId: z.string().optional().describe('The owner ID of the task'),
+        associatedObjectType: z
+          .nativeEnum(HubspotEntityType)
+          .optional()
+          .describe('The type of object to associate with (DEAL, COMPANY, CONTACT)'),
+        associatedObjectId: z.string().optional().describe('The ID of the object to associate with')
+      })
+    }),
+    tool(async (args: UpdateTaskParams) => service.updateTask(args), {
+      name: 'update_hubspot_task',
+      description: 'Update an existing task in HubSpot',
+      schema: z.object({
+        taskId: z.string().describe('The ID of the task to update'),
+        title: z.string().optional().describe('The new title/subject of the task'),
+        body: z.string().optional().describe('The new detailed description of the task'),
+        status: z
+          .enum(['NOT_STARTED', 'IN_PROGRESS', 'WAITING', 'COMPLETED'])
+          .describe('The new status of the task')
+          .optional(),
+        priority: z
+          .enum(['HIGH', 'MEDIUM', 'LOW'])
+          .optional()
+          .describe('The new priority level of the task'),
+        dueDate: z.string().optional().describe('The new due date of the task (YYYY-MM-DD)'),
+        ownerId: z.string().optional().describe('The new owner ID of the task')
+      })
+    }),
+    tool(async (args: { keyword: string }) => service.searchTasks(args.keyword), {
+      name: 'search_hubspot_tasks',
+      description: 'Search for tasks in HubSpot based on title/subject',
+      schema: z.object({
+        keyword: z.string().describe('The keyword to search for in task titles/subjects')
       })
     })
   ];
