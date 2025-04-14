@@ -221,17 +221,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const contacts = response.results.map((contact) => {
         const contactCompanies = Array.from(contactCompanyMap.get(contact.id) || [])
           .map((companyId) => companyMap.get(companyId))
-          .filter(
-            (
-              company
-            ): company is {
-              name: string;
-              domain: string;
-              industry: string;
-              website: string;
-              description: string;
-            } => company !== undefined
-          );
+          .filter((company) => company !== undefined);
 
         return {
           id: contact.id,
