@@ -19,7 +19,7 @@ import { RunnableSequence } from '@langchain/core/runnables';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { QuixPrompts } from '../lib/constants';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
-import { AIMessage } from '@langchain/core/messages';
+import { AIMessage, SystemMessage } from '@langchain/core/messages';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { QuixCallBackManager } from './callback-manager';
 import { ConversationState } from '../database/models/conversation-state.model';
@@ -27,6 +27,8 @@ import { InjectModel } from '@nestjs/sequelize';
 import { TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT } from '../lib/utils/slack-constants';
 import { Md } from 'slack-block-builder';
 import slackify = require('slackify-markdown');
+import { formatToOpenAITool } from '@langchain/openai';
+
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);
@@ -135,8 +137,17 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       return "I apologize, but I don't have any tools configured to help with your request at the moment.";
     }
 
+    const customInstructions = availableFunctions
+      .map((func) => {
+        return func.config && 'default_prompt' in func.config && func.config.default_prompt
+          ? func.config.default_prompt
+          : '';
+      })
+      .filter(Boolean);
+
     const plan = await this.generatePlan(
-      availableFunctions,
+      availableFunctions.flatMap((func) => func.availableTools),
+      customInstructions,
       enhancedPreviousMessages,
       message,
       llm,
@@ -152,7 +163,6 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       })
       .join('\n');
     this.logger.log(`Generated plan: ${formattedPlan}`);
-
     // Store the plan in conversation state
     conversationState.last_plan = {
       steps: plan,
@@ -164,7 +174,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       tools: availableFunctions.flatMap((func) => func.availableTools),
       prompt:
         toolSelection.selectedTools.length > 1
-          ? QuixPrompts.multiStepBasePrompt(formattedPlan, authorName)
+          ? QuixPrompts.multiStepBasePrompt(formattedPlan, authorName, customInstructions)
           : QuixPrompts.basePrompt(authorName)
     });
 
@@ -309,32 +319,22 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
   }
 
   private async generatePlan(
-    availableFunctions: {
-      availableTools: ToolConfig['tools'];
-      config?: AvailableToolsWithConfig[keyof AvailableToolsWithConfig]['config'];
-    }[],
+    availableTools: ToolConfig['tools'],
+    customInstructions: string[],
     previousMessages: LLMContext[],
     message: string,
     llm: BaseChatModel,
     basePrompt: string
   ) {
-    const allFunctions = availableFunctions
-      .map((func) => {
-        return func.availableTools.map((tool) => `${tool.name}: ${tool.description}`);
+    const allFunctions = availableTools
+      .map((tool) => {
+        const toolFunction = formatToOpenAITool(tool);
+        return `${toolFunction.function.name}: ${toolFunction.function.description} Args: ${JSON.stringify(toolFunction.function.parameters, null, 2)}\n`;
       })
       .flat();
-    const customPrompts = availableFunctions
-      .map((func) => {
-        return func.config && 'default_prompt' in func.config && func.config.default_prompt
-          ? func.config.default_prompt
-          : '';
-      })
-      .filter(Boolean);
     const planPrompt = ChatPromptTemplate.fromMessages([
-      SystemMessagePromptTemplate.fromTemplate(basePrompt),
-      SystemMessagePromptTemplate.fromTemplate(
-        QuixPrompts.PLANNER_PROMPT(allFunctions, customPrompts)
-      ),
+      new SystemMessage(basePrompt),
+      new SystemMessage(QuixPrompts.PLANNER_PROMPT(allFunctions, customInstructions)),
       new MessagesPlaceholder('chat_history'),
       HumanMessagePromptTemplate.fromTemplate('{input}')
     ]);

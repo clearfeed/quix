@@ -5,6 +5,8 @@ import {
   getThreadRepliesParamsSchema,
   getUserProfileParamsSchema,
   getUsersParamsSchema,
+  joinChannelParamsSchema,
+  leaveChannelParamsSchema,
   listChannelsParamsSchema,
   postMessageParamsSchema,
   replyToThreadParamsSchema
@@ -24,3 +26,5 @@ export type GetChannelHistoryParams = z.infer<typeof getChannelHistoryParamsSche
 export type GetThreadRepliesParams = z.infer<typeof getThreadRepliesParamsSchema>;
 export type GetUsersParams = z.infer<typeof getUsersParamsSchema>;
 export type GetUserProfileParams = z.infer<typeof getUserProfileParamsSchema>;
+export type JoinChannelParams = z.infer<typeof joinChannelParamsSchema>;
+export type LeaveChannelParams = z.infer<typeof leaveChannelParamsSchema>;

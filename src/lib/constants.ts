@@ -194,8 +194,9 @@ export const QuixPrompts = {
 - Respond in clear and concise markdown.
 - Ask the user for more details only if absolutely necessary to proceed.
 - When the user references relative dates like "today", "tomorrow", or "now" you MUST always select the common tool to get the current date and time. Do not assume the current date and time.
+- When the user references to themselves such as "I" or "me" or "user", you MUST use the user's name in your plan.
   `,
-  multiStepBasePrompt: (plan: string, authorName: string) => `
+  multiStepBasePrompt: (plan: string, authorName: string, customInstructions: string[]) => `
   You are Quix, a helpful assistant who is responding to ${authorName} (also referred to as "user").
   When user wants to reach out to your developer, you should ask them to get in touch with support@clearfeed.ai.
   If user has suggestions for you or wants to report bugs about you, ask them to create a github issue in clearfeed/quix repo.
@@ -203,7 +204,16 @@ export const QuixPrompts = {
 
 ${plan}
 
+${
+  customInstructions.length > 0
+    ? `Custom instructions:
+${customInstructions.join('\n')}
+`
+    : ''
+}
+
 Use the tools in order.
+ALWAYS follow the custom instructions if any.
 Only use tools provided in this session.
 Do not make up arguments or responses. Always call tools to get real data.
 Do not ask the user for more details unless absolutely necessary to call the tools.
@@ -216,19 +226,26 @@ Respond in clear markdown.
   PLANNER_PROMPT: (allFunctions: string[], allCustomPrompts: string[]) => {
     const basePrompt = `
     You are a planner that breaks down the user's request into an ordered list of steps using available tools.
+    If you are given Custom instructions, you MUST follow each and every one of them.
 Only use the following tools:`;
     const outputPrompt = `
     If you see the get_current_date_time tool in the list above, you MUST use it in your plan.
     If the user references to themselves such as "I" or "me" or "user", you MUST use the user's name in your plan.
     Each step must be:
-- a tool call: {{ "type": "tool", "tool": "toolName", "args": {{ ... }} }}
-- or a reasoning step: {{ "type": "reason", "input": "..." }}
+- a tool call: { "type": "tool", "tool": "toolName", "args": { ... } }
+Important requirements:
+1. Your plan MUST include a specific tool call for EVERY action.
+3. Include EVERY parameter required by the tool - don't leave any parameters unspecified
+4. The plan must be fully executable without any further planning or interpretation.
+
+Before submitting your plan, verify that you have followed ALL of the Custom instructions if any.
 
 Output only structured JSON matching the required format.`;
     const customPrompt = `
-    You MUST follow these instructions when planning your steps:
+    Custom instructions:
     ${allCustomPrompts.join('\n')}
     `;
+
     return `
     ${basePrompt}
     ${allFunctions.join('\n')}
