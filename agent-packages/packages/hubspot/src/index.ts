@@ -31,18 +31,6 @@ interface HubspotDeal {
   };
 }
 
-interface HubspotContact {
-  id: string;
-  properties: Record<string, string | null>;
-  associations?: {
-    companies?: {
-      results: Array<{
-        id: string;
-      }>;
-    };
-  };
-}
-
 export class HubspotService implements BaseService<HubspotConfig> {
   private client: Client;
 

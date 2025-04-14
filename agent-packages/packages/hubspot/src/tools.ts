@@ -53,20 +53,49 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       })
     }),
     tool(
-      async (args: { entityType: string; entityId: string; note: string }) =>
+      async (args: { entityId: string; note: string }) =>
         service.createNote({
-          entityType: args.entityType as HubspotEntityType,
+          entityType: HubspotEntityType.DEAL,
           entityId: args.entityId,
           note: args.note
         }),
       {
-        name: 'create_hubspot_note',
-        description: 'Create a note for a deal, company, or contact in HubSpot',
+        name: 'create_note_for_deal',
+        description: 'Create a note for a deal in HubSpot',
         schema: z.object({
-          entityType: z
-            .enum(['deals', 'companies', 'contacts'])
-            .describe('The type of entity to add the note to (deals, companies, or contacts)'),
-          entityId: z.string().describe('The ID of the entity to add the note to'),
+          entityId: z.string().describe('The ID of the deal'),
+          note: z.string().describe('The content of the note')
+        })
+      }
+    ),
+    tool(
+      async (args: { entityId: string; note: string }) =>
+        service.createNote({
+          entityType: HubspotEntityType.CONTACT,
+          entityId: args.entityId,
+          note: args.note
+        }),
+      {
+        name: 'create_note_for_contact',
+        description: 'Create a note for a contact in HubSpot',
+        schema: z.object({
+          entityId: z.string().describe('The ID of the contact'),
+          note: z.string().describe('The content of the note')
+        })
+      }
+    ),
+    tool(
+      async (args: { entityId: string; note: string }) =>
+        service.createNote({
+          entityType: HubspotEntityType.COMPANY,
+          entityId: args.entityId,
+          note: args.note
+        }),
+      {
+        name: 'create_note_for_company',
+        description: 'Create a note for a company in HubSpot',
+        schema: z.object({
+          entityId: z.string().describe('The ID of the company'),
           note: z.string().describe('The content of the note')
         })
       }
