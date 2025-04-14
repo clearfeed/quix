@@ -141,22 +141,22 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const contactCompanyMap = new Map<string, Set<string>>();
       const allCompanyIds = new Set<string>();
 
-      // Get all associations in parallel
-      const associationsPromises = response.results.map(async (contact) => {
-        const contactId = contact.id;
-        const { results } = await this.client.crm.associations.v4.basicApi.getPage(
-          'contact',
-          contactId,
-          'companies'
-        );
+      const allContactIds: string[] = response.results.map((contact) => contact.id);
 
-        // Store the company IDs for this contact
-        const companyIds = new Set(results.map((r) => r.toObjectId));
-        contactCompanyMap.set(contactId, companyIds);
-        results.forEach((r) => allCompanyIds.add(r.toObjectId));
+      const associationsResponse = await this.client.crm.associations.v4.batchApi.getPage(
+        'contact',
+        'companies',
+        {
+          inputs: allContactIds.map((id) => ({
+            id
+          }))
+        }
+      );
+
+      associationsResponse.results.forEach((r, index) => {
+        contactCompanyMap.set(allContactIds[index], new Set(r.to.map((c) => c.toObjectId)));
+        r.to.forEach((c) => allCompanyIds.add(c.toObjectId));
       });
-
-      await Promise.all(associationsPromises);
 
       // Batch fetch all unique companies
       const companyPromises = Array.from(allCompanyIds).map(async (companyId) => {
