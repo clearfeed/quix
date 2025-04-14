@@ -15,6 +15,7 @@ import {
 } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 import { validateRequiredFields } from './utils';
+import { keyBy } from 'lodash';
 
 export * from './types';
 export * from './tools';
@@ -153,48 +154,34 @@ export class HubspotService implements BaseService<HubspotConfig> {
         }
       );
 
-      associationsResponse.results.forEach((r, index) => {
-        contactCompanyMap.set(allContactIds[index], new Set(r.to.map((c) => c.toObjectId)));
-        r.to.forEach((c) => allCompanyIds.add(c.toObjectId));
+      associationsResponse.results.forEach((result, index) => {
+        contactCompanyMap.set(allContactIds[index], new Set(result.to.map((c) => c.toObjectId)));
+        result.to.forEach((c) => allCompanyIds.add(c.toObjectId));
       });
 
       // Batch fetch all unique companies
-      const companyPromises = Array.from(allCompanyIds).map(async (companyId) => {
-        const company = await this.client.crm.companies.basicApi.getById(companyId, [
-          'name',
-          'domain',
-          'industry',
-          'website',
-          'description'
-        ]);
-        return {
-          id: companyId,
-          name: company.properties.name || '',
-          domain: company.properties.domain || '',
-          industry: company.properties.industry || '',
-          website: company.properties.website || '',
-          description: company.properties.description || ''
-        };
+      const companies = await this.client.crm.companies.batchApi.read({
+        inputs: Array.from(allCompanyIds).map((id) => ({ id })),
+        properties: ['name', 'domain', 'industry', 'website', 'description'],
+        propertiesWithHistory: []
       });
-
-      const companies = await Promise.all(companyPromises);
-      const companyMap = new Map(
-        companies.map((c) => [
-          c.id,
-          {
-            name: c.name,
-            domain: c.domain,
-            industry: c.industry,
-            website: c.website,
-            description: c.description
-          }
-        ])
+      const companyMap = keyBy(
+        companies.results.map((company) => {
+          return {
+            id: company.id,
+            name: company.properties.name || '',
+            domain: company.properties.domain || '',
+            industry: company.properties.industry || '',
+            website: company.properties.website || '',
+            description: company.properties.description || ''
+          };
+        }),
+        'id'
       );
-
       // Map contacts with their associated companies
       const contacts = response.results.map((contact) => {
         const associatedCompanies = Array.from(contactCompanyMap.get(contact.id) || [])
-          .map((companyId) => companyMap.get(companyId))
+          .map((companyId) => companyMap[companyId])
           .filter((company) => company !== undefined);
 
         return {
