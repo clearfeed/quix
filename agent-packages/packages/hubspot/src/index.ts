@@ -219,7 +219,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       // Map contacts with their associated companies
       const contacts = response.results.map((contact) => {
-        const contactCompanies = Array.from(contactCompanyMap.get(contact.id) || [])
+        const associatedCompanies = Array.from(contactCompanyMap.get(contact.id) || [])
           .map((companyId) => companyMap.get(companyId))
           .filter((company) => company !== undefined);
 
@@ -229,7 +229,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           lastName: contact.properties.lastname || '',
           email: contact.properties.email || '',
           phone: contact.properties.phone || undefined,
-          companies: contactCompanies,
+          companies: associatedCompanies,
           createdAt: contact.properties.createdate || '',
           lastModifiedDate: contact.properties.hs_lastmodifieddate || ''
         };
