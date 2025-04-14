@@ -6,7 +6,8 @@ import {
   CreateDealParams,
   HubspotEntityType,
   CreateTaskParams,
-  UpdateTaskParams
+  UpdateTaskParams,
+  TaskSearchParams
 } from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
@@ -150,29 +151,102 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         keyword: z.string().describe('The keyword to search for in company names')
       })
     }),
-    tool(async (args: CreateTaskParams) => service.createTask(args), {
-      name: 'create_hubspot_task',
-      description: 'Create a new task in HubSpot',
-      schema: z.object({
-        title: z.string().describe('The title/subject of the task'),
-        body: z.string().optional().describe('The detailed description of the task'),
-        status: z
-          .enum(['NOT_STARTED', 'IN_PROGRESS', 'WAITING', 'COMPLETED'])
-          .describe('The status of the task')
-          .default('NOT_STARTED'),
-        priority: z
-          .enum(['HIGH', 'MEDIUM', 'LOW'])
-          .optional()
-          .describe('The priority level of the task'),
-        dueDate: z.string().describe('The due date of the task (YYYY-MM-DD)'),
-        ownerId: z.string().optional().describe('The owner ID of the task'),
-        associatedObjectType: z
-          .nativeEnum(HubspotEntityType)
-          .optional()
-          .describe('The type of object to associate with (DEAL, COMPANY, CONTACT)'),
-        associatedObjectId: z.string().optional().describe('The ID of the object to associate with')
-      })
-    }),
+    tool(
+      async (args: CreateTaskParams) =>
+        service.createTask({
+          title: args.title,
+          body: args.body,
+          status: args.status,
+          priority: args.priority,
+          dueDate: args.dueDate,
+          ownerId: args.ownerId,
+          associatedObjectType: HubspotEntityType.DEAL,
+          associatedObjectId: args.entityId
+        }),
+      {
+        name: 'add_task_to_hubspot_deal',
+        description: 'Add a task associated with a deal in HubSpot',
+        schema: z.object({
+          title: z.string().describe('The title/subject of the task'),
+          body: z.string().optional().describe('The detailed description of the task'),
+          status: z
+            .enum(['NOT_STARTED', 'IN_PROGRESS', 'WAITING', 'COMPLETED'])
+            .describe('The status of the task')
+            .default('NOT_STARTED'),
+          priority: z
+            .enum(['HIGH', 'MEDIUM', 'LOW'])
+            .optional()
+            .describe('The priority level of the task'),
+          dueDate: z.string().describe('The due date of the task (YYYY-MM-DD)'),
+          ownerId: z.string().optional().describe('The owner ID of the task'),
+          entityId: z.string().describe('The ID of the deal to associate this task with')
+        })
+      }
+    ),
+    tool(
+      async (args: CreateTaskParams) =>
+        service.createTask({
+          title: args.title,
+          body: args.body,
+          status: args.status,
+          priority: args.priority,
+          dueDate: args.dueDate,
+          ownerId: args.ownerId,
+          associatedObjectType: HubspotEntityType.CONTACT,
+          associatedObjectId: args.entityId
+        }),
+      {
+        name: 'add_task_to_hubspot_contact',
+        description: 'Add a task associated with a contact in HubSpot',
+        schema: z.object({
+          title: z.string().describe('The title/subject of the task'),
+          body: z.string().optional().describe('The detailed description of the task'),
+          status: z
+            .enum(['NOT_STARTED', 'IN_PROGRESS', 'WAITING', 'COMPLETED'])
+            .describe('The status of the task')
+            .default('NOT_STARTED'),
+          priority: z
+            .enum(['HIGH', 'MEDIUM', 'LOW'])
+            .optional()
+            .describe('The priority level of the task'),
+          dueDate: z.string().describe('The due date of the task (YYYY-MM-DD)'),
+          ownerId: z.string().optional().describe('The owner ID of the task'),
+          entityId: z.string().describe('The ID of the contact to associate this task with')
+        })
+      }
+    ),
+    tool(
+      async (args: CreateTaskParams) =>
+        service.createTask({
+          title: args.title,
+          body: args.body,
+          status: args.status,
+          priority: args.priority,
+          dueDate: args.dueDate,
+          ownerId: args.ownerId,
+          associatedObjectType: HubspotEntityType.COMPANY,
+          associatedObjectId: args.entityId
+        }),
+      {
+        name: 'add_task_to_hubspot_company',
+        description: 'Add a task associated with a company in HubSpot',
+        schema: z.object({
+          title: z.string().describe('The title/subject of the task'),
+          body: z.string().optional().describe('The detailed description of the task'),
+          status: z
+            .enum(['NOT_STARTED', 'IN_PROGRESS', 'WAITING', 'COMPLETED'])
+            .describe('The status of the task')
+            .default('NOT_STARTED'),
+          priority: z
+            .enum(['HIGH', 'MEDIUM', 'LOW'])
+            .optional()
+            .describe('The priority level of the task'),
+          dueDate: z.string().describe('The due date of the task (YYYY-MM-DD)'),
+          ownerId: z.string().optional().describe('The owner ID of the task'),
+          entityId: z.string().describe('The ID of the company to associate this task with')
+        })
+      }
+    ),
     tool(async (args: UpdateTaskParams) => service.updateTask(args), {
       name: 'update_hubspot_task',
       description: 'Update an existing task in HubSpot',
@@ -192,11 +266,31 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         ownerId: z.string().optional().describe('The new owner ID of the task')
       })
     }),
-    tool(async (args: { keyword: string }) => service.searchTasks(args.keyword), {
+    tool(async (args: TaskSearchParams) => service.searchTasks(args), {
       name: 'search_hubspot_tasks',
-      description: 'Search for tasks in HubSpot based on title/subject',
+      description: 'Search for tasks in HubSpot with advanced filtering options',
       schema: z.object({
-        keyword: z.string().describe('The keyword to search for in task titles/subjects')
+        keyword: z
+          .string()
+          .optional()
+          .describe('The keyword to search for in task titles/subjects and body'),
+        ownerId: z.string().optional().describe('Filter tasks by owner ID'),
+        status: z
+          .enum(['NOT_STARTED', 'IN_PROGRESS', 'WAITING', 'COMPLETED'])
+          .optional()
+          .describe('Filter tasks by status'),
+        priority: z
+          .enum(['HIGH', 'MEDIUM', 'LOW'])
+          .optional()
+          .describe('Filter tasks by priority level'),
+        dueDateFrom: z
+          .string()
+          .optional()
+          .describe('Filter tasks with due date after this date (YYYY-MM-DD)'),
+        dueDateTo: z
+          .string()
+          .optional()
+          .describe('Filter tasks with due date before this date (YYYY-MM-DD)')
       })
     })
   ];

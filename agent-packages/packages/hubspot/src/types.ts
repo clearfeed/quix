@@ -93,6 +93,7 @@ export interface CreateTaskParams {
   priority?: 'HIGH' | 'MEDIUM' | 'LOW';
   dueDate: string;
   ownerId?: string;
+  entityId?: string;
   associatedObjectType?: HubspotEntityType;
   associatedObjectId?: string;
 }
@@ -108,6 +109,15 @@ export type CreateTaskResponse = BaseResponse<{
 export type UpdateTaskResponse = BaseResponse<{
   taskId: string;
 }>;
+
+export interface TaskSearchParams {
+  keyword?: string;
+  ownerId?: string;
+  status?: Task['status'];
+  priority?: Task['priority'];
+  dueDateFrom?: string;
+  dueDateTo?: string;
+}
 
 export type SearchTasksResponse = BaseResponse<{
   tasks: Task[];

@@ -21,7 +21,8 @@ import {
   UpdateTaskParams,
   UpdateTaskResponse,
   SearchTasksResponse,
-  Task
+  Task,
+  TaskSearchParams
 } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 import { validateRequiredFields } from './utils';
@@ -540,22 +541,99 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
-  async searchTasks(keyword: string): Promise<SearchTasksResponse> {
+  async searchTasks(params: TaskSearchParams): Promise<SearchTasksResponse> {
     try {
-      const response = await this.client.crm.objects.tasks.searchApi.doSearch({
-        filterGroups: ['hs_task_subject', 'hs_task_body'].map((property) => {
-          return {
+      const filterGroups: Array<{
+        filters: Array<{ propertyName: string; operator: FilterOperatorEnum; value: string }>;
+      }> = [];
+
+      // Add keyword search filters if keyword is provided
+      if (params.keyword) {
+        filterGroups.push(
+          ...['hs_task_subject', 'hs_task_body'].map((property) => ({
             filters: [
-              { propertyName: property, operator: FilterOperatorEnum.ContainsToken, value: keyword }
+              {
+                propertyName: property,
+                operator: FilterOperatorEnum.ContainsToken,
+                value: params.keyword!
+              }
             ]
-          };
-        }),
+          }))
+        );
+      }
+
+      // Add owner filter
+      if (params.ownerId) {
+        filterGroups.push({
+          filters: [
+            {
+              propertyName: 'hubspot_owner_id',
+              operator: FilterOperatorEnum.ContainsToken,
+              value: params.ownerId
+            }
+          ]
+        });
+      }
+
+      // Add status filter
+      if (params.status) {
+        filterGroups.push({
+          filters: [
+            {
+              propertyName: 'hs_task_status',
+              operator: FilterOperatorEnum.ContainsToken,
+              value: params.status
+            }
+          ]
+        });
+      }
+
+      // Add priority filter
+      if (params.priority) {
+        filterGroups.push({
+          filters: [
+            {
+              propertyName: 'hs_task_priority',
+              operator: FilterOperatorEnum.ContainsToken,
+              value: params.priority
+            }
+          ]
+        });
+      }
+
+      // Add due date range filters
+      if (params.dueDateFrom) {
+        filterGroups.push({
+          filters: [
+            {
+              propertyName: 'hs_timestamp',
+              operator: FilterOperatorEnum.Gte,
+              value: params.dueDateFrom
+            }
+          ]
+        });
+      }
+
+      if (params.dueDateTo) {
+        filterGroups.push({
+          filters: [
+            {
+              propertyName: 'hs_timestamp',
+              operator: FilterOperatorEnum.Lte,
+              value: params.dueDateTo
+            }
+          ]
+        });
+      }
+
+      const response = await this.client.crm.objects.tasks.searchApi.doSearch({
+        filterGroups: filterGroups.length > 0 ? filterGroups : undefined,
         properties: [
           'hs_task_subject',
           'hs_task_body',
           'hs_task_status',
           'hs_task_priority',
-          'hs_task_due_date',
+          'hs_timestamp',
           'hubspot_owner_id',
           'createdate',
           'hs_lastmodifieddate'
@@ -570,7 +648,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           body: task.properties.hs_task_body || undefined,
           status: task.properties.hs_task_status as Task['status'],
           priority: task.properties.hs_task_priority as Task['priority'],
-          dueDate: task.properties.hs_task_due_date || undefined,
+          dueDate: task.properties.hs_timestamp || undefined,
           ownerId: task.properties.hubspot_owner_id || undefined,
           createdAt: task.properties.createdate || '',
           lastModifiedDate: task.properties.hs_lastmodifieddate || ''
