@@ -117,44 +117,18 @@ export class HubspotService implements BaseService<HubspotConfig> {
   async searchContacts(keyword: string): Promise<SearchContactsResponse> {
     try {
       const response = await this.client.crm.contacts.searchApi.doSearch({
-        filterGroups: [
-          {
-            // Search by email
+        filterGroups: ['email', 'firstname', 'lastname'].map((property) => {
+          return {
             filters: [
-              {
-                propertyName: 'email',
-                operator: FilterOperatorEnum.ContainsToken,
-                value: keyword
-              }
+              { propertyName: property, operator: FilterOperatorEnum.ContainsToken, value: keyword }
             ]
-          },
-          {
-            // Search by first name
-            filters: [
-              {
-                propertyName: 'firstname',
-                operator: FilterOperatorEnum.ContainsToken,
-                value: keyword
-              }
-            ]
-          },
-          {
-            // Search by last name
-            filters: [
-              {
-                propertyName: 'lastname',
-                operator: FilterOperatorEnum.ContainsToken,
-                value: keyword
-              }
-            ]
-          }
-        ],
+          };
+        }),
         properties: [
           'firstname',
           'lastname',
           'email',
           'phone',
-          'company',
           'createdate',
           'hs_lastmodifieddate'
         ],
