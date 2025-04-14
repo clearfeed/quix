@@ -60,8 +60,8 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
           note: args.note
         }),
       {
-        name: 'create_note_for_deal',
-        description: 'Create a note for a deal in HubSpot',
+        name: 'add_note_to_hubspot_deal',
+        description: 'Add a note to a deal in HubSpot',
         schema: z.object({
           entityId: z.string().describe('The ID of the deal'),
           note: z.string().describe('The content of the note')
@@ -76,8 +76,8 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
           note: args.note
         }),
       {
-        name: 'create_note_for_contact',
-        description: 'Create a note for a contact in HubSpot',
+        name: 'add_note_to_hubspot_contact',
+        description: 'Add a note to a contact in HubSpot',
         schema: z.object({
           entityId: z.string().describe('The ID of the contact'),
           note: z.string().describe('The content of the note')
@@ -92,8 +92,8 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
           note: args.note
         }),
       {
-        name: 'create_note_for_company',
-        description: 'Create a note for a company in HubSpot',
+        name: 'add_note_to_hubspot_company',
+        description: 'Add a note to a company in HubSpot',
         schema: z.object({
           entityId: z.string().describe('The ID of the company'),
           note: z.string().describe('The content of the note')
