@@ -1,6 +1,6 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { HubspotService } from './index';
-import { CreateContactParams, HubspotConfig, CreateDealParams } from './types';
+import { CreateContactParams, HubspotConfig, CreateDealParams, HubspotEntityType } from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
@@ -43,15 +43,60 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         keyword: z.string().describe('The keyword to search for in HubSpot deals')
       })
     }),
+    tool(async (args: { keyword: string }) => service.searchContacts(args.keyword), {
+      name: 'search_hubspot_contacts',
+      description: 'Search for contacts in HubSpot based on name or email',
+      schema: z.object({
+        keyword: z
+          .string()
+          .describe('The keyword to search for in contact names or email addresses')
+      })
+    }),
     tool(
-      async (args: { dealId: string; note: string }) =>
-        service.addNoteToDeal(args.dealId, args.note),
+      async (args: { entityId: string; note: string }) =>
+        service.createNote({
+          entityType: HubspotEntityType.DEAL,
+          entityId: args.entityId,
+          note: args.note
+        }),
       {
-        name: 'add_note_to_deal',
+        name: 'add_note_to_hubspot_deal',
         description: 'Add a note to a deal in HubSpot',
         schema: z.object({
-          dealId: z.string().describe('The ID of the deal to add a note to'),
-          note: z.string().describe('The note to add to the deal')
+          entityId: z.string().describe('The ID of the deal'),
+          note: z.string().describe('The content of the note')
+        })
+      }
+    ),
+    tool(
+      async (args: { entityId: string; note: string }) =>
+        service.createNote({
+          entityType: HubspotEntityType.CONTACT,
+          entityId: args.entityId,
+          note: args.note
+        }),
+      {
+        name: 'add_note_to_hubspot_contact',
+        description: 'Add a note to a contact in HubSpot',
+        schema: z.object({
+          entityId: z.string().describe('The ID of the contact'),
+          note: z.string().describe('The content of the note')
+        })
+      }
+    ),
+    tool(
+      async (args: { entityId: string; note: string }) =>
+        service.createNote({
+          entityType: HubspotEntityType.COMPANY,
+          entityId: args.entityId,
+          note: args.note
+        }),
+      {
+        name: 'add_note_to_hubspot_company',
+        description: 'Add a note to a company in HubSpot',
+        schema: z.object({
+          entityId: z.string().describe('The ID of the company'),
+          note: z.string().describe('The content of the note')
         })
       }
     ),
