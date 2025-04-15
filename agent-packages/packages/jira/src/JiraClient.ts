@@ -146,7 +146,9 @@ export class JiraClient {
                 content: [{ type: 'paragraph', content: [{ type: 'text', text: description }] }]
               }
             : undefined,
-          issuetype: { id: issueTypeObj.id }
+          issuetype: { id: issueTypeObj.id },
+          ...(assignee ? { assignee: { accountId: assignee } } : {}),
+          ...(priority ? { priority: { name: priority } } : {})
         }
       }
     });
@@ -218,14 +220,12 @@ export class JiraClient {
     const response = await this.makeApiCall('PUT', `/issue/${issueId}`, {
       data: {
         fields: {
-          ...fields,
           ...(description ? { description } : {}),
-          ...(fields.assigneeId ? { assignee: { id: fields.assigneeId } } : {}),
-          ...(fields.labels ? { labels: fields.labels } : {}),
+          ...(fields.assigneeId ? { assignee: { accountId: fields.assigneeId } } : {}),
           ...(fields.priority
             ? {
                 priority: {
-                  name: fields.priority.charAt(0).toUpperCase() + fields.priority.slice(1)
+                  name: fields.priority
                 }
               }
             : {})

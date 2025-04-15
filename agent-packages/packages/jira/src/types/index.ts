@@ -83,7 +83,7 @@ export interface JiraResponse<T> {
 }
 
 export interface CreateIssueParams {
-  projectKey?: string;
+  projectKey: string;
   summary: string;
   description?: string;
   issueType: string;
@@ -195,7 +195,11 @@ export interface UpdateIssueFields {
   labels?: string[];
 }
 
-export type UpdateIssueResponse = BaseResponse<void>;
+export type UpdateIssueResponse = BaseResponse<{
+  issueId: string;
+  url: string;
+  fields: UpdateIssueFields;
+}>;
 
 export type SearchUsersResponse = BaseResponse<{
   users: JiraUserResponse[];

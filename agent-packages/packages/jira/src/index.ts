@@ -110,7 +110,7 @@ export class JiraService implements BaseService<JiraConfig> {
         return { success: false, error: validation.error };
       }
 
-      const projectKey = params.projectKey || this.config.defaultConfig?.projectKey;
+      const projectKey = params.projectKey;
       if (!projectKey) {
         return {
           success: false,
@@ -118,14 +118,20 @@ export class JiraService implements BaseService<JiraConfig> {
         };
       }
 
-      const issueData = {
+      const issueData: CreateIssueParams = {
         summary: params.summary,
-        description: params.description,
         projectKey,
-        issueType: params.issueType,
-        priority: params.priority,
-        assignee: params.assignee
+        issueType: params.issueType
       };
+      if (params.description) {
+        issueData.description = params.description;
+      }
+      if (params.assignee) {
+        issueData.assignee = params.assignee;
+      }
+      if (params.priority) {
+        issueData.priority = params.priority;
+      }
 
       const issue = await this.client.createIssue(issueData);
       return {
@@ -255,7 +261,12 @@ export class JiraService implements BaseService<JiraConfig> {
       await this.client.updateIssue(params.issueId, params.fields);
 
       return {
-        success: true
+        success: true,
+        data: {
+          issueId: params.issueId,
+          url: this.getIssueUrl({ key: params.issueId }),
+          fields: params.fields
+        }
       };
     } catch (error) {
       console.error('Error updating Jira issue:', error);

@@ -17,7 +17,7 @@ import { BaseResponse, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 
 const JIRA_TOOL_SELECTION_PROMPT = `
-For Jira-related queries, consider using Jira tools when the user wants to:
+For Jira-related queries, ask for extra information only if it is required. Consider using Jira tools when the user wants to:
 - Create, view, or search for issues
 - Assign issues to team members
 - Get issue status updates
@@ -70,8 +70,11 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
           : z.string().describe('The project key where the issue will be created (required)'),
         summary: z.string().describe('The summary/title of the issue'),
         description: z.string().describe('The description of the issue').optional(),
-        issueType: z.string().describe('The type of issue (e.g., Bug, Task, Story)'),
-        priority: z.string().describe('The priority of the issue').optional(),
+        issueType: z.string().describe('The type of issue (e.g., Bug, Task, Story, Epic)'),
+        priority: z
+          .string()
+          .describe('The priority of the issue (e.g., Highest, High, Medium, Low, Lowest)')
+          .optional(),
         assignee: z.string().describe('The username of the assignee').optional()
       }),
       func: async (params: CreateIssueParams): Promise<GetIssueResponse> =>
@@ -119,7 +122,10 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
         fields: z.object({
           summary: z.string().describe('The summary of the issue').optional(),
           description: z.string().describe('The description of the issue').optional(),
-          priority: z.string().describe('The priority of the issue').optional(),
+          priority: z
+            .string()
+            .describe('The priority of the issue (e.g., Highest, High, Medium, Low, Lowest)')
+            .optional(),
           assigneeId: z.string().describe('The ID of the user to assign the issue to').optional(),
           labels: z.array(z.string()).describe('The labels of the issue').optional()
         })
