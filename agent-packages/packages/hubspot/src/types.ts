@@ -1,4 +1,6 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
+import { Task } from './schema';
+export * from './schema';
 
 export interface HubspotConfig extends BaseConfig {
   accessToken: string;
@@ -72,34 +74,13 @@ export type SearchDealsResponse = BaseResponse<{
   deals: Deal[];
 }>;
 
-export interface Task {
+// Extending the Task type to include HubSpot specific fields
+export interface HubspotTask extends Task {
   id: string;
-  title: string;
-  body?: string;
-  status?: 'NOT_STARTED' | 'IN_PROGRESS' | 'WAITING' | 'COMPLETED';
-  priority?: 'HIGH' | 'MEDIUM' | 'LOW';
-  dueDate?: string;
-  ownerId?: string;
   associatedObjectType?: HubspotEntityType;
   associatedObjectId?: string;
   createdAt: string;
   lastModifiedDate: string;
-}
-
-export interface CreateTaskParams {
-  title: string;
-  body?: string;
-  status?: 'NOT_STARTED' | 'IN_PROGRESS' | 'WAITING' | 'COMPLETED';
-  priority?: 'HIGH' | 'MEDIUM' | 'LOW';
-  dueDate: string;
-  ownerId?: string;
-  entityId?: string;
-  associatedObjectType?: HubspotEntityType;
-  associatedObjectId?: string;
-}
-
-export interface UpdateTaskParams extends Partial<CreateTaskParams> {
-  taskId: string;
 }
 
 export type CreateTaskResponse = BaseResponse<{
@@ -110,17 +91,8 @@ export type UpdateTaskResponse = BaseResponse<{
   taskId: string;
 }>;
 
-export interface TaskSearchParams {
-  keyword?: string;
-  ownerId?: string;
-  status?: Task['status'];
-  priority?: Task['priority'];
-  dueDateFrom?: string;
-  dueDateTo?: string;
-}
-
 export type SearchTasksResponse = BaseResponse<{
-  tasks: Task[];
+  tasks: HubspotTask[];
 }>;
 
 export enum HubspotEntityType {

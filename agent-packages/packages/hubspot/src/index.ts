@@ -22,7 +22,9 @@ import {
   UpdateTaskResponse,
   SearchTasksResponse,
   Task,
-  TaskSearchParams
+  TaskSearchParams,
+  TaskStatusEnum,
+  TaskPriorityEnum
 } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 import { validateRequiredFields } from './utils';
@@ -303,7 +305,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
     try {
       const { entityType, entityId, note } = params;
 
-      // Map of entity types to their association type IDs
+      /**
+       * @see https://developers.hubspot.com/docs/guides/api/crm/associations/associations-v4
+       */
       const associationTypeIds = {
         [HubspotEntityType.DEAL]: 214,
         [HubspotEntityType.COMPANY]: 190,
@@ -445,7 +449,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
         associatedObjectId
       } = params;
 
-      // Map of entity types to their association type IDs
+      /**
+       * @see https://developers.hubspot.com/docs/guides/api/crm/associations/associations-v4
+       */
       const associationTypeIds = {
         [HubspotEntityType.DEAL]: 216,
         [HubspotEntityType.COMPANY]: 192,
@@ -455,8 +461,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const taskInput: SimplePublicObjectInputForCreate = {
         properties: {
           hs_task_subject: title,
-          hs_task_status: status || 'NOT_STARTED',
-          hs_task_priority: priority || 'MEDIUM',
+          hs_task_status: status || TaskStatusEnum.NOT_STARTED,
+          hs_task_priority: priority || TaskPriorityEnum.MEDIUM,
           hs_timestamp: dueDate
         },
         associations: []
@@ -477,7 +483,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           types: [
             {
               associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
-              associationTypeId: associationTypeIds[associatedObjectType]
+              associationTypeId: associationTypeIds[associatedObjectType as HubspotEntityType]
             }
           ]
         });
@@ -648,7 +654,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           body: task.properties.hs_task_body || undefined,
           status: task.properties.hs_task_status as Task['status'],
           priority: task.properties.hs_task_priority as Task['priority'],
-          dueDate: task.properties.hs_timestamp || undefined,
+          dueDate: task.properties.hs_timestamp || '',
           ownerId: task.properties.hubspot_owner_id || undefined,
           createdAt: task.properties.createdate || '',
           lastModifiedDate: task.properties.hs_lastmodifieddate || ''

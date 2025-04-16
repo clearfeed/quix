@@ -11,6 +11,13 @@ import {
 } from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
+import {
+  dealTaskSchema,
+  contactTaskSchema,
+  companyTaskSchema,
+  taskUpdateSchema,
+  taskFullSearchSchema
+} from './schema';
 
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
 HubSpot is a CRM platform that manages:
@@ -166,21 +173,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       {
         name: 'add_task_to_hubspot_deal',
         description: 'Add a task associated with a deal in HubSpot',
-        schema: z.object({
-          title: z.string().describe('The title/subject of the task'),
-          body: z.string().optional().describe('The detailed description of the task'),
-          status: z
-            .enum(['NOT_STARTED', 'IN_PROGRESS', 'WAITING', 'COMPLETED'])
-            .describe('The status of the task')
-            .default('NOT_STARTED'),
-          priority: z
-            .enum(['HIGH', 'MEDIUM', 'LOW'])
-            .optional()
-            .describe('The priority level of the task'),
-          dueDate: z.string().describe('The due date of the task (YYYY-MM-DD)'),
-          ownerId: z.string().optional().describe('The owner ID of the task'),
-          entityId: z.string().describe('The ID of the deal to associate this task with')
-        })
+        schema: dealTaskSchema
       }
     ),
     tool(
@@ -198,21 +191,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       {
         name: 'add_task_to_hubspot_contact',
         description: 'Add a task associated with a contact in HubSpot',
-        schema: z.object({
-          title: z.string().describe('The title/subject of the task'),
-          body: z.string().optional().describe('The detailed description of the task'),
-          status: z
-            .enum(['NOT_STARTED', 'IN_PROGRESS', 'WAITING', 'COMPLETED'])
-            .describe('The status of the task')
-            .default('NOT_STARTED'),
-          priority: z
-            .enum(['HIGH', 'MEDIUM', 'LOW'])
-            .optional()
-            .describe('The priority level of the task'),
-          dueDate: z.string().describe('The due date of the task (YYYY-MM-DD)'),
-          ownerId: z.string().optional().describe('The owner ID of the task'),
-          entityId: z.string().describe('The ID of the contact to associate this task with')
-        })
+        schema: contactTaskSchema
       }
     ),
     tool(
@@ -230,68 +209,18 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       {
         name: 'add_task_to_hubspot_company',
         description: 'Add a task associated with a company in HubSpot',
-        schema: z.object({
-          title: z.string().describe('The title/subject of the task'),
-          body: z.string().optional().describe('The detailed description of the task'),
-          status: z
-            .enum(['NOT_STARTED', 'IN_PROGRESS', 'WAITING', 'COMPLETED'])
-            .describe('The status of the task')
-            .default('NOT_STARTED'),
-          priority: z
-            .enum(['HIGH', 'MEDIUM', 'LOW'])
-            .optional()
-            .describe('The priority level of the task'),
-          dueDate: z.string().describe('The due date of the task (YYYY-MM-DD)'),
-          ownerId: z.string().optional().describe('The owner ID of the task'),
-          entityId: z.string().describe('The ID of the company to associate this task with')
-        })
+        schema: companyTaskSchema
       }
     ),
     tool(async (args: UpdateTaskParams) => service.updateTask(args), {
       name: 'update_hubspot_task',
       description: 'Update an existing task in HubSpot',
-      schema: z.object({
-        taskId: z.string().describe('The ID of the task to update'),
-        title: z.string().optional().describe('The new title/subject of the task'),
-        body: z.string().optional().describe('The new detailed description of the task'),
-        status: z
-          .enum(['NOT_STARTED', 'IN_PROGRESS', 'WAITING', 'COMPLETED'])
-          .describe('The new status of the task')
-          .optional(),
-        priority: z
-          .enum(['HIGH', 'MEDIUM', 'LOW'])
-          .optional()
-          .describe('The new priority level of the task'),
-        dueDate: z.string().optional().describe('The new due date of the task (YYYY-MM-DD)'),
-        ownerId: z.string().optional().describe('The new owner ID of the task')
-      })
+      schema: taskUpdateSchema
     }),
     tool(async (args: TaskSearchParams) => service.searchTasks(args), {
       name: 'search_hubspot_tasks',
-      description: 'Search for tasks in HubSpot with advanced filtering options',
-      schema: z.object({
-        keyword: z
-          .string()
-          .optional()
-          .describe('The keyword to search for in task titles/subjects and body'),
-        ownerId: z.string().optional().describe('Filter tasks by owner ID'),
-        status: z
-          .enum(['NOT_STARTED', 'IN_PROGRESS', 'WAITING', 'COMPLETED'])
-          .optional()
-          .describe('Filter tasks by status'),
-        priority: z
-          .enum(['HIGH', 'MEDIUM', 'LOW'])
-          .optional()
-          .describe('Filter tasks by priority level'),
-        dueDateFrom: z
-          .string()
-          .optional()
-          .describe('Filter tasks with due date after this date (YYYY-MM-DD)'),
-        dueDateTo: z
-          .string()
-          .optional()
-          .describe('Filter tasks with due date before this date (YYYY-MM-DD)')
-      })
+      description: 'Search for tasks in HubSpot based on various criteria',
+      schema: taskFullSearchSchema
     })
   ];
 
