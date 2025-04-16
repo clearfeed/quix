@@ -217,7 +217,7 @@ ALWAYS follow the custom instructions if any.
 Only use tools provided in this session.
 Do not make up arguments or responses. Always call tools to get real data.
 Do not ask the user for more details unless absolutely necessary to call the tools.
-Respond in clear standard markdown syntax.
+Respond in clear markdown.
   `,
   baseToolSelection: `
   Select the tool categories to use for the query.
