@@ -4,15 +4,18 @@ import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   HubspotConfig,
   SearchDealsResponse,
-  Deal,
-  AddNoteToDealResponse,
   CreateContactParams,
   CreateContactResponse,
   CreateDealParams,
-  CreateDealResponse
+  CreateDealResponse,
+  CreateNoteParams,
+  AddNoteResponse,
+  HubspotEntityType,
+  SearchContactsResponse
 } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 import { validateRequiredFields } from './utils';
+import { keyBy } from 'lodash';
 
 export * from './types';
 export * from './tools';
@@ -112,6 +115,100 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
+  async searchContacts(keyword: string): Promise<SearchContactsResponse> {
+    try {
+      const response = await this.client.crm.contacts.searchApi.doSearch({
+        filterGroups: ['email', 'firstname', 'lastname'].map((property) => {
+          return {
+            filters: [
+              { propertyName: property, operator: FilterOperatorEnum.ContainsToken, value: keyword }
+            ]
+          };
+        }),
+        properties: [
+          'firstname',
+          'lastname',
+          'email',
+          'phone',
+          'createdate',
+          'hs_lastmodifieddate'
+        ],
+        sorts: ['createdate'],
+        limit: 100,
+        after: '0'
+      });
+
+      // First, collect all company IDs from all contacts
+      const contactCompanyMap = new Map<string, Set<string>>();
+      const allCompanyIds = new Set<string>();
+
+      const allContactIds: string[] = response.results.map((contact) => contact.id);
+
+      const associationsResponse = await this.client.crm.associations.v4.batchApi.getPage(
+        'contact',
+        'companies',
+        {
+          inputs: allContactIds.map((id) => ({
+            id
+          }))
+        }
+      );
+
+      associationsResponse.results.forEach((result) => {
+        contactCompanyMap.set(result._from.id, new Set(result.to.map((c) => c.toObjectId)));
+        result.to.forEach((c) => allCompanyIds.add(c.toObjectId));
+      });
+
+      // Batch fetch all unique companies
+      const companies = await this.client.crm.companies.batchApi.read({
+        inputs: Array.from(allCompanyIds).map((id) => ({ id })),
+        properties: ['name', 'domain', 'industry', 'website', 'description'],
+        propertiesWithHistory: []
+      });
+      const companyMap = keyBy(
+        companies.results.map((company) => {
+          return {
+            id: company.id,
+            name: company.properties.name || '',
+            domain: company.properties.domain || '',
+            industry: company.properties.industry || '',
+            website: company.properties.website || '',
+            description: company.properties.description || ''
+          };
+        }),
+        'id'
+      );
+      // Map contacts with their associated companies
+      const contacts = response.results.map((contact) => {
+        const associatedCompanies = Array.from(contactCompanyMap.get(contact.id) || [])
+          .map((companyId) => companyMap[companyId])
+          .filter((company) => company !== undefined);
+
+        return {
+          id: contact.id,
+          firstName: contact.properties.firstname || '',
+          lastName: contact.properties.lastname || '',
+          email: contact.properties.email || '',
+          phone: contact.properties.phone || undefined,
+          companies: associatedCompanies,
+          createdAt: contact.properties.createdate || '',
+          lastModifiedDate: contact.properties.hs_lastmodifieddate || ''
+        };
+      });
+
+      return {
+        success: true,
+        data: { contacts }
+      };
+    } catch (error) {
+      console.error('Error searching HubSpot contacts:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to search HubSpot contacts'
+      };
+    }
+  }
+
   async searchDeals(keyword: string): Promise<SearchDealsResponse> {
     try {
       const response = await this.client.crm.deals.searchApi.doSearch({
@@ -191,8 +288,17 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
-  async addNoteToDeal(dealId: string, note: string): Promise<AddNoteToDealResponse> {
+  async createNote(params: CreateNoteParams): Promise<AddNoteResponse> {
     try {
+      const { entityType, entityId, note } = params;
+
+      // Map of entity types to their association type IDs
+      const associationTypeIds = {
+        [HubspotEntityType.DEAL]: 214,
+        [HubspotEntityType.COMPANY]: 190,
+        [HubspotEntityType.CONTACT]: 202
+      };
+
       const response = await this.client.crm.objects.notes.basicApi.create({
         properties: {
           hs_note_body: note,
@@ -200,25 +306,27 @@ export class HubspotService implements BaseService<HubspotConfig> {
         },
         associations: [
           {
-            to: {
-              id: dealId
-            },
+            to: { id: entityId },
             types: [
               {
                 associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
-                associationTypeId: 214
+                associationTypeId: associationTypeIds[entityType]
               }
             ]
           }
         ]
       });
+
       return {
         success: true,
         data: { noteId: response.id }
       };
     } catch (error) {
-      console.error('Error adding note to deal:', error);
-      throw error;
+      console.error('Error creating note:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create note'
+      };
     }
   }
 

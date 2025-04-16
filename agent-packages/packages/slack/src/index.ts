@@ -19,6 +19,8 @@ import {
   GetThreadRepliesParams,
   GetUserProfileParams,
   GetUsersParams,
+  JoinChannelParams,
+  LeaveChannelParams,
   ListChannelsParams,
   PostMessageParams,
   ReplyToThreadParams,
@@ -237,6 +239,40 @@ export class SlackService implements BaseService<SlackConfig> {
       return {
         success: false,
         error: handleSlackError(error) || 'Failed to get user profile'
+      };
+    }
+  }
+
+  async joinChannel(params: JoinChannelParams): Promise<BaseResponse<void>> {
+    try {
+      await this.client.conversations.join({
+        channel: params.channel_id
+      });
+
+      return {
+        success: true
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: handleSlackError(error) || 'Failed to join channel'
+      };
+    }
+  }
+
+  async leaveChannel(params: LeaveChannelParams): Promise<BaseResponse<void>> {
+    try {
+      await this.client.conversations.leave({
+        channel: params.channel_id
+      });
+
+      return {
+        success: true
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: handleSlackError(error) || 'Failed to leave channel'
       };
     }
   }

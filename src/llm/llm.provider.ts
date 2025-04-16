@@ -46,7 +46,7 @@ export class LlmProviderService {
         }
         return new ChatOpenAI({
           model: 'gpt-4o',
-          temperature: 0.5,
+          temperature: 0.1,
           apiKey: slackWorkspace.openai_key
         });
       case SupportedChatModels.GEMINI:

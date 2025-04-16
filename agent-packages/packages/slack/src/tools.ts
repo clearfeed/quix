@@ -7,7 +7,9 @@ import {
   GetChannelHistoryParams,
   GetThreadRepliesParams,
   GetUsersParams,
-  GetUserProfileParams
+  GetUserProfileParams,
+  JoinChannelParams,
+  LeaveChannelParams
 } from './types';
 import {
   listChannelsParamsSchema,
@@ -17,11 +19,13 @@ import {
   getChannelHistoryParamsSchema,
   getThreadRepliesParamsSchema,
   getUsersParamsSchema,
-  getUserProfileParamsSchema
+  joinChannelParamsSchema,
+  getUserProfileParamsSchema,
+  leaveChannelParamsSchema
 } from './schema';
 import { SlackConfig } from './types';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
-import { DynamicStructuredTool } from '@langchain/core/tools';
+import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 
 const SLACK_TOOL_SELECTION_PROMPT = `
 Slack is a team communication platform that manages:
@@ -50,60 +54,66 @@ export function createSlackToolsExport(config: SlackConfig): ToolConfig {
   const service = new SlackService(config);
 
   const tools: DynamicStructuredTool<any>[] = [
-    new DynamicStructuredTool({
+    tool(async (args: ListChannelsParams) => service.listChannels(args), {
       name: 'slack_list_channels',
       description: 'List public channels in the Slack workspace with pagination',
-      schema: listChannelsParamsSchema,
-      func: async (args: ListChannelsParams) => service.listChannels(args)
+      schema: listChannelsParamsSchema
     }),
 
-    new DynamicStructuredTool({
+    tool(async (args: PostMessageParams) => service.postMessage(args), {
       name: 'slack_post_message',
       description: 'Post a new message to a Slack channel',
-      schema: postMessageParamsSchema,
-      func: async (args: PostMessageParams) => service.postMessage(args)
+      schema: postMessageParamsSchema
     }),
 
-    new DynamicStructuredTool({
+    tool(async (args: ReplyToThreadParams) => service.replyToThread(args), {
       name: 'slack_reply_to_thread',
       description: 'Reply to a specific message thread in Slack',
-      schema: replyToThreadParamsSchema,
-      func: async (args: ReplyToThreadParams) => service.replyToThread(args)
+      schema: replyToThreadParamsSchema
     }),
 
-    new DynamicStructuredTool({
+    tool(async (args: AddReactionParams) => service.addReaction(args), {
       name: 'slack_add_reaction',
       description: 'Add a reaction emoji to a message',
-      schema: addReactionParamsSchema,
-      func: async (args: AddReactionParams) => service.addReaction(args)
+      schema: addReactionParamsSchema
     }),
 
-    new DynamicStructuredTool({
+    tool(async (args: GetChannelHistoryParams) => service.getChannelHistory(args), {
       name: 'slack_get_channel_history',
-      description: 'Get recent messages from a channel',
-      schema: getChannelHistoryParamsSchema,
-      func: async (args: GetChannelHistoryParams) => service.getChannelHistory(args)
+      description:
+        'Get recent messages from a channel. Call slack_join_channel to join the channel first if you are not already in it.',
+      schema: getChannelHistoryParamsSchema
     }),
 
-    new DynamicStructuredTool({
+    tool(async (args: GetThreadRepliesParams) => service.getThreadReplies(args), {
       name: 'slack_get_thread_replies',
-      description: 'Get all replies in a message thread',
-      schema: getThreadRepliesParamsSchema,
-      func: async (args: GetThreadRepliesParams) => service.getThreadReplies(args)
+      description:
+        'Get all replies in a message thread. Call slack_join_channel to join the channel first if you are not already in it.',
+      schema: getThreadRepliesParamsSchema
     }),
 
-    new DynamicStructuredTool({
+    tool(async (args: GetUsersParams) => service.getUsers(args), {
       name: 'slack_get_users',
       description: 'Get a list of all users in the workspace with their basic profile information',
-      schema: getUsersParamsSchema,
-      func: async (args: GetUsersParams) => service.getUsers(args)
+      schema: getUsersParamsSchema
     }),
 
-    new DynamicStructuredTool({
+    tool(async (args: GetUserProfileParams) => service.getUserProfile(args), {
       name: 'slack_get_user_profile',
       description: 'Get detailed profile information for a specific user',
-      schema: getUserProfileParamsSchema,
-      func: async (args: GetUserProfileParams) => service.getUserProfile(args)
+      schema: getUserProfileParamsSchema
+    }),
+
+    tool(async (args: JoinChannelParams) => service.joinChannel(args), {
+      name: 'slack_join_channel',
+      description: 'Join a Slack channel, requires confirmation from the user',
+      schema: joinChannelParamsSchema
+    }),
+
+    tool(async (args: LeaveChannelParams) => service.leaveChannel(args), {
+      name: 'slack_leave_channel',
+      description: 'Leave a Slack channel',
+      schema: leaveChannelParamsSchema
     })
   ];
 

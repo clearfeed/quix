@@ -580,11 +580,7 @@ export class IntegrationsInstallService {
         .selectedValue as string;
       try {
         const url = new URL(urlString);
-        if (
-          !['https:', ...(process.env.NODE_ENV !== 'production' ? ['http:'] : [])].includes(
-            url.protocol
-          )
-        ) {
+        if (!['https:', 'http:'].includes(url.protocol)) {
           throw new BadRequestException('URL must use https protocol');
         }
       } catch (error) {

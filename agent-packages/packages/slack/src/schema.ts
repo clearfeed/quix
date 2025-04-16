@@ -61,3 +61,11 @@ export const getUsersParamsSchema = z.object({
 export const getUserProfileParamsSchema = z.object({
   user_id: z.string().describe('The ID of the user')
 });
+
+export const joinChannelParamsSchema = z.object({
+  channel_id: z.string().describe('The ID of the channel to join')
+});
+
+export const leaveChannelParamsSchema = z.object({
+  channel_id: z.string().describe('The ID of the channel to leave')
+});
