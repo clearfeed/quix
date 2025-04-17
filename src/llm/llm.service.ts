@@ -118,7 +118,9 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
     );
 
     if (toolSelection.selectedTools === 'none') {
-      return toolSelection.content || `I could not find any tools to fulfill your request.`;
+      return toolSelection.content
+        ? slackify(toolSelection.content)
+        : `I could not find any tools to fulfill your request.`;
     }
 
     const availableFunctions: {
