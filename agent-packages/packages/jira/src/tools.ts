@@ -75,7 +75,12 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
           .string()
           .describe('The priority of the issue (e.g., Highest, High, Medium, Low, Lowest)')
           .optional(),
-        assignee: z.string().describe('The username of the assignee').optional()
+        assigneeId: z
+          .string()
+          .describe(
+            'The accountId of the assignee. Use the "search_jira_users" tool to find the assignee by name/email'
+          )
+          .optional()
       }),
       func: async (params: CreateIssueParams): Promise<GetIssueResponse> =>
         service.createIssue(params)

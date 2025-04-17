@@ -118,7 +118,7 @@ export class JiraClient {
   }
 
   async createIssue(params: CreateIssueParams): Promise<JiraIssueResponse> {
-    const { projectKey, summary, description, issueType, priority, assignee } = params;
+    const { projectKey, summary, description, issueType, priority, assigneeId } = params;
     if (!projectKey) {
       throw new Error('Project key is required');
     }
@@ -147,7 +147,7 @@ export class JiraClient {
               }
             : undefined,
           issuetype: { id: issueTypeObj.id },
-          ...(assignee ? { assignee: { accountId: assignee } } : {}),
+          ...(assigneeId ? { assignee: { accountId: assigneeId } } : {}),
           ...(priority ? { priority: { name: priority } } : {})
         }
       }

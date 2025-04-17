@@ -88,7 +88,7 @@ export interface CreateIssueParams {
   description?: string;
   issueType: string;
   priority?: string;
-  assignee?: string;
+  assigneeId?: string;
 }
 
 export type SearchIssuesResponse = {
