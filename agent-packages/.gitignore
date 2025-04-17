@@ -5,7 +5,6 @@ node_modules/
 dist/
 *.js
 *.js.map
-*.d.ts
 
 # Yarn
 .yarn/*

@@ -1,6 +1,7 @@
 import { BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import { SalesforceConfig, SalesforceService } from '../index';
-import { CreateTaskParams, SalesforceTask, UpdateTaskParams } from '../types/index';
+import { CreateTaskParams, GetTasksParams, SalesforceTask, UpdateTaskParams } from '../types/index';
+import { SfDate } from 'jsforce';
 
 export class SalesforceTaskService extends SalesforceService {
   constructor(config: SalesforceConfig) {
@@ -9,7 +10,7 @@ export class SalesforceTaskService extends SalesforceService {
 
   async createTask(
     params: CreateTaskParams
-  ): Promise<BaseResponse<{ taskId: string; whatId: string }>> {
+  ): Promise<BaseResponse<{ taskId: string; whatId: string; url: string }>> {
     try {
       const taskData: SalesforceTask = {
         Subject: params.subject,
@@ -41,7 +42,8 @@ export class SalesforceTaskService extends SalesforceService {
         success: true,
         data: {
           taskId: response.id,
-          whatId: params.whatId
+          whatId: params.whatId,
+          url: this.getTaskUrl(response.id)
         }
       };
     } catch (error) {
@@ -53,7 +55,9 @@ export class SalesforceTaskService extends SalesforceService {
     }
   }
 
-  async updateTask(params: UpdateTaskParams): Promise<BaseResponse<{ taskId: string }>> {
+  async updateTask(
+    params: UpdateTaskParams
+  ): Promise<BaseResponse<{ taskId: string; url: string }>> {
     try {
       const taskData: Partial<SalesforceTask> = {
         ...(params.subject && { Subject: params.subject }),
@@ -61,7 +65,8 @@ export class SalesforceTaskService extends SalesforceService {
         ...(params.status && { Status: params.status }),
         ...(params.priority && { Priority: params.priority }),
         ...(params.ownerId && { OwnerId: params.ownerId }),
-        ...(params.type && { Type: params.type })
+        ...(params.type && { Type: params.type }),
+        ...(params.dueDate && { ActivityDate: params.dueDate })
       };
       const [response] = await this.connection
         .sobject('Task')
@@ -71,7 +76,7 @@ export class SalesforceTaskService extends SalesforceService {
       }
       return {
         success: true,
-        data: { taskId: params.taskId }
+        data: { taskId: params.taskId, url: this.getTaskUrl(params.taskId) }
       };
     } catch (error) {
       console.error('Error updating task:', error);
@@ -97,6 +102,52 @@ export class SalesforceTaskService extends SalesforceService {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to delete task'
+      };
+    }
+  }
+
+  async getTasks(params: GetTasksParams): Promise<BaseResponse<any[]>> {
+    try {
+      const whereClause = {
+        IsDeleted: false,
+        IsArchived: false,
+        ...(params.ownerId && { OwnerId: params.ownerId }),
+        ...(params.subject && { Subject: params.subject }),
+        ...(params.status && { Status: params.status }),
+        ...(params.priority && { Priority: params.priority }),
+        ...(params.type && { Type: params.type }),
+        ...(params.dueDate && {
+          ActivityDate: SfDate.toDateLiteral(new Date(params.dueDate))
+        })
+      };
+
+      const response = await this.connection
+        .sobject('Task')
+        .find({
+          ...whereClause
+        })
+        .limit(params.limit || 10)
+        .orderby(params.orderBy || 'CreatedDate');
+      const tasks = response.map((task: Partial<SalesforceTask>) => ({
+        WhatId: task.WhatId,
+        Subject: task.Subject,
+        Status: task.Status,
+        Priority: task.Priority,
+        OwnerId: task.OwnerId,
+        Type: task.Type,
+        ActivityDate: task.ActivityDate,
+        Description: task.Description,
+        url: task.Id ? this.getTaskUrl(task.Id) : undefined
+      }));
+      return {
+        success: true,
+        data: tasks
+      };
+    } catch (error) {
+      console.error('Error getting tasks:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get tasks'
       };
     }
   }

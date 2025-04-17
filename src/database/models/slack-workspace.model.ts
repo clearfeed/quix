@@ -27,6 +27,7 @@ import { NotionConfig } from './notion-config.model';
 import { LinearConfig } from './linear-config.model';
 import { McpConnection } from './mcp-connection.model';
 import { ConversationState } from './conversation-state.model';
+import { OktaConfig } from './okta-config.model';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -109,11 +110,14 @@ export class SlackWorkspace extends Model<
   declare salesforceConfig?: NonAttribute<SalesforceConfig>;
 
   /**
-   * Within the first week of our app being installed we allow the users to be in the trial mode
-   * and use our default openai key.
+   * Returns true if the openai key is not set and the Slack Workspace was created in the last week.
+   * This is to allow the users to be in the trial mode and use our default openai key.
    */
   get isTrialMode(): NonAttribute<boolean> {
-    return new Date(this.created_at).getTime() > Date.now() - TRIAL_DAYS * 24 * 60 * 60 * 1000;
+    return (
+      !this.isOpenAIKeySet &&
+      new Date(this.created_at).getTime() > Date.now() - TRIAL_DAYS * 24 * 60 * 60 * 1000
+    );
   }
 
   /**
@@ -130,15 +134,15 @@ export class SlackWorkspace extends Model<
   })
   get openai_key(): string | null {
     const value = this.getDataValue('openai_key') as string;
+    if (value) return decrypt(value);
     /**
      * If the Slack Workspace was created in the last week and the openai key is not set,
      * return the openai key from the env
      */
-    if (!value && process.env.OPENAI_API_KEY && this.isTrialMode) {
+    if (process.env.OPENAI_API_KEY && this.isTrialMode) {
       return process.env.OPENAI_API_KEY;
     }
-    if (!value) return null;
-    return decrypt(value);
+    return null;
   }
   set openai_key(value: string | null) {
     if (!value) {
@@ -231,6 +235,12 @@ export class SlackWorkspace extends Model<
   })
   declare linearConfig: NonAttribute<LinearConfig>;
 
+  @HasOne(() => OktaConfig, {
+    foreignKey: 'team_id',
+    as: 'oktaConfig'
+  })
+  declare oktaConfig: NonAttribute<OktaConfig>;
+
   @HasMany(() => McpConnection, {
     foreignKey: 'team_id',
     as: 'mcpConnections'
@@ -250,5 +260,8 @@ export class SlackWorkspace extends Model<
       text: message.trim().substring(0, SLACK_MESSAGE_MAX_LENGTH),
       thread_ts
     });
+  }
+  getAppHomeRedirectUrl(tab: 'home' | 'messages' | 'about' = 'home'): string {
+    return `slack://app?team=${this.team_id}&id=${this.app_id}&tab=${tab}`;
   }
 }

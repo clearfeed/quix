@@ -50,7 +50,9 @@ export class McpConnection extends Model<
     allowNull: true,
     defaultValue: {}
   })
-  declare request_config: Nullable<Record<string, any>>;
+  declare request_config: {
+    tool_selection_prompt: string;
+  };
 
   @Column({
     type: DataType.TEXT,

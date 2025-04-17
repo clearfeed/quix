@@ -1,4 +1,3 @@
-import { HomeView } from '@slack/web-api';
 import { SLACK_ACTIONS, TRIAL_DAYS } from '@quix/lib/utils/slack-constants';
 import { HomeViewArgs } from './types';
 import { INTEGRATIONS, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
@@ -12,72 +11,29 @@ import {
   SalesforceConfig,
   NotionConfig,
   LinearConfig,
-  McpConnection
+  McpConnection,
+  OktaConfig
 } from '@quix/database/models';
-import { BlockCollection, Elements, Bits, Blocks, Md, BlockBuilder } from 'slack-block-builder';
+import {
+  Elements,
+  Bits,
+  Blocks,
+  Md,
+  BlockBuilder,
+  OptionBuilder,
+  OptionGroupBuilder
+} from 'slack-block-builder';
 import { createHubspotToolsExport } from '@clearfeed-ai/quix-hubspot-agent';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
 import { Tool } from '@clearfeed-ai/quix-common-agent';
+import { partition, isEmpty } from 'lodash';
 
-export const getHomeView = (args: HomeViewArgs): HomeView => {
-  const { selectedTool, slackWorkspace, connection } = args;
-  const mcpConnections = slackWorkspace.mcpConnections;
-  const blocks = [
-    Blocks.Header({
-      text: ':wave: Welcome to Quix'
-    }),
-    Blocks.Context().elements('Quix helps you talk to your business tools from Slack.'),
-    Blocks.Divider()
-  ];
-
-  // Add onboarding information for users without any connections
-  const hasAnyConnections = Boolean(connection || (mcpConnections && mcpConnections.length > 0));
-
-  if (!connection) {
-    blocks.push(...getOnboardingView());
-  }
-
-  if (slackWorkspace.isAdmin(args.userId)) {
-    blocks.push(...getAccessControlView());
-    blocks.push(...getPreferencesView());
-    blocks.push(...getOpenAIView(slackWorkspace));
-    if (slackWorkspace.openai_key) {
-      blocks.push(Blocks.Divider());
-      blocks.push(...getToolConnectionView(selectedTool, mcpConnections));
-      if (selectedTool)
-        blocks.push(
-          ...getIntegrationInfo(selectedTool, slackWorkspace.team_id, connection, mcpConnections)
-        );
-    }
-  } else {
-    blocks.push(...getNonAdminView(slackWorkspace));
-  }
-
-  blocks.push(Blocks.Divider());
-
-  if (selectedTool) {
-    const toolData = getToolData(selectedTool);
-
-    if (toolData.availableFns && toolData.availableFns.length) {
-      blocks.push(
-        Blocks.Section({
-          text: `${Md.emoji('bulb')} *Available Functions:*\n\n${toolData.availableFns?.join('\n\n')}`
-        }),
-        Blocks.Section({ text: '\n\n\n' })
-      );
-    }
-  }
-
-  return {
-    type: 'home',
-    blocks: BlockCollection(blocks)
-  };
-};
-
-const getToolData = (selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined) => {
+export const getToolData = async (
+  selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined
+) => {
   let tool, availableFns;
 
   // Only process standard integrations
@@ -89,7 +45,7 @@ const getToolData = (selectedTool: (typeof INTEGRATIONS)[number]['value'] | stri
   ) {
     const integrationValue = selectedTool as SUPPORTED_INTEGRATIONS;
     tool = INTEGRATIONS.find((integration) => integration.value === integrationValue);
-    availableFns = getAvailableFns(integrationValue);
+    availableFns = await getAvailableFns(integrationValue);
   }
 
   return {
@@ -97,7 +53,7 @@ const getToolData = (selectedTool: (typeof INTEGRATIONS)[number]['value'] | stri
   };
 };
 
-const getAvailableFns = (selectedTool: SUPPORTED_INTEGRATIONS) => {
+const getAvailableFns = async (selectedTool: SUPPORTED_INTEGRATIONS) => {
   if (selectedTool === SUPPORTED_INTEGRATIONS.JIRA) {
     const tools = createJiraToolsExport({
       host: 'test-url',
@@ -108,11 +64,13 @@ const getAvailableFns = (selectedTool: SUPPORTED_INTEGRATIONS) => {
   }
 
   if (selectedTool === SUPPORTED_INTEGRATIONS.GITHUB) {
-    const tools = createGitHubToolsExport({
-      token: 'test-access-token',
-      owner: 'test-github-owner',
-      repo: 'test-github-repo'
-    }).tools;
+    const tools = (
+      await createGitHubToolsExport({
+        token: 'test-access-token',
+        owner: 'test-github-owner',
+        repo: 'test-github-repo'
+      })
+    ).tools;
 
     return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
   }
@@ -152,26 +110,51 @@ const getAvailableFns = (selectedTool: SUPPORTED_INTEGRATIONS) => {
   return [];
 };
 
-const getToolConnectionView = (
+export const getMCPConnectionDropDownValue = (mcpConnection: McpConnection): string => {
+  return `mcp:${mcpConnection.id}`;
+};
+
+export const getToolConnectionView = (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined,
-  mcpConnections: McpConnection[] = []
+  mcpConnections: McpConnection[] = [],
+  slackWorkspace: SlackWorkspace
 ): BlockBuilder[] => {
   const select = Elements.StaticSelect({
     placeholder: 'Select a tool',
     actionId: SLACK_ACTIONS.CONNECT_TOOL
   });
 
-  const integrationOptions = INTEGRATIONS.map((integration) =>
+  const [connectedIntegrations, nonConnectedIntegrations] = partition(
+    INTEGRATIONS,
+    (integration) => {
+      const relationKey = integration.relation as keyof SlackWorkspace;
+      return !isEmpty(slackWorkspace[relationKey]);
+    }
+  );
+
+  let connectedOptions: OptionBuilder[] = [];
+  connectedIntegrations.forEach((integration) => {
+    connectedOptions.push(
+      Bits.Option({
+        text: integration.name,
+        value: integration.value
+      })
+    );
+  });
+
+  mcpConnections.forEach((conn) =>
+    connectedOptions.push(
+      Bits.Option({
+        text: conn.name,
+        value: `mcp:${conn.id}`
+      })
+    )
+  );
+
+  const integrationOptions = nonConnectedIntegrations.map((integration) =>
     Bits.Option({
       text: integration.name,
       value: integration.value
-    })
-  );
-
-  const mcpOptions = mcpConnections.map((conn) =>
-    Bits.Option({
-      text: conn.name,
-      value: `mcp:${conn.id}`
     })
   );
 
@@ -180,22 +163,30 @@ const getToolConnectionView = (
     value: 'add_mcp_server'
   });
 
-  // Add all option groups
-  select.optionGroups(
-    Bits.OptionGroup()
-      .label('Integrations')
-      .options(...integrationOptions),
-    ...(mcpConnections.length
-      ? [
-          Bits.OptionGroup()
-            .label('MCP Servers')
-            .options(...mcpOptions)
-        ]
-      : []),
-    Bits.OptionGroup().label('Add Your Own').options(addYourOwnOption)
-  );
+  // Build sections in correct order
+  const optionGroups: OptionGroupBuilder[] = [];
 
-  // Set initial option if any
+  if (connectedOptions.length) {
+    optionGroups.push(
+      Bits.OptionGroup()
+        .label('Connected Tools')
+        .options(...connectedOptions)
+    );
+  }
+
+  if (integrationOptions.length) {
+    optionGroups.push(
+      Bits.OptionGroup()
+        .label('Integrations')
+        .options(...integrationOptions)
+    );
+  }
+
+  optionGroups.push(Bits.OptionGroup().label('Add Your Own').options(addYourOwnOption));
+
+  select.optionGroups(...optionGroups);
+
+  // Set selected option properly
   if (selectedTool) {
     if (selectedTool.startsWith('mcp:')) {
       const mcpId = selectedTool.split(':')[1];
@@ -232,7 +223,7 @@ const getToolConnectionView = (
   ];
 };
 
-const getOpenAIView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
+export const getOpenAIView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
   if (slackWorkspace.isOpenAIKeySet)
     return [
       Blocks.Section({
@@ -282,7 +273,7 @@ const getOpenAIView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
   ];
 };
 
-const getConnectionInfo = (connection: HomeViewArgs['connection']): string => {
+export const getConnectionInfo = (connection: HomeViewArgs['connection']): string => {
   if (!connection) return '';
   switch (true) {
     case connection instanceof JiraConfig:
@@ -299,12 +290,14 @@ const getConnectionInfo = (connection: HomeViewArgs['connection']): string => {
       return `Connected to ${connection.workspace_name}`;
     case connection instanceof LinearConfig:
       return `Connected to ${connection.workspace_name}`;
+    case connection instanceof OktaConfig:
+      return `Connected to ${connection.org_url}`;
     default:
       return '';
   }
 };
 
-const getIntegrationInfo = (
+export const getIntegrationInfo = (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string,
   teamId: string,
   connection?: HomeViewArgs['connection'],
@@ -364,19 +357,14 @@ const getIntegrationInfo = (
     })
   ];
 
-  if (connection instanceof PostgresConfig || connection instanceof NotionConfig) {
-    overflowMenuOptions.unshift(
-      Bits.Option({
-        text: `${Md.emoji('pencil')} Edit`,
-        value: 'edit'
-      })
-    );
-  }
-
   if (
+    connection instanceof PostgresConfig ||
+    connection instanceof NotionConfig ||
     connection instanceof JiraConfig ||
     connection instanceof GithubConfig ||
-    connection instanceof SalesforceConfig
+    connection instanceof SalesforceConfig ||
+    connection instanceof HubspotConfig ||
+    connection instanceof LinearConfig
   ) {
     overflowMenuOptions.unshift(
       Bits.Option({
@@ -408,7 +396,7 @@ const getIntegrationInfo = (
   ];
 };
 
-const getNonAdminView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
+export const getNonAdminView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
   let warningText = '';
   if (slackWorkspace.admin_user_ids.length) {
     warningText += `Please contact one of the admins (${slackWorkspace.admin_user_ids.map((admin) => `<@${admin}>`).join(', ')}) to get access.`;
@@ -422,7 +410,7 @@ const getNonAdminView = (slackWorkspace: SlackWorkspace): BlockBuilder[] => {
   ];
 };
 
-const getAccessControlView = (): BlockBuilder[] => {
+export const getAccessControlView = (): BlockBuilder[] => {
   return [
     Blocks.Section({
       text: 'Allow team members to access Quix across channels and DMs.'
@@ -436,7 +424,7 @@ const getAccessControlView = (): BlockBuilder[] => {
   ];
 };
 
-const getPreferencesView = (): BlockBuilder[] => {
+export const getPreferencesView = (): BlockBuilder[] => {
   return [
     Blocks.Section({
       text: 'Allow team members to configure tools that Quix uses.'
@@ -451,7 +439,7 @@ const getPreferencesView = (): BlockBuilder[] => {
 };
 
 // New function to provide onboarding guidance when no connections are set up
-const getOnboardingView = (): BlockBuilder[] => {
+export const getOnboardingView = (): BlockBuilder[] => {
   return [
     Blocks.Section({
       text: `${Md.emoji('pushpin')} *Get Started with Quix*`

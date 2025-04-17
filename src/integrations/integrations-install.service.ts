@@ -4,7 +4,7 @@ import {
   HUBSPOT_SCOPES,
   GITHUB_SCOPES
 } from '@quix/lib/constants';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -28,7 +28,8 @@ import {
   SalesforceConfig,
   NotionConfig,
   LinearConfig,
-  McpConnection
+  McpConnection,
+  OktaConfig
 } from '../database/models';
 import { ToolInstallState } from '@quix/lib/types/common';
 import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
@@ -36,7 +37,8 @@ import { ViewSubmitAction } from '@slack/bolt';
 import { parseInputBlocksSubmission } from '@quix/lib/utils/slack';
 import { KnownBlock } from '@slack/web-api';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
-
+import { Sequelize } from 'sequelize-typescript';
+import { McpService } from './mcp.service';
 @Injectable()
 export class IntegrationsInstallService {
   private readonly logger = new Logger(IntegrationsInstallService.name);
@@ -59,9 +61,13 @@ export class IntegrationsInstallService {
     private readonly linearConfigModel: typeof LinearConfig,
     @InjectModel(McpConnection)
     private readonly mcpConnectionModel: typeof McpConnection,
-    private readonly eventEmitter: EventEmitter2,
     @InjectModel(PostgresConfig)
-    private readonly postgresConfigModel: typeof PostgresConfig
+    private readonly postgresConfigModel: typeof PostgresConfig,
+    @InjectModel(OktaConfig)
+    private readonly oktaConfigModel: typeof OktaConfig,
+    private readonly eventEmitter: EventEmitter2,
+    private readonly sequelize: Sequelize,
+    private readonly mcpService: McpService
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
@@ -304,7 +310,9 @@ export class IntegrationsInstallService {
       database: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DATABASE]
         .selectedValue as string,
       team_id: payload.view.team_id,
-      ssl: sslResponse ? Boolean(sslResponse.length > 0) : false
+      ssl: sslResponse ? Boolean(sslResponse.length > 0) : false,
+      default_prompt: parsedResponse[SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DEFAULT_PROMPT]
+        .selectedValue as string
     });
     this.eventEmitter.emit(EVENT_NAMES.POSTGRES_CONNECTED, {
       teamId: payload.view.team_id,
@@ -426,6 +434,8 @@ export class IntegrationsInstallService {
 
       const apiToken = parsedResponse[SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.API_TOKEN]
         .selectedValue as string;
+      const defaultPrompt = parsedResponse[SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.DEFAULT_PROMPT]
+        .selectedValue as string;
 
       // Validate the token and get workspace details
       const userResponse = await this.httpService.axiosRef.get<{
@@ -453,7 +463,8 @@ export class IntegrationsInstallService {
       const [notionConfig] = await this.notionConfigModel.upsert({
         workspace_name: userResponse.data.bot.workspace_name,
         access_token: apiToken,
-        team_id: payload.view.team_id
+        team_id: payload.view.team_id,
+        default_prompt: defaultPrompt
       });
 
       this.eventEmitter.emit(EVENT_NAMES.NOTION_CONNECTED, {
@@ -484,6 +495,8 @@ export class IntegrationsInstallService {
       }
 
       const apiToken = parsedResponse[SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.API_TOKEN]
+        .selectedValue as string;
+      const defaultPrompt = parsedResponse[SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.DEFAULT_PROMPT]
         .selectedValue as string;
 
       // Validate the token and get workspace details
@@ -516,7 +529,8 @@ export class IntegrationsInstallService {
         workspace_name: response.data.data.organization.name,
         linear_org_id: response.data.data.organization.id,
         access_token: apiToken,
-        team_id: payload.view.team_id
+        team_id: payload.view.team_id,
+        default_prompt: defaultPrompt
       });
 
       this.eventEmitter.emit(EVENT_NAMES.LINEAR_CONNECTED, {
@@ -536,45 +550,147 @@ export class IntegrationsInstallService {
   }
 
   async mcp(payload: ViewSubmitAction): Promise<McpConnection> {
-    const parsedResponse = parseInputBlocksSubmission(
-      payload.view.blocks as KnownBlock[],
-      payload.view.state.values
-    );
-    const privateMetadata = JSON.parse(payload.view.private_metadata || '{}');
-
-    // Validate required fields
-    if (
-      ![
-        SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME,
-        SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL,
-        SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN
-      ].every((field) => parsedResponse[field]?.selectedValue)
-    ) {
-      throw new BadRequestException('Missing required fields');
-    }
-
-    // Validate URL format
-    const urlString = parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL]
-      .selectedValue as string;
+    // Create or update MCP connection
+    let mcpToolConfig:
+      | Awaited<ReturnType<typeof this.mcpService.getToolsFromMCPConnections>>[number]
+      | undefined;
     try {
-      const url = new URL(urlString);
-      if (!['http:', 'https:'].includes(url.protocol)) {
-        throw new BadRequestException('URL must use http or https protocol');
+      const parsedResponse = parseInputBlocksSubmission(
+        payload.view.blocks as KnownBlock[],
+        payload.view.state.values
+      );
+      const privateMetadata = JSON.parse(payload.view.private_metadata || '{}');
+
+      // Validate required fields
+      if (
+        ![
+          SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME,
+          SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL,
+          SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN,
+          SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.TOOL_SELECTION_PROMPT
+        ].every((field) => parsedResponse[field]?.selectedValue)
+      ) {
+        throw new BadRequestException('Missing required fields');
+      }
+
+      // Validate URL format
+      const urlString = parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL]
+        .selectedValue as string;
+      const defaultPrompt = parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.DEFAULT_PROMPT]
+        .selectedValue as string;
+      try {
+        const url = new URL(urlString);
+        if (!['https:', 'http:'].includes(url.protocol)) {
+          throw new BadRequestException('URL must use https protocol');
+        }
+      } catch (error) {
+        throw new BadRequestException('Invalid URL format');
+      }
+
+      const mcpConnection = await this.sequelize.transaction(async (transaction) => {
+        const [mcpConnection] = await this.mcpConnectionModel.upsert(
+          {
+            id: privateMetadata.id,
+            name: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME].selectedValue as string,
+            url: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL].selectedValue as string,
+            auth_token: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN]
+              .selectedValue as string,
+            request_config: {
+              tool_selection_prompt: parsedResponse[
+                SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.TOOL_SELECTION_PROMPT
+              ].selectedValue as string
+            },
+            team_id: payload.view.team_id,
+            default_prompt: defaultPrompt
+          },
+          { transaction }
+        );
+        try {
+          [mcpToolConfig] = await this.mcpService.getToolsFromMCPConnections([mcpConnection]);
+          if (mcpToolConfig?.tools.length === 0) {
+            throw new BadRequestException('Failed to retrieve tools from the MCP server.');
+          }
+        } catch (error) {
+          this.logger.error('Failed to get tools from MCP connection:', error);
+          throw new BadRequestException(
+            'Failed to retrieve tools from the MCP server. Please ensure the MCP server is running and properly configured.'
+          );
+        }
+        return mcpConnection;
+      });
+      return mcpConnection;
+    } catch (error) {
+      this.logger.error('Failed to setup MCP connection:', error);
+      if (error instanceof HttpException) throw error;
+      throw new BadRequestException('Failed to setup MCP connection');
+    } finally {
+      mcpToolConfig?.cleanup();
+    }
+  }
+
+  async okta(payload: ViewSubmitAction): Promise<OktaConfig> {
+    try {
+      const parsedResponse = parseInputBlocksSubmission(
+        payload.view.blocks as KnownBlock[],
+        payload.view.state.values
+      );
+
+      if (
+        !parsedResponse[SLACK_ACTIONS.OKTA_CONNECTION_ACTIONS.ORG_URL].selectedValue ||
+        !parsedResponse[SLACK_ACTIONS.OKTA_CONNECTION_ACTIONS.API_TOKEN].selectedValue
+      ) {
+        throw new BadRequestException('Missing required fields');
+      }
+
+      const orgUrl = parsedResponse[SLACK_ACTIONS.OKTA_CONNECTION_ACTIONS.ORG_URL]
+        .selectedValue as string;
+      const apiToken = parsedResponse[SLACK_ACTIONS.OKTA_CONNECTION_ACTIONS.API_TOKEN]
+        .selectedValue as string;
+
+      // Clean and validate the org URL
+      const cleanedOrgUrl = orgUrl.trim().replace(/\/$/, '');
+
+      try {
+        const url = new URL(cleanedOrgUrl);
+        const allowedDomains = ['okta.com', 'oktapreview.com'];
+        if (!allowedDomains.some((domain) => url.hostname.endsWith(domain))) {
+          throw new BadRequestException(
+            'Invalid Okta domain. Must be an okta.com or oktapreview.com domain.'
+          );
+        }
+      } catch (error) {
+        throw new BadRequestException('Invalid URL format for Okta organization URL');
+      }
+
+      // Validate the token by making a test API call to get the organization
+      try {
+        const response = await this.httpService.axiosRef.get(`${cleanedOrgUrl}/api/v1/org`, {
+          headers: {
+            Authorization: `SSWS ${apiToken}`,
+            Accept: 'application/json'
+          }
+        });
+
+        if (!response.data || !response.data.id) {
+          throw new BadRequestException('Failed to authenticate with Okta');
+        }
+
+        // If the API call succeeds, save the configuration
+        const [oktaConfig] = await this.oktaConfigModel.upsert({
+          org_id: response.data.id,
+          org_url: cleanedOrgUrl,
+          api_token: apiToken,
+          team_id: payload.view.team_id
+        });
+
+        return oktaConfig;
+      } catch (error) {
+        this.logger.error('Failed to authenticate with Okta API:', error);
+        throw new BadRequestException('Invalid Okta API token or unable to connect to Okta');
       }
     } catch (error) {
-      throw new BadRequestException('Invalid URL format');
+      this.logger.error('Failed to connect to Okta:', error);
+      throw new BadRequestException('Failed to connect to Okta');
     }
-
-    // Create or update MCP connection
-    const [mcpConnection] = await this.mcpConnectionModel.upsert({
-      id: privateMetadata.id,
-      name: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.NAME].selectedValue as string,
-      url: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL].selectedValue as string,
-      auth_token: parsedResponse[SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN]
-        .selectedValue as string,
-      team_id: payload.view.team_id
-    });
-
-    return mcpConnection;
   }
 }
