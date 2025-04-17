@@ -12,7 +12,10 @@ import {
   UpdateIssueFields,
   UpdateIssueResponse,
   SearchUsersResponse,
-  GetPrioritiesResponse
+  GetPrioritiesResponse,
+  GetIssueTypesResponse,
+  GetLabelsResponse,
+  JiraLabels
 } from './types';
 import JiraClient from './JiraClient';
 import { AxiosError } from 'axios';
@@ -292,6 +295,42 @@ export class JiraService implements BaseService<JiraConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch Jira priorities'
+      };
+    }
+  }
+
+  async getIssueTypes(): Promise<GetIssueTypesResponse> {
+    try {
+      const issueTypes = await this.client.getIssueTypes();
+      return {
+        success: true,
+        data: {
+          issueTypes
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching Jira issue types:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch Jira issue types'
+      };
+    }
+  }
+
+  async getLabels(): Promise<GetLabelsResponse> {
+    try {
+      const labels: JiraLabels = await this.client.getLabels();
+      return {
+        success: true,
+        data: {
+          labels: labels.values
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching Jira labels:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch Jira labels'
       };
     }
   }

@@ -12,7 +12,9 @@ import {
   UpdateIssueResponse,
   UpdateIssueFields,
   SearchUsersResponse,
-  GetPrioritiesResponse
+  GetPrioritiesResponse,
+  GetIssueTypesResponse,
+  GetLabelsResponse
 } from './types';
 import { BaseResponse, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
@@ -65,6 +67,18 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
       func: async (): Promise<GetPrioritiesResponse> => service.getPriorities()
     }),
     new DynamicStructuredTool({
+      name: 'get_jira_issue_types',
+      description: 'Get all available issue types in Jira',
+      schema: z.object({}),
+      func: async (): Promise<GetIssueTypesResponse> => service.getIssueTypes()
+    }),
+    new DynamicStructuredTool({
+      name: 'get_jira_labels',
+      description: 'Get available labels in Jira',
+      schema: z.object({}),
+      func: async (): Promise<GetLabelsResponse> => service.getLabels()
+    }),
+    new DynamicStructuredTool({
       name: 'create_jira_issue',
       description: 'Create a new JIRA issue',
       schema: z.object({
@@ -77,7 +91,9 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
           : z.string().describe('The project key where the issue will be created (required)'),
         summary: z.string().describe('The summary/title of the issue'),
         description: z.string().describe('The description of the issue').optional(),
-        issueType: z.string().describe('The type of issue (e.g., Bug, Task, Story, Epic)'),
+        issueType: z
+          .string()
+          .describe('The type of issue. Use get_jira_issue_types tool to see available types.'),
         priority: z
           .string()
           .describe(
@@ -89,6 +105,10 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
           .describe(
             'The accountId of the assignee. Use the "search_jira_users" tool to find the assignee by name/email'
           )
+          .optional(),
+        labels: z
+          .array(z.string())
+          .describe('Labels to add to the issue. Use get_jira_labels tool to see available labels.')
           .optional()
       }),
       func: async (params: CreateIssueParams): Promise<GetIssueResponse> =>
@@ -143,7 +163,12 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
             )
             .optional(),
           assigneeId: z.string().describe('The ID of the user to assign the issue to').optional(),
-          labels: z.array(z.string()).describe('The labels of the issue').optional()
+          labels: z
+            .array(z.string())
+            .describe(
+              'Labels to set on the issue. Use get_jira_labels tool to see available labels.'
+            )
+            .optional()
         })
       }),
       func: async (params: {

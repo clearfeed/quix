@@ -217,3 +217,28 @@ export interface JiraPriorityResponse {
 export type GetPrioritiesResponse = BaseResponse<{
   priorities: JiraPriorityResponse[];
 }>;
+
+export interface JiraIssueTypeResponse {
+  self: string;
+  id: string;
+  name: string;
+  description: string;
+  iconUrl: string;
+  subtask: boolean;
+}
+
+export type GetIssueTypesResponse = BaseResponse<{
+  issueTypes: JiraIssueTypeResponse[];
+}>;
+
+export interface JiraLabels {
+  isLast: boolean;
+  maxResults: number;
+  startAt: number;
+  total: number;
+  values: string[];
+}
+
+export type GetLabelsResponse = BaseResponse<{
+  labels: JiraLabels['values'];
+}>;
