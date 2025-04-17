@@ -159,15 +159,24 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
           priority: z
             .string()
             .describe(
-              'The priority of the issue. Use get_jira_priorities tool to see available priorities.'
+              'The priority of the issue. Use get_jira_priorities tool to see available priorities (e.g., "High", "Low", "Major", etc.).'
             )
             .optional(),
-          assigneeId: z.string().describe('The ID of the user to assign the issue to').optional(),
+          assigneeId: z
+            .string()
+            .describe(
+              'The ID of the user to assign the issue to. Use search_jira_users tool to find the assignee by name/email.'
+            )
+            .optional(),
           labels: z
             .array(z.string())
             .describe(
               'Labels to set on the issue. Use get_jira_labels tool to see available labels.'
             )
+            .optional(),
+          issueType: z
+            .string()
+            .describe('The type of issue. Use get_jira_issue_types tool to see available types.')
             .optional()
         })
       }),

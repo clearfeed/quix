@@ -109,7 +109,15 @@ export type GetIssueResponse = BaseResponse<{
   issue: JiraIssueResponse & { url: string };
 }>;
 
-export type AssignIssueResponse = BaseResponse<void>;
+export type AssignIssueResponse = BaseResponse<{
+  success: boolean;
+  issueId: string;
+  assignee: {
+    accountId: string;
+    displayName?: string;
+  };
+  url: string;
+}>;
 
 export type JiraClientConfig = {
   host: string;
@@ -193,6 +201,7 @@ export interface UpdateIssueFields {
   priority?: string;
   assigneeId?: string;
   labels?: string[];
+  issueType?: string;
 }
 
 export type UpdateIssueResponse = BaseResponse<{

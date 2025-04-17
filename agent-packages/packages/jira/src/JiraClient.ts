@@ -225,13 +225,16 @@ export class JiraClient {
         fields: {
           ...(description ? { description } : {}),
           ...(fields.assigneeId ? { assignee: { accountId: fields.assigneeId } } : {}),
+          ...(fields.summary ? { summary: fields.summary } : {}),
           ...(fields.priority
             ? {
                 priority: {
                   name: fields.priority
                 }
               }
-            : {})
+            : {}),
+          ...(fields.labels ? { labels: fields.labels } : {}),
+          ...(fields.issueType ? { issuetype: { id: fields.issueType } } : {})
         }
       }
     });

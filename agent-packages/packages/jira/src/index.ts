@@ -182,8 +182,21 @@ export class JiraService implements BaseService<JiraConfig> {
 
       await this.client.assignIssue(issueId, accountId);
 
+      // Get user details for the response
+      const users = await this.client.searchUsers(accountId);
+      const assignedUser = users.find((user) => user.accountId === accountId);
+
       return {
-        success: true
+        success: true,
+        data: {
+          success: true,
+          issueId,
+          assignee: {
+            accountId,
+            displayName: assignedUser?.displayName
+          },
+          url: this.getIssueUrl({ key: issueId })
+        }
       };
     } catch (error) {
       console.error('Error assigning Jira issue:', error);
