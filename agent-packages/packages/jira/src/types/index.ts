@@ -204,3 +204,16 @@ export type UpdateIssueResponse = BaseResponse<{
 export type SearchUsersResponse = BaseResponse<{
   users: JiraUserResponse[];
 }>;
+
+export interface JiraPriorityResponse {
+  self: string;
+  iconUrl: string;
+  name: string;
+  id: string;
+  description?: string;
+  statusColor: string;
+}
+
+export type GetPrioritiesResponse = BaseResponse<{
+  priorities: JiraPriorityResponse[];
+}>;

@@ -8,7 +8,8 @@ import {
   JiraCommentResponse,
   JiraIssueComments,
   UpdateIssueFields,
-  UpdateIssueResponse
+  UpdateIssueResponse,
+  JiraPriorityResponse
 } from './types';
 import axios, { AxiosInstance } from 'axios';
 import * as jwt from 'atlassian-jwt';
@@ -232,6 +233,11 @@ export class JiraClient {
         }
       }
     });
+    return response;
+  }
+
+  async getPriorities(): Promise<JiraPriorityResponse[]> {
+    const response = await this.makeApiCall('GET', '/priority');
     return response;
   }
 }

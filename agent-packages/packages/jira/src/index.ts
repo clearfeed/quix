@@ -11,7 +11,8 @@ import {
   GetCommentsResponse,
   UpdateIssueFields,
   UpdateIssueResponse,
-  SearchUsersResponse
+  SearchUsersResponse,
+  GetPrioritiesResponse
 } from './types';
 import JiraClient from './JiraClient';
 import { AxiosError } from 'axios';
@@ -273,6 +274,24 @@ export class JiraService implements BaseService<JiraConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to update Jira issue'
+      };
+    }
+  }
+
+  async getPriorities(): Promise<GetPrioritiesResponse> {
+    try {
+      const priorities = await this.client.getPriorities();
+      return {
+        success: true,
+        data: {
+          priorities
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching Jira priorities:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch Jira priorities'
       };
     }
   }

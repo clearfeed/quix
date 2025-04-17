@@ -11,7 +11,8 @@ import {
   GetCommentsResponse,
   UpdateIssueResponse,
   UpdateIssueFields,
-  SearchUsersResponse
+  SearchUsersResponse,
+  GetPrioritiesResponse
 } from './types';
 import { BaseResponse, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
@@ -58,6 +59,12 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
         service.getIssue(issueId)
     }),
     new DynamicStructuredTool({
+      name: 'get_jira_priorities',
+      description: 'Get all available priorities in Jira',
+      schema: z.object({}),
+      func: async (): Promise<GetPrioritiesResponse> => service.getPriorities()
+    }),
+    new DynamicStructuredTool({
       name: 'create_jira_issue',
       description: 'Create a new JIRA issue',
       schema: z.object({
@@ -73,7 +80,9 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
         issueType: z.string().describe('The type of issue (e.g., Bug, Task, Story, Epic)'),
         priority: z
           .string()
-          .describe('The priority of the issue (e.g., Highest, High, Medium, Low, Lowest)')
+          .describe(
+            'The priority of the issue. Use get_jira_priorities tool to see available priorities.'
+          )
           .optional(),
         assigneeId: z
           .string()
@@ -129,7 +138,9 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
           description: z.string().describe('The description of the issue').optional(),
           priority: z
             .string()
-            .describe('The priority of the issue (e.g., Highest, High, Medium, Low, Lowest)')
+            .describe(
+              'The priority of the issue. Use get_jira_priorities tool to see available priorities.'
+            )
             .optional(),
           assigneeId: z.string().describe('The ID of the user to assign the issue to').optional(),
           labels: z.array(z.string()).describe('The labels of the issue').optional()
