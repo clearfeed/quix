@@ -126,8 +126,8 @@ export class JiraService implements BaseService<JiraConfig> {
       if (params.description) {
         issueData.description = params.description;
       }
-      if (params.assignee) {
-        issueData.assignee = params.assignee;
+      if (params.assigneeId) {
+        issueData.assigneeId = params.assigneeId;
       }
       if (params.priority) {
         issueData.priority = params.priority;
