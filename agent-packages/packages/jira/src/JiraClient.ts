@@ -121,7 +121,7 @@ export class JiraClient {
   }
 
   async createIssue(params: CreateIssueParams): Promise<JiraIssueResponse> {
-    const { projectKey, summary, description, issueType, priority, assigneeId } = params;
+    const { projectKey, summary, issueTypeId, priorityId, assigneeId, labels } = params;
     if (!projectKey) {
       throw new Error('Project key is required');
     }
@@ -131,27 +131,15 @@ export class JiraClient {
       throw new Error(`Project ${projectKey} not found`);
     }
 
-    // Validate issue type exists in project
-    const issueTypeObj = project.issueTypes.find((type) => type.name === issueType);
-    if (!issueTypeObj) {
-      throw new Error(`Issue type ${issueType} not found in project ${projectKey}`);
-    }
-
     const response = await this.makeApiCall('POST', '/issue', {
       data: {
         fields: {
           project: { id: project.id },
           summary,
-          description: description
-            ? {
-                type: 'doc',
-                version: 1,
-                content: [{ type: 'paragraph', content: [{ type: 'text', text: description }] }]
-              }
-            : undefined,
-          issuetype: { id: issueTypeObj.id },
+          issuetype: { id: issueTypeId },
           ...(assigneeId ? { assignee: { accountId: assigneeId } } : {}),
-          ...(priority ? { priority: { name: priority } } : {})
+          ...(priorityId ? { priority: { id: priorityId } } : {}),
+          ...(labels ? { labels } : {})
         }
       }
     });
@@ -212,29 +200,21 @@ export class JiraClient {
   }
 
   async updateIssue(issueId: string, fields: UpdateIssueFields): Promise<UpdateIssueResponse> {
-    let description;
-    if (fields.description) {
-      description = {
-        type: 'doc',
-        version: 1,
-        content: [{ type: 'paragraph', content: [{ type: 'text', text: fields.description }] }]
-      };
-    }
+    const { assigneeId, summary, priorityId, labels, issueTypeId } = fields;
     const response = await this.makeApiCall('PUT', `/issue/${issueId}`, {
       data: {
         fields: {
-          ...(description ? { description } : {}),
-          ...(fields.assigneeId ? { assignee: { accountId: fields.assigneeId } } : {}),
-          ...(fields.summary ? { summary: fields.summary } : {}),
-          ...(fields.priority
+          ...(assigneeId ? { assignee: { accountId: assigneeId } } : {}),
+          ...(summary ? { summary } : {}),
+          ...(priorityId
             ? {
                 priority: {
-                  name: fields.priority
+                  id: priorityId
                 }
               }
             : {}),
-          ...(fields.labels ? { labels: fields.labels } : {}),
-          ...(fields.issueType ? { issuetype: { id: fields.issueType } } : {})
+          ...(labels ? { labels } : {}),
+          ...(issueTypeId ? { issuetype: { id: issueTypeId } } : {})
         }
       }
     });

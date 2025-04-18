@@ -109,11 +109,6 @@ export class JiraService implements BaseService<JiraConfig> {
 
   async createIssue(params: CreateIssueParams): Promise<GetIssueResponse> {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return { success: false, error: validation.error };
-      }
-
       const projectKey = params.projectKey;
       if (!projectKey) {
         return {
@@ -125,16 +120,16 @@ export class JiraService implements BaseService<JiraConfig> {
       const issueData: CreateIssueParams = {
         summary: params.summary,
         projectKey,
-        issueType: params.issueType
+        issueTypeId: params.issueTypeId
       };
-      if (params.description) {
-        issueData.description = params.description;
-      }
       if (params.assigneeId) {
         issueData.assigneeId = params.assigneeId;
       }
-      if (params.priority) {
-        issueData.priority = params.priority;
+      if (params.priorityId) {
+        issueData.priorityId = params.priorityId;
+      }
+      if (params.labels) {
+        issueData.labels = params.labels;
       }
 
       const issue = await this.client.createIssue(issueData);
@@ -270,11 +265,6 @@ export class JiraService implements BaseService<JiraConfig> {
     fields: UpdateIssueFields;
   }): Promise<UpdateIssueResponse> {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return { success: false, error: validation.error };
-      }
-
       await this.client.updateIssue(params.issueId, params.fields);
 
       return {

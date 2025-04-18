@@ -68,7 +68,7 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
     }),
     new DynamicStructuredTool({
       name: 'get_jira_issue_types',
-      description: 'Get all available issue types in Jira',
+      description: 'Get all available issue types in a Jira project',
       schema: z.object({}),
       func: async (): Promise<GetIssueTypesResponse> => service.getIssueTypes()
     }),
@@ -90,14 +90,15 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
               .default(config.defaultConfig.projectKey)
           : z.string().describe('The project key where the issue will be created (required)'),
         summary: z.string().describe('The summary/title of the issue'),
-        description: z.string().describe('The description of the issue').optional(),
-        issueType: z
-          .string()
-          .describe('The type of issue. Use get_jira_issue_types tool to see available types.'),
-        priority: z
+        issueTypeId: z
           .string()
           .describe(
-            'The priority of the issue. Use get_jira_priorities tool to see available priorities.'
+            'The ID of the issue type. Use get_jira_issue_types tool to see available types.'
+          ),
+        priorityId: z
+          .string()
+          .describe(
+            'The ID of the priority. Use get_jira_priorities tool to see available priorities.'
           )
           .optional(),
         assigneeId: z
@@ -155,11 +156,10 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
         issueId: z.string().describe('The Jira issue key or ID (e.g., 10083 or PROJ-123)'),
         fields: z.object({
           summary: z.string().describe('The summary of the issue').optional(),
-          description: z.string().describe('The description of the issue').optional(),
-          priority: z
+          priorityId: z
             .string()
             .describe(
-              'The priority of the issue. Use get_jira_priorities tool to see available priorities (e.g., "High", "Low", "Major", etc.).'
+              'The ID of the priority. Use get_jira_priorities tool to see available priorities.'
             )
             .optional(),
           assigneeId: z
@@ -174,9 +174,11 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
               'Labels to set on the issue. Use get_jira_labels tool to see available labels.'
             )
             .optional(),
-          issueType: z
+          issueTypeId: z
             .string()
-            .describe('The type of issue. Use get_jira_issue_types tool to see available types.')
+            .describe(
+              'The ID of the issue type. Use get_jira_issue_types tool to see available types.'
+            )
             .optional()
         })
       }),
