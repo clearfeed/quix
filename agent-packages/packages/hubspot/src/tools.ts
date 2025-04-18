@@ -18,6 +18,7 @@ import {
   taskUpdateSchema,
   taskSearchSchema
 } from './schema';
+import { TaskTypeEnum } from './types';
 
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
 HubSpot is a CRM platform that manages:
@@ -167,6 +168,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
           priority: args.priority,
           dueDate: args.dueDate,
           ownerId: args.ownerId,
+          taskType: TaskTypeEnum.TODO,
           associatedObjectType: HubspotEntityType.DEAL,
           associatedObjectId: args.entityId
         }),
@@ -185,6 +187,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
           priority: args.priority,
           dueDate: args.dueDate,
           ownerId: args.ownerId,
+          taskType: TaskTypeEnum.TODO,
           associatedObjectType: HubspotEntityType.CONTACT,
           associatedObjectId: args.entityId
         }),
@@ -203,6 +206,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
           priority: args.priority,
           dueDate: args.dueDate,
           ownerId: args.ownerId,
+          taskType: TaskTypeEnum.TODO,
           associatedObjectType: HubspotEntityType.COMPANY,
           associatedObjectId: args.entityId
         }),
