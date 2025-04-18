@@ -479,7 +479,17 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       return {
         success: true,
-        data: { taskId: response.id }
+        data: {
+          taskId: response.id,
+          taskDetails: {
+            hs_task_subject: response.properties.hs_task_subject || '',
+            hs_task_status: response.properties.hs_task_status || '',
+            hs_task_priority: response.properties.hs_task_priority || '',
+            hs_task_type: response.properties.hs_task_type || '',
+            hs_timestamp: response.properties.hs_timestamp || '',
+            hs_task_body: response.properties.hs_task_body || ''
+          }
+        }
       };
     } catch (error) {
       console.error('Error creating HubSpot task:', error);
@@ -525,7 +535,17 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       return {
         success: true,
-        data: { taskId: response.id }
+        data: {
+          taskId: response.id,
+          taskDetails: {
+            hs_task_subject: response.properties.hs_task_subject || '',
+            hs_task_status: response.properties.hs_task_status || '',
+            hs_task_priority: response.properties.hs_task_priority || '',
+            hs_task_type: response.properties.hs_task_type || '',
+            hs_timestamp: response.properties.hs_timestamp || '',
+            hs_task_body: response.properties.hs_task_body || ''
+          }
+        }
       };
     } catch (error) {
       console.error('Error updating HubSpot task:', error);
