@@ -5,7 +5,6 @@ import {
   HubspotConfig,
   CreateDealParams,
   HubspotEntityType,
-  CreateTaskParams,
   UpdateTaskParams,
   TaskSearchParams
 } from './types';
@@ -159,7 +158,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       })
     }),
     tool(
-      async (args: CreateTaskParams) =>
+      async (args: z.infer<typeof dealTaskSchema>) =>
         service.createTask({
           title: args.title,
           body: args.body,
@@ -178,7 +177,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       }
     ),
     tool(
-      async (args: CreateTaskParams) =>
+      async (args: z.infer<typeof contactTaskSchema>) =>
         service.createTask({
           title: args.title,
           body: args.body,
@@ -197,7 +196,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       }
     ),
     tool(
-      async (args: CreateTaskParams) =>
+      async (args: z.infer<typeof companyTaskSchema>) =>
         service.createTask({
           title: args.title,
           body: args.body,
