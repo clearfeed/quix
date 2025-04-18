@@ -296,7 +296,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const { entityType, entityId, note } = params;
 
       /**
-       * @see https://developers.hubspot.com/docs/guides/api/crm/associations/associations-v4
+       * @see https://developers.hubspot.com/docs/guides/api/crm/associations/associations-v4#note-to-object
        */
       const associationTypeIds = {
         [HubspotEntityType.DEAL]: 214,
@@ -441,7 +441,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
       } = params;
 
       /**
-       * @see https://developers.hubspot.com/docs/guides/api/crm/associations/associations-v4
+       * @see https://developers.hubspot.com/docs/guides/api/crm/associations/associations-v4#task-to-object
        */
       const associationTypeIds = {
         [HubspotEntityType.DEAL]: 216,
