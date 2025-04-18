@@ -19,7 +19,7 @@ export const baseTaskSchema = z.object({
     .describe('The priority level of the task')
     .default(TaskPriorityEnum.MEDIUM),
   taskType: taskTypeSchema.describe('The type of task').default(TaskTypeEnum.TODO),
-  dueDate: z.string().optional().describe('The due date of the task (YYYY-MM-DD)'),
+  dueDate: z.string().describe('The due date of the task (YYYY-MM-DD)'),
   ownerId: z.string().optional().describe('The owner ID of the task')
 });
 
