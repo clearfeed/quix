@@ -71,7 +71,5 @@ export const taskUpdateSchema = z.object({
 
 // Create task params
 export const createTaskSchema = baseTaskSchema.extend({
-  entityId: z.string().optional().describe('The ID of the entity to associate this task with'),
-  associatedObjectType: z.string().optional().describe('The type of the associated object'),
-  associatedObjectId: z.string().optional().describe('The ID of the associated object')
+  entityId: z.string().optional().describe('The ID of the entity to associate this task with')
 });

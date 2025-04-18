@@ -109,7 +109,10 @@ export enum TaskTypeEnum {
 export type Task = z.infer<typeof baseTaskSchema>;
 export type TaskSearchParams = z.infer<typeof taskSearchSchema>;
 export type UpdateTaskParams = z.infer<typeof taskUpdateSchema>;
-export type CreateTaskParams = z.infer<typeof createTaskSchema>;
+export type CreateTaskParams = z.infer<typeof createTaskSchema> & {
+  associatedObjectType?: HubspotEntityType;
+  associatedObjectId?: string;
+};
 
 export type CreateTaskResponse = BaseResponse<{
   taskId: string;
