@@ -71,23 +71,26 @@ export class GitHubService implements BaseService<GitHubConfig> {
     return new GitHubService(config);
   }
 
-  private async resolveUsername(orgName: string, username: string): Promise<string> {
-    const userSearch = await this.getUsers(orgName);
-    if (!userSearch.success) {
-      throw new Error('Invalid organization name');
+  private async isUserCanBeAssigned(
+    owner: string,
+    repo: string,
+    issueNumber: number,
+    assignee: string
+  ): Promise<boolean> {
+    try {
+      await this.client.issues.checkUserCanBeAssigned({
+        owner,
+        repo,
+        issue_number: issueNumber,
+        assignee
+      });
+      return true;
+    } catch (error: any) {
+      if (error.status === 404) {
+        return false;
+      }
+      throw error;
     }
-    if (!userSearch.data) {
-      throw new Error('There are no users in the organization to assign the issue to');
-    }
-    const user = userSearch.data.find((user) =>
-      user.login.toLowerCase().includes(username.toLowerCase())
-    );
-    if (!user) {
-      throw new Error(
-        'User name provided to assign the issue to is not present in the organization'
-      );
-    }
-    return user.login;
   }
 
   async searchIssues(
@@ -158,12 +161,19 @@ export class GitHubService implements BaseService<GitHubConfig> {
       const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
       const repo = validation.repoName;
       const owner = validation.repoOwner;
-      const resolvedAssignee = await this.resolveUsername(owner, assignee);
+
+      const canBeAssigned = await this.isUserCanBeAssigned(owner, repo, issueNumber, assignee);
+      if (!canBeAssigned) {
+        throw new Error(
+          `User '${assignee}' cannot be assigned to this issue. Please provide a valid GitHub username.`
+        );
+      }
+
       const response = await this.client.issues.addAssignees({
         owner,
         repo,
         issue_number: issueNumber,
-        assignees: [resolvedAssignee]
+        assignees: [assignee]
       });
       return { success: true, data: response.data };
     } catch (error) {
@@ -186,12 +196,17 @@ export class GitHubService implements BaseService<GitHubConfig> {
       const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
       const repo = validation.repoName;
       const owner = validation.repoOwner;
-      const resolvedAssignee = await this.resolveUsername(owner, assignee);
+      const canBeAssigned = await this.isUserCanBeAssigned(owner, repo, issueNumber, assignee);
+      if (!canBeAssigned) {
+        throw new Error(
+          `User '${assignee}' cannot be removed from this issue. Please provide a valid GitHub username.`
+        );
+      }
       const response = await this.client.issues.removeAssignees({
         owner,
         repo,
         issue_number: issueNumber,
-        assignees: [resolvedAssignee]
+        assignees: [assignee]
       });
       return { success: true, data: response.data };
     } catch (error) {

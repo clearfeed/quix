@@ -139,7 +139,7 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
     new DynamicStructuredTool({
       name: 'add_github_assignee',
       description:
-        'Add an assignee or assign someone to a GitHub issue or PR. The assignee must be a valid GitHub username (e.g. "imkhateeb" not just "khateeb"). Provide the exact GitHub username by using the "get_organization_users" tool first then assign the user to the issue. PRs and Issues are interchangeable terms in GitHub',
+        'Add an assignee or assign someone to a GitHub issue or PR. PRs and Issues are interchangeable terms in GitHub',
       schema: z.object({
         repo: config.repo
           ? z
@@ -158,11 +158,7 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
               .default(config.owner)
           : z.string().describe('Owner of the repository where the issue or PR exists (required)'),
         issueNumber: z.number().describe('The number of the issue or PR to add the assignee to'),
-        assignee: z
-          .string()
-          .describe(
-            'The GitHub username of the assignee (e.g. "imkhateeb" not just "khateeb"). Provide the exact GitHub username by using the "get_organization_users" tool first then assign the user to the issue. PRs and Issues are interchangeable terms in GitHub'
-          )
+        assignee: z.string().describe('The GitHub username of the assignee')
       }),
       func: async (args: { repo: string; owner: string; issueNumber: number; assignee: string }) =>
         service.addAssigneeToIssue(args.issueNumber, args.assignee, {
@@ -173,7 +169,7 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
     new DynamicStructuredTool({
       name: 'remove_github_assignee',
       description:
-        'Remove an assignee or unassign someone from a GitHub issue or PR. The assignee must be a valid GitHub username (e.g. "imkhateeb" not just "khateeb"). Provide the exact GitHub username by using the "get_organization_users" tool first then assign the user to the issue. PRs and Issues are interchangeable terms in GitHub',
+        'Remove an assignee or unassign someone from a GitHub issue or PR. PRs and Issues are interchangeable terms in GitHub',
       schema: z.object({
         repo: config.repo
           ? z
@@ -196,11 +192,7 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
         issueNumber: z
           .number()
           .describe('The number of the issue or PR to remove the assignee from'),
-        assignee: z
-          .string()
-          .describe(
-            'The GitHub username of the assignee to remove (e.g. "imkhateeb" not just "khateeb"). Provide the exact GitHub username by using the "get_organization_users" tool first then assign the user to the issue. PRs and Issues are interchangeable terms in GitHub'
-          )
+        assignee: z.string().describe('The GitHub username of the assignee to remove')
       }),
       func: async (args: { repo: string; owner: string; issueNumber: number; assignee: string }) =>
         service.removeAssigneeFromIssue(args.issueNumber, args.assignee, {
