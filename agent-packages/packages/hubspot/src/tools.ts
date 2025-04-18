@@ -171,8 +171,8 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
           associatedObjectId: args.entityId
         }),
       {
-        name: 'add_task_to_hubspot_deal',
-        description: 'Add a task associated with a deal in HubSpot',
+        name: 'create_task_for_hubspot_deal',
+        description: 'Create a new task and associate it with a HubSpot deal.',
         schema: dealTaskSchema
       }
     ),
@@ -190,8 +190,8 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
           associatedObjectId: args.entityId
         }),
       {
-        name: 'add_task_to_hubspot_contact',
-        description: 'Add a task associated with a contact in HubSpot',
+        name: 'create_task_for_hubspot_contact',
+        description: 'Create a new task and associate it with a HubSpot contact.',
         schema: contactTaskSchema
       }
     ),
@@ -209,19 +209,20 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
           associatedObjectId: args.entityId
         }),
       {
-        name: 'add_task_to_hubspot_company',
-        description: 'Add a task associated with a company in HubSpot',
+        name: 'create_task_for_hubspot_company',
+        description: 'Create a new task and associate it with a HubSpot company.',
         schema: companyTaskSchema
       }
     ),
     tool(async (args: UpdateTaskParams) => service.updateTask(args), {
       name: 'update_hubspot_task',
-      description: 'Update an existing task in HubSpot',
+      description: 'Update the details of an existing task in HubSpot.',
       schema: taskUpdateSchema
     }),
     tool(async (args: TaskSearchParams) => service.searchTasks(args), {
       name: 'search_hubspot_tasks',
-      description: 'Search for tasks in HubSpot based on various criteria',
+      description:
+        'Search for tasks in HubSpot using filters such as keyword, owner, status, priority, due date.',
       schema: taskSearchSchema
     })
   ];
