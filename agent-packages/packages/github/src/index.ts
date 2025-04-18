@@ -71,6 +71,28 @@ export class GitHubService implements BaseService<GitHubConfig> {
     return new GitHubService(config);
   }
 
+  private async checkUserCanBeAssigned(params: {
+    owner: string;
+    repo: string;
+    issueNumber: number;
+    assignee: string;
+  }): Promise<boolean> {
+    try {
+      await this.client.issues.checkUserCanBeAssigned({
+        owner: params.owner,
+        repo: params.repo,
+        issue_number: params.issueNumber,
+        assignee: params.assignee
+      });
+      return true;
+    } catch (error: any) {
+      if (error.status === 404) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
   async searchIssues(
     params: SearchIssuesParams
   ): Promise<BaseResponse<SearchIssuesResponse['data']>> {
@@ -139,6 +161,19 @@ export class GitHubService implements BaseService<GitHubConfig> {
       const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
       const repo = validation.repoName;
       const owner = validation.repoOwner;
+
+      const canBeAssigned = await this.checkUserCanBeAssigned({
+        owner,
+        repo,
+        issueNumber,
+        assignee
+      });
+      if (!canBeAssigned) {
+        throw new Error(
+          `User '${assignee}' cannot be assigned to this issue. Please provide a valid GitHub username of the user who can be assigned to an issue or pull request in this repository.`
+        );
+      }
+
       const response = await this.client.issues.addAssignees({
         owner,
         repo,
@@ -166,6 +201,17 @@ export class GitHubService implements BaseService<GitHubConfig> {
       const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
       const repo = validation.repoName;
       const owner = validation.repoOwner;
+      const canBeAssigned = await this.checkUserCanBeAssigned({
+        owner,
+        repo,
+        issueNumber,
+        assignee
+      });
+      if (!canBeAssigned) {
+        throw new Error(
+          `User '${assignee}' cannot be removed from this issue. Please provide a valid GitHub username of the user who can be assigned to an issue or pull request in this repository.`
+        );
+      }
       const response = await this.client.issues.removeAssignees({
         owner,
         repo,

@@ -201,7 +201,7 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
         })
     }),
     new DynamicStructuredTool({
-      name: 'get_github_users',
+      name: 'get_organization_users',
       description: 'Get all users in a GitHub organization',
       schema: z.object({
         owner: config.owner
@@ -540,7 +540,7 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
       func: async (params: AddIssueCommentParams) => service.addIssueComment(params)
     }),
     new DynamicStructuredTool({
-      name: 'search_users',
+      name: 'search_github_users',
       description: 'Search for GitHub users by username, name, or other criteria',
       schema: z.object({
         q: z
