@@ -24,7 +24,12 @@ export const baseTaskSchema = z.object({
     .describe('Type of task, e.g., TODO, CALL, EMAIL. Defaults to "TODO".')
     .default(TaskTypeEnum.TODO),
   dueDate: z.string().describe('Deadline for the task in YYYY-MM-DD format.'),
-  ownerId: z.string().optional().describe('Id of the HubSpot owner of the task.')
+  ownerId: z
+    .string()
+    .optional()
+    .describe(
+      "Id of the HubSpot user to assign the task to. Referred to as the task's **owner** or **assignee**—both terms are interchangeable."
+    )
 });
 
 // Deal Task Schema
@@ -45,7 +50,12 @@ export const companyTaskSchema = baseTaskSchema.extend({
 // Full Task Search Schema for the tool
 export const taskSearchSchema = z.object({
   keyword: z.string().optional().describe('Keyword to search for in task titles or descriptions.'),
-  ownerId: z.string().optional().describe("Filter tasks by the owner's ID."),
+  ownerId: z
+    .string()
+    .optional()
+    .describe(
+      "Filter tasks by the owner's ID. Referred to as the task's **owner** or **assignee**—both terms are interchangeable."
+    ),
   status: taskStatusSchema.optional().describe('Filter by task status.'),
   priority: taskPrioritySchema.optional().describe('Filter by task priority.'),
   dueDateFrom: z
@@ -67,5 +77,10 @@ export const taskUpdateSchema = z.object({
   priority: taskPrioritySchema.optional().describe('Updated priority level of the task.'),
   taskType: taskTypeSchema.optional().describe('Updated type/category of the task.'),
   dueDate: z.string().optional().describe('New due date in YYYY-MM-DD format.'),
-  ownerId: z.string().optional().describe('New owner ID to assign the task to.')
+  ownerId: z
+    .string()
+    .optional()
+    .describe(
+      "The ID of the user assigned to this task. Referred to as the task's **owner** or **assignee**—both terms are interchangeable."
+    )
 });
