@@ -1,5 +1,5 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
-import { baseTaskSchema, createTaskSchema, taskSearchSchema, taskUpdateSchema } from './schema';
+import { baseTaskSchema, taskSearchSchema, taskUpdateSchema } from './schema';
 import { z } from 'zod';
 
 export interface HubspotConfig extends BaseConfig {
@@ -109,9 +109,9 @@ export enum TaskTypeEnum {
 export type Task = z.infer<typeof baseTaskSchema>;
 export type TaskSearchParams = z.infer<typeof taskSearchSchema>;
 export type UpdateTaskParams = z.infer<typeof taskUpdateSchema>;
-export type CreateTaskParams = z.infer<typeof createTaskSchema> & {
-  associatedObjectType?: HubspotEntityType;
-  associatedObjectId?: string;
+export type CreateTaskParams = z.infer<typeof baseTaskSchema> & {
+  associatedObjectType: HubspotEntityType;
+  associatedObjectId: string;
 };
 
 export type CreateTaskResponse = BaseResponse<{

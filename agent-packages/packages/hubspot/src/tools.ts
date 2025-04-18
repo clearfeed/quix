@@ -5,7 +5,6 @@ import {
   HubspotConfig,
   CreateDealParams,
   HubspotEntityType,
-  CreateTaskParams,
   UpdateTaskParams,
   TaskSearchParams
 } from './types';
@@ -18,7 +17,6 @@ import {
   taskUpdateSchema,
   taskSearchSchema
 } from './schema';
-import { TaskTypeEnum } from './types';
 
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
 HubSpot is a CRM platform that manages:
@@ -160,7 +158,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       })
     }),
     tool(
-      async (args: CreateTaskParams) =>
+      async (args: z.infer<typeof dealTaskSchema>) =>
         service.createTask({
           title: args.title,
           body: args.body,
@@ -179,7 +177,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       }
     ),
     tool(
-      async (args: CreateTaskParams) =>
+      async (args: z.infer<typeof contactTaskSchema>) =>
         service.createTask({
           title: args.title,
           body: args.body,
@@ -198,7 +196,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       }
     ),
     tool(
-      async (args: CreateTaskParams) =>
+      async (args: z.infer<typeof companyTaskSchema>) =>
         service.createTask({
           title: args.title,
           body: args.body,

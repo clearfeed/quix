@@ -68,8 +68,3 @@ export const taskUpdateSchema = z.object({
   dueDate: z.string().optional().describe('The updated due date of the task (YYYY-MM-DD)'),
   ownerId: z.string().optional().describe('The updated owner ID of the task')
 });
-
-// Create task params
-export const createTaskSchema = baseTaskSchema.extend({
-  entityId: z.string().optional().describe('The ID of the entity to associate this task with')
-});
