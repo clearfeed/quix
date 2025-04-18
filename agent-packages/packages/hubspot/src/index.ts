@@ -23,9 +23,6 @@ import {
   SearchTasksResponse,
   Task,
   TaskSearchParams,
-  TaskStatusEnum,
-  TaskPriorityEnum,
-  TaskTypeEnum,
   HubspotDeal
 } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
