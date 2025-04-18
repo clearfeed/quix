@@ -452,9 +452,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const taskInput: SimplePublicObjectInputForCreate = {
         properties: {
           hs_task_subject: title,
-          hs_task_status: status || TaskStatusEnum.NOT_STARTED,
-          hs_task_priority: priority || TaskPriorityEnum.MEDIUM,
-          hs_task_type: taskType || TaskTypeEnum.TODO,
+          hs_task_status: status,
+          hs_task_priority: priority,
+          hs_task_type: taskType,
           hs_timestamp: dueDate
         },
         associations: []
@@ -468,18 +468,15 @@ export class HubspotService implements BaseService<HubspotConfig> {
         taskInput.properties.hubspot_owner_id = ownerId;
       }
 
-      // If there's an associated object, create the association
-      if (associatedObjectType && associatedObjectId) {
-        taskInput.associations.push({
-          to: { id: associatedObjectId },
-          types: [
-            {
-              associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
-              associationTypeId: associationTypeIds[associatedObjectType as HubspotEntityType]
-            }
-          ]
-        });
-      }
+      taskInput.associations.push({
+        to: { id: associatedObjectId },
+        types: [
+          {
+            associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
+            associationTypeId: associationTypeIds[associatedObjectType as HubspotEntityType]
+          }
+        ]
+      });
 
       const response = await this.client.crm.objects.tasks.basicApi.create(taskInput);
 
