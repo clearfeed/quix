@@ -16,7 +16,7 @@ import {
   contactTaskSchema,
   companyTaskSchema,
   taskUpdateSchema,
-  taskFullSearchSchema
+  taskSearchSchema
 } from './schema';
 
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
@@ -220,7 +220,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
     tool(async (args: TaskSearchParams) => service.searchTasks(args), {
       name: 'search_hubspot_tasks',
       description: 'Search for tasks in HubSpot based on various criteria',
-      schema: taskFullSearchSchema
+      schema: taskSearchSchema
     })
   ];
 

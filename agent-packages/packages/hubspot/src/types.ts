@@ -1,6 +1,6 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
-import { Task } from './schema';
-export * from './schema';
+import { baseTaskSchema, createTaskSchema, taskSearchSchema, taskUpdateSchema } from './schema';
+import { z } from 'zod';
 
 export interface HubspotConfig extends BaseConfig {
   accessToken: string;
@@ -17,6 +17,18 @@ export interface Deal {
   company: string;
   createdAt: string;
   lastModifiedDate: string;
+}
+
+export interface HubspotDeal {
+  id: string;
+  properties: Record<string, string | null>;
+  associations?: {
+    companies?: {
+      results: Array<{
+        id: string;
+      }>;
+    };
+  };
 }
 
 export interface Contact {
@@ -74,14 +86,23 @@ export type SearchDealsResponse = BaseResponse<{
   deals: Deal[];
 }>;
 
-// Extending the Task type to include HubSpot specific fields
-export interface HubspotTask extends Task {
-  id: string;
-  associatedObjectType?: HubspotEntityType;
-  associatedObjectId?: string;
-  createdAt: string;
-  lastModifiedDate: string;
+// Task related enums
+export enum TaskStatusEnum {
+  NOT_STARTED = 'NOT_STARTED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  WAITING = 'WAITING',
+  COMPLETED = 'COMPLETED'
 }
+export enum TaskPriorityEnum {
+  HIGH = 'HIGH',
+  MEDIUM = 'MEDIUM',
+  LOW = 'LOW'
+}
+
+export type Task = z.infer<typeof baseTaskSchema>;
+export type TaskSearchParams = z.infer<typeof taskSearchSchema>;
+export type UpdateTaskParams = z.infer<typeof taskUpdateSchema>;
+export type CreateTaskParams = z.infer<typeof createTaskSchema>;
 
 export type CreateTaskResponse = BaseResponse<{
   taskId: string;
@@ -90,6 +111,14 @@ export type CreateTaskResponse = BaseResponse<{
 export type UpdateTaskResponse = BaseResponse<{
   taskId: string;
 }>;
+
+export interface HubspotTask extends Task {
+  id: string;
+  associatedObjectType?: HubspotEntityType;
+  associatedObjectId?: string;
+  createdAt: string;
+  lastModifiedDate: string;
+}
 
 export type SearchTasksResponse = BaseResponse<{
   tasks: HubspotTask[];

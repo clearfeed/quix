@@ -24,7 +24,8 @@ import {
   Task,
   TaskSearchParams,
   TaskStatusEnum,
-  TaskPriorityEnum
+  TaskPriorityEnum,
+  HubspotDeal
 } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 import { validateRequiredFields } from './utils';
@@ -32,18 +33,6 @@ import { keyBy } from 'lodash';
 
 export * from './types';
 export * from './tools';
-
-interface HubspotDeal {
-  id: string;
-  properties: Record<string, string | null>;
-  associations?: {
-    companies?: {
-      results: Array<{
-        id: string;
-      }>;
-    };
-  };
-}
 
 export class HubspotService implements BaseService<HubspotConfig> {
   private client: Client;

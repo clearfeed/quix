@@ -1,26 +1,11 @@
 import { z } from 'zod';
-
-// Define enums for task status and priority
-export enum TaskStatusEnum {
-  NOT_STARTED = 'NOT_STARTED',
-  IN_PROGRESS = 'IN_PROGRESS',
-  WAITING = 'WAITING',
-  COMPLETED = 'COMPLETED'
-}
-
-export enum TaskPriorityEnum {
-  HIGH = 'HIGH',
-  MEDIUM = 'MEDIUM',
-  LOW = 'LOW'
-}
+import { TaskStatusEnum, TaskPriorityEnum } from './types';
 
 // Task Status Schema
 export const taskStatusSchema = z.nativeEnum(TaskStatusEnum);
-export type TaskStatus = z.infer<typeof taskStatusSchema>;
 
 // Task Priority Schema
 export const taskPrioritySchema = z.nativeEnum(TaskPriorityEnum);
-export type TaskPriority = z.infer<typeof taskPrioritySchema>;
 
 // Base Task Schema
 export const baseTaskSchema = z.object({
@@ -32,38 +17,23 @@ export const baseTaskSchema = z.object({
   ownerId: z.string().optional().describe('The owner ID of the task')
 });
 
-export type Task = z.infer<typeof baseTaskSchema>;
-
 // Deal Task Schema
 export const dealTaskSchema = baseTaskSchema.extend({
   entityId: z.string().describe('The ID of the deal to associate this task with')
 });
-
-export type DealTask = z.infer<typeof dealTaskSchema>;
 
 // Contact Task Schema
 export const contactTaskSchema = baseTaskSchema.extend({
   entityId: z.string().describe('The ID of the contact to associate this task with')
 });
 
-export type ContactTask = z.infer<typeof contactTaskSchema>;
-
 // Company Task Schema
 export const companyTaskSchema = baseTaskSchema.extend({
   entityId: z.string().describe('The ID of the company to associate this task with')
 });
 
-export type CompanyTask = z.infer<typeof companyTaskSchema>;
-
-// Task Search Schema
-export const taskSearchSchema = z.object({
-  keyword: z.string().describe('The keyword to search for in task titles or descriptions')
-});
-
-export type TaskSearch = z.infer<typeof taskSearchSchema>;
-
 // Full Task Search Schema for the tool
-export const taskFullSearchSchema = z.object({
+export const taskSearchSchema = z.object({
   keyword: z
     .string()
     .optional()
@@ -81,8 +51,6 @@ export const taskFullSearchSchema = z.object({
     .describe('Filter tasks with due date before this date (YYYY-MM-DD)')
 });
 
-export type TaskSearchParams = z.infer<typeof taskFullSearchSchema>;
-
 // Task Update Schema
 export const taskUpdateSchema = z.object({
   taskId: z.string().describe('The ID of the task to update'),
@@ -94,13 +62,9 @@ export const taskUpdateSchema = z.object({
   ownerId: z.string().optional().describe('The updated owner ID of the task')
 });
 
-export type UpdateTaskParams = z.infer<typeof taskUpdateSchema>;
-
 // Create task params
-export const createTaskParamsSchema = baseTaskSchema.extend({
-  entityId: z.string().optional(),
-  associatedObjectType: z.string().optional(),
-  associatedObjectId: z.string().optional()
+export const createTaskSchema = baseTaskSchema.extend({
+  entityId: z.string().optional().describe('The ID of the entity to associate this task with'),
+  associatedObjectType: z.string().optional().describe('The type of the associated object'),
+  associatedObjectId: z.string().optional().describe('The ID of the associated object')
 });
-
-export type CreateTaskParams = z.infer<typeof createTaskParamsSchema>;
