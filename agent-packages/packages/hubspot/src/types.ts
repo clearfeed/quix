@@ -121,8 +121,6 @@ export type UpdateTaskResponse = BaseResponse<{
 
 export interface HubspotTask extends Task {
   id: string;
-  associatedObjectType?: HubspotEntityType;
-  associatedObjectId?: string;
   createdAt: string;
   lastModifiedDate: string;
 }

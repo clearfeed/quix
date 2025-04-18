@@ -168,7 +168,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
           priority: args.priority,
           dueDate: args.dueDate,
           ownerId: args.ownerId,
-          taskType: TaskTypeEnum.TODO,
+          taskType: args.taskType,
           associatedObjectType: HubspotEntityType.DEAL,
           associatedObjectId: args.entityId
         }),
@@ -187,7 +187,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
           priority: args.priority,
           dueDate: args.dueDate,
           ownerId: args.ownerId,
-          taskType: TaskTypeEnum.TODO,
+          taskType: args.taskType,
           associatedObjectType: HubspotEntityType.CONTACT,
           associatedObjectId: args.entityId
         }),
@@ -206,7 +206,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
           priority: args.priority,
           dueDate: args.dueDate,
           ownerId: args.ownerId,
-          taskType: TaskTypeEnum.TODO,
+          taskType: args.taskType,
           associatedObjectType: HubspotEntityType.COMPANY,
           associatedObjectId: args.entityId
         }),
