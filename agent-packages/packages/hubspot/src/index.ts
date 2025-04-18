@@ -25,6 +25,7 @@ import {
   TaskSearchParams,
   TaskStatusEnum,
   TaskPriorityEnum,
+  TaskTypeEnum,
   HubspotDeal
 } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
@@ -431,6 +432,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         title,
         status,
         priority,
+        taskType,
         body,
         dueDate,
         ownerId,
@@ -452,6 +454,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           hs_task_subject: title,
           hs_task_status: status || TaskStatusEnum.NOT_STARTED,
           hs_task_priority: priority || TaskPriorityEnum.MEDIUM,
+          hs_task_type: taskType || TaskTypeEnum.TODO,
           hs_timestamp: dueDate
         },
         associations: []
@@ -505,6 +508,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
       }
       if (params.priority) {
         properties.hs_task_priority = params.priority;
+      }
+      if (params.taskType) {
+        properties.hs_task_type = params.taskType;
       }
       if (params.body) {
         properties.hs_task_body = params.body;
@@ -628,6 +634,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           'hs_task_body',
           'hs_task_status',
           'hs_task_priority',
+          'hs_task_type',
           'hs_timestamp',
           'hubspot_owner_id',
           'createdate',
@@ -643,6 +650,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           body: task.properties.hs_task_body || undefined,
           status: task.properties.hs_task_status as Task['status'],
           priority: task.properties.hs_task_priority as Task['priority'],
+          taskType: task.properties.hs_task_type as Task['taskType'],
           dueDate: task.properties.hs_timestamp || '',
           ownerId: task.properties.hubspot_owner_id || undefined,
           createdAt: task.properties.createdate || '',

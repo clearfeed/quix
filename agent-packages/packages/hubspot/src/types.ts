@@ -93,10 +93,17 @@ export enum TaskStatusEnum {
   WAITING = 'WAITING',
   COMPLETED = 'COMPLETED'
 }
+
 export enum TaskPriorityEnum {
   HIGH = 'HIGH',
   MEDIUM = 'MEDIUM',
   LOW = 'LOW'
+}
+
+export enum TaskTypeEnum {
+  CALL = 'CALL',
+  EMAIL = 'EMAIL',
+  TODO = 'TODO'
 }
 
 export type Task = z.infer<typeof baseTaskSchema>;
