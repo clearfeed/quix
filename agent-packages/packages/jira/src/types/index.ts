@@ -110,7 +110,6 @@ export type GetIssueResponse = BaseResponse<{
 }>;
 
 export type AssignIssueResponse = BaseResponse<{
-  success: boolean;
   issueId: string;
   assignee: {
     accountId: string;

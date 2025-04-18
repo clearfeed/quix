@@ -170,25 +170,20 @@ export class JiraService implements BaseService<JiraConfig> {
 
   async assignIssue(issueId: string, accountId: string): Promise<AssignIssueResponse> {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return { success: false, error: validation.error };
-      }
-
       await this.client.assignIssue(issueId, accountId);
 
       // Get user details for the response
       const users = await this.client.searchUsers(accountId);
       const assignedUser = users.find((user) => user.accountId === accountId);
+      const displayName = assignedUser ? assignedUser.displayName : undefined;
 
       return {
         success: true,
         data: {
-          success: true,
           issueId,
           assignee: {
             accountId,
-            displayName: assignedUser?.displayName
+            displayName
           },
           url: this.getIssueUrl({ key: issueId })
         }
