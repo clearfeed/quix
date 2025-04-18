@@ -18,7 +18,6 @@ import {
   taskUpdateSchema,
   taskSearchSchema
 } from './schema';
-import { TaskTypeEnum } from './types';
 
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
 HubSpot is a CRM platform that manages:
