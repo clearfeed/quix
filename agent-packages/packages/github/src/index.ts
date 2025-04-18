@@ -71,18 +71,18 @@ export class GitHubService implements BaseService<GitHubConfig> {
     return new GitHubService(config);
   }
 
-  private async isUserCanBeAssigned(
-    owner: string,
-    repo: string,
-    issueNumber: number,
-    assignee: string
-  ): Promise<boolean> {
+  private async checkUserCanBeAssigned(params: {
+    owner: string;
+    repo: string;
+    issueNumber: number;
+    assignee: string;
+  }): Promise<boolean> {
     try {
       await this.client.issues.checkUserCanBeAssigned({
-        owner,
-        repo,
-        issue_number: issueNumber,
-        assignee
+        owner: params.owner,
+        repo: params.repo,
+        issue_number: params.issueNumber,
+        assignee: params.assignee
       });
       return true;
     } catch (error: any) {
@@ -162,7 +162,12 @@ export class GitHubService implements BaseService<GitHubConfig> {
       const repo = validation.repoName;
       const owner = validation.repoOwner;
 
-      const canBeAssigned = await this.isUserCanBeAssigned(owner, repo, issueNumber, assignee);
+      const canBeAssigned = await this.checkUserCanBeAssigned({
+        owner,
+        repo,
+        issueNumber,
+        assignee
+      });
       if (!canBeAssigned) {
         throw new Error(
           `User '${assignee}' cannot be assigned to this issue. Please provide a valid GitHub username.`
@@ -196,7 +201,12 @@ export class GitHubService implements BaseService<GitHubConfig> {
       const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
       const repo = validation.repoName;
       const owner = validation.repoOwner;
-      const canBeAssigned = await this.isUserCanBeAssigned(owner, repo, issueNumber, assignee);
+      const canBeAssigned = await this.checkUserCanBeAssigned({
+        owner,
+        repo,
+        issueNumber,
+        assignee
+      });
       if (!canBeAssigned) {
         throw new Error(
           `User '${assignee}' cannot be removed from this issue. Please provide a valid GitHub username.`
