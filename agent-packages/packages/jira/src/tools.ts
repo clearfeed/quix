@@ -90,15 +90,15 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
               .default(config.defaultConfig.projectKey)
           : z.string().describe('The project key where the issue will be created (required)'),
         summary: z.string().describe('The summary/title of the issue'),
-        issueTypeId: z
+        issueType: z
           .string()
           .describe(
-            'The ID of the issue type. Use get_jira_issue_types tool to see available types.'
+            'The name of the issue type. Use get_jira_issue_types tool to see available types.'
           ),
-        priorityId: z
+        priority: z
           .string()
           .describe(
-            'The ID of the priority. Use get_jira_priorities tool to see available priorities.'
+            'The name of the priority. Use get_jira_priorities tool to see available priorities.'
           )
           .optional(),
         assigneeId: z
@@ -156,16 +156,16 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
         issueId: z.string().describe('The Jira issue key or ID (e.g., 10083 or PROJ-123)'),
         fields: z.object({
           summary: z.string().describe('The summary of the issue').optional(),
-          priorityId: z
+          priority: z
             .string()
             .describe(
-              'The ID of the priority. Use get_jira_priorities tool to see available priorities.'
+              'The name of the priority. Use get_jira_priorities tool to see available priorities.'
             )
             .optional(),
           assigneeId: z
             .string()
             .describe(
-              'The ID of the user to assign the issue to. Use search_jira_users tool to find the assignee by name/email.'
+              'The accountId of the assignee. Use the "search_jira_users" tool to find the assignee by name/email'
             )
             .optional(),
           labels: z
@@ -174,10 +174,10 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
               'Labels to set on the issue. Use get_jira_labels tool to see available labels.'
             )
             .optional(),
-          issueTypeId: z
+          issueType: z
             .string()
             .describe(
-              'The ID of the issue type. Use get_jira_issue_types tool to see available types.'
+              'The name of the issue type. Use get_jira_issue_types tool to see available types.'
             )
             .optional()
         })

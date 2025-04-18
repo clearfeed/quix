@@ -121,7 +121,7 @@ export class JiraClient {
   }
 
   async createIssue(params: CreateIssueParams): Promise<JiraIssueResponse> {
-    const { projectKey, summary, issueTypeId, priorityId, assigneeId, labels } = params;
+    const { projectKey, summary, issueType, priority, assigneeId, labels } = params;
     if (!projectKey) {
       throw new Error('Project key is required');
     }
@@ -136,9 +136,9 @@ export class JiraClient {
         fields: {
           project: { id: project.id },
           summary,
-          issuetype: { id: issueTypeId },
+          issuetype: { name: issueType },
           ...(assigneeId ? { assignee: { accountId: assigneeId } } : {}),
-          ...(priorityId ? { priority: { id: priorityId } } : {}),
+          ...(priority ? { priority: { name: priority } } : {}),
           ...(labels ? { labels } : {})
         }
       }
@@ -200,21 +200,21 @@ export class JiraClient {
   }
 
   async updateIssue(issueId: string, fields: UpdateIssueFields): Promise<UpdateIssueResponse> {
-    const { assigneeId, summary, priorityId, labels, issueTypeId } = fields;
+    const { assigneeId, summary, priority, labels, issueType } = fields;
     const response = await this.makeApiCall('PUT', `/issue/${issueId}`, {
       data: {
         fields: {
           ...(assigneeId ? { assignee: { accountId: assigneeId } } : {}),
           ...(summary ? { summary } : {}),
-          ...(priorityId
+          ...(priority
             ? {
                 priority: {
-                  id: priorityId
+                  name: priority
                 }
               }
             : {}),
           ...(labels ? { labels } : {}),
-          ...(issueTypeId ? { issuetype: { id: issueTypeId } } : {})
+          ...(issueType ? { issuetype: { name: issueType } } : {})
         }
       }
     });
