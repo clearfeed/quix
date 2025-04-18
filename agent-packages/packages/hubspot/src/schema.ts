@@ -12,59 +12,60 @@ export const taskTypeSchema = z.nativeEnum(TaskTypeEnum);
 
 // Base Task Schema
 export const baseTaskSchema = z.object({
-  title: z.string().describe('The title/subject of the task'),
-  body: z.string().optional().describe('The detailed description of the task'),
-  status: taskStatusSchema.describe('The status of the task').default(TaskStatusEnum.NOT_STARTED),
+  title: z.string().describe('Short title or subject summarizing the task.'),
+  body: z.string().optional().describe('Optional detailed description or notes about the task.'),
+  status: taskStatusSchema
+    .describe('Current status of the task. Defaults to "Not Started".')
+    .default(TaskStatusEnum.NOT_STARTED),
   priority: taskPrioritySchema
-    .describe('The priority level of the task')
+    .describe('Priority level of the task. Defaults to "Medium".')
     .default(TaskPriorityEnum.MEDIUM),
-  taskType: taskTypeSchema.describe('The type of task').default(TaskTypeEnum.TODO),
-  dueDate: z.string().describe('The due date of the task (YYYY-MM-DD)'),
-  ownerId: z.string().optional().describe('The owner ID of the task')
+  taskType: taskTypeSchema
+    .describe('Type of task, e.g., TODO, CALL, EMAIL. Defaults to "TODO".')
+    .default(TaskTypeEnum.TODO),
+  dueDate: z.string().describe('Deadline for the task in YYYY-MM-DD format.'),
+  ownerId: z.string().optional().describe('Id of the HubSpot owner of the task.')
 });
 
 // Deal Task Schema
 export const dealTaskSchema = baseTaskSchema.extend({
-  entityId: z.string().describe('The ID of the deal to associate this task with')
+  entityId: z.string().describe('HubSpot Deal ID that this task is linked to.')
 });
 
 // Contact Task Schema
 export const contactTaskSchema = baseTaskSchema.extend({
-  entityId: z.string().describe('The ID of the contact to associate this task with')
+  entityId: z.string().describe('HubSpot Contact ID that this task is linked to.')
 });
 
 // Company Task Schema
 export const companyTaskSchema = baseTaskSchema.extend({
-  entityId: z.string().describe('The ID of the company to associate this task with')
+  entityId: z.string().describe('HubSpot Company ID that this task is linked to.')
 });
 
 // Full Task Search Schema for the tool
 export const taskSearchSchema = z.object({
-  keyword: z
-    .string()
-    .optional()
-    .describe('The keyword to search for in task titles or descriptions'),
-  ownerId: z.string().optional().describe('Filter tasks by owner ID'),
-  status: taskStatusSchema.optional().describe('Filter tasks by status'),
-  priority: taskPrioritySchema.optional().describe('Filter tasks by priority'),
+  keyword: z.string().optional().describe('Keyword to search for in task titles or descriptions.'),
+  ownerId: z.string().optional().describe("Filter tasks by the owner's ID."),
+  status: taskStatusSchema.optional().describe('Filter by task status.'),
+  priority: taskPrioritySchema.optional().describe('Filter by task priority.'),
   dueDateFrom: z
     .string()
     .optional()
-    .describe('Filter tasks with due date after this date (YYYY-MM-DD)'),
+    .describe('Include tasks due on or after this date (YYYY-MM-DD).'),
   dueDateTo: z
     .string()
     .optional()
-    .describe('Filter tasks with due date before this date (YYYY-MM-DD)')
+    .describe('Include tasks due on or before this date (YYYY-MM-DD).')
 });
 
 // Task Update Schema
 export const taskUpdateSchema = z.object({
-  taskId: z.string().describe('The ID of the task to update'),
-  title: z.string().optional().describe('The updated title of the task'),
-  body: z.string().optional().describe('The updated description of the task'),
-  status: taskStatusSchema.optional().describe('The updated status of the task'),
-  priority: taskPrioritySchema.optional().describe('The updated priority of the task'),
-  taskType: taskTypeSchema.optional().describe('The updated type of the task'),
-  dueDate: z.string().optional().describe('The updated due date of the task (YYYY-MM-DD)'),
-  ownerId: z.string().optional().describe('The updated owner ID of the task')
+  taskId: z.string().describe('ID of the task to be updated.'),
+  title: z.string().optional().describe('New title for the task.'),
+  body: z.string().optional().describe('New description for the task.'),
+  status: taskStatusSchema.optional().describe('Updated status of the task.'),
+  priority: taskPrioritySchema.optional().describe('Updated priority level of the task.'),
+  taskType: taskTypeSchema.optional().describe('Updated type/category of the task.'),
+  dueDate: z.string().optional().describe('New due date in YYYY-MM-DD format.'),
+  ownerId: z.string().optional().describe('New owner ID to assign the task to.')
 });
