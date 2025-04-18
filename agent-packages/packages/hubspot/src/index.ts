@@ -566,7 +566,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           filters: [
             {
               propertyName: 'hubspot_owner_id',
-              operator: FilterOperatorEnum.ContainsToken,
+              operator: FilterOperatorEnum.Eq,
               value: params.ownerId
             }
           ]
@@ -579,7 +579,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           filters: [
             {
               propertyName: 'hs_task_status',
-              operator: FilterOperatorEnum.ContainsToken,
+              operator: FilterOperatorEnum.Eq,
               value: params.status
             }
           ]
@@ -592,7 +592,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           filters: [
             {
               propertyName: 'hs_task_priority',
-              operator: FilterOperatorEnum.ContainsToken,
+              operator: FilterOperatorEnum.Eq,
               value: params.priority
             }
           ]
