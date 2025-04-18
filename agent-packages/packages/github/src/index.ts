@@ -170,7 +170,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
       });
       if (!canBeAssigned) {
         throw new Error(
-          `User '${assignee}' cannot be assigned to this issue. Please provide a valid GitHub username.`
+          `User '${assignee}' cannot be assigned to this issue. Please provide a valid GitHub username of the user who can be assigned to an issue or pull request in this repository.`
         );
       }
 
@@ -209,7 +209,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
       });
       if (!canBeAssigned) {
         throw new Error(
-          `User '${assignee}' cannot be removed from this issue. Please provide a valid GitHub username.`
+          `User '${assignee}' cannot be removed from this issue. Please provide a valid GitHub username of the user who can be assigned to an issue or pull request in this repository.`
         );
       }
       const response = await this.client.issues.removeAssignees({
