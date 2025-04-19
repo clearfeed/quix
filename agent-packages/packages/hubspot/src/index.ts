@@ -477,6 +477,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       const response = await this.client.crm.objects.tasks.basicApi.create(taskInput);
 
+      // Get the HubSpot domain from config or use the default domain
+      const hubDomain = this.config.hub_domain || 'app.hubspot.com';
+
       return {
         success: true,
         data: {
@@ -488,7 +491,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
             hs_task_type: response.properties.hs_task_type || '',
             hs_timestamp: response.properties.hs_timestamp || '',
             hs_task_body: response.properties.hs_task_body || ''
-          }
+          },
+          taskUrl: `https://${hubDomain}/tasks/${response.id}`
         }
       };
     } catch (error) {
@@ -533,6 +537,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
         updateInput
       );
 
+      // Get the HubSpot domain from config or use the default domain
+      const hubDomain = this.config.hub_domain || 'app.hubspot.com';
+
       return {
         success: true,
         data: {
@@ -544,7 +551,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
             hs_task_type: response.properties.hs_task_type || '',
             hs_timestamp: response.properties.hs_timestamp || '',
             hs_task_body: response.properties.hs_task_body || ''
-          }
+          },
+          taskUrl: `https://${hubDomain}/tasks/${response.id}`
         }
       };
     } catch (error) {
@@ -657,6 +665,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
         limit: 10
       });
 
+      // Get the HubSpot domain from config or use the default domain
+      const hubDomain = this.config.hub_domain || 'app.hubspot.com';
+
       const tasks = response.results.map((task) => {
         return {
           id: task.id,
@@ -668,7 +679,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
           dueDate: task.properties.hs_timestamp || '',
           ownerId: task.properties.hubspot_owner_id || undefined,
           createdAt: task.properties.createdate || '',
-          lastModifiedDate: task.properties.hs_lastmodifieddate || ''
+          lastModifiedDate: task.properties.hs_lastmodifieddate || '',
+          url: `https://${hubDomain}/tasks/${task.id}`
         };
       });
 

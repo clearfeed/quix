@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 export interface HubspotConfig extends BaseConfig {
   accessToken: string;
+  hub_domain?: string;
 }
 
 export interface Deal {
@@ -124,6 +125,7 @@ export type CreateTaskResponse = BaseResponse<{
     hs_timestamp: string;
     hs_task_body: string;
   };
+  taskUrl: string;
 }>;
 
 export type UpdateTaskResponse = BaseResponse<{
@@ -136,12 +138,14 @@ export type UpdateTaskResponse = BaseResponse<{
     hs_timestamp: string;
     hs_task_body: string;
   };
+  taskUrl: string;
 }>;
 
 export interface HubspotTask extends Task {
   id: string;
   createdAt: string;
   lastModifiedDate: string;
+  url: string;
 }
 
 export type SearchTasksResponse = BaseResponse<{
