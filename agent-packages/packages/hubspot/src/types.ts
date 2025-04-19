@@ -1,4 +1,6 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
+import { baseTaskSchema, taskSearchSchema, taskUpdateSchema } from './schema';
+import { z } from 'zod';
 
 export interface HubspotConfig extends BaseConfig {
   accessToken: string;
@@ -15,6 +17,18 @@ export interface Deal {
   company: string;
   createdAt: string;
   lastModifiedDate: string;
+}
+
+export interface HubspotDeal {
+  id: string;
+  properties: Record<string, string | null>;
+  associations?: {
+    companies?: {
+      results: Array<{
+        id: string;
+      }>;
+    };
+  };
 }
 
 export interface Contact {
@@ -70,6 +84,68 @@ export type CreateContactResponse = BaseResponse<{
 
 export type SearchDealsResponse = BaseResponse<{
   deals: Deal[];
+}>;
+
+// Task related enums
+export enum TaskStatusEnum {
+  NOT_STARTED = 'NOT_STARTED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  WAITING = 'WAITING',
+  COMPLETED = 'COMPLETED'
+}
+
+export enum TaskPriorityEnum {
+  HIGH = 'HIGH',
+  MEDIUM = 'MEDIUM',
+  LOW = 'LOW'
+}
+
+export enum TaskTypeEnum {
+  CALL = 'CALL',
+  EMAIL = 'EMAIL',
+  TODO = 'TODO'
+}
+
+export type Task = z.infer<typeof baseTaskSchema>;
+export type TaskSearchParams = z.infer<typeof taskSearchSchema>;
+export type UpdateTaskParams = z.infer<typeof taskUpdateSchema>;
+export type CreateTaskParams = z.infer<typeof baseTaskSchema> & {
+  associatedObjectType: HubspotEntityType;
+  associatedObjectId: string;
+};
+
+export type CreateTaskResponse = BaseResponse<{
+  taskId: string;
+  taskDetails: {
+    hs_task_subject: string;
+    hs_task_status: string;
+    hs_task_priority: string;
+    hs_task_type: string;
+    hs_timestamp: string;
+    hs_task_body: string;
+  };
+}>;
+
+export type UpdateTaskResponse = BaseResponse<{
+  taskId: string;
+  taskDetails: {
+    hs_task_subject: string;
+    hs_task_status: string;
+    hs_task_priority: string;
+    hs_task_type: string;
+    hs_timestamp: string;
+    hs_task_body: string;
+  };
+}>;
+
+export interface HubspotTask extends Task {
+  id: string;
+  createdAt: string;
+  lastModifiedDate: string;
+}
+
+export type SearchTasksResponse = BaseResponse<{
+  tasks: HubspotTask[];
 }>;
 
 export enum HubspotEntityType {

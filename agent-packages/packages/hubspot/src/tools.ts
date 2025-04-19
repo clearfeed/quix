@@ -1,22 +1,38 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { HubspotService } from './index';
-import { CreateContactParams, HubspotConfig, CreateDealParams, HubspotEntityType } from './types';
+import {
+  CreateContactParams,
+  HubspotConfig,
+  CreateDealParams,
+  HubspotEntityType,
+  UpdateTaskParams,
+  TaskSearchParams
+} from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
+import {
+  dealTaskSchema,
+  contactTaskSchema,
+  companyTaskSchema,
+  taskUpdateSchema,
+  taskSearchSchema
+} from './schema';
 
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
 HubSpot is a CRM platform that manages:
 - Contacts: People and leads with properties like name, email, phone, title, etc.
 - Companies: Organizations with properties like name, domain, industry, size, etc.
 - Deals: Sales opportunities with stages, amounts, close dates, etc.
+- Tasks: To-do items and reminders with title, status, priority, due dates, etc.
 - Tickets: Support cases with priority, status, category, etc.
 - Marketing: Campaigns, emails, forms, landing pages, etc.
 
 Consider using HubSpot tools when the user wants to:
-- Find specific contacts, companies or deals by name/ID/properties
+- Find specific contacts, companies, deals, or tasks by name/ID/properties
 - Look up contact details like email, phone, job title
 - Check company information like industry, size, revenue
 - View deal status, amount, pipeline stage, close date
+- Create, update, or search tasks and reminders
 - Access ticket details, support history, resolutions
 - Get marketing campaign performance and engagement metrics
 - View and manage deals
@@ -140,6 +156,74 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       schema: z.object({
         keyword: z.string().describe('The keyword to search for in company names')
       })
+    }),
+    tool(
+      async (args: z.infer<typeof dealTaskSchema>) =>
+        service.createTask({
+          title: args.title,
+          body: args.body,
+          status: args.status,
+          priority: args.priority,
+          dueDate: args.dueDate,
+          ownerId: args.ownerId,
+          taskType: args.taskType,
+          associatedObjectType: HubspotEntityType.DEAL,
+          associatedObjectId: args.entityId
+        }),
+      {
+        name: 'create_task_for_hubspot_deal',
+        description: 'Create a new task and associate it with a HubSpot deal.',
+        schema: dealTaskSchema
+      }
+    ),
+    tool(
+      async (args: z.infer<typeof contactTaskSchema>) =>
+        service.createTask({
+          title: args.title,
+          body: args.body,
+          status: args.status,
+          priority: args.priority,
+          dueDate: args.dueDate,
+          ownerId: args.ownerId,
+          taskType: args.taskType,
+          associatedObjectType: HubspotEntityType.CONTACT,
+          associatedObjectId: args.entityId
+        }),
+      {
+        name: 'create_task_for_hubspot_contact',
+        description: 'Create a new task and associate it with a HubSpot contact.',
+        schema: contactTaskSchema
+      }
+    ),
+    tool(
+      async (args: z.infer<typeof companyTaskSchema>) =>
+        service.createTask({
+          title: args.title,
+          body: args.body,
+          status: args.status,
+          priority: args.priority,
+          dueDate: args.dueDate,
+          ownerId: args.ownerId,
+          taskType: args.taskType,
+          associatedObjectType: HubspotEntityType.COMPANY,
+          associatedObjectId: args.entityId
+        }),
+      {
+        name: 'create_task_for_hubspot_company',
+        description: 'Create a new task and associate it with a HubSpot company.',
+        schema: companyTaskSchema
+      }
+    ),
+    tool(async (args: UpdateTaskParams) => service.updateTask(args), {
+      name: 'update_hubspot_task',
+      description: 'Update the details of an existing task in HubSpot.',
+      schema: taskUpdateSchema
+    }),
+    tool(async (args: TaskSearchParams) => service.searchTasks(args), {
+      name: 'search_hubspot_tasks',
+      description:
+        'Search for tasks in HubSpot using filters such as keyword, owner, status, priority, due date.',
+      schema: taskSearchSchema
     })
   ];
 

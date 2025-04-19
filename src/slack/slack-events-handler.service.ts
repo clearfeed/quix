@@ -188,6 +188,16 @@ export class SlackEventsHandlerService {
         return;
       }
 
+      try {
+        await webClient.reactions.add({
+          channel: event.channel,
+          timestamp: event.ts,
+          name: 'eyes'
+        });
+      } catch (error) {
+        this.logger.error('Failed to add reaction:', error);
+      }
+
       const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
       const messages = await createLLMContext(event, userInfoMap, slackWorkspace, event.ts);
       if (!event.team) return;
