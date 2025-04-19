@@ -83,12 +83,12 @@ export interface JiraResponse<T> {
 }
 
 export interface CreateIssueParams {
-  projectKey?: string;
+  projectKey: string;
   summary: string;
-  description?: string;
   issueType: string;
   priority?: string;
-  assignee?: string;
+  assigneeId?: string;
+  labels?: string[];
 }
 
 export type SearchIssuesResponse = {
@@ -109,7 +109,14 @@ export type GetIssueResponse = BaseResponse<{
   issue: JiraIssueResponse & { url: string };
 }>;
 
-export type AssignIssueResponse = BaseResponse<void>;
+export type AssignIssueResponse = BaseResponse<{
+  issueId: string;
+  assignee: {
+    accountId: string;
+    displayName?: string;
+  };
+  url: string;
+}>;
 
 export type JiraClientConfig = {
   host: string;
@@ -189,14 +196,56 @@ export type GetCommentsResponse = BaseResponse<{
 
 export interface UpdateIssueFields {
   summary?: string;
-  description?: string;
   priority?: string;
   assigneeId?: string;
   labels?: string[];
+  issueType?: string;
 }
 
-export type UpdateIssueResponse = BaseResponse<void>;
+export type UpdateIssueResponse = BaseResponse<{
+  issueId: string;
+  url: string;
+  fields: UpdateIssueFields;
+}>;
 
 export type SearchUsersResponse = BaseResponse<{
   users: JiraUserResponse[];
+}>;
+
+export interface JiraPriorityResponse {
+  self: string;
+  iconUrl: string;
+  name: string;
+  id: string;
+  description?: string;
+  statusColor: string;
+}
+
+export type GetPrioritiesResponse = BaseResponse<{
+  priorities: JiraPriorityResponse[];
+}>;
+
+export interface JiraIssueTypeResponse {
+  self: string;
+  id: string;
+  name: string;
+  description: string;
+  iconUrl: string;
+  subtask: boolean;
+}
+
+export type GetIssueTypesResponse = BaseResponse<{
+  issueTypes: JiraIssueTypeResponse[];
+}>;
+
+export interface JiraLabels {
+  isLast: boolean;
+  maxResults: number;
+  startAt: number;
+  total: number;
+  values: string[];
+}
+
+export type GetLabelsResponse = BaseResponse<{
+  labels: JiraLabels['values'];
 }>;

@@ -11,7 +11,11 @@ import {
   GetCommentsResponse,
   UpdateIssueFields,
   UpdateIssueResponse,
-  SearchUsersResponse
+  SearchUsersResponse,
+  GetPrioritiesResponse,
+  GetIssueTypesResponse,
+  GetLabelsResponse,
+  JiraLabels
 } from './types';
 import JiraClient from './JiraClient';
 import { AxiosError } from 'axios';
@@ -105,12 +109,7 @@ export class JiraService implements BaseService<JiraConfig> {
 
   async createIssue(params: CreateIssueParams): Promise<GetIssueResponse> {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return { success: false, error: validation.error };
-      }
-
-      const projectKey = params.projectKey || this.config.defaultConfig?.projectKey;
+      const projectKey = params.projectKey;
       if (!projectKey) {
         return {
           success: false,
@@ -118,14 +117,20 @@ export class JiraService implements BaseService<JiraConfig> {
         };
       }
 
-      const issueData = {
+      const issueData: CreateIssueParams = {
         summary: params.summary,
-        description: params.description,
         projectKey,
-        issueType: params.issueType,
-        priority: params.priority,
-        assignee: params.assignee
+        issueType: params.issueType
       };
+      if (params.assigneeId) {
+        issueData.assigneeId = params.assigneeId;
+      }
+      if (params.priority) {
+        issueData.priority = params.priority;
+      }
+      if (params.labels) {
+        issueData.labels = params.labels;
+      }
 
       const issue = await this.client.createIssue(issueData);
       return {
@@ -165,15 +170,23 @@ export class JiraService implements BaseService<JiraConfig> {
 
   async assignIssue(issueId: string, accountId: string): Promise<AssignIssueResponse> {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return { success: false, error: validation.error };
-      }
-
       await this.client.assignIssue(issueId, accountId);
 
+      // Get user details for the response
+      const users = await this.client.searchUsers(accountId);
+      const assignedUser = users.find((user) => user.accountId === accountId);
+      const displayName = assignedUser ? assignedUser.displayName : undefined;
+
       return {
-        success: true
+        success: true,
+        data: {
+          issueId,
+          assignee: {
+            accountId,
+            displayName
+          },
+          url: this.getIssueUrl({ key: issueId })
+        }
       };
     } catch (error) {
       console.error('Error assigning Jira issue:', error);
@@ -247,21 +260,75 @@ export class JiraService implements BaseService<JiraConfig> {
     fields: UpdateIssueFields;
   }): Promise<UpdateIssueResponse> {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return { success: false, error: validation.error };
-      }
-
       await this.client.updateIssue(params.issueId, params.fields);
 
       return {
-        success: true
+        success: true,
+        data: {
+          issueId: params.issueId,
+          url: this.getIssueUrl({ key: params.issueId }),
+          fields: params.fields
+        }
       };
     } catch (error) {
       console.error('Error updating Jira issue:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to update Jira issue'
+      };
+    }
+  }
+
+  async getPriorities(): Promise<GetPrioritiesResponse> {
+    try {
+      const priorities = await this.client.getPriorities();
+      return {
+        success: true,
+        data: {
+          priorities
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching Jira priorities:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch Jira priorities'
+      };
+    }
+  }
+
+  async getIssueTypes(): Promise<GetIssueTypesResponse> {
+    try {
+      const issueTypes = await this.client.getIssueTypes();
+      return {
+        success: true,
+        data: {
+          issueTypes
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching Jira issue types:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch Jira issue types'
+      };
+    }
+  }
+
+  async getLabels(): Promise<GetLabelsResponse> {
+    try {
+      const labels: JiraLabels = await this.client.getLabels();
+      return {
+        success: true,
+        data: {
+          labels: labels.values
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching Jira labels:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch Jira labels'
       };
     }
   }
