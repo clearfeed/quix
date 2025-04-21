@@ -9,9 +9,9 @@ import {
   JiraIssueComments,
   UpdateIssueFields,
   UpdateIssueResponse,
-  JiraPriorityResponse,
   JiraIssueTypeResponse,
-  JiraLabels
+  JiraCreateIssueMetadata,
+  JiraUpdateIssueMetadata
 } from './types';
 import axios, { AxiosInstance } from 'axios';
 import * as jwt from 'atlassian-jwt';
@@ -121,7 +121,8 @@ export class JiraClient {
   }
 
   async createIssue(params: CreateIssueParams): Promise<JiraIssueResponse> {
-    const { projectKey, summary, issueType, priority, assigneeId, labels } = params;
+    const { projectKey, summary, issueTypeId, priority, assigneeId, description, environment } =
+      params;
     if (!projectKey) {
       throw new Error('Project key is required');
     }
@@ -136,10 +137,27 @@ export class JiraClient {
         fields: {
           project: { id: project.id },
           summary,
-          issuetype: { name: issueType },
+          issuetype: { id: issueTypeId },
           ...(assigneeId ? { assignee: { accountId: assigneeId } } : {}),
           ...(priority ? { priority: { name: priority } } : {}),
-          ...(labels ? { labels } : {})
+          ...(description
+            ? {
+                description: {
+                  type: 'doc',
+                  version: 1,
+                  content: [{ type: 'paragraph', content: [{ type: 'text', text: description }] }]
+                }
+              }
+            : {}),
+          ...(environment
+            ? {
+                environment: {
+                  type: 'doc',
+                  version: 1,
+                  content: [{ type: 'paragraph', content: [{ type: 'text', text: environment }] }]
+                }
+              }
+            : {})
         }
       }
     });
@@ -200,7 +218,7 @@ export class JiraClient {
   }
 
   async updateIssue(issueId: string, fields: UpdateIssueFields): Promise<UpdateIssueResponse> {
-    const { assigneeId, summary, priority, labels, issueType } = fields;
+    const { assigneeId, summary, priority, issueType, description, environment } = fields;
     const response = await this.makeApiCall('PUT', `/issue/${issueId}`, {
       data: {
         fields: {
@@ -213,26 +231,49 @@ export class JiraClient {
                 }
               }
             : {}),
-          ...(labels ? { labels } : {}),
-          ...(issueType ? { issuetype: { name: issueType } } : {})
+          ...(issueType ? { issuetype: { name: issueType } } : {}),
+          ...(description
+            ? {
+                description: {
+                  type: 'doc',
+                  version: 1,
+                  content: [{ type: 'paragraph', content: [{ type: 'text', text: description }] }]
+                }
+              }
+            : {}),
+          ...(environment
+            ? {
+                environment: {
+                  type: 'doc',
+                  version: 1,
+                  content: [{ type: 'paragraph', content: [{ type: 'text', text: environment }] }]
+                }
+              }
+            : {})
         }
       }
     });
     return response;
   }
 
-  async getPriorities(): Promise<JiraPriorityResponse[]> {
-    const response = await this.makeApiCall('GET', '/priority');
+  async getIssueTypes(projectKey: string): Promise<JiraIssueTypeResponse[]> {
+    const response = await this.makeApiCall('GET', `issue/createmeta/${projectKey}/issuetypes`);
     return response;
   }
 
-  async getIssueTypes(): Promise<JiraIssueTypeResponse[]> {
-    const response = await this.makeApiCall('GET', '/issuetype');
+  async getCreateIssueMetadata(
+    projectKey: string,
+    issueTypeId: string
+  ): Promise<JiraCreateIssueMetadata> {
+    const response = await this.makeApiCall(
+      'GET',
+      `issue/createmeta/${projectKey}/issuetypes/${issueTypeId}`
+    );
     return response;
   }
 
-  async getLabels(): Promise<JiraLabels> {
-    const response = await this.makeApiCall('GET', '/label');
+  async getUpdateIssueMetadata(issueId: string): Promise<JiraUpdateIssueMetadata> {
+    const response = await this.makeApiCall('GET', `/issue/${issueId}/editmeta`);
     return response;
   }
 }

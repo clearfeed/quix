@@ -85,10 +85,11 @@ export interface JiraResponse<T> {
 export interface CreateIssueParams {
   projectKey: string;
   summary: string;
-  issueType: string;
+  issueTypeId: string;
   priority?: string;
   assigneeId?: string;
-  labels?: string[];
+  description?: string;
+  environment?: string;
 }
 
 export type SearchIssuesResponse = {
@@ -198,8 +199,9 @@ export interface UpdateIssueFields {
   summary?: string;
   priority?: string;
   assigneeId?: string;
-  labels?: string[];
   issueType?: string;
+  description?: string;
+  environment?: string;
 }
 
 export type UpdateIssueResponse = BaseResponse<{
@@ -210,19 +212,6 @@ export type UpdateIssueResponse = BaseResponse<{
 
 export type SearchUsersResponse = BaseResponse<{
   users: JiraUserResponse[];
-}>;
-
-export interface JiraPriorityResponse {
-  self: string;
-  iconUrl: string;
-  name: string;
-  id: string;
-  description?: string;
-  statusColor: string;
-}
-
-export type GetPrioritiesResponse = BaseResponse<{
-  priorities: JiraPriorityResponse[];
 }>;
 
 export interface JiraIssueTypeResponse {
@@ -238,14 +227,50 @@ export type GetIssueTypesResponse = BaseResponse<{
   issueTypes: JiraIssueTypeResponse[];
 }>;
 
-export interface JiraLabels {
-  isLast: boolean;
+export type JiraCreateIssueMetadataField = {
+  fieldId: string;
+  hasDefaultValue: boolean;
+  key: string;
+  name: string;
+  operations: string[];
+  required: boolean;
+  allowedValues: {
+    id: string;
+    name: string;
+  }[];
+};
+
+export type JiraCreateIssueMetadata = {
+  fields: JiraCreateIssueMetadataField[];
   maxResults: number;
   startAt: number;
   total: number;
-  values: string[];
-}
+};
 
-export type GetLabelsResponse = BaseResponse<{
-  labels: JiraLabels['values'];
+export type GetCreateIssueMetadataResponse = BaseResponse<{
+  metadata: JiraCreateIssueMetadataField[];
+}>;
+
+export type JiraUpdateIssueMetadataField = {
+  fieldId: string;
+  hasDefaultValue: boolean;
+  key: string;
+  name: string;
+  operations: string[];
+  allowedValues: {
+    id: string;
+    name: string;
+  }[];
+  required: boolean;
+};
+
+export type JiraUpdateIssueMetadata = {
+  fields: Record<string, JiraUpdateIssueMetadataField>;
+  maxResults: number;
+  startAt: number;
+  total: number;
+};
+
+export type GetUpdateIssueMetadataResponse = BaseResponse<{
+  metadata: Record<string, JiraUpdateIssueMetadataField>;
 }>;
