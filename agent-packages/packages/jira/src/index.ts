@@ -17,7 +17,6 @@ import {
   GetUpdateIssueMetadataResponse
 } from './types';
 import JiraClient from './JiraClient';
-import { AxiosError } from 'axios';
 
 export * from './types';
 export * from './tools';
