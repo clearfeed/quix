@@ -12,9 +12,7 @@ import {
   UpdateIssueResponse,
   UpdateIssueFields,
   SearchUsersResponse,
-  GetIssueTypesResponse,
-  GetCreateIssueMetadataResponse,
-  GetUpdateIssueMetadataResponse
+  GetIssueTypesResponse
 } from './types';
 import { BaseResponse, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
@@ -175,44 +173,6 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
       }),
       func: async ({ query }: { query: string }): Promise<SearchUsersResponse> =>
         service.searchUsers(query)
-    }),
-    new DynamicStructuredTool({
-      name: 'get_jira_create_issue_metadata',
-      description:
-        'Retrieve all fields available for creating an issue in a Jira project for a particular issue type.',
-      schema: z.object({
-        projectKey: config.defaultConfig?.projectKey
-          ? z
-              .string()
-              .describe('The key of the project for which to retrieve field metadata')
-              .optional()
-              .default(config.defaultConfig.projectKey)
-          : z
-              .string()
-              .describe('The key of the project for which to retrieve field metadata (required)'),
-        issueTypeId: z
-          .string()
-          .describe(
-            'The ID of the issue type. Use the "get_jira_issue_types" tool to find the correct ID based on the user\'s request and issue type details.'
-          )
-      }),
-      func: async ({
-        projectKey,
-        issueTypeId
-      }: {
-        projectKey: string;
-        issueTypeId: string;
-      }): Promise<GetCreateIssueMetadataResponse> =>
-        service.getCreateIssueMetadata(projectKey, issueTypeId)
-    }),
-    new DynamicStructuredTool({
-      name: 'get_jira_update_issue_metadata',
-      description: 'Retrieve all editable fields for updating a Jira issue.',
-      schema: z.object({
-        issueId: z.string().describe('The key or ID of the Jira issue (e.g., PROJ-123)')
-      }),
-      func: async ({ issueId }: { issueId: string }): Promise<GetUpdateIssueMetadataResponse> =>
-        service.getUpdateIssueMetadata(issueId)
     })
   ];
 

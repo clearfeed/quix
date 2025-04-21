@@ -12,9 +12,7 @@ import {
   UpdateIssueFields,
   UpdateIssueResponse,
   SearchUsersResponse,
-  GetIssueTypesResponse,
-  GetCreateIssueMetadataResponse,
-  GetUpdateIssueMetadataResponse
+  GetIssueTypesResponse
 } from './types';
 import JiraClient from './JiraClient';
 
@@ -323,45 +321,6 @@ export class JiraService implements BaseService<JiraConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch Jira issue types'
-      };
-    }
-  }
-
-  async getCreateIssueMetadata(
-    projectKey: string,
-    issueTypeId: string
-  ): Promise<GetCreateIssueMetadataResponse> {
-    try {
-      const metadata = await this.client.getCreateIssueMetadata(projectKey, issueTypeId);
-      return {
-        success: true,
-        data: {
-          metadata: metadata.fields
-        }
-      };
-    } catch (error) {
-      console.error('Error fetching Jira create issue metadata:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch Jira create issue metadata'
-      };
-    }
-  }
-
-  async getUpdateIssueMetadata(issueId: string): Promise<GetUpdateIssueMetadataResponse> {
-    try {
-      const metadata = await this.client.getUpdateIssueMetadata(issueId);
-      return {
-        success: true,
-        data: {
-          metadata: metadata.fields
-        }
-      };
-    } catch (error) {
-      console.error('Error fetching Jira update issue metadata:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch Jira update issue metadata'
       };
     }
   }

@@ -245,10 +245,6 @@ export type JiraCreateIssueMetadata = {
   total: number;
 };
 
-export type GetCreateIssueMetadataResponse = BaseResponse<{
-  metadata: JiraCreateIssueMetadataField[];
-}>;
-
 export type JiraUpdateIssueMetadataField = {
   fieldId: string;
   hasDefaultValue: boolean;
@@ -268,7 +264,3 @@ export type JiraUpdateIssueMetadata = {
   startAt: number;
   total: number;
 };
-
-export type GetUpdateIssueMetadataResponse = BaseResponse<{
-  metadata: Record<string, JiraUpdateIssueMetadataField>;
-}>;
