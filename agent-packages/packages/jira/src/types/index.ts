@@ -85,10 +85,10 @@ export interface JiraResponse<T> {
 export interface CreateIssueParams {
   projectKey: string;
   summary: string;
+  description?: string;
   issueTypeId: string;
   priority?: string;
   assigneeId?: string;
-  description?: string;
 }
 
 export type SearchIssuesResponse = {
@@ -196,10 +196,10 @@ export type GetCommentsResponse = BaseResponse<{
 
 export interface UpdateIssueFields {
   summary?: string;
+  description?: string;
   priority?: string;
   assigneeId?: string;
-  issueTypeId?: string;
-  description?: string;
+  labels?: string[];
 }
 
 export type UpdateIssueResponse = BaseResponse<{

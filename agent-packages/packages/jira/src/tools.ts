@@ -150,11 +150,9 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
           summary: z.string().describe('The updated summary or title of the issue').optional(),
           description: z.string().describe('The updated description of the issue').optional(),
           priority: z.string().describe('The updated priority of the issue').optional(),
-          issueTypeId: z
-            .string()
-            .describe(
-              'The updated issue type ID. Use the "get_jira_issue_types" tool to find the correct ID based on the user\'s request and issue type details.'
-            )
+          labels: z
+            .array(z.string())
+            .describe('The updated list of labels for the issue')
             .optional(),
           assigneeId: z
             .string()

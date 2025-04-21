@@ -287,7 +287,9 @@ export class JiraService implements BaseService<JiraConfig> {
       if (fieldParams.summary && updateIssueMetadata.fields.summary) {
         fields.summary = fieldParams.summary;
       }
-
+      if (fieldParams.labels && updateIssueMetadata.fields.labels) {
+        fields.labels = fieldParams.labels;
+      }
       await this.client.updateIssue(params.issueId, fields);
 
       return {

@@ -205,7 +205,7 @@ export class JiraClient {
   }
 
   async updateIssue(issueId: string, fields: UpdateIssueFields): Promise<UpdateIssueResponse> {
-    const { assigneeId, summary, priority, issueTypeId, description } = fields;
+    const { assigneeId, summary, priority, labels, description } = fields;
     const response = await this.makeApiCall('PUT', `/issue/${issueId}`, {
       data: {
         fields: {
@@ -218,7 +218,7 @@ export class JiraClient {
                 }
               }
             : {}),
-          ...(issueTypeId ? { issuetype: { id: issueTypeId } } : {}),
+          ...(labels ? { labels } : {}),
           ...(description
             ? {
                 description: {
