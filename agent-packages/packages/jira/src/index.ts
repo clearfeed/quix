@@ -11,10 +11,10 @@ import {
   GetCommentsResponse,
   UpdateIssueFields,
   UpdateIssueResponse,
-  SearchUsersResponse
+  SearchUsersResponse,
+  GetIssueTypesResponse
 } from './types';
 import JiraClient from './JiraClient';
-import { AxiosError } from 'axios';
 
 export * from './types';
 export * from './tools';
@@ -105,27 +105,38 @@ export class JiraService implements BaseService<JiraConfig> {
 
   async createIssue(params: CreateIssueParams): Promise<GetIssueResponse> {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return { success: false, error: validation.error };
-      }
+      const projectKey = params.projectKey;
+      const issueTypeId = params.issueTypeId;
+      const summary = params.summary;
 
-      const projectKey = params.projectKey || this.config.defaultConfig?.projectKey;
-      if (!projectKey) {
-        return {
-          success: false,
-          error: 'Project key must be provided when no default project is configured'
-        };
-      }
+      const createIssueMetadata = await this.client.getCreateIssueMetadata(projectKey, issueTypeId);
 
-      const issueData = {
-        summary: params.summary,
-        description: params.description,
+      const issueData: CreateIssueParams = {
+        summary,
         projectKey,
-        issueType: params.issueType,
-        priority: params.priority,
-        assignee: params.assignee
+        issueTypeId
       };
+      if (params.assigneeId) {
+        issueData.assigneeId = params.assigneeId;
+      }
+      if (params.priority) {
+        const priorityObject = createIssueMetadata.fields.find(
+          (field) => field.fieldId === 'priority'
+        );
+        if (priorityObject) {
+          issueData.priority = priorityObject.allowedValues.find(
+            (value) => value.name.toLowerCase() === params.priority?.toLowerCase()
+          )?.name;
+        }
+      }
+      if (params.description) {
+        const isDescriptionAllowed = createIssueMetadata.fields.some(
+          (field) => field.fieldId === 'description'
+        );
+        if (isDescriptionAllowed) {
+          issueData.description = params.description;
+        }
+      }
 
       const issue = await this.client.createIssue(issueData);
       return {
@@ -138,7 +149,7 @@ export class JiraService implements BaseService<JiraConfig> {
         }
       };
     } catch (error) {
-      console.error('Error creating Jira issue:', (error as AxiosError).response?.data);
+      console.error('Error creating Jira issue:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to create Jira issue'
@@ -165,15 +176,20 @@ export class JiraService implements BaseService<JiraConfig> {
 
   async assignIssue(issueId: string, accountId: string): Promise<AssignIssueResponse> {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return { success: false, error: validation.error };
-      }
-
       await this.client.assignIssue(issueId, accountId);
 
+      const user = await this.client.searchUser(accountId);
+
       return {
-        success: true
+        success: true,
+        data: {
+          issueId,
+          assignee: {
+            accountId,
+            user
+          },
+          url: this.getIssueUrl({ key: issueId })
+        }
       };
     } catch (error) {
       console.error('Error assigning Jira issue:', error);
@@ -247,21 +263,64 @@ export class JiraService implements BaseService<JiraConfig> {
     fields: UpdateIssueFields;
   }): Promise<UpdateIssueResponse> {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return { success: false, error: validation.error };
-      }
+      const updateIssueMetadata = await this.client.getUpdateIssueMetadata(params.issueId);
 
-      await this.client.updateIssue(params.issueId, params.fields);
+      const fields: UpdateIssueFields = {};
+      const fieldParams = params.fields;
+
+      if (fieldParams.assigneeId && updateIssueMetadata.fields.assignee) {
+        fields.assigneeId = fieldParams.assigneeId;
+      }
+      if (fieldParams.priority && updateIssueMetadata.fields.priority) {
+        const priorityObject = updateIssueMetadata.fields.priority;
+        if (priorityObject) {
+          fields.priority = priorityObject.allowedValues.find(
+            (value) => value.name.toLowerCase() === fieldParams.priority?.toLowerCase()
+          )?.name;
+        }
+      }
+      if (fieldParams.description && updateIssueMetadata.fields.description) {
+        fields.description = fieldParams.description;
+      }
+      if (fieldParams.summary && updateIssueMetadata.fields.summary) {
+        fields.summary = fieldParams.summary;
+      }
+      if (fieldParams.labels && updateIssueMetadata.fields.labels) {
+        fields.labels = fieldParams.labels;
+      }
+      await this.client.updateIssue(params.issueId, fields);
 
       return {
-        success: true
+        success: true,
+        data: {
+          issueId: params.issueId,
+          url: this.getIssueUrl({ key: params.issueId }),
+          fields: params.fields
+        }
       };
     } catch (error) {
       console.error('Error updating Jira issue:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to update Jira issue'
+      };
+    }
+  }
+
+  async getProjectIssueTypes(projectKey: string): Promise<GetIssueTypesResponse> {
+    try {
+      const issueTypes = await this.client.getIssueTypes(projectKey);
+      return {
+        success: true,
+        data: {
+          issueTypes
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching Jira issue types:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch Jira issue types'
       };
     }
   }
