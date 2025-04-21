@@ -5,6 +5,7 @@ import { z } from 'zod';
 export interface HubspotConfig extends BaseConfig {
   accessToken: string;
   hub_domain?: string;
+  hub_id?: string;
 }
 
 export interface Deal {

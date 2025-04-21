@@ -477,8 +477,31 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       const response = await this.client.crm.objects.tasks.basicApi.create(taskInput);
 
-      // Get the HubSpot domain from config or use the default domain
+      // Get the HubSpot domain and hub ID from config or use defaults
       const hubDomain = this.config.hub_domain || 'app.hubspot.com';
+      const hubId = this.config.hub_id;
+
+      // Generate the task URL based on the associated object type
+      let taskUrl = '';
+      if (hubId) {
+        switch (associatedObjectType) {
+          case HubspotEntityType.CONTACT:
+            taskUrl = `https://${hubDomain}/contacts/${hubId}/contact/${associatedObjectId}/?engagement=${response.id}`;
+            break;
+          case HubspotEntityType.DEAL:
+            taskUrl = `https://${hubDomain}/contacts/${hubId}/deal/${associatedObjectId}/?engagement=${response.id}`;
+            break;
+          case HubspotEntityType.COMPANY:
+            taskUrl = `https://${hubDomain}/contacts/${hubId}/company/${associatedObjectId}/?engagement=${response.id}`;
+            break;
+          default:
+            // Fallback to a generic URL if the object type is unknown
+            taskUrl = `https://${hubDomain}/contacts/${hubId}/`;
+        }
+      } else {
+        // If hub ID is not available, use a generic URL
+        taskUrl = `https://${hubDomain}`;
+      }
 
       return {
         success: true,
@@ -492,7 +515,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
             hs_timestamp: response.properties.hs_timestamp || '',
             hs_task_body: response.properties.hs_task_body || ''
           },
-          taskUrl: `https://${hubDomain}/tasks/${response.id}`
+          taskUrl
         }
       };
     } catch (error) {
@@ -537,8 +560,21 @@ export class HubspotService implements BaseService<HubspotConfig> {
         updateInput
       );
 
-      // Get the HubSpot domain from config or use the default domain
+      // Get the HubSpot domain and hub ID from config or use defaults
       const hubDomain = this.config.hub_domain || 'app.hubspot.com';
+      const hubId = this.config.hub_id;
+
+      // Since we don't have direct access to the associated object in the update function,
+      // we'll use a more generic URL format that will still work in HubSpot
+      let taskUrl = '';
+
+      if (hubId) {
+        // Use the engagement URL format which will redirect to the correct page in HubSpot
+        taskUrl = `https://${hubDomain}/contacts/${hubId}/?engagement=${response.id}`;
+      } else {
+        // If hub ID is not available, use a generic URL
+        taskUrl = `https://${hubDomain}`;
+      }
 
       return {
         success: true,
@@ -552,7 +588,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
             hs_timestamp: response.properties.hs_timestamp || '',
             hs_task_body: response.properties.hs_task_body || ''
           },
-          taskUrl: `https://${hubDomain}/tasks/${response.id}`
+          taskUrl
         }
       };
     } catch (error) {
@@ -665,10 +701,21 @@ export class HubspotService implements BaseService<HubspotConfig> {
         limit: 10
       });
 
-      // Get the HubSpot domain from config or use the default domain
+      // Get the HubSpot domain and hub ID from config or use defaults
       const hubDomain = this.config.hub_domain || 'app.hubspot.com';
+      const hubId = this.config.hub_id;
 
       const tasks = response.results.map((task) => {
+        // Generate a URL that will work in HubSpot
+        let url = '';
+        if (hubId) {
+          // Use the engagement URL format which will redirect to the correct page in HubSpot
+          url = `https://${hubDomain}/contacts/${hubId}/?engagement=${task.id}`;
+        } else {
+          // If hub ID is not available, use a generic URL
+          url = `https://${hubDomain}`;
+        }
+
         return {
           id: task.id,
           title: task.properties.hs_task_subject || '',
@@ -680,7 +727,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           ownerId: task.properties.hubspot_owner_id || undefined,
           createdAt: task.properties.createdate || '',
           lastModifiedDate: task.properties.hs_lastmodifieddate || '',
-          url: `https://${hubDomain}/tasks/${task.id}`
+          url
         };
       });
 
