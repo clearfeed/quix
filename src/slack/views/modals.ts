@@ -133,7 +133,7 @@ export const publishPostgresConnectionModal = async (
       trigger_id: args.triggerId,
       view: {
         ...Surfaces.Modal({
-          title: 'PostgreSQL Connection',
+          title: 'PostgreSQL Configuration',
           submit: 'Submit',
           close: 'Cancel',
           callbackId: SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.SUBMIT
@@ -234,7 +234,7 @@ export const publishJiraConfigModal = async (
     trigger_id: triggerId,
     view: {
       ...Surfaces.Modal({
-        title: 'Jira Config',
+        title: 'Jira Configuration',
         submit: 'Submit',
         close: 'Cancel',
         callbackId: SLACK_ACTIONS.JIRA_CONFIG_MODAL.SUBMIT
@@ -285,7 +285,7 @@ export const publishGithubConfigModal = async (
     trigger_id: triggerId,
     view: {
       ...Surfaces.Modal({
-        title: 'GitHub Config',
+        title: 'GitHub Configuration',
         submit: 'Submit',
         close: 'Cancel',
         callbackId: SLACK_ACTIONS.GITHUB_CONFIG_MODAL.SUBMIT
@@ -360,7 +360,7 @@ export const publishAccessControlModal = async (
       blocks: BlockCollection([
         // Channel selection
         Section({
-          text: 'Select channels where Quix is allowed to respond(If no channel is selected it is allowed to respond in all the channels):'
+          text: 'Select channels where Quix is allowed to respond. If no channel is selected, Quix will respond in all channels:'
         }),
         Input({
           label: 'Allowed Channels',
@@ -463,7 +463,7 @@ export const publishNotionConnectionModal = async (
       trigger_id: args.triggerId,
       view: {
         ...Surfaces.Modal({
-          title: 'Notion Connection',
+          title: 'Notion Configuration',
           submit: 'Submit',
           close: 'Cancel',
           callbackId: SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.SUBMIT
@@ -486,7 +486,7 @@ export const publishLinearConnectionModal = async (
       trigger_id: args.triggerId,
       view: {
         ...Surfaces.Modal({
-          title: 'Linear Connection',
+          title: 'Linear Configuration',
           submit: 'Submit',
           close: 'Cancel',
           callbackId: SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.SUBMIT
@@ -770,7 +770,7 @@ export const publishSalesforceConfigModal = async (
       trigger_id: args.triggerId,
       view: {
         ...Surfaces.Modal({
-          title: 'Salesforce Connection',
+          title: 'Salesforce Configuration',
           submit: 'Submit',
           close: 'Cancel',
           callbackId: SLACK_ACTIONS.SALESFORCE_CONFIG_MODAL.SUBMIT
@@ -812,7 +812,7 @@ export const publishHubspotConfigModal = async (
       trigger_id: args.triggerId,
       view: {
         ...Surfaces.Modal({
-          title: 'Hubspot Connection',
+          title: 'Hubspot Configuration',
           submit: 'Submit',
           close: 'Cancel',
           callbackId: SLACK_ACTIONS.HUBSPOT_CONFIG_MODAL.SUBMIT
@@ -866,7 +866,7 @@ export const publishOktaConnectionModal = async (
       trigger_id: args.triggerId,
       view: {
         ...Surfaces.Modal({
-          title: 'Okta Connection',
+          title: 'Okta Configuration',
           submit: 'Submit',
           close: 'Cancel',
           callbackId: SLACK_ACTIONS.SUBMIT_OKTA_CONNECTION
