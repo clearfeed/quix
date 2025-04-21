@@ -287,14 +287,6 @@ export class JiraService implements BaseService<JiraConfig> {
       if (fieldParams.summary && updateIssueMetadata.fields.summary) {
         fields.summary = fieldParams.summary;
       }
-      if (fieldParams.issueType && updateIssueMetadata.fields.issuetype) {
-        const issueTypeObject = updateIssueMetadata.fields.issuetype;
-        if (issueTypeObject) {
-          fields.issueType = issueTypeObject.allowedValues.find(
-            (value) => value.name.toLowerCase() === fieldParams.issueType?.toLowerCase()
-          )?.name;
-        }
-      }
 
       await this.client.updateIssue(params.issueId, fields);
 

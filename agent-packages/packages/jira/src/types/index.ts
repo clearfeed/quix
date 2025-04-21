@@ -198,7 +198,7 @@ export interface UpdateIssueFields {
   summary?: string;
   priority?: string;
   assigneeId?: string;
-  issueType?: string;
+  issueTypeId?: string;
   description?: string;
 }
 

@@ -62,42 +62,45 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
     }),
     new DynamicStructuredTool({
       name: 'get_jira_issue_types',
-      description: 'Get all available issue types in a Jira project',
+      description: 'Retrieve all available issue types for a Jira project.',
       schema: z.object({
         projectKey: config.defaultConfig?.projectKey
           ? z
               .string()
-              .describe('The project key where the issue will be created')
+              .describe('The key of the project for which to fetch issue types')
               .optional()
               .default(config.defaultConfig.projectKey)
-          : z.string().describe('The project key where the issue will be created (required)')
+          : z.string().describe('The key of the project for which to fetch issue types')
       }),
       func: async ({ projectKey }: { projectKey: string }): Promise<GetIssueTypesResponse> =>
         service.getProjectIssueTypes(projectKey)
     }),
+
     new DynamicStructuredTool({
       name: 'create_jira_issue',
-      description: 'Create a new JIRA issue.',
+      description: 'Create a new Jira issue.',
       schema: z.object({
         projectKey: config.defaultConfig?.projectKey
           ? z
               .string()
-              .describe('The project key where the issue will be created')
+              .describe('The key of the project where the issue will be created')
               .optional()
               .default(config.defaultConfig.projectKey)
-          : z.string().describe('The project key where the issue will be created (required)'),
-        summary: z.string().describe('The summary/title of the issue'),
-        description: z.string().describe('The description of the issue.').optional(),
+          : z
+              .string()
+              .describe('The key of the project where the issue will be created (required)'),
+        summary: z.string().describe('A brief summary or title for the issue'),
+        description: z.string().describe('A detailed description of the issue').optional(),
         issueTypeId: z
           .string()
           .describe(
-            'The ID of the issue type. Use get_jira_issue_types tool to see available types.'
+            `The ID of the issue type. Use the 'get_jira_issue_types' tool to find the appropriate ID based on the user's request and issue type details.`
           ),
-        priority: z.string().describe('The name of the priority.').optional(),
+        priority: z.string().describe('The name of the priority (e.g., High, Medium)').optional(),
         assigneeId: z
           .string()
           .describe(
-            'The accountId of the assignee. Use the "search_jira_users" tool to find the assignee by name/email'
+            'The account ID of the user to assign the issue to. Use the "search_jira_users" tool to find account ID of a user by name or email.'
           )
           .optional()
       }),
@@ -140,23 +143,23 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
     }),
     new DynamicStructuredTool({
       name: 'update_jira_issue',
-      description: 'Update a Jira issue',
+      description: 'Update an existing Jira issue.',
       schema: z.object({
-        issueId: z.string().describe('The Jira issue key or ID (e.g., 10083 or PROJ-123)'),
+        issueId: z.string().describe('The key or ID of the Jira issue (e.g., PROJ-123 or 10083)'),
         fields: z.object({
-          summary: z.string().describe('The summary of the issue').optional(),
-          description: z.string().describe('The description of the issue.').optional(),
-          priority: z.string().describe('The name of the priority.').optional(),
-          issueType: z
+          summary: z.string().describe('The updated summary or title of the issue').optional(),
+          description: z.string().describe('The updated description of the issue').optional(),
+          priority: z.string().describe('The updated priority of the issue').optional(),
+          issueTypeId: z
             .string()
             .describe(
-              'The name of the issue type. Use get_jira_issue_types tool to see available types.'
+              'The updated issue type ID. Use the "get_jira_issue_types" tool to find the correct ID based on the user\'s request and issue type details.'
             )
             .optional(),
           assigneeId: z
             .string()
             .describe(
-              'The accountId of the assignee. Use the "search_jira_users" tool to find the assignee by name/email'
+              'The updated assignee account ID. Use the "search_jira_users" tool to find the account ID of a user by name or email.'
             )
             .optional()
         })
@@ -177,19 +180,22 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
     }),
     new DynamicStructuredTool({
       name: 'get_jira_create_issue_metadata',
-      description: 'Get all available fields for a Jira project to create an issue',
+      description:
+        'Retrieve all fields available for creating an issue in a Jira project for a particular issue type.',
       schema: z.object({
         projectKey: config.defaultConfig?.projectKey
           ? z
               .string()
-              .describe('The project key where the issue will be created')
+              .describe('The key of the project for which to retrieve field metadata')
               .optional()
               .default(config.defaultConfig.projectKey)
-          : z.string().describe('The project key where the issue will be created (required)'),
+          : z
+              .string()
+              .describe('The key of the project for which to retrieve field metadata (required)'),
         issueTypeId: z
           .string()
           .describe(
-            'The ID of the issue type. Use get_jira_issue_types tool to see available types.'
+            'The ID of the issue type. Use the "get_jira_issue_types" tool to find the correct ID based on the user\'s request and issue type details.'
           )
       }),
       func: async ({
@@ -203,9 +209,9 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
     }),
     new DynamicStructuredTool({
       name: 'get_jira_update_issue_metadata',
-      description: 'Get all available fields for a Jira project to update an issue',
+      description: 'Retrieve all editable fields for updating a Jira issue.',
       schema: z.object({
-        issueId: z.string().describe('The Jira issue ID (e.g., PROJ-123)')
+        issueId: z.string().describe('The key or ID of the Jira issue (e.g., PROJ-123)')
       }),
       func: async ({ issueId }: { issueId: string }): Promise<GetUpdateIssueMetadataResponse> =>
         service.getUpdateIssueMetadata(issueId)
