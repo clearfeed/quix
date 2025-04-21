@@ -360,7 +360,7 @@ export const publishAccessControlModal = async (
       blocks: BlockCollection([
         // Channel selection
         Section({
-          text: 'Select channels where Quix is allowed to respond (if no channel is selected it is allowed to respond in all the channels):'
+          text: 'Select channels where Quix is allowed to respond. If no channel is selected, Quix will respond in all channels:'
         }),
         Input({
           label: 'Allowed Channels',
