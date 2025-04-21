@@ -151,7 +151,8 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
             .string()
             .describe(
               'The name of the issue type. Use get_jira_issue_types tool to see available types.'
-            ),
+            )
+            .optional(),
           assigneeId: z
             .string()
             .describe(

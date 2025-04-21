@@ -123,9 +123,6 @@ export class JiraClient {
   async createIssue(params: CreateIssueParams): Promise<JiraIssueResponse> {
     const { projectKey, summary, issueTypeId, priority, assigneeId, description, environment } =
       params;
-    if (!projectKey) {
-      throw new Error('Project key is required');
-    }
 
     const project = await this.getProject(projectKey);
     if (!project) {
