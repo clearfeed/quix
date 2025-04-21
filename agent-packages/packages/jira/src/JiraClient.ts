@@ -121,8 +121,7 @@ export class JiraClient {
   }
 
   async createIssue(params: CreateIssueParams): Promise<JiraIssueResponse> {
-    const { projectKey, summary, issueTypeId, priority, assigneeId, description, environment } =
-      params;
+    const { projectKey, summary, issueTypeId, priority, assigneeId, description } = params;
 
     const project = await this.getProject(projectKey);
     if (!project) {
@@ -143,15 +142,6 @@ export class JiraClient {
                   type: 'doc',
                   version: 1,
                   content: [{ type: 'paragraph', content: [{ type: 'text', text: description }] }]
-                }
-              }
-            : {}),
-          ...(environment
-            ? {
-                environment: {
-                  type: 'doc',
-                  version: 1,
-                  content: [{ type: 'paragraph', content: [{ type: 'text', text: environment }] }]
                 }
               }
             : {})
@@ -215,7 +205,7 @@ export class JiraClient {
   }
 
   async updateIssue(issueId: string, fields: UpdateIssueFields): Promise<UpdateIssueResponse> {
-    const { assigneeId, summary, priority, issueType, description, environment } = fields;
+    const { assigneeId, summary, priority, issueType, description } = fields;
     const response = await this.makeApiCall('PUT', `/issue/${issueId}`, {
       data: {
         fields: {
@@ -235,15 +225,6 @@ export class JiraClient {
                   type: 'doc',
                   version: 1,
                   content: [{ type: 'paragraph', content: [{ type: 'text', text: description }] }]
-                }
-              }
-            : {}),
-          ...(environment
-            ? {
-                environment: {
-                  type: 'doc',
-                  version: 1,
-                  content: [{ type: 'paragraph', content: [{ type: 'text', text: environment }] }]
                 }
               }
             : {})
@@ -271,6 +252,11 @@ export class JiraClient {
 
   async getUpdateIssueMetadata(issueId: string): Promise<JiraUpdateIssueMetadata> {
     const response = await this.makeApiCall('GET', `/issue/${issueId}/editmeta`);
+    return response;
+  }
+
+  async searchUser(accountId: string): Promise<JiraUserResponse> {
+    const response = await this.makeApiCall('GET', `/user?accountId=${accountId}`);
     return response;
   }
 }

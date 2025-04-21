@@ -136,13 +136,8 @@ export class JiraService implements BaseService<JiraConfig> {
         const isDescriptionFieldValid = createIssueMetadata.fields.some(
           (field) => field.fieldId === 'description'
         );
-        const isEnvironmentFieldValid = createIssueMetadata.fields.some(
-          (field) => field.fieldId === 'environment'
-        );
         if (isDescriptionFieldValid) {
           issueData.description = params.description;
-        } else if (isEnvironmentFieldValid) {
-          issueData.environment = params.description;
         }
       }
 
@@ -157,7 +152,7 @@ export class JiraService implements BaseService<JiraConfig> {
         }
       };
     } catch (error) {
-      console.error('Error creating Jira issue:', (error as AxiosError).response?.data);
+      console.error('Error creating Jira issue:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to create Jira issue'
@@ -186,10 +181,7 @@ export class JiraService implements BaseService<JiraConfig> {
     try {
       await this.client.assignIssue(issueId, accountId);
 
-      // Get user details for the response
-      const users = await this.client.searchUsers(accountId);
-      const assignedUser = users.find((user) => user.accountId === accountId);
-      const displayName = assignedUser ? assignedUser.displayName : undefined;
+      const user = await this.client.searchUser(accountId);
 
       return {
         success: true,
@@ -197,7 +189,7 @@ export class JiraService implements BaseService<JiraConfig> {
           issueId,
           assignee: {
             accountId,
-            displayName
+            user
           },
           url: this.getIssueUrl({ key: issueId })
         }
@@ -292,9 +284,6 @@ export class JiraService implements BaseService<JiraConfig> {
       }
       if (fieldParams.description && updateIssueMetadata.fields.description) {
         fields.description = fieldParams.description;
-      }
-      if (fieldParams.description && updateIssueMetadata.fields.environment) {
-        fields.environment = fieldParams.environment;
       }
       if (fieldParams.summary && updateIssueMetadata.fields.summary) {
         fields.summary = fieldParams.summary;

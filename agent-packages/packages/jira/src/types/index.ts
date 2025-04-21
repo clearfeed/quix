@@ -89,7 +89,6 @@ export interface CreateIssueParams {
   priority?: string;
   assigneeId?: string;
   description?: string;
-  environment?: string;
 }
 
 export type SearchIssuesResponse = {
@@ -114,7 +113,7 @@ export type AssignIssueResponse = BaseResponse<{
   issueId: string;
   assignee: {
     accountId: string;
-    displayName?: string;
+    user: JiraUserResponse;
   };
   url: string;
 }>;
@@ -201,7 +200,6 @@ export interface UpdateIssueFields {
   assigneeId?: string;
   issueType?: string;
   description?: string;
-  environment?: string;
 }
 
 export type UpdateIssueResponse = BaseResponse<{
