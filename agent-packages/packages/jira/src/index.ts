@@ -132,10 +132,10 @@ export class JiraService implements BaseService<JiraConfig> {
         }
       }
       if (params.description) {
-        const isDescriptionFieldValid = createIssueMetadata.fields.some(
+        const isDescriptionAllowed = createIssueMetadata.fields.some(
           (field) => field.fieldId === 'description'
         );
-        if (isDescriptionFieldValid) {
+        if (isDescriptionAllowed) {
           issueData.description = params.description;
         }
       }
