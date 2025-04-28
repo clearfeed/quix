@@ -28,6 +28,7 @@ import { TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT } from '../lib/utils/slack-con
 import { Md } from 'slack-block-builder';
 import { encrypt } from '../lib/utils/encryption';
 import { formatToOpenAITool } from '@langchain/openai';
+import { isEqual } from 'lodash';
 import slackify = require('slackify-markdown');
 
 @Injectable()
@@ -126,7 +127,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       reason: encrypt(toolSelection.reason)
     });
 
-    if (toolSelection.selectedTools === 'none') {
+    if (toolSelection.selectedTools === 'none' || isEqual(toolSelection.selectedTools, ['none'])) {
       return toolSelection.content
         ? slackify(toolSelection.content)
         : `I could not find any tools to fulfill your request.`;
