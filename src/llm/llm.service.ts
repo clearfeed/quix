@@ -123,7 +123,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
 
     this.logger.log(`Tool selection complete`, {
       selectedTools: toolSelection.selectedTools,
-      reason: toolSelection.reason
+      reason: encrypt(toolSelection.reason)
     });
 
     if (toolSelection.selectedTools === 'none') {
