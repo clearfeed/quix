@@ -72,7 +72,7 @@ export class InteractionsService {
       case SLACK_ACTIONS.OPENAI_API_KEY_MODAL.SUBMIT:
         const openaiApiKey = payload.view.state.values.openai_api_key.openai_api_key_input.value;
         if (!openaiApiKey) {
-          this.logger.error('OpenAI API key not found', { payload });
+          this.logger.warn('OpenAI API key not found', { payload });
           return;
         }
         this.appHomeService.handleOpenaiApiKeySubmitted(

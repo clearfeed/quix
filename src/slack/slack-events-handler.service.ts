@@ -7,6 +7,8 @@ import { LlmService } from '@quix/llm/llm.service';
 import { WebClient } from '@slack/web-api';
 import { createLLMContext, getConnectedIntegrations } from '@quix/lib/utils/slack';
 import { SlackService } from './slack.service';
+import { pick } from 'lodash';
+import { encrypt } from '../lib/utils/encryption';
 import { INTEGRATIONS } from '@quix/lib/constants';
 import { keyBy, shuffle } from 'lodash';
 import { SlackWorkspace } from '../database/models';
@@ -100,7 +102,19 @@ export class SlackEventsHandlerService {
   }
 
   private async handleMessage(event: GenericMessageEvent) {
-    this.logger.log('Received message', { event });
+    this.logger.log('Received message event', {
+      event: pick(event, [
+        'event_ts',
+        'type',
+        'subtype',
+        'team',
+        'channel',
+        'channel_type',
+        'user',
+        'ts',
+        'thread_ts'
+      ])
+    });
     if (!event.team) return;
     const replyThreadTs = event.thread_ts || event.ts;
     try {
@@ -140,7 +154,10 @@ export class SlackEventsHandlerService {
             authorName: userInfoMap[event.user]?.name || ''
           });
           await slackWorkspace.postMessage(response, event.channel, replyThreadTs);
-          this.logger.log('Sent response to message', { channel: event.channel, response });
+          this.logger.log('Sent response to message', {
+            channel: event.channel,
+            response: encrypt(response)
+          });
         } catch (error) {
           this.logger.error('Error processing message:', error);
           if (error instanceof HttpException) {
@@ -167,6 +184,9 @@ export class SlackEventsHandlerService {
   }
 
   private async handleAppMention(event: AppMentionEvent) {
+    this.logger.log('Received app mention event', {
+      event: pick(event, ['event_ts', 'type', 'team', 'channel', 'user', 'ts', 'thread_ts'])
+    });
     if (!event.team) return;
     let slackWorkspace: SlackWorkspace | undefined;
     const replyThreadTs = event.thread_ts || event.ts;
@@ -210,7 +230,10 @@ export class SlackEventsHandlerService {
         authorName: event.user ? userInfoMap[event.user]?.name || '' : ''
       });
       await slackWorkspace.postMessage(response, event.channel, replyThreadTs);
-      this.logger.log('Sent response to app mention', { channel: event.channel, response });
+      this.logger.log('Sent response to app mention', {
+        channel: event.channel,
+        response: encrypt(response)
+      });
     } catch (error) {
       this.logger.error('Error sending response:', error);
       if (!slackWorkspace) return;
