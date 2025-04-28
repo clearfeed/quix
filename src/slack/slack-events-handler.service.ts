@@ -153,7 +153,7 @@ export class SlackEventsHandlerService {
             previousMessages: messages,
             authorName: userInfoMap[event.user]?.name || ''
           });
-          await slackWorkspace.postMessage(response, event.channel, event.thread_ts);
+          await slackWorkspace.postMessage(response, event.channel, replyThreadTs);
           this.logger.log('Sent response to message', {
             channel: event.channel,
             response: encrypt(response)

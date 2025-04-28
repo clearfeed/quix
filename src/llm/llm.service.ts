@@ -24,9 +24,9 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { QuixCallBackManager } from './callback-manager';
 import { ConversationState } from '../database/models/conversation-state.model';
 import { InjectModel } from '@nestjs/sequelize';
-import { encrypt } from '../lib/utils/encryption';
 import { TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT } from '../lib/utils/slack-constants';
 import { Md } from 'slack-block-builder';
+import { encrypt } from '../lib/utils/encryption';
 import { formatToOpenAITool } from '@langchain/openai';
 import slackify = require('slackify-markdown');
 
@@ -62,15 +62,15 @@ export class LlmService {
   }
 
   async processMessage(args: MessageProcessingArgs): Promise<string> {
-    const { message, threadTs, previousMessages, channelId, authorName } = args;
-    this.logger.log(`Processing message for team ${args.slackWorkspace.team_id}`, {
+    const { message, threadTs, previousMessages, channelId, authorName, slackWorkspace } = args;
+    this.logger.log(`Processing message for team ${slackWorkspace.team_id}`, {
       message: encrypt(message)
     });
 
     const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, args.slackWorkspace);
     const [conversationState] = await this.conversationStateModel.upsert(
       {
-        team_id: args.slackWorkspace.team_id,
+        team_id: slackWorkspace.team_id,
         channel_id: channelId,
         thread_ts: threadTs,
         last_tool_calls: null,
@@ -83,19 +83,20 @@ export class LlmService {
       }
     );
     if (
-      args.slackWorkspace.isTrialMode &&
+      slackWorkspace.isTrialMode &&
       conversationState.message_count >= TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT
     ) {
       return `You've reached the limit of ${TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT} messages per conversation during the trial period.
-To continue, you can start a new conversation or ${Md.link(args.slackWorkspace.getAppHomeRedirectUrl(), 'set your OpenAI API key here')} to remove this restriction.`;
+To continue, you can start a new conversation or ${Md.link(slackWorkspace.getAppHomeRedirectUrl(), 'set your OpenAI API key here')} to remove this restriction.`;
     }
 
-    const tools = await this.tool.getAvailableTools(args.slackWorkspace.team_id);
+    const tools = await this.tool.getAvailableTools(slackWorkspace.team_id);
     const availableCategories = Object.keys(tools ?? {});
     if (!tools || availableCategories.length < 1) {
       this.logger.log('No tool categories available, returning direct response');
       return "I apologize, but I don't have any tools configured to help with your request at the moment.";
     }
+
     this.logger.log(`Processing message with tool categories`, {
       availableCategories
     });
@@ -119,9 +120,11 @@ To continue, you can start a new conversation or ${Md.link(args.slackWorkspace.g
       llm,
       authorName
     );
-    this.logger.log(
-      `Selected tool categories: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}. Reason: ${toolSelection.reason}`
-    );
+
+    this.logger.log(`Tool selection complete`, {
+      selectedTools: toolSelection.selectedTools,
+      reason: toolSelection.reason
+    });
 
     if (toolSelection.selectedTools === 'none') {
       return toolSelection.content
@@ -173,7 +176,6 @@ To continue, you can start a new conversation or ${Md.link(args.slackWorkspace.g
     this.logger.log(`Plan generated for user's request`, {
       plan: encrypt(formattedPlan)
     });
-
     // Store the plan in conversation state
     conversationState.last_plan = {
       steps: plan,
