@@ -9,7 +9,8 @@ export enum SUPPORTED_INTEGRATIONS {
   SALESFORCE = 'salesforce',
   SLACK = 'slack',
   NOTION = 'notion',
-  LINEAR = 'linear'
+  LINEAR = 'linear',
+  OKTA = 'okta'
 }
 
 export enum QuixUserAccessLevel {
@@ -37,6 +38,10 @@ export const INTEGRATIONS: {
   connectedText: string;
   relation: string;
   oauth: boolean;
+  suggestedPrompt: {
+    title: string;
+    message: string;
+  };
 }[] = [
   {
     name: 'JIRA',
@@ -45,7 +50,11 @@ export const INTEGRATIONS: {
     connectedText:
       'Jira has been successfully connected! You can now query Jira by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"',
     relation: 'jiraConfig',
-    oauth: true
+    oauth: true,
+    suggestedPrompt: {
+      title: 'Get Jira issue details',
+      message: "What's the status of my Jira issue PROJ-123?"
+    }
   },
   {
     name: 'GitHub',
@@ -54,7 +63,11 @@ export const INTEGRATIONS: {
     connectedText:
       'GitHub has been successfully connected! You can now query GitHub by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of issue #123?" or "List all open PRs in the auth-service repo."',
     relation: 'githubConfig',
-    oauth: true
+    oauth: true,
+    suggestedPrompt: {
+      title: 'List open GitHub PRs',
+      message: 'What are all the open pull requests in the main repository?'
+    }
   },
   {
     name: 'Hubspot',
@@ -63,7 +76,11 @@ export const INTEGRATIONS: {
     connectedText:
       'Hubspot has been successfully connected! You can now query Hubspot by chatting with me or mentioning me in any channel. Try asking me things like "What is the deal status for Quix" or "What is the contact name for Quix"',
     relation: 'hubspotConfig',
-    oauth: true
+    oauth: true,
+    suggestedPrompt: {
+      title: 'Get deal details from HubSpot',
+      message: "What's the status of my deal with Tesla?"
+    }
   },
   // {
   //   name: 'Zendesk',
@@ -79,7 +96,11 @@ export const INTEGRATIONS: {
     connectedText:
       'Postgres has been successfully connected! You can now query Postgres by chatting with me or mentioning me in any channel. Try asking me things like "Query the accounts table and return the first 10 rows"',
     relation: 'postgresConfig',
-    oauth: false
+    oauth: false,
+    suggestedPrompt: {
+      title: 'Query Postgres database',
+      message: 'Show me the first 10 rows from the users table'
+    }
   },
   {
     name: 'Salesforce',
@@ -88,7 +109,11 @@ export const INTEGRATIONS: {
     connectedText:
       'Salesforce has been successfully connected! You can now query Salesforce by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of the deal for Quix" or "What is the contact name for Quix"',
     relation: 'salesforceConfig',
-    oauth: true
+    oauth: true,
+    suggestedPrompt: {
+      title: 'Get Salesforce opportunity',
+      message: "What's the status of the Acme Corp opportunity?"
+    }
   },
   {
     name: 'Notion',
@@ -97,7 +122,11 @@ export const INTEGRATIONS: {
     connectedText:
       'Notion has been successfully connected! You can now query Notion by chatting with me or mentioning me in any channel. Try asking me things like "Show me my recent pages", "Search for documents about marketing", or "Get the content of page X".',
     relation: 'notionConfig',
-    oauth: false
+    oauth: false,
+    suggestedPrompt: {
+      title: 'Search Notion documents',
+      message: 'Find all Notion pages about product roadmap'
+    }
   },
   {
     name: 'Linear',
@@ -106,7 +135,24 @@ export const INTEGRATIONS: {
     connectedText:
       'Linear has been successfully connected! You can now query Linear by chatting with me or mentioning me in any channel. Try asking me things like "Show me my recent issues", "Search for issues about marketing", or "Get the content of issue X".',
     relation: 'linearConfig',
-    oauth: false
+    oauth: false,
+    suggestedPrompt: {
+      title: 'Check Linear issues',
+      message: 'Show me all high priority issues assigned to me'
+    }
+  },
+  {
+    name: 'Okta',
+    value: SUPPORTED_INTEGRATIONS.OKTA,
+    helpText: 'Connect Okta to manage users, groups, and applications.',
+    connectedText:
+      'Okta has been successfully connected! You can now query Okta by chatting with me or mentioning me in any channel. Try asking me things like "List all users in Okta", "Search for a user by email", or "Get details for a specific group".',
+    relation: 'oktaConfig',
+    oauth: false,
+    suggestedPrompt: {
+      title: 'Search Okta users',
+      message: 'Find all Okta users in the Engineering department'
+    }
   }
 ];
 
@@ -148,8 +194,9 @@ export const QuixPrompts = {
 - Respond in clear and concise markdown.
 - Ask the user for more details only if absolutely necessary to proceed.
 - When the user references relative dates like "today", "tomorrow", or "now" you MUST always select the common tool to get the current date and time. Do not assume the current date and time.
+- When the user references to themselves such as "I" or "me" or "user", you MUST use the user's name in your plan.
   `,
-  multiStepBasePrompt: (plan: string, authorName: string) => `
+  multiStepBasePrompt: (plan: string, authorName: string, customInstructions: string[]) => `
   You are Quix, a helpful assistant who is responding to ${authorName} (also referred to as "user").
   When user wants to reach out to your developer, you should ask them to get in touch with support@clearfeed.ai.
   If user has suggestions for you or wants to report bugs about you, ask them to create a github issue in clearfeed/quix repo.
@@ -157,7 +204,16 @@ export const QuixPrompts = {
 
 ${plan}
 
+${
+  customInstructions.length > 0
+    ? `Custom instructions:
+${customInstructions.join('\n')}
+`
+    : ''
+}
+
 Use the tools in order.
+ALWAYS follow the custom instructions if any.
 Only use tools provided in this session.
 Do not make up arguments or responses. Always call tools to get real data.
 Do not ask the user for more details unless absolutely necessary to call the tools.
@@ -170,19 +226,26 @@ Respond in clear markdown.
   PLANNER_PROMPT: (allFunctions: string[], allCustomPrompts: string[]) => {
     const basePrompt = `
     You are a planner that breaks down the user's request into an ordered list of steps using available tools.
+    If you are given Custom instructions, you MUST follow each and every one of them.
 Only use the following tools:`;
     const outputPrompt = `
     If you see the get_current_date_time tool in the list above, you MUST use it in your plan.
     If the user references to themselves such as "I" or "me" or "user", you MUST use the user's name in your plan.
     Each step must be:
-- a tool call: {{ "type": "tool", "tool": "toolName", "args": {{ ... }} }}
-- or a reasoning step: {{ "type": "reason", "input": "..." }}
+- a tool call: { "type": "tool", "tool": "toolName", "args": { ... } }
+Important requirements:
+1. Your plan MUST include a specific tool call for EVERY action.
+3. Include EVERY parameter required by the tool - don't leave any parameters unspecified
+4. The plan must be fully executable without any further planning or interpretation.
+
+Before submitting your plan, verify that you have followed ALL of the Custom instructions if any.
 
 Output only structured JSON matching the required format.`;
     const customPrompt = `
-    You MUST follow these instructions when planning your steps:
+    Custom instructions:
     ${allCustomPrompts.join('\n')}
     `;
+
     return `
     ${basePrompt}
     ${allFunctions.join('\n')}
@@ -215,20 +278,6 @@ Output only structured JSON matching the required format.`;
     - Present deal values and stages clearly
     - Include relevant contact properties and custom fields
     - Format dates in a human-readable format
-    `
-  },
-  SLACK: {
-    toolSelection: `
-    Slack is a messaging tool that manages:
-    - Messages: Text, images, videos, and files in channels and direct messages.
-    - Channels: Public and private spaces for team communication.
-    - Users: Individuals with profiles, roles, and settings.
-    `,
-    responseGeneration: `
-    When formatting Slack responses:
-    - Include channel/user IDs when referencing specific records
-    - Format important contact details in bold
-    - Present deal values and stages clearly
     `
   },
   LINEAR: {

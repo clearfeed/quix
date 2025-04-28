@@ -22,6 +22,7 @@ export type PostgresConnectionModalArgs = {
     username?: string;
     password?: string;
     ssl?: boolean;
+    defaultPrompt?: string | null;
   };
 };
 
@@ -30,11 +31,13 @@ export type JiraDefaultConfigModalArgs = {
   teamId: string;
   callbackId?: string;
   projectKey: string;
+  defaultPrompt?: string | null;
 };
 
 export type GithubDefaultConfig = {
   repo: string;
   owner: string;
+  defaultPrompt?: string | null;
 };
 
 export type GithubDefaultConfigModalArgs = {
@@ -46,8 +49,8 @@ export type NotionConnectionModalArgs = {
   triggerId: string;
   teamId: string;
   initialValues?: {
-    id?: string;
     apiToken?: string;
+    defaultPrompt?: string | null;
   };
 };
 
@@ -55,8 +58,19 @@ export type LinearConnectionModalArgs = {
   triggerId: string;
   teamId: string;
   initialValues?: {
-    id?: string;
     apiToken?: string;
+    defaultPrompt?: string | null;
+  };
+};
+
+export type OktaConnectionModalArgs = {
+  triggerId: string;
+  teamId: string;
+  initialValues?: {
+    id?: string;
+    orgUrl?: string;
+    apiToken?: string;
+    defaultPrompt?: string | null;
   };
 };
 
@@ -68,6 +82,8 @@ export type McpConnectionModalArgs = {
     name?: string;
     url?: string;
     apiToken?: string;
+    defaultPrompt?: string | null;
+    toolSelectionPrompt?: string;
   };
 };
 
@@ -112,7 +128,14 @@ export type SalesforceConfigModalArgs = {
   triggerId: string;
   teamId: string;
   initialValues?: {
-    id?: string;
+    defaultPrompt?: string | null;
+  };
+};
+
+export type HubspotConfigModalArgs = {
+  triggerId: string;
+  teamId: string;
+  initialValues?: {
     defaultPrompt?: string | null;
   };
 };

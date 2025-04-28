@@ -11,13 +11,14 @@ import {
   GetCommentsResponse,
   UpdateIssueResponse,
   UpdateIssueFields,
-  SearchUsersResponse
+  SearchUsersResponse,
+  GetIssueTypesResponse
 } from './types';
 import { BaseResponse, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 
 const JIRA_TOOL_SELECTION_PROMPT = `
-For Jira-related queries, consider using Jira tools when the user wants to:
+For Jira-related queries, ask for extra information only if it is required. Consider using Jira tools when the user wants to:
 - Create, view, or search for issues
 - Assign issues to team members
 - Get issue status updates
@@ -58,21 +59,48 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
         service.getIssue(issueId)
     }),
     new DynamicStructuredTool({
-      name: 'create_jira_issue',
-      description: 'Create a new JIRA issue',
+      name: 'get_jira_issue_types',
+      description: 'Retrieve all available issue types for a Jira project.',
       schema: z.object({
         projectKey: config.defaultConfig?.projectKey
           ? z
               .string()
-              .describe('The project key where the issue will be created')
+              .describe('The key of the project for which to fetch issue types')
               .optional()
               .default(config.defaultConfig.projectKey)
-          : z.string().describe('The project key where the issue will be created (required)'),
-        summary: z.string().describe('The summary/title of the issue'),
-        description: z.string().describe('The description of the issue').optional(),
-        issueType: z.string().describe('The type of issue (e.g., Bug, Task, Story)'),
-        priority: z.string().describe('The priority of the issue').optional(),
-        assignee: z.string().describe('The username of the assignee').optional()
+          : z.string().describe('The key of the project for which to fetch issue types')
+      }),
+      func: async ({ projectKey }: { projectKey: string }): Promise<GetIssueTypesResponse> =>
+        service.getProjectIssueTypes(projectKey)
+    }),
+
+    new DynamicStructuredTool({
+      name: 'create_jira_issue',
+      description: 'Create a new Jira issue.',
+      schema: z.object({
+        projectKey: config.defaultConfig?.projectKey
+          ? z
+              .string()
+              .describe('The key of the project where the issue will be created')
+              .optional()
+              .default(config.defaultConfig.projectKey)
+          : z
+              .string()
+              .describe('The key of the project where the issue will be created (required)'),
+        summary: z.string().describe('A brief summary or title for the issue'),
+        description: z.string().describe('A detailed description of the issue').optional(),
+        issueTypeId: z
+          .string()
+          .describe(
+            `The ID of the issue type. Use the 'get_jira_issue_types' tool to find the appropriate ID based on the user's request and issue type details.`
+          ),
+        priority: z.string().describe('The name of the priority (e.g., High, Medium)').optional(),
+        assigneeId: z
+          .string()
+          .describe(
+            'The account ID of the user to assign the issue to. Use the "search_jira_users" tool to find account ID of a user by name or email.'
+          )
+          .optional()
       }),
       func: async (params: CreateIssueParams): Promise<GetIssueResponse> =>
         service.createIssue(params)
@@ -113,15 +141,23 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
     }),
     new DynamicStructuredTool({
       name: 'update_jira_issue',
-      description: 'Update a Jira issue',
+      description: 'Update an existing Jira issue.',
       schema: z.object({
-        issueId: z.string().describe('The Jira issue key or ID (e.g., 10083 or PROJ-123)'),
+        issueId: z.string().describe('The key or ID of the Jira issue (e.g., PROJ-123 or 10083)'),
         fields: z.object({
-          summary: z.string().describe('The summary of the issue').optional(),
-          description: z.string().describe('The description of the issue').optional(),
-          priority: z.string().describe('The priority of the issue').optional(),
-          assigneeId: z.string().describe('The ID of the user to assign the issue to').optional(),
-          labels: z.array(z.string()).describe('The labels of the issue').optional()
+          summary: z.string().describe('The updated summary or title of the issue').optional(),
+          description: z.string().describe('The updated description of the issue').optional(),
+          priority: z.string().describe('The updated priority of the issue').optional(),
+          labels: z
+            .array(z.string())
+            .describe('The updated list of labels for the issue')
+            .optional(),
+          assigneeId: z
+            .string()
+            .describe(
+              'The updated assignee account ID. Use the "search_jira_users" tool to find the account ID of a user by name or email.'
+            )
+            .optional()
         })
       }),
       func: async (params: {

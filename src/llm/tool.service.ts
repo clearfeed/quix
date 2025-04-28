@@ -8,10 +8,12 @@ import { SlackWorkspace } from '../database/models';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
-import { McpServerCleanupFn, McpService } from './mcp.service';
+import { McpServerCleanupFn, McpService } from '../integrations/mcp.service';
 import { QuixPrompts, SUPPORTED_INTEGRATIONS } from '../lib/constants';
 import { createCommonToolsExport } from '@clearfeed-ai/quix-common-agent';
 import { AvailableToolsWithConfig } from './types';
+import { createSlackToolsExport } from '@clearfeed-ai/quix-slack-agent';
+import { createOktaToolsExport } from '@clearfeed-ai/quix-okta-agent';
 
 @Injectable()
 export class ToolService {
@@ -34,7 +36,9 @@ export class ToolService {
         'githubConfig',
         'salesforceConfig',
         'notionConfig',
-        'linearConfig'
+        'linearConfig',
+        'mcpConnections',
+        'oktaConfig'
       ]
     });
     if (!slackWorkspace) return;
@@ -43,6 +47,12 @@ export class ToolService {
         toolConfig: createCommonToolsExport(),
         config: slackWorkspace
       }
+    };
+    tools.slack = {
+      toolConfig: createSlackToolsExport({
+        token: slackWorkspace.bot_access_token,
+        teamId: slackWorkspace.team_id
+      })
     };
     const jiraConfig = slackWorkspace.jiraConfig;
     if (jiraConfig) {
@@ -107,28 +117,20 @@ export class ToolService {
         config: salesforceConfig
       };
     }
+    const oktaConfig = slackWorkspace.oktaConfig;
+    if (oktaConfig) {
+      tools.okta = {
+        toolConfig: createOktaToolsExport({
+          token: oktaConfig.api_token,
+          orgUrl: oktaConfig.org_url
+        }),
+        config: oktaConfig
+      };
+    }
 
     // Handle MCP-based integrations
     try {
       // Call MCP service to get tools for all integrations
-      const slackMcpTools = await this.mcpService.getMcpServerTools(SUPPORTED_INTEGRATIONS.SLACK, {
-        SLACK_BOT_TOKEN: slackWorkspace.bot_access_token,
-        SLACK_TEAM_ID: slackWorkspace.team_id
-      });
-      if (slackMcpTools && slackMcpTools.tools.length > 0) {
-        this.runningTools.push(slackMcpTools.cleanup);
-        tools.slack = {
-          toolConfig: {
-            tools: slackMcpTools.tools,
-            prompts: {
-              toolSelection: QuixPrompts.SLACK.toolSelection,
-              responseGeneration: QuixPrompts.SLACK.responseGeneration
-            }
-          },
-          config: slackWorkspace
-        };
-      }
-
       if (slackWorkspace.notionConfig) {
         const notionMcpTools = await this.mcpService.getMcpServerTools(
           SUPPORTED_INTEGRATIONS.NOTION,
@@ -172,6 +174,23 @@ export class ToolService {
               }
             },
             config: slackWorkspace.linearConfig
+          };
+        }
+      }
+      if (slackWorkspace.mcpConnections?.length) {
+        const mcpTools = await this.mcpService.getToolsFromMCPConnections(
+          slackWorkspace.mcpConnections
+        );
+        for (const mcpTool of mcpTools) {
+          this.runningTools.push(mcpTool.cleanup);
+          tools[`${mcpTool.mcpConnection.name}-${mcpTool.mcpConnection.id}`] = {
+            toolConfig: {
+              tools: mcpTool.tools,
+              prompts: {
+                toolSelection: mcpTool.mcpConnection.request_config.tool_selection_prompt
+              }
+            },
+            config: mcpTool.mcpConnection
           };
         }
       }

@@ -12,7 +12,9 @@ import {
   UpdateModalResponsePayload,
   McpConnectionModalArgs,
   GithubDefaultConfigModalArgs,
-  SalesforceConfigModalArgs
+  SalesforceConfigModalArgs,
+  HubspotConfigModalArgs,
+  OktaConnectionModalArgs
 } from './types';
 import { WebClient } from '@slack/web-api';
 import { Surfaces } from 'slack-block-builder';
@@ -99,7 +101,21 @@ export const getPostgresConnectionModal = (args: PostgresConnectionModalArgs): B
       .optional(true),
     Section({
       text: 'Your credentials are securely stored and only used to connect to your database.'
+    }),
+    Input({
+      label: 'Default Prompt',
+      blockId: 'postgres_default_prompt',
+      hint: 'Please provide a default prompt for PostgreSQL. This will be used when Quix needs to query or update the database.'
     })
+      .optional(true)
+      .element(
+        Elements.TextInput({
+          placeholder: 'When querying data from the PostgreSQL database...',
+          multiline: true,
+          actionId: SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.DEFAULT_PROMPT,
+          initialValue: args.initialValues?.defaultPrompt || ''
+        })
+      )
   ]);
 };
 
@@ -117,10 +133,10 @@ export const publishPostgresConnectionModal = async (
       trigger_id: args.triggerId,
       view: {
         ...Surfaces.Modal({
-          title: 'PostgreSQL Connection',
+          title: 'PostgreSQL Configuration',
           submit: 'Submit',
           close: 'Cancel',
-          callbackId: SLACK_ACTIONS.SUBMIT_POSTGRES_CONNECTION
+          callbackId: SLACK_ACTIONS.POSTGRES_CONNECTION_ACTIONS.SUBMIT
         }).buildToObject(),
         blocks: modal,
         private_metadata: JSON.stringify({
@@ -218,7 +234,7 @@ export const publishJiraConfigModal = async (
     trigger_id: triggerId,
     view: {
       ...Surfaces.Modal({
-        title: 'Jira Config',
+        title: 'Jira Configuration',
         submit: 'Submit',
         close: 'Cancel',
         callbackId: SLACK_ACTIONS.JIRA_CONFIG_MODAL.SUBMIT
@@ -239,6 +255,20 @@ export const publishJiraConfigModal = async (
               actionId: SLACK_ACTIONS.JIRA_CONFIG_MODAL.PROJECT_KEY_INPUT,
               initialValue: projectKey
             })
+          ),
+        Input({
+          label: 'Default Prompt',
+          blockId: 'jira_default_prompt',
+          hint: 'Please provide a default prompt for Jira. This will be used when Quix needs to create, fetch, or update issues in Jira.'
+        })
+          .optional(true)
+          .element(
+            Elements.TextInput({
+              placeholder: 'When creating or searching Jira issues...',
+              multiline: true,
+              actionId: SLACK_ACTIONS.JIRA_CONFIG_MODAL.DEFAULT_PROMPT,
+              initialValue: args.defaultPrompt || ''
+            })
           )
       ])
     }
@@ -255,7 +285,7 @@ export const publishGithubConfigModal = async (
     trigger_id: triggerId,
     view: {
       ...Surfaces.Modal({
-        title: 'GitHub Config',
+        title: 'GitHub Configuration',
         submit: 'Submit',
         close: 'Cancel',
         callbackId: SLACK_ACTIONS.GITHUB_CONFIG_MODAL.SUBMIT
@@ -289,6 +319,20 @@ export const publishGithubConfigModal = async (
               actionId: SLACK_ACTIONS.GITHUB_CONFIG_MODAL.OWNER_INPUT,
               initialValue: initialValues?.owner || ''
             })
+          ),
+        Input({
+          label: 'Default Prompt',
+          blockId: 'github_default_prompt',
+          hint: 'Please provide a default prompt for GitHub. This will be used when Quix needs to interact with repositories, issues, or pull requests.'
+        })
+          .optional(true)
+          .element(
+            Elements.TextInput({
+              placeholder: 'When searching issues or PRs on GitHub...',
+              multiline: true,
+              actionId: SLACK_ACTIONS.GITHUB_CONFIG_MODAL.DEFAULT_PROMPT,
+              initialValue: args.initialValues?.defaultPrompt || ''
+            })
           )
       ])
     }
@@ -316,7 +360,7 @@ export const publishAccessControlModal = async (
       blocks: BlockCollection([
         // Channel selection
         Section({
-          text: 'Select channels where Quix is allowed to respond(If no channel is selected it is allowed to respond in all the channels):'
+          text: 'Select channels where Quix is allowed to respond. If no channel is selected, Quix will respond in all channels:'
         }),
         Input({
           label: 'Allowed Channels',
@@ -399,21 +443,32 @@ export const publishNotionConnectionModal = async (
       }),
       Section({
         text: 'After connecting, make sure to share your Notion pages with the integration as shown in the image above.'
+      }),
+      Input({
+        label: 'Default Prompt',
+        blockId: 'notion_default_prompt',
+        hint: 'Please provide a default prompt for Notion. This will be used when Quix needs to search, create, or update Notion pages or databases.'
       })
+        .optional(true)
+        .element(
+          Elements.TextInput({
+            placeholder: 'When retrieving notes or project data from Notion...',
+            multiline: true,
+            actionId: SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.DEFAULT_PROMPT,
+            initialValue: args.initialValues?.defaultPrompt || ''
+          })
+        )
     ];
     await client.views.open({
       trigger_id: args.triggerId,
       view: {
         ...Surfaces.Modal({
-          title: 'Notion Connection',
+          title: 'Notion Configuration',
           submit: 'Submit',
           close: 'Cancel',
-          callbackId: SLACK_ACTIONS.SUBMIT_NOTION_CONNECTION
+          callbackId: SLACK_ACTIONS.NOTION_CONNECTION_ACTIONS.SUBMIT
         }).buildToObject(),
-        blocks: BlockCollection(blocks),
-        private_metadata: JSON.stringify({
-          id: args.initialValues?.id
-        })
+        blocks: BlockCollection(blocks)
       }
     });
   } catch (error) {
@@ -431,10 +486,10 @@ export const publishLinearConnectionModal = async (
       trigger_id: args.triggerId,
       view: {
         ...Surfaces.Modal({
-          title: 'Linear Connection',
+          title: 'Linear Configuration',
           submit: 'Submit',
           close: 'Cancel',
-          callbackId: SLACK_ACTIONS.SUBMIT_LINEAR_CONNECTION
+          callbackId: SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.SUBMIT
         }).buildToObject(),
         blocks: BlockCollection([
           Section({
@@ -456,11 +511,22 @@ export const publishLinearConnectionModal = async (
           ),
           Section({
             text: 'You can find your Linear API key in Linear settings > Security & Access > Personal API keys'
+          }),
+          Input({
+            label: 'Default Prompt',
+            blockId: 'linear_default_prompt',
+            hint: 'Please provide a default prompt for Linear. This will be used when Quix interacts with Linear issues, cycles, or projects.'
           })
-        ]),
-        private_metadata: JSON.stringify({
-          id: args.initialValues?.id
-        })
+            .optional(true)
+            .element(
+              Elements.TextInput({
+                placeholder: 'When listing or creating issues in Linear...',
+                multiline: true,
+                actionId: SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.DEFAULT_PROMPT,
+                initialValue: args.initialValues?.defaultPrompt || ''
+              })
+            )
+        ])
       }
     });
   } catch (error) {
@@ -601,7 +667,7 @@ export const getMcpConnectionModal = (args: McpConnectionModalArgs): Block[] => 
       blockId: 'mcp_url'
     }).element(
       Elements.TextInput({
-        placeholder: 'e.g., https://mcp.example.com',
+        placeholder: 'e.g., https://mcp.example.com/sse',
         actionId: SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.URL
       }).initialValue(initialValues?.url || '')
     ),
@@ -613,9 +679,34 @@ export const getMcpConnectionModal = (args: McpConnectionModalArgs): Block[] => 
         : 'Your token is stored securely and cannot be accessed by anyone.'
     }).element(
       Elements.TextInput({
-        placeholder: 'Your MCP server API token',
+        placeholder: 'Used as a Bearer token in all requests to the MCP server.',
         actionId: SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.API_TOKEN
       })
+    ),
+    Input({
+      label: 'Default Prompt',
+      blockId: 'mcp_default_prompt',
+      hint: 'Please provide a default prompt for MCP. This will be used when Quix communicates with your custom MCP server.'
+    })
+      .optional(true)
+      .element(
+        Elements.TextInput({
+          placeholder: 'When sending data to the MCP server...',
+          multiline: true,
+          actionId: SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.DEFAULT_PROMPT,
+          initialValue: args.initialValues?.defaultPrompt || ''
+        })
+      ),
+    Input({
+      label: 'When to invoke this server?',
+      blockId: 'mcp_tool_selection_prompt',
+      hint: 'This will help us determine when to invoke tools from this server.'
+    }).element(
+      Elements.TextInput({
+        placeholder: `e.g. Use these tools when the user asks about the weather or when they want to know the news.`,
+        multiline: true,
+        actionId: SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.TOOL_SELECTION_PROMPT
+      }).initialValue(initialValues?.toolSelectionPrompt || '')
     )
   ]);
 };
@@ -637,7 +728,7 @@ export const publishMcpConnectionModal = async (
           title: 'MCP Server Connection',
           submit: 'Submit',
           close: 'Cancel',
-          callbackId: SLACK_ACTIONS.SUBMIT_MCP_CONNECTION
+          callbackId: SLACK_ACTIONS.MCP_CONNECTION_ACTIONS.SUBMIT
         }).buildToObject(),
         blocks: modal,
         private_metadata: JSON.stringify({
@@ -679,10 +770,106 @@ export const publishSalesforceConfigModal = async (
       trigger_id: args.triggerId,
       view: {
         ...Surfaces.Modal({
-          title: 'Salesforce Connection',
+          title: 'Salesforce Configuration',
           submit: 'Submit',
           close: 'Cancel',
           callbackId: SLACK_ACTIONS.SALESFORCE_CONFIG_MODAL.SUBMIT
+        }).buildToObject(),
+        blocks: BlockCollection(blocks)
+      }
+    });
+  } catch (error) {
+    console.error('Error publishing Salesforce connection modal:', error);
+    throw error;
+  }
+};
+
+export const publishHubspotConfigModal = async (
+  client: WebClient,
+  args: HubspotConfigModalArgs
+): Promise<void> => {
+  try {
+    const blocks = [
+      Section({
+        text: 'Customize the way Quix interacts with Hubspot'
+      }),
+      Input({
+        label: 'Default Prompt',
+        blockId: 'hubspot_default_prompt',
+        hint: 'Please provide a default prompt for Hubspot. This will be used when Quix needs to interact with Hubspot.'
+      })
+        .optional(true)
+        .element(
+          Elements.TextInput({
+            placeholder: `When creating Hubspot tickets...`,
+            multiline: true,
+            actionId: SLACK_ACTIONS.HUBSPOT_CONFIG_MODAL.DEFAULT_PROMPT
+          }).initialValue(args.initialValues?.defaultPrompt || '')
+        )
+    ];
+
+    await client.views.open({
+      trigger_id: args.triggerId,
+      view: {
+        ...Surfaces.Modal({
+          title: 'Hubspot Configuration',
+          submit: 'Submit',
+          close: 'Cancel',
+          callbackId: SLACK_ACTIONS.HUBSPOT_CONFIG_MODAL.SUBMIT
+        }).buildToObject(),
+        blocks: BlockCollection(blocks)
+      }
+    });
+  } catch (error) {
+    console.error('Error publishing Hubspot connection modal:', error);
+    throw error;
+  }
+};
+
+export const publishOktaConnectionModal = async (
+  client: WebClient,
+  args: OktaConnectionModalArgs
+): Promise<void> => {
+  try {
+    const blocks = [
+      Section({
+        text: 'Please provide your Okta organization URL and API token:'
+      }),
+      Input({
+        label: 'Organization URL',
+        blockId: 'okta_org_url',
+        hint: 'e.g., https://your-org.okta.com'
+      }).element(
+        Elements.TextInput({
+          placeholder: 'https://your-org.okta.com',
+          actionId: SLACK_ACTIONS.OKTA_CONNECTION_ACTIONS.ORG_URL,
+          initialValue: args.initialValues?.orgUrl
+        })
+      ),
+      Input({
+        label: 'API Token',
+        blockId: 'okta_token',
+        hint: args.initialValues?.apiToken
+          ? 'Current token is not displayed for security reasons. Enter a new token to update it.'
+          : 'API token from your Okta admin console'
+      }).element(
+        Elements.TextInput({
+          placeholder: args.initialValues?.apiToken ? 'Enter new token to update' : '00a...',
+          actionId: SLACK_ACTIONS.OKTA_CONNECTION_ACTIONS.API_TOKEN
+        })
+      ),
+      Section({
+        text: 'The API token must have read and write permissions for Users, Groups, and Applications.'
+      })
+    ];
+    await client.views.open({
+      trigger_id: args.triggerId,
+      view: {
+        ...Surfaces.Modal({
+          title: 'Okta Configuration',
+          submit: 'Submit',
+          close: 'Cancel',
+          callbackId: SLACK_ACTIONS.SUBMIT_OKTA_CONNECTION
         }).buildToObject(),
         blocks: BlockCollection(blocks),
         private_metadata: JSON.stringify({
@@ -691,7 +878,7 @@ export const publishSalesforceConfigModal = async (
       }
     });
   } catch (error) {
-    console.error('Error publishing Salesforce connection modal:', error);
+    console.error('Error publishing Okta connection modal:', error);
     throw error;
   }
 };

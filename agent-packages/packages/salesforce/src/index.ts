@@ -36,6 +36,10 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
     });
   }
 
+  getTaskUrl(taskId: string): string {
+    return `${this.config.instanceUrl}/lightning/r/Task/${taskId}/view`;
+  }
+
   validateConfig(): { isValid: boolean; error?: string } {
     if (!this.config.accessToken) {
       return { isValid: false, error: 'Salesforce access token is not configured' };

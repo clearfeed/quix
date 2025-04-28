@@ -8,7 +8,10 @@ import {
   JiraCommentResponse,
   JiraIssueComments,
   UpdateIssueFields,
-  UpdateIssueResponse
+  UpdateIssueResponse,
+  JiraIssueTypeResponse,
+  JiraCreateIssueMetadata,
+  JiraUpdateIssueMetadata
 } from './types';
 import axios, { AxiosInstance } from 'axios';
 import * as jwt from 'atlassian-jwt';
@@ -71,9 +74,12 @@ export class JiraClient {
     }
 
     if ('sharedSecret' in this.config.auth) {
+      const queryParams = metadata?.params
+        ? `?${new URLSearchParams(metadata.params).toString()}`
+        : '';
       const token = await this.getToken({
         method,
-        path,
+        path: `${path}${queryParams}`,
         sharedSecret: this.config.auth.sharedSecret,
         atlassianConnectAppKey: this.config.auth.atlassianConnectAppKey
       });
@@ -115,20 +121,11 @@ export class JiraClient {
   }
 
   async createIssue(params: CreateIssueParams): Promise<JiraIssueResponse> {
-    const { projectKey, summary, description, issueType, priority, assignee } = params;
-    if (!projectKey) {
-      throw new Error('Project key is required');
-    }
+    const { projectKey, summary, issueTypeId, priority, assigneeId, description } = params;
 
     const project = await this.getProject(projectKey);
     if (!project) {
       throw new Error(`Project ${projectKey} not found`);
-    }
-
-    // Validate issue type exists in project
-    const issueTypeObj = project.issueTypes.find((type) => type.name === issueType);
-    if (!issueTypeObj) {
-      throw new Error(`Issue type ${issueType} not found in project ${projectKey}`);
     }
 
     const response = await this.makeApiCall('POST', '/issue', {
@@ -136,14 +133,18 @@ export class JiraClient {
         fields: {
           project: { id: project.id },
           summary,
-          description: description
+          issuetype: { id: issueTypeId },
+          ...(assigneeId ? { assignee: { accountId: assigneeId } } : {}),
+          ...(priority ? { priority: { name: priority } } : {}),
+          ...(description
             ? {
-                type: 'doc',
-                version: 1,
-                content: [{ type: 'paragraph', content: [{ type: 'text', text: description }] }]
+                description: {
+                  type: 'doc',
+                  version: 1,
+                  content: [{ type: 'paragraph', content: [{ type: 'text', text: description }] }]
+                }
               }
-            : undefined,
-          issuetype: { id: issueTypeObj.id }
+            : {})
         }
       }
     });
@@ -204,31 +205,58 @@ export class JiraClient {
   }
 
   async updateIssue(issueId: string, fields: UpdateIssueFields): Promise<UpdateIssueResponse> {
-    let description;
-    if (fields.description) {
-      description = {
-        type: 'doc',
-        version: 1,
-        content: [{ type: 'paragraph', content: [{ type: 'text', text: fields.description }] }]
-      };
-    }
+    const { assigneeId, summary, priority, labels, description } = fields;
     const response = await this.makeApiCall('PUT', `/issue/${issueId}`, {
       data: {
         fields: {
-          ...fields,
-          ...(description ? { description } : {}),
-          ...(fields.assigneeId ? { assignee: { id: fields.assigneeId } } : {}),
-          ...(fields.labels ? { labels: fields.labels } : {}),
-          ...(fields.priority
+          ...(assigneeId ? { assignee: { accountId: assigneeId } } : {}),
+          ...(summary ? { summary } : {}),
+          ...(priority
             ? {
                 priority: {
-                  name: fields.priority.charAt(0).toUpperCase() + fields.priority.slice(1)
+                  name: priority
+                }
+              }
+            : {}),
+          ...(labels ? { labels } : {}),
+          ...(description
+            ? {
+                description: {
+                  type: 'doc',
+                  version: 1,
+                  content: [{ type: 'paragraph', content: [{ type: 'text', text: description }] }]
                 }
               }
             : {})
         }
       }
     });
+    return response;
+  }
+
+  async getIssueTypes(projectKey: string): Promise<JiraIssueTypeResponse[]> {
+    const response = await this.makeApiCall('GET', `issue/createmeta/${projectKey}/issuetypes`);
+    return response;
+  }
+
+  async getCreateIssueMetadata(
+    projectKey: string,
+    issueTypeId: string
+  ): Promise<JiraCreateIssueMetadata> {
+    const response = await this.makeApiCall(
+      'GET',
+      `issue/createmeta/${projectKey}/issuetypes/${issueTypeId}`
+    );
+    return response;
+  }
+
+  async getUpdateIssueMetadata(issueId: string): Promise<JiraUpdateIssueMetadata> {
+    const response = await this.makeApiCall('GET', `/issue/${issueId}/editmeta`);
+    return response;
+  }
+
+  async searchUser(accountId: string): Promise<JiraUserResponse> {
+    const response = await this.makeApiCall('GET', `/user?accountId=${accountId}`);
     return response;
   }
 }

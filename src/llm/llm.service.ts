@@ -19,13 +19,17 @@ import { RunnableSequence } from '@langchain/core/runnables';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { QuixPrompts } from '../lib/constants';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
-import { AIMessage } from '@langchain/core/messages';
+import { AIMessage, SystemMessage } from '@langchain/core/messages';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { QuixCallBackManager } from './callback-manager';
 import { ConversationState } from '../database/models/conversation-state.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { encrypt } from '../lib/utils/encryption';
+import { TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT } from '../lib/utils/slack-constants';
+import { Md } from 'slack-block-builder';
+import { formatToOpenAITool } from '@langchain/openai';
 import slackify = require('slackify-markdown');
+
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);
@@ -58,14 +62,15 @@ export class LlmService {
   }
 
   async processMessage(args: MessageProcessingArgs): Promise<string> {
-    const { message, teamId, threadTs, previousMessages, channelId, authorName } = args;
-    this.logger.log(`Processing message for team ${teamId}`, {
+    const { message, threadTs, previousMessages, channelId, authorName } = args;
+    this.logger.log(`Processing message for team ${args.slackWorkspace.team_id}`, {
       message: encrypt(message)
     });
 
+    const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, args.slackWorkspace);
     const [conversationState] = await this.conversationStateModel.upsert(
       {
-        team_id: teamId,
+        team_id: args.slackWorkspace.team_id,
         channel_id: channelId,
         thread_ts: threadTs,
         last_tool_calls: null,
@@ -77,14 +82,20 @@ export class LlmService {
         fields: []
       }
     );
+    if (
+      args.slackWorkspace.isTrialMode &&
+      conversationState.message_count >= TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT
+    ) {
+      return `You've reached the limit of ${TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT} messages per conversation during the trial period.
+To continue, you can start a new conversation or ${Md.link(args.slackWorkspace.getAppHomeRedirectUrl(), 'set your OpenAI API key here')} to remove this restriction.`;
+    }
 
-    const tools = await this.tool.getAvailableTools(teamId);
+    const tools = await this.tool.getAvailableTools(args.slackWorkspace.team_id);
     const availableCategories = Object.keys(tools ?? {});
     if (!tools || availableCategories.length < 1) {
       this.logger.log('No tool categories available, returning direct response');
       return "I apologize, but I don't have any tools configured to help with your request at the moment.";
     }
-    const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, teamId);
     this.logger.log(`Processing message with tool categories`, {
       availableCategories
     });
@@ -109,11 +120,13 @@ export class LlmService {
       authorName
     );
     this.logger.log(
-      `Selected tool categories: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}`
+      `Selected tool categories: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}. Reason: ${toolSelection.reason}`
     );
 
     if (toolSelection.selectedTools === 'none') {
-      return toolSelection.content || `I could not find any tools to fulfill your request.`;
+      return toolSelection.content
+        ? slackify(toolSelection.content)
+        : `I could not find any tools to fulfill your request.`;
     }
 
     const availableFunctions: {
@@ -132,8 +145,17 @@ export class LlmService {
       return "I apologize, but I don't have any tools configured to help with your request at the moment.";
     }
 
+    const customInstructions = availableFunctions
+      .map((func) => {
+        return func.config && 'default_prompt' in func.config && func.config.default_prompt
+          ? func.config.default_prompt
+          : '';
+      })
+      .filter(Boolean);
+
     const plan = await this.generatePlan(
-      availableFunctions,
+      availableFunctions.flatMap((func) => func.availableTools),
+      customInstructions,
       enhancedPreviousMessages,
       message,
       llm,
@@ -163,7 +185,7 @@ export class LlmService {
       tools: availableFunctions.flatMap((func) => func.availableTools),
       prompt:
         toolSelection.selectedTools.length > 1
-          ? QuixPrompts.multiStepBasePrompt(formattedPlan, authorName)
+          ? QuixPrompts.multiStepBasePrompt(formattedPlan, authorName, customInstructions)
           : QuixPrompts.basePrompt(authorName)
     });
 
@@ -196,6 +218,7 @@ export class LlmService {
         conversationState.last_plan.completed = true;
       }
     }
+    conversationState.message_count++;
     await conversationState.save();
 
     const { totalTokens, toolCallCount, toolNames } = result.messages.reduce(
@@ -241,6 +264,7 @@ export class LlmService {
   ): Promise<{
     selectedTools: (keyof typeof tools)[] | 'none';
     content: string;
+    reason: string;
   }> {
     const availableCategories = Object.keys(tools);
 
@@ -261,7 +285,7 @@ export class LlmService {
       description: QuixPrompts.baseToolSelection,
       schema: z.object({
         toolCategories: z.array(z.enum(availableCategories as [string, ...string[]])),
-        reason: z.string()
+        reason: z.string().describe('The reason for selecting the tools')
       }),
       func: async ({ toolCategories, reason }) => {
         return { toolCategories, reason };
@@ -300,37 +324,28 @@ export class LlmService {
 
     return {
       selectedTools: result.tool_calls?.[0]?.args?.toolCategories ?? 'none',
-      content: Array.isArray(result.content) ? result.content.join(' ') : result.content
+      content: Array.isArray(result.content) ? result.content.join(' ') : result.content,
+      reason: result.tool_calls?.[0]?.args?.reason ?? 'No reason provided'
     };
   }
 
   private async generatePlan(
-    availableFunctions: {
-      availableTools: ToolConfig['tools'];
-      config?: AvailableToolsWithConfig[keyof AvailableToolsWithConfig]['config'];
-    }[],
+    availableTools: ToolConfig['tools'],
+    customInstructions: string[],
     previousMessages: LLMContext[],
     message: string,
     llm: BaseChatModel,
     basePrompt: string
   ) {
-    const allFunctions = availableFunctions
-      .map((func) => {
-        return func.availableTools.map((tool) => `${tool.name}: ${tool.description}`);
+    const allFunctions = availableTools
+      .map((tool) => {
+        const toolFunction = formatToOpenAITool(tool);
+        return `${toolFunction.function.name}: ${toolFunction.function.description} Args: ${JSON.stringify(toolFunction.function.parameters, null, 2)}\n`;
       })
       .flat();
-    const customPrompts = availableFunctions
-      .map((func) => {
-        return func.config && 'default_prompt' in func.config && func.config.default_prompt
-          ? func.config.default_prompt
-          : '';
-      })
-      .filter(Boolean);
     const planPrompt = ChatPromptTemplate.fromMessages([
-      SystemMessagePromptTemplate.fromTemplate(basePrompt),
-      SystemMessagePromptTemplate.fromTemplate(
-        QuixPrompts.PLANNER_PROMPT(allFunctions, customPrompts)
-      ),
+      new SystemMessage(basePrompt),
+      new SystemMessage(QuixPrompts.PLANNER_PROMPT(allFunctions, customInstructions)),
       new MessagesPlaceholder('chat_history'),
       HumanMessagePromptTemplate.fromTemplate('{input}')
     ]);
