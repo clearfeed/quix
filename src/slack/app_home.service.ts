@@ -114,7 +114,8 @@ export class AppHomeService {
     await publishAccessControlModal(webClient, {
       triggerId,
       teamId,
-      initialChannels: slackWorkspace.access_settings.allowedChannelIds
+      initialChannels: slackWorkspace.access_settings.allowedChannelIds,
+      initialAccessLevel: slackWorkspace.access_settings.allowedUsersForDmInteraction
     });
   }
 

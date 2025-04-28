@@ -92,17 +92,30 @@ export class SlackService {
       code
     });
     if (response.ok && response.team?.id) {
-      const [slackWorkspace] = await this.slackWorkspaceModel.upsert({
-        team_id: response.team?.id,
-        name: response.team?.name || '',
-        bot_access_token: response.access_token || '',
-        authed_user_id: response.authed_user?.id || '',
-        bot_user_id: response.bot_user_id || '',
-        is_enterprise_install: response.is_enterprise_install || false,
-        scopes: response.response_metadata?.scopes || [],
-        app_id: response.app_id || '',
-        admin_user_ids: response.authed_user?.id ? [response.authed_user?.id] : []
-      });
+      const [slackWorkspace] = await this.slackWorkspaceModel.upsert(
+        {
+          team_id: response.team?.id,
+          name: response.team?.name || '',
+          bot_access_token: response.access_token || '',
+          authed_user_id: response.authed_user?.id || '',
+          bot_user_id: response.bot_user_id || '',
+          is_enterprise_install: response.is_enterprise_install || false,
+          scopes: response.response_metadata?.scopes || [],
+          app_id: response.app_id || '',
+          admin_user_ids: response.authed_user?.id ? [response.authed_user?.id] : []
+        },
+        {
+          fields: [
+            'name',
+            'bot_access_token',
+            'authed_user_id',
+            'bot_user_id',
+            'is_enterprise_install',
+            'scopes',
+            'app_id'
+          ]
+        }
+      );
 
       // Store all Slack users after workspace is connected
       this.storeSlackUsers(slackWorkspace);
