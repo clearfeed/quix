@@ -113,6 +113,9 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       this.logger.error(`Error enhancing messages with tool context`, error);
       enhancedPreviousMessages = previousMessages;
     }
+    this.logger.log(`Enhanced previous messages`, {
+      enhancedPreviousMessages: encrypt(JSON.stringify(enhancedPreviousMessages))
+    });
 
     const toolSelection = await this.toolSelection(
       message,
@@ -121,7 +124,6 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       llm,
       authorName
     );
-
     this.logger.log(`Tool selection complete`, {
       selectedTools: toolSelection.selectedTools,
       reason: encrypt(toolSelection.reason)
