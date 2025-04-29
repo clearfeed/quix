@@ -273,7 +273,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         }),
         'id'
       );
-      // Map contacts with their associated companies
+      // Map deals with their associated companies
       const deals = await Promise.all(
         response.results.map(async (deal) => {
           const associatedCompanies = Array.from(dealCompanyMap.get(deal.id) || [])
