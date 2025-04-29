@@ -728,7 +728,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         }
       };
     } catch (error) {
-      console.error(`Error fetching owner with ID ${ownerId}: ${error.message}, stack: ${error.stack}`);
+      console.error(`Error fetching owner with ID ${ownerId}: ${error}`);
       return {
         isOwnerExists: false
       };
