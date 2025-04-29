@@ -277,7 +277,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const deals = await Promise.all(
         response.results.map(async (deal) => {
           const associatedCompanies = Array.from(dealCompanyMap.get(deal.id) || [])
-            .map((dealId) => companyMap[dealId])
+            .map((id) => companyMap[id])
             .filter((company) => company !== undefined);
 
           let owner: HubspotOwner | undefined;
