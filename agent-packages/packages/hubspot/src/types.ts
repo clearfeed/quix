@@ -11,7 +11,6 @@ export interface HubspotOwner {
   firstName: string;
   lastName: string;
   email: string;
-  fullName: string;
 }
 
 export interface Deal {

@@ -723,8 +723,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           id: response.userId?.toString() || '',
           firstName: response.firstName || '',
           lastName: response.lastName || '',
-          email: response.email || '',
-          fullName: response.firstName + ' ' + response.lastName
+          email: response.email || ''
         }
       };
     } catch (error) {
