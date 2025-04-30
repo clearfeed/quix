@@ -157,12 +157,12 @@ export interface ListPullRequestsParams {
   owner: string;
   repo: string;
   state?: 'open' | 'closed' | 'all';
-  head?: string;
-  base?: string;
-  sort?: 'created' | 'updated' | 'popularity' | 'long-running';
-  direction?: 'asc' | 'desc';
-  per_page?: number;
+  author?: string;
+  sort?: 'created' | 'updated' | 'comments' | 'interactions' | 'reactions';
+  order?: 'asc' | 'desc';
+  per_page: number;
   page?: number;
+  keyword?: string;
 }
 
 export interface CreatePullRequestReviewParams extends PullRequestParams {

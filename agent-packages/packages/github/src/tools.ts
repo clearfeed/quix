@@ -586,17 +586,22 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
         owner: config.owner ? z.string().optional().default(config.owner) : z.string(),
         repo: config.repo ? z.string().optional().default(config.repo) : z.string(),
         state: z.enum(['open', 'closed', 'all']).optional(),
-        head: z.string().optional(),
-        base: z.string().optional(),
-        sort: z.enum(['created', 'updated', 'popularity', 'long-running']).optional(),
-        direction: z.enum(['asc', 'desc']).optional(),
+        author: z.string().describe('Filter by author username').optional(),
+        sort: z.enum(['created', 'updated', 'comments', 'interactions', 'reactions']).optional(),
+        order: z.enum(['asc', 'desc']).optional(),
+        keyword: z
+          .string()
+          .describe(
+            'Text to search for in issue titles and descriptions. Can include multiple words or phrases'
+          )
+          .optional(),
         per_page: z
           .number()
           .int('Page size must be an integer')
           .min(1, 'Page size must be at least 1')
           .max(100, 'GitHub API limits page size to maximum of 100')
           .describe('Number of items per page (min: 1, max: 100)')
-          .optional(),
+          .default(100),
         page: z.number().optional()
       }),
       func: async (params: ListPullRequestsParams) => service.listPullRequests(params)
