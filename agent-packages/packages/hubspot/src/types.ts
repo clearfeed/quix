@@ -6,6 +6,22 @@ export interface HubspotConfig extends BaseConfig {
   accessToken: string;
 }
 
+export interface HubspotOwner {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
+export interface HubspotCompany {
+  id: string;
+  name: string;
+  domain: string;
+  industry: string;
+  website: string;
+  description: string;
+}
+
 export interface Deal {
   id: string;
   name: string;
@@ -13,22 +29,10 @@ export interface Deal {
   amount: number;
   closeDate: string;
   pipeline: string;
-  owner: string;
-  company: string;
+  owner?: HubspotOwner;
+  companies: HubspotCompany[];
   createdAt: string;
   lastModifiedDate: string;
-}
-
-export interface HubspotDeal {
-  id: string;
-  properties: Record<string, string | null>;
-  associations?: {
-    companies?: {
-      results: Array<{
-        id: string;
-      }>;
-    };
-  };
 }
 
 export interface Contact {
