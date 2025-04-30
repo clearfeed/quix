@@ -581,7 +581,6 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  // Now returns SearchIssuesResponse['data'] due to the change to the search API
   async listPullRequests(
     params: ListPullRequestsParams
   ): Promise<BaseResponse<SearchPullRequestsResponse['data']>> {
