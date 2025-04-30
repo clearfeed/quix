@@ -358,17 +358,17 @@
   dependencies:
     zod "^3.24.2"
 
-"@clearfeed-ai/quix-github-agent@^1.2.7":
-  version "1.2.7"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.2.7.tgz#cc07f2b27390f4c408e742ad1e5d510b56d2a3e2"
-  integrity sha512-J1UI+ozyeeZvzF+qhUv5gOfx89/x3f0TIuFuDgzcGAJ3N2yAkGwO+f/jwU+bcF9Ty53Gq5n9CgD/yzbZ+yZ2Kw==
+"@clearfeed-ai/quix-github-agent@^1.2.8":
+  version "1.2.8"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.2.8.tgz#f466868712d34ab13f121a95c595323c0166a752"
+  integrity sha512-PLLnWI5br8wrZyMMiVFIU/bBWgciwQc6MaBI/RX5fD4219D5QnTGrA9ouwEewG6NtMtSjt4EdGDCEpzP50cUYw==
   dependencies:
     "@octokit/rest" "^21.1.1"
 
-"@clearfeed-ai/quix-hubspot-agent@^1.1.3":
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-1.1.4.tgz#2098ca3fb435938b4b9ca2acab157987a841d953"
-  integrity sha512-WzGPTv+pxMibSHKzK6rWPmAMEx4lpbVo6enl5dptljsBaGAFeFxMPhg4LEj+vi4vufGm6OlL8XsF+D3vxmdAFw==
+"@clearfeed-ai/quix-hubspot-agent@^1.1.5":
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-1.1.5.tgz#3e4ab0ccb4eeec530d3630ac71e39a029047a552"
+  integrity sha512-3XLmryQczm0pENpkflCd+ZrB1Ri4P2MgEWfkZdHuHqK/YiT/dLM56CL965maQfO3M7TuzSUfGQHyCUlyKf08PQ==
   dependencies:
     "@hubspot/api-client" "^12.0.1"
 
