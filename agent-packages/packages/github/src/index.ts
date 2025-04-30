@@ -21,7 +21,8 @@ import {
   UpdatePullRequestBranchParams,
   SearchCodeParams,
   SearchCodeResponse,
-  SearchIssuesGlobalParams
+  SearchIssuesGlobalParams,
+  SearchPullRequestsResponse
 } from './types';
 import { CodeSearchParams, CreateIssueParams } from './types/index';
 import type { OctokitType, RestEndpointMethodTypes } from './types/oktokit';
@@ -582,21 +583,27 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async listPullRequests(
     params: ListPullRequestsParams
-  ): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['list']['response']['data']>> {
+  ): Promise<BaseResponse<SearchPullRequestsResponse['data']>> {
     try {
-      const { owner, repo, state, head, base, sort, direction, per_page, page } = params;
-      const response = await this.client.pulls.list({
-        owner,
-        repo,
-        state,
-        head,
-        base,
+      const { owner, repo, state, author, keyword, sort, order, per_page, page } = params;
+      let query = `repo:${owner}/${repo} is:pr`;
+
+      if (keyword) query += ` in:title,body ${keyword}`;
+      if (author) query += ` author:${author}`;
+      if (state) query += ` state:${state}`;
+      const response = await this.client.search.issuesAndPullRequests({
+        q: query,
         sort,
-        direction,
+        order,
         per_page,
         page
       });
-      return { success: true, data: response.data };
+      return {
+        success: true,
+        data: {
+          pullRequests: response.data.items
+        }
+      };
     } catch (error) {
       console.error('Error listing GitHub pull requests:', error);
       return {
