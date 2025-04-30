@@ -23,7 +23,8 @@ import {
   SearchTasksResponse,
   Task,
   TaskSearchParams,
-  HubspotOwner
+  HubspotOwner,
+  HubspotCompany
 } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 import { validateRequiredFields } from './utils';
@@ -160,20 +161,16 @@ export class HubspotService implements BaseService<HubspotConfig> {
       });
 
       // Batch fetch all unique companies
-      const companies = await this.client.crm.companies.batchApi.read({
-        inputs: Array.from(allCompanyIds).map((id) => ({ id })),
-        properties: ['name', 'domain', 'industry', 'website', 'description'],
-        propertiesWithHistory: []
-      });
+      const companies = await this.getCompanyDetails(allCompanyIds);
       const companyMap = keyBy(
-        companies.results.map((company) => {
+        companies.map((company) => {
           return {
             id: company.id,
-            name: company.properties.name || '',
-            domain: company.properties.domain || '',
-            industry: company.properties.industry || '',
-            website: company.properties.website || '',
-            description: company.properties.description || ''
+            name: company.name || '',
+            domain: company.domain || '',
+            industry: company.industry || '',
+            website: company.website || '',
+            description: company.description || ''
           };
         }),
         'id'
@@ -255,20 +252,16 @@ export class HubspotService implements BaseService<HubspotConfig> {
       });
 
       // Batch fetch all unique companies
-      const companies = await this.client.crm.companies.batchApi.read({
-        inputs: Array.from(allCompanyIds).map((id) => ({ id })),
-        properties: ['name', 'domain', 'industry', 'website', 'description'],
-        propertiesWithHistory: []
-      });
+      const companies = await this.getCompanyDetails(allCompanyIds);
       const companyMap = keyBy(
-        companies.results.map((company) => {
+        companies.map((company) => {
           return {
             id: company.id,
-            name: company.properties.name || '',
-            domain: company.properties.domain || '',
-            industry: company.properties.industry || '',
-            website: company.properties.website || '',
-            description: company.properties.description || ''
+            name: company.name || '',
+            domain: company.domain || '',
+            industry: company.industry || '',
+            website: company.website || '',
+            description: company.description || ''
           };
         }),
         'id'
@@ -280,13 +273,10 @@ export class HubspotService implements BaseService<HubspotConfig> {
             .map((id) => companyMap[id])
             .filter((company) => company !== undefined);
 
-          let owner: HubspotOwner | undefined;
+          let owner: HubspotOwner | null = null;
 
           if (deal.properties.hubspot_owner_id) {
-            const ownerResponse = await this.getOwner(Number(deal.properties.hubspot_owner_id));
-            if (ownerResponse.isOwnerExists) {
-              owner = ownerResponse.owner;
-            }
+            owner = await this.getOwner(Number(deal.properties.hubspot_owner_id));
           }
 
           return {
@@ -295,7 +285,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
             stage: deal.properties.dealstage || '',
             amount: parseFloat(deal.properties.amount || '0'),
             closeDate: deal.properties.closedate || '',
-            pipeline: deal.properties.pipeline || 'Default Pipeline',
+            pipeline: deal.properties.pipeline || '',
             ...(owner && { owner }),
             companies: associatedCompanies,
             createdAt: deal.properties.createdate || '',
@@ -714,23 +704,40 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
-  async getOwner(ownerId: number): Promise<{ isOwnerExists: boolean; owner?: HubspotOwner }> {
+  async getOwner(ownerId: number): Promise<HubspotOwner | null> {
     try {
       const response = await this.client.crm.owners.ownersApi.getById(ownerId);
       return {
-        isOwnerExists: true,
-        owner: {
-          id: response.userId?.toString() || '',
-          firstName: response.firstName || '',
-          lastName: response.lastName || '',
-          email: response.email || ''
-        }
+        id: response.userId?.toString() || '',
+        firstName: response.firstName || '',
+        lastName: response.lastName || '',
+        email: response.email || ''
       };
     } catch (error) {
       console.error(`Error fetching owner with ID ${ownerId}: ${error}`);
-      return {
-        isOwnerExists: false
-      };
+      return null;
+    }
+  }
+
+  private async getCompanyDetails(companyIds: Set<string>): Promise<HubspotCompany[]> {
+    try {
+      const response = await this.client.crm.companies.batchApi.read({
+        inputs: Array.from(companyIds).map((id) => ({ id })),
+        properties: ['name', 'domain', 'industry', 'website', 'description'],
+        propertiesWithHistory: []
+      });
+
+      return response.results.map((company) => ({
+        id: company.id,
+        name: company.properties.name || '',
+        domain: company.properties.domain || '',
+        industry: company.properties.industry || '',
+        website: company.properties.website || '',
+        description: company.properties.description || ''
+      }));
+    } catch (error) {
+      console.error('Error fetching company details:', error);
+      return [];
     }
   }
 }

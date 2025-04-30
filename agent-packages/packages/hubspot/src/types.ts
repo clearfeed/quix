@@ -13,6 +13,15 @@ export interface HubspotOwner {
   email: string;
 }
 
+export interface HubspotCompany {
+  id: string;
+  name: string;
+  domain: string;
+  industry: string;
+  website: string;
+  description: string;
+}
+
 export interface Deal {
   id: string;
   name: string;
@@ -21,14 +30,7 @@ export interface Deal {
   closeDate: string;
   pipeline: string;
   owner?: HubspotOwner;
-  companies: {
-    id: string;
-    name: string;
-    domain: string;
-    industry: string;
-    website: string;
-    description: string;
-  }[];
+  companies: HubspotCompany[];
   createdAt: string;
   lastModifiedDate: string;
 }
