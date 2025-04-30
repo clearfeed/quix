@@ -21,7 +21,8 @@ import {
   UpdatePullRequestBranchParams,
   SearchCodeParams,
   SearchCodeResponse,
-  SearchIssuesGlobalParams
+  SearchIssuesGlobalParams,
+  SearchPullRequestsResponse
 } from './types';
 import { CodeSearchParams, CreateIssueParams } from './types/index';
 import type { OctokitType, RestEndpointMethodTypes } from './types/oktokit';
@@ -580,9 +581,10 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
+  // Now returns SearchIssuesResponse['data'] due to the change to the search API
   async listPullRequests(
     params: ListPullRequestsParams
-  ): Promise<BaseResponse<SearchIssuesResponse['data']>> {
+  ): Promise<BaseResponse<SearchPullRequestsResponse['data']>> {
     try {
       const { owner, repo, state, author, keyword, sort, order, per_page, page } = params;
       let query = `repo:${owner}/${repo} is:pr`;
@@ -600,7 +602,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return {
         success: true,
         data: {
-          issues: response.data.items
+          pullRequests: response.data.items
         }
       };
     } catch (error) {

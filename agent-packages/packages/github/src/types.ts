@@ -38,6 +38,10 @@ export type SearchIssuesResponse = BaseResponse<{
   issues: RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'];
 }>;
 
+export type SearchPullRequestsResponse = BaseResponse<{
+  pullRequests: RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'];
+}>;
+
 type SearchResultItem =
   RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'][number];
 export type PullRequest = SearchResultItem;
