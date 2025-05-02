@@ -1,5 +1,12 @@
 import { z } from 'zod';
-import { TaskStatusEnum, TaskPriorityEnum, TaskTypeEnum } from './types';
+import {
+  TaskStatusEnum,
+  TaskPriorityEnum,
+  TaskTypeEnum,
+  TicketPriorityEnum,
+  TicketStatusEnum,
+  TicketCategoryEnum
+} from './types';
 
 // Task Status Schema
 export const taskStatusSchema = z.nativeEnum(TaskStatusEnum);
@@ -9,6 +16,15 @@ export const taskPrioritySchema = z.nativeEnum(TaskPriorityEnum);
 
 // Task Type Schema
 export const taskTypeSchema = z.nativeEnum(TaskTypeEnum);
+
+// Ticket Priority Schema
+export const ticketPrioritySchema = z.nativeEnum(TicketPriorityEnum);
+
+// Ticket Status Schema
+export const ticketStatusSchema = z.nativeEnum(TicketStatusEnum);
+
+// Ticket Category Schema
+export const ticketCategorySchema = z.nativeEnum(TicketCategoryEnum);
 
 // Base Task Schema
 export const baseTaskSchema = z.object({
@@ -83,4 +99,45 @@ export const taskUpdateSchema = z.object({
     .describe(
       "The ID of the user assigned to this task. Referred to as the task's **owner** or **assignee**—both terms are interchangeable."
     )
+});
+
+// Base Ticket Schema
+export const baseTicketSchema = z.object({
+  subject: z.string().describe('Short title or subject summarizing the ticket.'),
+  content: z.string().describe('Detailed description of the ticket issue or request.'),
+  priority: ticketPrioritySchema
+    .describe('Priority level of the ticket. Defaults to "Medium".')
+    .default(TicketPriorityEnum.MEDIUM),
+  status: ticketStatusSchema
+    .describe('Current status of the ticket. Defaults to "New" if not specified.')
+    .default(TicketStatusEnum.NEW),
+  category: ticketCategorySchema
+    .optional()
+    .describe('Category or type of the ticket. Helps with classification and routing.'),
+  ownerId: z
+    .string()
+    .optional()
+    .describe(
+      'ID of the HubSpot user to assign the ticket to. This is the person responsible for handling this ticket.'
+    )
+});
+
+// Ticket Update Schema
+export const ticketUpdateSchema = z.object({
+  ticketId: z.string().describe('ID of the ticket to be updated.'),
+  subject: z.string().optional().describe('New subject for the ticket.'),
+  content: z.string().optional().describe('New content/description for the ticket.'),
+  priority: ticketPrioritySchema.optional().describe('Updated priority level of the ticket.'),
+  status: ticketStatusSchema.optional().describe('Updated status of the ticket.'),
+  category: ticketCategorySchema.optional().describe('Updated category of the ticket.'),
+  ownerId: z.string().optional().describe('The ID of the user assigned to this ticket.')
+});
+
+// Ticket Search Schema
+export const ticketSearchSchema = z.object({
+  keyword: z.string().optional().describe('Keyword to search for in ticket subjects or content.'),
+  ownerId: z.string().optional().describe("Filter tickets by the owner's ID."),
+  status: ticketStatusSchema.optional().describe('Filter by ticket status.'),
+  priority: ticketPrioritySchema.optional().describe('Filter by ticket priority.'),
+  category: ticketCategorySchema.optional().describe('Filter by ticket category.')
 });

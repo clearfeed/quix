@@ -1,5 +1,12 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
-import { baseTaskSchema, taskSearchSchema, taskUpdateSchema } from './schema';
+import {
+  baseTaskSchema,
+  taskSearchSchema,
+  taskUpdateSchema,
+  baseTicketSchema,
+  ticketSearchSchema,
+  ticketUpdateSchema
+} from './schema';
 import { z } from 'zod';
 
 export interface HubspotConfig extends BaseConfig {
@@ -169,3 +176,70 @@ export type AddNoteResponse = BaseResponse<{
 }>;
 
 export type AddNoteToDealResponse = AddNoteResponse;
+
+// Ticket related enums
+export enum TicketPriorityEnum {
+  HIGH = 'HIGH',
+  MEDIUM = 'MEDIUM',
+  LOW = 'LOW',
+  URGENT = 'URGENT'
+}
+
+export enum TicketStatusEnum {
+  NEW = '1',
+  WAITING_ON_CONTACT = '2',
+  WAITING_ON_US = '3',
+  CLOSED = '4'
+}
+
+export enum TicketCategoryEnum {
+  PRODUCT_ISSUE = 'PRODUCT_ISSUE',
+  BILLING_ISSUE = 'BILLING_ISSUE',
+  FEATURE_REQUEST = 'FEATURE_REQUEST',
+  GENERAL_INQUIRY = 'GENERAL_INQUIRY'
+}
+
+export type Ticket = z.infer<typeof baseTicketSchema>;
+export type TicketSearchParams = z.infer<typeof ticketSearchSchema>;
+export type UpdateTicketParams = z.infer<typeof ticketUpdateSchema>;
+export type CreateTicketParams = Ticket & {
+  associatedObjectType?: HubspotEntityType;
+  associatedObjectId?: string;
+};
+
+export type CreateTicketResponse = BaseResponse<{
+  ticketId: string;
+  ticketDetails: {
+    subject: string;
+    status: string;
+    priority: string;
+    category?: string;
+    content: string;
+  };
+}>;
+
+export type UpdateTicketResponse = BaseResponse<{
+  ticketId: string;
+  ticketDetails: {
+    subject: string;
+    status: string;
+    priority: string;
+    category?: string;
+  };
+}>;
+
+export interface HubspotTicket {
+  id: string;
+  subject: string;
+  content: string;
+  priority: string | undefined;
+  status: string | undefined;
+  category: string | undefined;
+  createdAt: string;
+  lastModifiedDate: string;
+  owner?: HubspotOwner;
+}
+
+export type SearchTicketsResponse = BaseResponse<{
+  tickets: HubspotTicket[];
+}>;
