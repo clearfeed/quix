@@ -74,7 +74,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
   async getOwners(): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
       const response = await this.client.crm.owners.ownersApi.getPage();
-      return { success: true, data: response.results || [] };
+      return { success: true, data: response.results ? response.results : [] };
     } catch (error) {
       console.error('Error fetching owners:', error);
       return {
