@@ -39,7 +39,7 @@ export class LlmProviderService {
     switch (model) {
       case SupportedChatModels.OPENAI:
         if (!slackWorkspace.openai_key) {
-          this.logger.error('OpenAI key not found', { teamId: slackWorkspace.team_id });
+          this.logger.log('OpenAI key not found', { teamId: slackWorkspace.team_id });
           throw new BadRequestException(
             `It looks like your trial has ended and you haven't set an OpenAI API key yet. You can add it ${Md.link(slackWorkspace.getAppHomeRedirectUrl('messages'), 'here')} to keep using Quix.`
           );

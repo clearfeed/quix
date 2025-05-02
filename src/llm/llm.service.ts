@@ -26,8 +26,10 @@ import { ConversationState } from '../database/models/conversation-state.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT } from '../lib/utils/slack-constants';
 import { Md } from 'slack-block-builder';
-import slackify = require('slackify-markdown');
+import { encrypt } from '../lib/utils/encryption';
 import { formatToOpenAITool } from '@langchain/openai';
+import { isEqual } from 'lodash';
+import slackify = require('slackify-markdown');
 
 @Injectable()
 export class LlmService {
@@ -62,7 +64,11 @@ export class LlmService {
 
   async processMessage(args: MessageProcessingArgs): Promise<string> {
     const { message, threadTs, previousMessages, channelId, authorName, slackWorkspace } = args;
-    const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, slackWorkspace);
+    this.logger.log(`Processing message for team ${slackWorkspace.team_id}`, {
+      message: encrypt(message)
+    });
+
+    const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, args.slackWorkspace);
     const [conversationState] = await this.conversationStateModel.upsert(
       {
         team_id: slackWorkspace.team_id,
@@ -92,7 +98,9 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       return "I apologize, but I don't have any tools configured to help with your request at the moment.";
     }
 
-    this.logger.log(`Processing message: ${message} with tools: ${availableCategories.join(', ')}`);
+    this.logger.log(`Processing message with tool categories`, {
+      availableCategories
+    });
 
     // Add previous tool calls to system context for better continuity
     let enhancedPreviousMessages: LLMContext[] = [];
@@ -102,9 +110,12 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
         conversationState.last_tool_calls
       );
     } catch (error) {
-      this.logger.error(`Error enhancing messages with tool context: ${error}`);
+      this.logger.error(`Error enhancing messages with tool context`, error);
       enhancedPreviousMessages = previousMessages;
     }
+    this.logger.log(`Enhanced previous messages`, {
+      enhancedPreviousMessages: encrypt(JSON.stringify(enhancedPreviousMessages))
+    });
 
     const toolSelection = await this.toolSelection(
       message,
@@ -113,12 +124,15 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       llm,
       authorName
     );
-    this.logger.log(
-      `Selected tools: ${Array.isArray(toolSelection.selectedTools) ? toolSelection.selectedTools.join(', ') : 'none'}. Reason: ${toolSelection.reason}`
-    );
+    this.logger.log(`Tool selection complete`, {
+      selectedTools: toolSelection.selectedTools,
+      reason: encrypt(toolSelection.reason)
+    });
 
-    if (toolSelection.selectedTools === 'none') {
-      return toolSelection.content || `I could not find any tools to fulfill your request.`;
+    if (toolSelection.selectedTools === 'none' || isEqual(toolSelection.selectedTools, ['none'])) {
+      return toolSelection.content
+        ? slackify(toolSelection.content)
+        : `I could not find any tools to fulfill your request.`;
     }
 
     const availableFunctions: {
@@ -162,7 +176,9 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
         }
       })
       .join('\n');
-    this.logger.log(`Generated plan: ${formattedPlan}`);
+    this.logger.log(`Plan generated for user's request`, {
+      plan: encrypt(formattedPlan)
+    });
     // Store the plan in conversation state
     conversationState.last_plan = {
       steps: plan,

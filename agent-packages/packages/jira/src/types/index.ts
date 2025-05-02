@@ -83,12 +83,12 @@ export interface JiraResponse<T> {
 }
 
 export interface CreateIssueParams {
-  projectKey?: string;
+  projectKey: string;
   summary: string;
   description?: string;
-  issueType: string;
+  issueTypeId: string;
   priority?: string;
-  assignee?: string;
+  assigneeId?: string;
 }
 
 export type SearchIssuesResponse = {
@@ -109,7 +109,14 @@ export type GetIssueResponse = BaseResponse<{
   issue: JiraIssueResponse & { url: string };
 }>;
 
-export type AssignIssueResponse = BaseResponse<void>;
+export type AssignIssueResponse = BaseResponse<{
+  issueId: string;
+  assignee: {
+    accountId: string;
+    user: JiraUserResponse;
+  };
+  url: string;
+}>;
 
 export type JiraClientConfig = {
   host: string;
@@ -195,8 +202,65 @@ export interface UpdateIssueFields {
   labels?: string[];
 }
 
-export type UpdateIssueResponse = BaseResponse<void>;
+export type UpdateIssueResponse = BaseResponse<{
+  issueId: string;
+  url: string;
+  fields: UpdateIssueFields;
+}>;
 
 export type SearchUsersResponse = BaseResponse<{
   users: JiraUserResponse[];
 }>;
+
+export interface JiraIssueTypeResponse {
+  self: string;
+  id: string;
+  name: string;
+  description: string;
+  iconUrl: string;
+  subtask: boolean;
+}
+
+export type GetIssueTypesResponse = BaseResponse<{
+  issueTypes: JiraIssueTypeResponse[];
+}>;
+
+export type JiraCreateIssueMetadataField = {
+  fieldId: string;
+  hasDefaultValue: boolean;
+  key: string;
+  name: string;
+  operations: string[];
+  required: boolean;
+  allowedValues: {
+    id: string;
+    name: string;
+  }[];
+};
+
+export type JiraCreateIssueMetadata = {
+  fields: JiraCreateIssueMetadataField[];
+  maxResults: number;
+  startAt: number;
+  total: number;
+};
+
+export type JiraUpdateIssueMetadataField = {
+  fieldId: string;
+  hasDefaultValue: boolean;
+  key: string;
+  name: string;
+  operations: string[];
+  allowedValues: {
+    id: string;
+    name: string;
+  }[];
+  required: boolean;
+};
+
+export type JiraUpdateIssueMetadata = {
+  fields: Record<string, JiraUpdateIssueMetadataField>;
+  maxResults: number;
+  startAt: number;
+  total: number;
+};

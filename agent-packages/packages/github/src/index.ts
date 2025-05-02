@@ -21,7 +21,8 @@ import {
   UpdatePullRequestBranchParams,
   SearchCodeParams,
   SearchCodeResponse,
-  SearchIssuesGlobalParams
+  SearchIssuesGlobalParams,
+  SearchPullRequestsResponse
 } from './types';
 import { CodeSearchParams, CreateIssueParams } from './types/index';
 import type { OctokitType, RestEndpointMethodTypes } from './types/oktokit';
@@ -69,6 +70,28 @@ export class GitHubService implements BaseService<GitHubConfig> {
   static async create(config: GitHubConfig): Promise<GitHubService> {
     await loadOctokit();
     return new GitHubService(config);
+  }
+
+  private async checkUserCanBeAssigned(params: {
+    owner: string;
+    repo: string;
+    issueNumber: number;
+    assignee: string;
+  }): Promise<boolean> {
+    try {
+      await this.client.issues.checkUserCanBeAssigned({
+        owner: params.owner,
+        repo: params.repo,
+        issue_number: params.issueNumber,
+        assignee: params.assignee
+      });
+      return true;
+    } catch (error: any) {
+      if (error.status === 404) {
+        return false;
+      }
+      throw error;
+    }
   }
 
   async searchIssues(
@@ -139,6 +162,19 @@ export class GitHubService implements BaseService<GitHubConfig> {
       const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
       const repo = validation.repoName;
       const owner = validation.repoOwner;
+
+      const canBeAssigned = await this.checkUserCanBeAssigned({
+        owner,
+        repo,
+        issueNumber,
+        assignee
+      });
+      if (!canBeAssigned) {
+        throw new Error(
+          `User '${assignee}' cannot be assigned to this issue. Please provide a valid GitHub username of the user who can be assigned to an issue or pull request in this repository.`
+        );
+      }
+
       const response = await this.client.issues.addAssignees({
         owner,
         repo,
@@ -166,6 +202,17 @@ export class GitHubService implements BaseService<GitHubConfig> {
       const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
       const repo = validation.repoName;
       const owner = validation.repoOwner;
+      const canBeAssigned = await this.checkUserCanBeAssigned({
+        owner,
+        repo,
+        issueNumber,
+        assignee
+      });
+      if (!canBeAssigned) {
+        throw new Error(
+          `User '${assignee}' cannot be removed from this issue. Please provide a valid GitHub username of the user who can be assigned to an issue or pull request in this repository.`
+        );
+      }
       const response = await this.client.issues.removeAssignees({
         owner,
         repo,
@@ -536,21 +583,27 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async listPullRequests(
     params: ListPullRequestsParams
-  ): Promise<BaseResponse<RestEndpointMethodTypes['pulls']['list']['response']['data']>> {
+  ): Promise<BaseResponse<SearchPullRequestsResponse['data']>> {
     try {
-      const { owner, repo, state, head, base, sort, direction, per_page, page } = params;
-      const response = await this.client.pulls.list({
-        owner,
-        repo,
-        state,
-        head,
-        base,
+      const { owner, repo, state, author, keyword, sort, order, per_page, page } = params;
+      let query = `repo:${owner}/${repo} is:pr`;
+
+      if (keyword) query += ` in:title,body ${keyword}`;
+      if (author) query += ` author:${author}`;
+      if (state) query += ` state:${state}`;
+      const response = await this.client.search.issuesAndPullRequests({
+        q: query,
         sort,
-        direction,
+        order,
         per_page,
         page
       });
-      return { success: true, data: response.data };
+      return {
+        success: true,
+        data: {
+          pullRequests: response.data.items
+        }
+      };
     } catch (error) {
       console.error('Error listing GitHub pull requests:', error);
       return {
