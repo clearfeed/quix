@@ -20,7 +20,7 @@ import {
   updateDatabaseSchema,
   updatePagePropertiesSchema
 } from './schema';
-import { blockObjectSchema, richTextObjectSchema } from './common';
+import { richTextObjectSchema } from './common';
 
 export type SearchArgs = z.infer<typeof searchSchema>;
 export type AppendBlockChildrenArgs = z.infer<typeof appendBlockChildrenSchema>;
@@ -29,7 +29,6 @@ export type RetrieveBlockChildrenArgs = z.infer<typeof retrieveBlockChildrenSche
 export type DeleteBlockArgs = z.infer<typeof deleteBlockSchema>;
 export type UpdateBlockArgs = z.infer<typeof updateBlockSchema>;
 export type RetrievePageArgs = z.infer<typeof retrievePageSchema>;
-export type UpdatePagePropertiesArgs = z.infer<typeof updatePagePropertiesSchema>;
 export type DeleteOrArchivePageArgs = z.infer<typeof deleteOrArchivePageSchema>;
 export type ListAllUsersArgs = z.infer<typeof listAllUsersSchema>;
 export type RetrieveUserArgs = z.infer<typeof retrieveUserSchema>;
@@ -42,4 +41,4 @@ export type CreateDatabaseItemArgs = z.infer<typeof createDatabaseItemSchema>;
 export type CreateCommentArgs = z.infer<typeof createCommentSchema>;
 export type RetrieveCommentsArgs = z.infer<typeof retrieveCommentsSchema>;
 export type RichTextObject = z.infer<typeof richTextObjectSchema>;
-export type BlockObject = z.infer<typeof blockObjectSchema>;
+export type UpdatePagePropertiesArgs = z.infer<typeof updatePagePropertiesSchema>;

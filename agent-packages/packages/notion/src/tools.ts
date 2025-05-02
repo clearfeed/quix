@@ -21,7 +21,6 @@ import {
   RetrieveUserArgs,
   SearchArgs,
   UpdateBlockArgs,
-  UpdatePagePropertiesArgs,
   updatePagePropertiesSchema,
   retrieveBlockSchema,
   retrieveBlockChildrenSchema,
@@ -39,7 +38,8 @@ import {
   appendBlockChildrenSchema,
   AppendBlockChildrenArgs,
   updateDatabaseSchema,
-  UpdateDatabaseArgs
+  UpdateDatabaseArgs,
+  UpdatePagePropertiesArgs
 } from './types';
 
 const NOTION_TOOL_SELECTION_PROMPT = `
@@ -103,15 +103,15 @@ export function createNotionToolsExport(config: NotionConfig): ToolConfig {
       description: 'Retrieve a page from Notion',
       schema: retrievePageSchema
     }),
-    tool(async (args: UpdatePagePropertiesArgs) => service.updatePageProperties(args), {
-      name: 'notion_update_page_properties',
-      description: 'Update properties of a page or an item in a Notion database',
-      schema: updatePagePropertiesSchema
-    }),
     tool(async (args: DeleteOrArchivePageArgs) => service.deleteOrArchivePage(args), {
       name: 'notion_delete_or_archive_page',
       description: 'Delete or archive a page in Notion',
       schema: deleteOrArchivePageSchema
+    }),
+    tool(async (args: UpdatePagePropertiesArgs) => service.updatePageProperties(args), {
+      name: 'notion_update_page_properties',
+      description: 'Update properties of a page or an item in a Notion database',
+      schema: updatePagePropertiesSchema
     }),
     tool(async (args: CreateDatabaseArgs) => service.createDatabase(args), {
       name: 'notion_create_database',

@@ -138,28 +138,6 @@ export class ToolService {
     // Handle MCP-based integrations
     try {
       // Call MCP service to get tools for all integrations
-      // if (slackWorkspace.notionConfig) {
-      //   const notionMcpTools = await this.mcpService.getMcpServerTools(
-      //     SUPPORTED_INTEGRATIONS.NOTION,
-      //     {
-      //       NOTION_API_TOKEN: slackWorkspace.notionConfig.access_token
-      //     }
-      //   );
-      //   if (notionMcpTools && notionMcpTools.tools.length > 0) {
-      //     this.runningTools.push(notionMcpTools.cleanup);
-      //     tools.notion = {
-      //       toolConfig: {
-      //         tools: notionMcpTools.tools,
-      //         prompts: {
-      //           toolSelection: QuixPrompts.NOTION.toolSelection,
-      //           responseGeneration: QuixPrompts.NOTION.responseGeneration
-      //         }
-      //       },
-      //       config: slackWorkspace.notionConfig
-      //     };
-      //   }
-      // }
-
       if (slackWorkspace.linearConfig) {
         const linearMcpTools = await this.mcpService.getMcpServerTools(
           SUPPORTED_INTEGRATIONS.LINEAR,

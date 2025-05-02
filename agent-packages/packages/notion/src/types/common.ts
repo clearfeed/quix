@@ -45,7 +45,7 @@ export const blockObjectSchema = z.object({
       rich_text: z
         .array(richTextObjectSchema)
         .describe('Array of rich text objects representing the heading content.'),
-      color: z.string().describe('The color of the block.').optional(),
+      color: z.string().describe('The color of the block.').default('default'),
       is_toggleable: z.boolean().describe('Whether the heading can be toggled.').optional()
     })
     .describe('Heading 1 block object.')

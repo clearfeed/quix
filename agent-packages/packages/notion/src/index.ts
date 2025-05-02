@@ -14,7 +14,6 @@ import {
   DeleteBlockArgs,
   UpdateBlockArgs,
   RetrievePageArgs,
-  UpdatePagePropertiesArgs,
   DeleteOrArchivePageArgs,
   ListAllUsersArgs,
   RetrieveUserArgs,
@@ -25,7 +24,8 @@ import {
   RetrieveCommentsArgs,
   SearchArgs,
   UpdateDatabaseArgs,
-  AppendBlockChildrenArgs
+  AppendBlockChildrenArgs,
+  UpdatePagePropertiesArgs
 } from './types';
 
 export * from './types';
@@ -57,21 +57,12 @@ export class NotionService implements BaseService<NotionConfig> {
     };
   }
 
-  validateConfig(
-    config?: Record<string, any>
-  ): { isValid: boolean; error?: string } & Record<string, any> {
-    if (!config?.token || typeof config.token !== 'string') {
-      return {
-        isValid: false,
-        error: 'Notion token is required'
-      };
-    }
+  validateConfig(): { isValid: boolean; error?: string } & Record<string, any> {
     return { isValid: true };
   }
 
   async appendBlockChildren(args: AppendBlockChildrenArgs): Promise<BaseResponse<BlockResponse>> {
     try {
-      console.log('appendBlockChildren', args);
       const { block_id, children } = args;
       const body: Record<string, any> = { children };
       const response = await axios.patch(`${this.baseUrl}/blocks/${block_id}/children`, body, {
@@ -82,14 +73,12 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error appending block children', error);
       return handleNotionError(error);
     }
   }
 
   async retrieveBlock(args: RetrieveBlockArgs): Promise<BaseResponse<BlockResponse>> {
     try {
-      console.log('retrieveBlock', args);
       const { block_id } = args;
       const response = await axios.get(`${this.baseUrl}/blocks/${block_id}`, {
         headers: this.headers
@@ -99,7 +88,6 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error retrieving block', error);
       return handleNotionError(error);
     }
   }
@@ -108,7 +96,6 @@ export class NotionService implements BaseService<NotionConfig> {
     args: RetrieveBlockChildrenArgs
   ): Promise<BaseResponse<ListResponse>> {
     try {
-      console.log('retrieveBlockChildren', args);
       const { block_id, start_cursor, page_size } = args;
       const params = new URLSearchParams();
       if (start_cursor) params.append('start_cursor', start_cursor);
@@ -121,14 +108,12 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error retrieving block children', error);
       return handleNotionError(error);
     }
   }
 
   async deleteBlock(args: DeleteBlockArgs): Promise<BaseResponse<BlockResponse>> {
     try {
-      console.log('deleteBlock', args);
       const { block_id } = args;
       const response = await axios.delete(`${this.baseUrl}/blocks/${block_id}`, {
         headers: this.headers
@@ -138,16 +123,29 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error deleting block', error);
       return handleNotionError(error);
     }
   }
 
   async updateBlock(args: UpdateBlockArgs): Promise<BaseResponse<BlockResponse>> {
     try {
-      console.log('updateBlock', args);
-      const { block_id, block } = args;
-      const response = await axios.patch(`${this.baseUrl}/blocks/${block_id}`, block, {
+      const {
+        block_id,
+        paragraph,
+        heading_1,
+        heading_2,
+        heading_3,
+        bulleted_list_item,
+        numbered_list_item
+      } = args;
+      const body: Record<string, any> = {};
+      if (paragraph) body.paragraph = paragraph;
+      if (heading_1) body.heading_1 = heading_1;
+      if (heading_2) body.heading_2 = heading_2;
+      if (heading_3) body.heading_3 = heading_3;
+      if (bulleted_list_item) body.bulleted_list_item = bulleted_list_item;
+      if (numbered_list_item) body.numbered_list_item = numbered_list_item;
+      const response = await axios.patch(`${this.baseUrl}/blocks/${block_id}`, body, {
         headers: this.headers
       });
       return {
@@ -155,14 +153,12 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error updating block', error);
       return handleNotionError(error);
     }
   }
 
   async retrievePage(args: RetrievePageArgs): Promise<BaseResponse<PageResponse>> {
     try {
-      console.log('retrievePage', args);
       const { page_id } = args;
       const response = await axios.get(`${this.baseUrl}/pages/${page_id}`, {
         headers: this.headers
@@ -172,32 +168,12 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error retrieving page', error);
-      return handleNotionError(error);
-    }
-  }
-
-  async updatePageProperties(args: UpdatePagePropertiesArgs): Promise<BaseResponse<PageResponse>> {
-    try {
-      console.log('updatePageProperties', args);
-      const { page_id, properties } = args;
-      const body = { properties };
-      const response = await axios.patch(`${this.baseUrl}/pages/${page_id}`, body, {
-        headers: this.headers
-      });
-      return {
-        success: true,
-        data: response.data
-      };
-    } catch (error) {
-      console.log('Error updating page properties', error);
       return handleNotionError(error);
     }
   }
 
   async deleteOrArchivePage(args: DeleteOrArchivePageArgs): Promise<BaseResponse<PageResponse>> {
     try {
-      console.log('deleteOrArchivePage', args);
       const { page_id } = args;
       const body = { archived: true };
       const response = await axios.patch(`${this.baseUrl}/pages/${page_id}`, body, {
@@ -208,14 +184,28 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error deleting or archiving page', error);
+      return handleNotionError(error);
+    }
+  }
+
+  async updatePageProperties(args: UpdatePagePropertiesArgs): Promise<BaseResponse<PageResponse>> {
+    try {
+      const { page_id, properties } = args;
+      const body = { properties };
+      const response = await axios.patch(`${this.baseUrl}/pages/${page_id}`, body, {
+        headers: this.headers
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
       return handleNotionError(error);
     }
   }
 
   async listAllUsers(args: ListAllUsersArgs): Promise<BaseResponse<ListResponse>> {
     try {
-      console.log('listAllUsers', args);
       const { start_cursor, page_size } = args;
       const params = new URLSearchParams();
       if (start_cursor) params.append('start_cursor', start_cursor);
@@ -228,14 +218,12 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error listing all users', error);
       return handleNotionError(error);
     }
   }
 
   async retrieveUser(args: RetrieveUserArgs): Promise<BaseResponse<UserResponse>> {
     try {
-      console.log('retrieveUser', args);
       const { user_id } = args;
       const response = await axios.get(`${this.baseUrl}/users/${user_id}`, {
         headers: this.headers
@@ -245,14 +233,12 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error retrieving user', error);
       return handleNotionError(error);
     }
   }
 
   async retrieveBotUser(): Promise<BaseResponse<UserResponse>> {
     try {
-      console.log('retrieveBotUser');
       const response = await axios.get(`${this.baseUrl}/users/me`, {
         headers: this.headers
       });
@@ -261,14 +247,12 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error retrieving bot user', error);
       return handleNotionError(error);
     }
   }
 
   async createDatabase(args: CreateDatabaseArgs): Promise<BaseResponse<DatabaseResponse>> {
     try {
-      console.log('createDatabase', args);
       const { parent, properties, title } = args;
       const body = { parent, title, properties };
       const response = await axios.post(`${this.baseUrl}/databases`, body, {
@@ -279,14 +263,12 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error creating database', error);
       return handleNotionError(error);
     }
   }
 
   async queryDatabase(args: QueryDatabaseArgs): Promise<BaseResponse<ListResponse>> {
     try {
-      console.log('queryDatabase', args);
       const { database_id, sorts, start_cursor, page_size } = args;
       const body: Record<string, any> = {};
       if (sorts) body.sorts = sorts;
@@ -300,14 +282,12 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error querying database', error);
       return handleNotionError(error);
     }
   }
 
   async retrieveDatabase(args: RetrieveDatabaseArgs): Promise<BaseResponse<DatabaseResponse>> {
     try {
-      console.log('retrieveDatabase', args);
       const { database_id } = args;
       const response = await axios.get(`${this.baseUrl}/databases/${database_id}`, {
         headers: this.headers
@@ -317,19 +297,16 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error retrieving database', error);
       return handleNotionError(error);
     }
   }
 
   async updateDatabase(args: UpdateDatabaseArgs): Promise<BaseResponse<DatabaseResponse>> {
     try {
-      console.log('updateDatabase', args);
-      const { database_id, title, description, properties } = args;
+      const { database_id, title, description } = args;
       const body: Record<string, any> = {};
       if (title) body.title = title;
       if (description) body.description = description;
-      if (properties) body.properties = properties;
       const response = await axios.patch(`${this.baseUrl}/databases/${database_id}`, body, {
         headers: this.headers
       });
@@ -338,14 +315,12 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error updating database', error);
       return handleNotionError(error);
     }
   }
 
   async createDatabaseItem(args: CreateDatabaseItemArgs): Promise<BaseResponse<PageResponse>> {
     try {
-      console.log('createDatabaseItem', args);
       const { database_id, properties } = args;
       const body = {
         parent: { database_id },
@@ -359,14 +334,12 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error creating database item', error);
       return handleNotionError(error);
     }
   }
 
   async createComment(args: CreateCommentArgs): Promise<BaseResponse<CommentResponse>> {
     try {
-      console.log('createComment', args);
       const { parent, discussion_id, rich_text } = args;
       const body: Record<string, any> = { rich_text };
       if (parent) {
@@ -383,14 +356,12 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error creating comment', error);
       return handleNotionError(error);
     }
   }
 
   async retrieveComments(args: RetrieveCommentsArgs): Promise<BaseResponse<ListResponse>> {
     try {
-      console.log('retrieveComments', args);
       const { block_id, start_cursor, page_size } = args;
       const params = new URLSearchParams();
       params.append('block_id', block_id);
@@ -404,14 +375,12 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error retrieving comments', error);
       return handleNotionError(error);
     }
   }
 
   async search(args: SearchArgs): Promise<BaseResponse<ListResponse>> {
     try {
-      console.log('search', args);
       const { query, filter, sort, start_cursor } = args;
       const body: Record<string, any> = {};
       if (query) body.query = query;
@@ -427,7 +396,6 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response.data
       };
     } catch (error) {
-      console.log('Error searching', error);
       return handleNotionError(error);
     }
   }

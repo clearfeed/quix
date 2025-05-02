@@ -25,11 +25,63 @@ export const deleteBlockSchema = z.object({
 
 export const updateBlockSchema = z.object({
   block_id: z.string().describe('The ID of the block to update.' + commonIdDescription),
-  block: z
-    .object({})
-    .describe(
-      'Update the content of a block in Notion based on its type. The update replaces the entire value for a given field.'
-    )
+  paragraph: z
+    .object({
+      rich_text: z
+        .array(richTextObjectSchema)
+        .describe('Array of rich text objects representing the updated paragraph content.'),
+      color: z.string().describe('The updated color of the block.').default('default')
+    })
+    .describe('Updated paragraph block object.')
+    .optional(),
+  heading_1: z
+    .object({
+      rich_text: z
+        .array(richTextObjectSchema)
+        .describe('Array of rich text objects representing the updated heading content.'),
+      color: z.string().describe('The updated color of the block.').default('default'),
+      is_toggleable: z.boolean().describe('Whether the heading can be toggled.').optional()
+    })
+    .describe('Heading 1 block object.')
+    .optional(),
+  heading_2: z
+    .object({
+      rich_text: z
+        .array(richTextObjectSchema)
+        .describe('Array of rich text objects representing the updated heading content.'),
+      color: z.string().describe('The updated color of the block.').default('default'),
+      is_toggleable: z.boolean().describe('Whether the heading can be toggled.').optional()
+    })
+    .describe('Heading 2 block object.')
+    .optional(),
+  heading_3: z
+    .object({
+      rich_text: z
+        .array(richTextObjectSchema)
+        .describe('Array of rich text objects representing the updated heading content.'),
+      color: z.string().describe('The updated color of the block.').default('default'),
+      is_toggleable: z.boolean().describe('Whether the heading can be toggled.').optional()
+    })
+    .describe('Heading 3 block object.')
+    .optional(),
+  bulleted_list_item: z
+    .object({
+      rich_text: z
+        .array(richTextObjectSchema)
+        .describe('Array of rich text objects representing the updated list item content.'),
+      color: z.string().describe('The updated color of the block.').default('default')
+    })
+    .describe('Updated bulleted list item block object.')
+    .optional(),
+  numbered_list_item: z
+    .object({
+      rich_text: z
+        .array(richTextObjectSchema)
+        .describe('Array of rich text objects representing the updated list item content.'),
+      color: z.string().describe('The updated color of the block.').default('default')
+    })
+    .describe('Updated numbered list item block object.')
+    .optional()
 });
 
 // Pages tools
@@ -42,7 +94,7 @@ export const updatePagePropertiesSchema = z.object({
     .string()
     .describe('The ID of the page or database item to update.' + commonIdDescription),
   properties: z
-    .object({})
+    .record(z.any())
     .describe('Properties to update. These correspond to the columns or fields in the database.')
 });
 
@@ -65,13 +117,20 @@ export const retrieveBotUserSchema = z.object({
 
 // Databases tools
 export const createDatabaseSchema = z.object({
-  parent: z.object({}).describe('Parent object of the database'),
+  parent: z
+    .object({
+      type: z.literal('page_id'),
+      page_id: z
+        .string()
+        .describe('The ID of the page to create the database in.' + commonIdDescription)
+    })
+    .describe('Parent object of the database'),
   title: z
     .array(richTextObjectSchema)
     .describe('Title of database as it appears in Notion. An array of rich text objects.')
     .optional(),
   properties: z
-    .object({})
+    .record(z.any())
     .describe(
       'Property schema of database. The keys are the names of properties as they appear in Notion and the values are property schema objects.'
     )
@@ -110,12 +169,6 @@ export const updateDatabaseSchema = z.object({
     .describe(
       'An array of rich text objects that represents the description of the database that is displayed in the Notion UI.'
     )
-    .optional(),
-  properties: z
-    .object({})
-    .describe(
-      'The properties of a database to be changed in the request, in the form of a JSON object.'
-    )
     .optional()
 });
 
@@ -124,9 +177,9 @@ export const createDatabaseItemSchema = z.object({
     .string()
     .describe('The ID of the database to add the item to.' + commonIdDescription),
   properties: z
-    .object({})
+    .record(z.any())
     .describe(
-      'Properties of the new database item. Get the keys of properties from "notion_retrieve_database".'
+      'A map of property names and their values for the new database item. Use the keys retrieved from "notion_retrieve_database" to construct this object.'
     )
 });
 
