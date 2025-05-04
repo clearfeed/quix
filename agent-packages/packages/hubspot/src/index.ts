@@ -36,6 +36,7 @@ import {
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 import { validateRequiredFields } from './utils';
 import { keyBy } from 'lodash';
+import { ASSOCIATION_TYPE_IDS } from './constants';
 
 export * from './types';
 export * from './tools';
@@ -322,9 +323,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
        * @see https://developers.hubspot.com/docs/guides/api/crm/associations/associations-v4#note-to-object
        */
       const associationTypeIds = {
-        [HubspotEntityType.DEAL]: 214,
-        [HubspotEntityType.COMPANY]: 190,
-        [HubspotEntityType.CONTACT]: 202
+        [HubspotEntityType.DEAL]: ASSOCIATION_TYPE_IDS.NOTE_TO_ENTITY.DEAL,
+        [HubspotEntityType.COMPANY]: ASSOCIATION_TYPE_IDS.NOTE_TO_ENTITY.COMPANY,
+        [HubspotEntityType.CONTACT]: ASSOCIATION_TYPE_IDS.NOTE_TO_ENTITY.CONTACT
       };
 
       const response = await this.client.crm.objects.notes.basicApi.create({
@@ -467,9 +468,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
        * @see https://developers.hubspot.com/docs/guides/api/crm/associations/associations-v4#task-to-object
        */
       const associationTypeIds = {
-        [HubspotEntityType.DEAL]: 216,
-        [HubspotEntityType.COMPANY]: 192,
-        [HubspotEntityType.CONTACT]: 204
+        [HubspotEntityType.DEAL]: ASSOCIATION_TYPE_IDS.TASK_TO_ENTITY.DEAL,
+        [HubspotEntityType.COMPANY]: ASSOCIATION_TYPE_IDS.TASK_TO_ENTITY.COMPANY,
+        [HubspotEntityType.CONTACT]: ASSOCIATION_TYPE_IDS.TASK_TO_ENTITY.CONTACT
       };
 
       const taskInput: SimplePublicObjectInputForCreate = {
@@ -784,9 +785,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
          * @see https://developers.hubspot.com/docs/guides/api/crm/associations/associations-v4#ticket-to-object
          */
         const associationTypeIds: Record<string, number> = {
-          [HubspotEntityType.DEAL]: 28,
-          [HubspotEntityType.COMPANY]: 339,
-          [HubspotEntityType.CONTACT]: 16
+          [HubspotEntityType.DEAL]: ASSOCIATION_TYPE_IDS.TICKET_TO_ENTITY.DEAL,
+          [HubspotEntityType.COMPANY]: ASSOCIATION_TYPE_IDS.TICKET_TO_ENTITY.COMPANY,
+          [HubspotEntityType.CONTACT]: ASSOCIATION_TYPE_IDS.TICKET_TO_ENTITY.CONTACT
         };
 
         const typeId = associationTypeIds[associatedObjectType];
