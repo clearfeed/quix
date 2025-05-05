@@ -26,6 +26,7 @@ import {
   ReplyToThreadParams,
   SlackConfig
 } from './types';
+import slackify = require('slackify-markdown');
 export * from './schema';
 export * from './tools';
 
@@ -91,9 +92,15 @@ export class SlackService implements BaseService<SlackConfig> {
 
   async postMessage(params: PostMessageParams): Promise<BaseResponse<ChatPostMessageResponse>> {
     try {
+      let text = params.text;
+      try {
+        text = slackify(params.text);
+      } catch (error) {
+        console.error('Failed to convert message to Slack Markdwn', error);
+      }
       const result = await this.client.chat.postMessage({
         channel: params.channel_id,
-        text: params.text
+        text
       });
 
       return {
@@ -115,10 +122,16 @@ export class SlackService implements BaseService<SlackConfig> {
 
   async replyToThread(params: ReplyToThreadParams): Promise<BaseResponse<ChatPostMessageResponse>> {
     try {
+      let text = params.text;
+      try {
+        text = slackify(params.text);
+      } catch (error) {
+        console.error('Failed to convert thread reply to Slack Markdwn', error);
+      }
       const result = await this.client.chat.postMessage({
         channel: params.channel_id,
         thread_ts: params.thread_ts,
-        text: params.text
+        text
       });
 
       return {

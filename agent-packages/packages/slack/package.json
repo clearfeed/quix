@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-slack-agent",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -22,6 +22,7 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@slack/web-api": "^6.9.0"
+    "@slack/web-api": "^6.9.0",
+    "slackify-markdown": "^4.4.0"
   }
 }
