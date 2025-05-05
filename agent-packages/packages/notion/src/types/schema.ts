@@ -104,7 +104,7 @@ export const deleteOrArchivePageSchema = z.object({
 // Users tools
 export const listAllUsersSchema = z.object({
   start_cursor: z.string().describe('Pagination start cursor for listing users').optional(),
-  page_size: z.number().describe('Number of users to retrieve (max 100)').optional()
+  page_size: z.number().describe('Number of users to retrieve (max 100)').optional().default(100)
 });
 
 export const retrieveUserSchema = z.object({
@@ -178,9 +178,7 @@ export const createDatabaseItemSchema = z.object({
     .describe('The ID of the database to add the item to.' + commonIdDescription),
   properties: z
     .record(z.any())
-    .describe(
-      'A map of property names and their values for the new database item. Use the keys retrieved from "notion_retrieve_database" to construct this object.'
-    )
+    .describe('Properties of the new database item. These should match the database schema.')
 });
 
 // Comments tools
