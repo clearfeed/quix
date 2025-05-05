@@ -13,6 +13,7 @@ import {
   WebAPIHTTPError,
   WebAPIRateLimitedError
 } from '@slack/web-api';
+import slackify = require('slackify-markdown');
 import {
   AddReactionParams,
   GetChannelHistoryParams,
@@ -93,7 +94,7 @@ export class SlackService implements BaseService<SlackConfig> {
     try {
       const result = await this.client.chat.postMessage({
         channel: params.channel_id,
-        text: params.text
+        text: slackify(params.text)
       });
 
       return {
@@ -118,7 +119,7 @@ export class SlackService implements BaseService<SlackConfig> {
       const result = await this.client.chat.postMessage({
         channel: params.channel_id,
         thread_ts: params.thread_ts,
-        text: params.text
+        text: slackify(params.text)
       });
 
       return {
