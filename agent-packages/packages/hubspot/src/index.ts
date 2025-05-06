@@ -1097,6 +1097,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
         return {
           id: ticket.id,
+          url: this.getTicketUrl(ticket.id),
           subject: ticket.properties.subject || '',
           content: ticket.properties.content || '',
           priority: ticket.properties.hs_ticket_priority || '',
