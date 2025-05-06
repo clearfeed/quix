@@ -138,26 +138,26 @@ export const associateTicketWithEntitySchema = z.object({
     )
 });
 
-// Ticket Update Schema
 export const ticketUpdateSchema = z.object({
   ticketId: z.string().describe('ID of the ticket to be updated.'),
-  subject: z.string().optional().describe('New subject for the ticket.'),
-  content: z.string().optional().describe('New content/description for the ticket.'),
-  priority: ticketPrioritySchema.optional().describe('Updated priority level of the ticket.'),
+  subject: z.string().optional().describe('Updated subject or title of the ticket.'),
+  content: z.string().optional().describe('Updated detailed description or content of the ticket.'),
+  priority: ticketPrioritySchema.optional().describe('New priority level for the ticket.'),
   stage: z.string().optional().describe('Updated stage name of the ticket.'),
-  ownerId: z.string().optional().describe('The ID of the user assigned to this ticket.')
+  ownerId: z.string().optional().describe('Updated HubSpot user ID to assign the ticket to.')
 });
 
-// Ticket Search Schema
 export const ticketSearchSchema = z.object({
-  keyword: z.string().optional().describe('Keyword to search for in ticket subjects or content.'),
-  ownerId: z.string().optional().describe("Filter tickets by the owner's ID."),
+  keyword: z.string().optional().describe('Search term to look for in ticket subject or content.'),
+  ownerId: z.string().optional().describe('Filter results by HubSpot user ID of the ticket owner.'),
   stage: z.string().optional().describe('Filter by ticket stage.'),
-  priority: ticketPrioritySchema.optional().describe('Filter by ticket priority.')
+  priority: ticketPrioritySchema.optional().describe('Filter tickets by priority level.')
 });
 
 export const getPipelinesSchema = z.object({
   entityType: z
     .enum(['ticket', 'deal'])
-    .describe('HubSpot object type to retrieve pipelines for. Supported types: "ticket" or "deal".')
+    .describe(
+      'Type of HubSpot object for which to fetch pipelines. Use "ticket" to get ticket pipelines, or "deal" for deal pipelines.'
+    )
 });
