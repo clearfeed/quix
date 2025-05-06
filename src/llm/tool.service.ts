@@ -76,7 +76,10 @@ export class ToolService {
       const updatedHubspotConfig =
         await this.integrationsService.updateHubspotConfig(hubspotConfig);
       tools.hubspot = {
-        toolConfig: createHubspotToolsExport({ accessToken: updatedHubspotConfig.access_token }),
+        toolConfig: createHubspotToolsExport({
+          accessToken: updatedHubspotConfig.access_token,
+          hubId: updatedHubspotConfig.hub_id
+        }),
         config: hubspotConfig
       };
     }

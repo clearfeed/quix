@@ -7,9 +7,9 @@ import {
   HubspotEntityType,
   UpdateTaskParams,
   TaskSearchParams,
-  UpdateTicketParams,
-  TicketSearchParams,
-  GetPipelinesParams
+  GetPipelinesParams,
+  CreateTicketParams,
+  AssociateTicketWithEntityParams
 } from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
@@ -20,9 +20,8 @@ import {
   taskUpdateSchema,
   taskSearchSchema,
   baseTicketSchema,
-  ticketUpdateSchema,
-  ticketSearchSchema,
-  getPipelinesSchema
+  getPipelinesSchema,
+  associateTicketWithEntitySchema
 } from './schema';
 
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
@@ -235,66 +234,16 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         'Search for tasks in HubSpot using filters such as keyword, owner, status, priority, due date.',
       schema: taskSearchSchema
     }),
-    tool(async (args: z.infer<typeof baseTicketSchema>) => service.createTicket(args), {
+    tool(async (args: CreateTicketParams) => service.createTicket(args), {
       name: 'create_hubspot_ticket',
-      description: 'Create a new standalone ticket in HubSpot without any associations.',
+      description:
+        'Create a new HubSpot ticket. Optionally associate it with a contact, company, or deal by providing both `associatedObjectType` and `associatedObjectId`.',
       schema: baseTicketSchema
     }),
-    tool(
-      async (args: z.infer<typeof baseTicketSchema> & { entityId: string }) =>
-        service.createTicket({
-          ...args,
-          associatedObjectType: HubspotEntityType.COMPANY,
-          associatedObjectId: args.entityId
-        }),
-      {
-        name: 'create_ticket_for_hubspot_company',
-        description: 'Create a new ticket and associate it with a HubSpot company.',
-        schema: baseTicketSchema.extend({
-          entityId: z.string().describe('HubSpot Company ID that this ticket is linked to.')
-        })
-      }
-    ),
-    tool(
-      async (args: z.infer<typeof baseTicketSchema> & { entityId: string }) =>
-        service.createTicket({
-          ...args,
-          associatedObjectType: HubspotEntityType.DEAL,
-          associatedObjectId: args.entityId
-        }),
-      {
-        name: 'create_ticket_for_hubspot_deal',
-        description: 'Create a new ticket and associate it with a HubSpot deal.',
-        schema: baseTicketSchema.extend({
-          entityId: z.string().describe('HubSpot Deal ID that this ticket is linked to.')
-        })
-      }
-    ),
-    tool(
-      async (args: z.infer<typeof baseTicketSchema> & { entityId: string }) =>
-        service.createTicket({
-          ...args,
-          associatedObjectType: HubspotEntityType.CONTACT,
-          associatedObjectId: args.entityId
-        }),
-      {
-        name: 'create_ticket_for_hubspot_contact',
-        description: 'Create a new ticket and associate it with a HubSpot contact.',
-        schema: baseTicketSchema.extend({
-          entityId: z.string().describe('HubSpot Contact ID that this ticket is linked to.')
-        })
-      }
-    ),
-    tool(async (args: UpdateTicketParams) => service.updateTicket(args), {
-      name: 'update_hubspot_ticket',
-      description: 'Update the details of an existing ticket in HubSpot.',
-      schema: ticketUpdateSchema
-    }),
-    tool(async (args: TicketSearchParams) => service.searchTickets(args), {
-      name: 'search_hubspot_tickets',
-      description:
-        'Search for tickets in HubSpot using filters such as keyword, owner, status, priority, or category.',
-      schema: ticketSearchSchema
+    tool(async (args: AssociateTicketWithEntityParams) => service.associateTicketWithEntity(args), {
+      name: 'associate_ticket_with_entity',
+      description: 'Associate an existing ticket with a HubSpot contact, company, or deal.',
+      schema: associateTicketWithEntitySchema
     })
   ];
 

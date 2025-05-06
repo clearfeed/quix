@@ -6,12 +6,14 @@ import {
   baseTicketSchema,
   ticketSearchSchema,
   ticketUpdateSchema,
-  getPipelinesSchema
+  getPipelinesSchema,
+  associateTicketWithEntitySchema
 } from './schema';
 import { z } from 'zod';
 
 export interface HubspotConfig extends BaseConfig {
   accessToken: string;
+  hubId: number;
 }
 
 export interface HubspotOwner {
@@ -161,9 +163,9 @@ export type SearchTasksResponse = BaseResponse<{
 }>;
 
 export enum HubspotEntityType {
-  DEAL = 'deals',
-  COMPANY = 'companies',
-  CONTACT = 'contacts'
+  DEAL = 'deal',
+  COMPANY = 'company',
+  CONTACT = 'contact'
 }
 
 export interface CreateNoteParams {
@@ -186,40 +188,37 @@ export enum TicketPriorityEnum {
   URGENT = 'URGENT'
 }
 
-export enum TicketCategoryEnum {
-  PRODUCT_ISSUE = 'PRODUCT_ISSUE',
-  BILLING_ISSUE = 'BILLING_ISSUE',
-  FEATURE_REQUEST = 'FEATURE_REQUEST',
-  GENERAL_INQUIRY = 'GENERAL_INQUIRY'
-}
-
 export type GetPipelinesParams = z.infer<typeof getPipelinesSchema>;
 export type Ticket = z.infer<typeof baseTicketSchema>;
 export type TicketSearchParams = z.infer<typeof ticketSearchSchema>;
 export type UpdateTicketParams = z.infer<typeof ticketUpdateSchema>;
-export type CreateTicketParams = Ticket & {
-  associatedObjectType?: HubspotEntityType;
-  associatedObjectId?: string;
-};
+export type CreateTicketParams = z.infer<typeof baseTicketSchema>;
+export type AssociateTicketWithEntityParams = z.infer<typeof associateTicketWithEntitySchema>;
 
 export type CreateTicketResponse = BaseResponse<{
-  ticketId: string;
-  ticketDetails: {
+  ticket: {
+    id: string;
     subject: string;
     stage: string;
     priority: string;
-    category?: string;
     content: string;
+    url: string;
   };
 }>;
 
-export type UpdateTicketResponse = BaseResponse<{
+export type AssociateTicketWithEntityResponse = BaseResponse<{
   ticketId: string;
-  ticketDetails: {
+  associatedObjectType: HubspotEntityType;
+  associatedObjectId: string;
+}>;
+
+export type UpdateTicketResponse = BaseResponse<{
+  ticket: {
+    id: string;
     subject: string;
     stage: string;
     priority: string;
-    category?: string;
+    url: string;
   };
 }>;
 
@@ -229,7 +228,6 @@ export interface HubspotTicket {
   content: string;
   priority: string | undefined;
   stage: string | undefined;
-  category: string | undefined;
   createdAt: string;
   lastModifiedDate: string;
   owner?: HubspotOwner;

@@ -33,7 +33,9 @@ import {
   SearchTicketsResponse,
   HubspotTicket,
   HubspotPipeline,
-  HubspotPipelineStage
+  HubspotPipelineStage,
+  AssociateTicketWithEntityParams,
+  AssociateTicketWithEntityResponse
 } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 import { validateRequiredFields } from './utils';
@@ -740,17 +742,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async createTicket(params: CreateTicketParams): Promise<CreateTicketResponse> {
     try {
-      const {
-        subject,
-        content,
-        priority,
-        category,
-        ownerId,
-        stage,
-        pipeline,
-        associatedObjectType,
-        associatedObjectId
-      } = params;
+      const { subject, content, priority, ownerId, stage, pipeline } = params;
 
       const ticketInput: SimplePublicObjectInputForCreate = {
         properties: {
@@ -761,10 +753,6 @@ export class HubspotService implements BaseService<HubspotConfig> {
         },
         associations: []
       };
-
-      if (category) {
-        ticketInput.properties.hs_ticket_category = category;
-      }
 
       if (ownerId) {
         ticketInput.properties.hubspot_owner_id = ownerId;
@@ -783,40 +771,18 @@ export class HubspotService implements BaseService<HubspotConfig> {
         ticketInput.properties.hs_pipeline_stage = validStages[0].id;
       }
 
-      if (associatedObjectType && associatedObjectId) {
-        /**
-         * @see https://developers.hubspot.com/docs/guides/api/crm/associations/associations-v4#ticket-to-object
-         */
-        const associationTypeIds: Record<string, number> = {
-          [HubspotEntityType.DEAL]: ASSOCIATION_TYPE_IDS.TICKET_TO_ENTITY.DEAL,
-          [HubspotEntityType.COMPANY]: ASSOCIATION_TYPE_IDS.TICKET_TO_ENTITY.COMPANY,
-          [HubspotEntityType.CONTACT]: ASSOCIATION_TYPE_IDS.TICKET_TO_ENTITY.CONTACT
-        };
-
-        const typeId = associationTypeIds[associatedObjectType];
-        ticketInput.associations.push({
-          to: { id: associatedObjectId },
-          types: [
-            {
-              associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
-              associationTypeId: typeId
-            }
-          ]
-        });
-      }
-
       const response = await this.client.crm.tickets.basicApi.create(ticketInput);
 
       return {
         success: true,
         data: {
-          ticketId: response.id,
-          ticketDetails: {
+          ticket: {
+            id: response.id,
             subject: response.properties.subject || '',
             stage: response.properties.hs_pipeline_stage || '',
             priority: response.properties.hs_ticket_priority || '',
-            category: response.properties.hs_ticket_category || '',
-            content: response.properties.hs_ticket_body || ''
+            content: response.properties.hs_ticket_body || '',
+            url: this.getTicketUrl(response.id)
           }
         }
       };
@@ -829,9 +795,52 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
+  async associateTicketWithEntity(
+    params: AssociateTicketWithEntityParams
+  ): Promise<AssociateTicketWithEntityResponse> {
+    try {
+      const { ticketId, associatedObjectType, associatedObjectId } = params;
+      const associationTypeIds: Record<string, number> = {
+        [HubspotEntityType.DEAL]: ASSOCIATION_TYPE_IDS.TICKET_TO_ENTITY.DEAL,
+        [HubspotEntityType.COMPANY]: ASSOCIATION_TYPE_IDS.TICKET_TO_ENTITY.COMPANY,
+        [HubspotEntityType.CONTACT]: ASSOCIATION_TYPE_IDS.TICKET_TO_ENTITY.CONTACT
+      };
+
+      const typeId = associationTypeIds[associatedObjectType];
+
+      await this.client.crm.associations.v4.basicApi.create(
+        'ticket',
+        ticketId,
+        associatedObjectType,
+        associatedObjectId,
+        [
+          {
+            associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
+            associationTypeId: typeId
+          }
+        ]
+      );
+
+      return {
+        success: true,
+        data: {
+          ticketId,
+          associatedObjectType,
+          associatedObjectId
+        }
+      };
+    } catch (error) {
+      console.error('Error associating ticket with entity:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to associate ticket with entity'
+      };
+    }
+  }
+
   async updateTicket(params: UpdateTicketParams): Promise<UpdateTicketResponse> {
     try {
-      const { subject, content, stage, priority, category, ownerId, ticketId } = params;
+      const { subject, content, stage, priority, ownerId, ticketId } = params;
       const properties: Record<string, string> = {};
       if (subject) {
         properties.subject = subject;
@@ -851,9 +860,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
       if (priority) {
         properties.hs_ticket_priority = priority;
       }
-      if (category) {
-        properties.hs_ticket_category = category;
-      }
+
       if (ownerId) {
         properties.hubspot_owner_id = ownerId;
       }
@@ -865,12 +872,12 @@ export class HubspotService implements BaseService<HubspotConfig> {
       return {
         success: true,
         data: {
-          ticketId: response.id,
-          ticketDetails: {
+          ticket: {
+            id: response.id,
             subject: response.properties.subject || '',
             stage: response.properties.hs_pipeline_stage || '',
             priority: response.properties.hs_ticket_priority || '',
-            category: response.properties.hs_ticket_category || ''
+            url: this.getTicketUrl(response.id)
           }
         }
       };
@@ -881,6 +888,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
         error: error instanceof Error ? error.message : 'Failed to update HubSpot ticket'
       };
     }
+  }
+  private getTicketUrl(id: string): string {
+    return `https://app.hubspot.com/contacts/${this.config.hubId}/ticket/${id}`;
   }
 
   async getPipelines(entityType: string): Promise<BaseResponse<HubspotPipeline[]>> {
@@ -1036,18 +1046,6 @@ export class HubspotService implements BaseService<HubspotConfig> {
               propertyName: 'hs_ticket_priority',
               operator: FilterOperatorEnum.Eq,
               value: params.priority
-            }
-          ]
-        });
-      }
-
-      if (params.category) {
-        filterGroups.push({
-          filters: [
-            {
-              propertyName: 'hs_ticket_category',
-              operator: FilterOperatorEnum.Eq,
-              value: params.category
             }
           ]
         });
