@@ -92,10 +92,15 @@ export class SlackService {
       code
     });
     if (response.ok && response.team?.id) {
-      const authTest = await this.webClient.auth.test({
-        token: response.access_token
-      });
-      const workspaceUrl = authTest.url || '';
+      let workspaceUrl = '';
+      try {
+        const authTest = await this.webClient.auth.test({
+          token: response.access_token
+        });
+        workspaceUrl = authTest.url || '';
+      } catch (error) {
+        this.logger.error('Failed to get workspace URL from auth.test', error);
+      }
       const domain = workspaceUrl ? new URL(workspaceUrl).hostname.split('.')[0] : '';
       const [slackWorkspace] = await this.slackWorkspaceModel.upsert(
         {
