@@ -101,7 +101,15 @@ export class SlackService {
       } catch (error) {
         this.logger.error('Failed to get workspace URL from auth.test', error);
       }
-      const domain = workspaceUrl ? new URL(workspaceUrl).hostname.split('.')[0] : '';
+      let domain = '';
+      if (workspaceUrl) {
+        try {
+          domain = new URL(workspaceUrl).hostname.split('.')[0];
+        } catch (error) {
+          this.logger.error('Failed to extract domain from workspace URL', error);
+          // Consider setting a default domain or handling the error appropriately
+        }
+      }
       const [slackWorkspace] = await this.slackWorkspaceModel.upsert(
         {
           team_id: response.team?.id,
