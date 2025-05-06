@@ -108,7 +108,7 @@ export const baseTicketSchema = z.object({
     .string()
     .optional()
     .describe(
-      'ID of the ticket stage within the selected pipeline. Make sure the stage ID exists in the specified pipeline. If unsure, use "get_hubspot_pipelines" to fetch valid stages.'
+      'ID of the stage within the selected ticket pipeline. Ensure the stage ID is valid for the specified pipeline. If the user provides a stage name instead of an ID, use "get_hubspot_pipelines" to look up the correct stage ID based on the pipeline ID.'
     ),
   priority: ticketPrioritySchema
     .describe('Priority level of the ticket. Defaults to "Medium" if not specified.')
