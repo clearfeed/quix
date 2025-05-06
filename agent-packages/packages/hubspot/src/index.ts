@@ -4,7 +4,7 @@ import {
   SimplePublicObjectInputForCreate,
   SimplePublicObjectInput
 } from '@hubspot/api-client/lib/codegen/crm/objects/tasks';
-import { BaseService } from '@clearfeed-ai/quix-common-agent';
+import { BaseResponse, BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   HubspotConfig,
   SearchDealsResponse,
@@ -31,7 +31,9 @@ import {
   UpdateTicketResponse,
   TicketSearchParams,
   SearchTicketsResponse,
-  HubspotTicket
+  HubspotTicket,
+  HubspotPipeline,
+  HubspotPipelineStage
 } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 import { validateRequiredFields } from './utils';
@@ -57,19 +59,6 @@ export class HubspotService implements BaseService<HubspotConfig> {
       return { isValid: false, error: 'HubSpot access token is not configured' };
     }
     return { isValid: true };
-  }
-
-  async getPipelines(): Promise<{ success: boolean; data?: any; error?: string }> {
-    try {
-      const response = await this.client.crm.pipelines.pipelinesApi.getAll('deals');
-      return { success: true, data: response.results };
-    } catch (error) {
-      console.error('Error fetching pipelines:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch pipelines'
-      };
-    }
   }
 
   async getOwners(): Promise<{ success: boolean; data?: any; error?: string }> {
@@ -755,9 +744,10 @@ export class HubspotService implements BaseService<HubspotConfig> {
         subject,
         content,
         priority,
-        status,
         category,
         ownerId,
+        stage,
+        pipeline,
         associatedObjectType,
         associatedObjectId
       } = params;
@@ -767,7 +757,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           subject,
           content,
           hs_ticket_priority: priority,
-          hs_pipeline_stage: status
+          hs_pipeline: pipeline
         },
         associations: []
       };
@@ -778,6 +768,19 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       if (ownerId) {
         ticketInput.properties.hubspot_owner_id = ownerId;
+      }
+
+      if (stage) {
+        ticketInput.properties.hs_pipeline_stage = stage;
+      } else {
+        const validStages = await this.getValidStagesByPipelineId(pipeline);
+        if (!validStages || !validStages.length) {
+          return {
+            success: false,
+            error: 'There is no valid stage for the pipeline. Atleast one valid stage is required.'
+          };
+        }
+        ticketInput.properties.hs_pipeline_stage = validStages[0].id;
       }
 
       if (associatedObjectType && associatedObjectId) {
@@ -810,7 +813,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           ticketId: response.id,
           ticketDetails: {
             subject: response.properties.subject || '',
-            status: response.properties.hs_pipeline_stage || '',
+            stage: response.properties.hs_pipeline_stage || '',
             priority: response.properties.hs_ticket_priority || '',
             category: response.properties.hs_ticket_category || '',
             content: response.properties.hs_ticket_body || ''
@@ -828,30 +831,36 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async updateTicket(params: UpdateTicketParams): Promise<UpdateTicketResponse> {
     try {
+      const { subject, content, stage, priority, category, ownerId, ticketId } = params;
       const properties: Record<string, string> = {};
-
-      if (params.subject) {
-        properties.subject = params.subject;
+      if (subject) {
+        properties.subject = subject;
       }
-      if (params.content) {
-        properties.content = params.content;
+      if (content) {
+        properties.content = content;
       }
-      if (params.status) {
-        properties.hs_pipeline_stage = params.status;
+      if (stage) {
+        const validStage = await this.validateTicketStatus({
+          ticketId: params.ticketId,
+          statusStage: stage
+        });
+        if (validStage) {
+          properties.hs_pipeline_stage = validStage;
+        }
       }
-      if (params.priority) {
-        properties.hs_ticket_priority = params.priority;
+      if (priority) {
+        properties.hs_ticket_priority = priority;
       }
-      if (params.category) {
-        properties.hs_ticket_category = params.category;
+      if (category) {
+        properties.hs_ticket_category = category;
       }
-      if (params.ownerId) {
-        properties.hubspot_owner_id = params.ownerId;
+      if (ownerId) {
+        properties.hubspot_owner_id = ownerId;
       }
 
       const updateInput: SimplePublicObjectInput = { properties };
 
-      const response = await this.client.crm.tickets.basicApi.update(params.ticketId, updateInput);
+      const response = await this.client.crm.tickets.basicApi.update(ticketId, updateInput);
 
       return {
         success: true,
@@ -859,7 +868,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           ticketId: response.id,
           ticketDetails: {
             subject: response.properties.subject || '',
-            status: response.properties.hs_pipeline_stage || '',
+            stage: response.properties.hs_pipeline_stage || '',
             priority: response.properties.hs_ticket_priority || '',
             category: response.properties.hs_ticket_category || ''
           }
@@ -871,6 +880,105 @@ export class HubspotService implements BaseService<HubspotConfig> {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to update HubSpot ticket'
       };
+    }
+  }
+
+  async getPipelines(entityType: string): Promise<BaseResponse<HubspotPipeline[]>> {
+    try {
+      const response = await this.client.crm.pipelines.pipelinesApi.getAll(entityType);
+
+      const result = response.results.map((pipeline) => {
+        return {
+          id: pipeline.id,
+          label: pipeline.label,
+          archived: pipeline.archived,
+          displayOrder: pipeline.displayOrder,
+          stages: pipeline.stages.map((stage) => {
+            return {
+              id: stage.id,
+              label: stage.label,
+              archived: stage.archived,
+              displayOrder: stage.displayOrder
+            };
+          })
+        };
+      });
+
+      return {
+        success: true,
+        data: result
+      };
+    } catch (error) {
+      console.error('Error fetching ticket pipelines:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch ticket pipelines'
+      };
+    }
+  }
+
+  async getValidStagesByPipelineId(pipelineId: string): Promise<HubspotPipelineStage[] | null> {
+    try {
+      const stageResponse = await this.client.crm.pipelines.pipelineStagesApi.getAll(
+        'ticket',
+        pipelineId
+      );
+      const validStages = stageResponse.results.filter((stage) => !stage.archived);
+      return validStages || null;
+    } catch (error) {
+      console.error('Error getting pipeline Id', error);
+      return null;
+    }
+  }
+
+  async getTicketById(ticketId: string): Promise<HubspotTicket | null> {
+    try {
+      const response = await this.client.crm.tickets.basicApi.getById(ticketId, [
+        'hs_pipeline',
+        'hs_pipeline_stage',
+        'hs_ticket_priority',
+        'hs_ticket_category',
+        'hubspot_owner_id'
+      ]);
+      const result = {
+        id: response.id,
+        subject: response.properties.subject || '',
+        content: response.properties.hs_ticket_body || '',
+        stage: response.properties.hs_pipeline_stage || '',
+        priority: response.properties.hs_ticket_priority || '',
+        category: response.properties.hs_ticket_category || '',
+        ownerId: response.properties.hubspot_owner_id || '',
+        createdAt: response.properties.createdate || '',
+        lastModifiedDate: response.properties.hs_lastmodifieddate || '',
+        pipeline: response.properties.hs_pipeline || ''
+      };
+      return result || null;
+    } catch (error) {
+      console.error('Error getting ticket by Id', error);
+      return null;
+    }
+  }
+
+  async validateTicketStatus(params: {
+    ticketId: string;
+    statusStage: string;
+  }): Promise<string | null> {
+    try {
+      const ticket = await this.getTicketById(params.ticketId);
+      if (!ticket?.pipeline) return null;
+      const validStages = await this.getValidStagesByPipelineId(ticket.pipeline);
+      if (!validStages) {
+        return null;
+      }
+
+      const validStage = validStages.find(
+        (stage) => stage.label.toLowerCase() === params.statusStage.toLowerCase()
+      );
+
+      return validStage?.id || null;
+    } catch (error) {
+      console.error('Error validating ticket status:', error);
+      return null;
     }
   }
 
@@ -909,13 +1017,13 @@ export class HubspotService implements BaseService<HubspotConfig> {
         });
       }
 
-      if (params.status) {
+      if (params.stage) {
         filterGroups.push({
           filters: [
             {
               propertyName: 'hs_pipeline_stage',
               operator: FilterOperatorEnum.Eq,
-              value: params.status
+              value: params.stage
             }
           ]
         });
@@ -951,7 +1059,6 @@ export class HubspotService implements BaseService<HubspotConfig> {
           'subject',
           'content',
           'hs_ticket_priority',
-          'hs_pipeline_stage',
           'hs_ticket_category',
           'createdate',
           'hs_lastmodifieddate',
@@ -995,7 +1102,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           subject: ticket.properties.subject || '',
           content: ticket.properties.content || '',
           priority: ticket.properties.hs_ticket_priority || '',
-          status: ticket.properties.hs_pipeline_stage || '',
+          stage: ticket.properties.hs_pipeline_stage || '',
           category: ticket.properties.hs_ticket_category || '',
           createdAt: ticket.properties.createdate || '',
           lastModifiedDate: ticket.properties.hs_lastmodifieddate || '',

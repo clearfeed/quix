@@ -5,7 +5,8 @@ import {
   taskUpdateSchema,
   baseTicketSchema,
   ticketSearchSchema,
-  ticketUpdateSchema
+  ticketUpdateSchema,
+  getPipelinesSchema
 } from './schema';
 import { z } from 'zod';
 
@@ -185,13 +186,6 @@ export enum TicketPriorityEnum {
   URGENT = 'URGENT'
 }
 
-export enum TicketStatusEnum {
-  NEW = '1',
-  WAITING_ON_CONTACT = '2',
-  WAITING_ON_US = '3',
-  CLOSED = '4'
-}
-
 export enum TicketCategoryEnum {
   PRODUCT_ISSUE = 'PRODUCT_ISSUE',
   BILLING_ISSUE = 'BILLING_ISSUE',
@@ -199,6 +193,7 @@ export enum TicketCategoryEnum {
   GENERAL_INQUIRY = 'GENERAL_INQUIRY'
 }
 
+export type GetPipelinesParams = z.infer<typeof getPipelinesSchema>;
 export type Ticket = z.infer<typeof baseTicketSchema>;
 export type TicketSearchParams = z.infer<typeof ticketSearchSchema>;
 export type UpdateTicketParams = z.infer<typeof ticketUpdateSchema>;
@@ -211,7 +206,7 @@ export type CreateTicketResponse = BaseResponse<{
   ticketId: string;
   ticketDetails: {
     subject: string;
-    status: string;
+    stage: string;
     priority: string;
     category?: string;
     content: string;
@@ -222,7 +217,7 @@ export type UpdateTicketResponse = BaseResponse<{
   ticketId: string;
   ticketDetails: {
     subject: string;
-    status: string;
+    stage: string;
     priority: string;
     category?: string;
   };
@@ -233,13 +228,29 @@ export interface HubspotTicket {
   subject: string;
   content: string;
   priority: string | undefined;
-  status: string | undefined;
+  stage: string | undefined;
   category: string | undefined;
   createdAt: string;
   lastModifiedDate: string;
   owner?: HubspotOwner;
+  pipeline?: string;
 }
 
 export type SearchTicketsResponse = BaseResponse<{
   tickets: HubspotTicket[];
 }>;
+
+export type HubspotPipelineStage = {
+  id: string;
+  label: string;
+  archived: boolean;
+  displayOrder: number;
+};
+
+export type HubspotPipeline = {
+  id: string;
+  label: string;
+  archived: boolean;
+  displayOrder: number;
+  stages: HubspotPipelineStage[];
+};

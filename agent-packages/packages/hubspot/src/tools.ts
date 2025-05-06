@@ -8,7 +8,8 @@ import {
   UpdateTaskParams,
   TaskSearchParams,
   UpdateTicketParams,
-  TicketSearchParams
+  TicketSearchParams,
+  GetPipelinesParams
 } from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
@@ -20,7 +21,8 @@ import {
   taskSearchSchema,
   baseTicketSchema,
   ticketUpdateSchema,
-  ticketSearchSchema
+  ticketSearchSchema,
+  getPipelinesSchema
 } from './schema';
 
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
@@ -147,10 +149,10 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         company: z.string().optional().describe('The company associated with the contact')
       })
     }),
-    tool(async () => service.getPipelines(), {
+    tool(async (args: GetPipelinesParams) => service.getPipelines(args.entityType), {
       name: 'get_hubspot_pipelines',
-      description: 'Fetch all deal pipelines and their stages from HubSpot',
-      schema: z.object({})
+      description: 'Fetch all pipelines for an entity type (e.g., deal, ticket).',
+      schema: getPipelinesSchema
     }),
     tool(async () => service.getOwners(), {
       name: 'get_hubspot_owners',

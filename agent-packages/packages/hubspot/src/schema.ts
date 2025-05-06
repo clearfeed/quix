@@ -4,7 +4,6 @@ import {
   TaskPriorityEnum,
   TaskTypeEnum,
   TicketPriorityEnum,
-  TicketStatusEnum,
   TicketCategoryEnum
 } from './types';
 
@@ -19,9 +18,6 @@ export const taskTypeSchema = z.nativeEnum(TaskTypeEnum);
 
 // Ticket Priority Schema
 export const ticketPrioritySchema = z.nativeEnum(TicketPriorityEnum);
-
-// Ticket Status Schema
-export const ticketStatusSchema = z.nativeEnum(TicketStatusEnum);
 
 // Ticket Category Schema
 export const ticketCategorySchema = z.nativeEnum(TicketCategoryEnum);
@@ -105,12 +101,15 @@ export const taskUpdateSchema = z.object({
 export const baseTicketSchema = z.object({
   subject: z.string().describe('Short title or subject summarizing the ticket.'),
   content: z.string().describe('Detailed description of the ticket issue or request.'),
+  stage: z
+    .string()
+    .optional()
+    .describe(
+      'Stage ID of the ticket. Valid stage values are from the selected pipeline. If stage is not present in the selected pipeline then ask for correct stage name.'
+    ),
   priority: ticketPrioritySchema
     .describe('Priority level of the ticket. Defaults to "Medium".')
     .default(TicketPriorityEnum.MEDIUM),
-  status: ticketStatusSchema
-    .describe('Current status of the ticket. Defaults to "New" if not specified.')
-    .default(TicketStatusEnum.NEW),
   category: ticketCategorySchema
     .optional()
     .describe('Category or type of the ticket. Helps with classification and routing.'),
@@ -119,6 +118,11 @@ export const baseTicketSchema = z.object({
     .optional()
     .describe(
       'ID of the HubSpot user to assign the ticket to. This is the person responsible for handling this ticket.'
+    ),
+  pipeline: z
+    .string()
+    .describe(
+      'ID of the valid ticket pipeline. Use "get_hubspot_pipelines" to get all the pipeline for ticket entity.'
     )
 });
 
@@ -128,7 +132,7 @@ export const ticketUpdateSchema = z.object({
   subject: z.string().optional().describe('New subject for the ticket.'),
   content: z.string().optional().describe('New content/description for the ticket.'),
   priority: ticketPrioritySchema.optional().describe('Updated priority level of the ticket.'),
-  status: ticketStatusSchema.optional().describe('Updated status of the ticket.'),
+  stage: z.string().optional().describe('Updated stage name of the ticket.'),
   category: ticketCategorySchema.optional().describe('Updated category of the ticket.'),
   ownerId: z.string().optional().describe('The ID of the user assigned to this ticket.')
 });
@@ -137,7 +141,12 @@ export const ticketUpdateSchema = z.object({
 export const ticketSearchSchema = z.object({
   keyword: z.string().optional().describe('Keyword to search for in ticket subjects or content.'),
   ownerId: z.string().optional().describe("Filter tickets by the owner's ID."),
-  status: ticketStatusSchema.optional().describe('Filter by ticket status.'),
+  stage: z.string().optional().describe('Filter by ticket stage.'),
   priority: ticketPrioritySchema.optional().describe('Filter by ticket priority.'),
   category: ticketCategorySchema.optional().describe('Filter by ticket category.')
+});
+
+// Pipeline search schema
+export const getPipelinesSchema = z.object({
+  entityType: z.enum(['ticket', 'deal']).describe('Object type to search for pipelines')
 });
