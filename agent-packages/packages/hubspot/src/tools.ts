@@ -151,7 +151,8 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
     }),
     tool(async (args: GetPipelinesParams) => service.getPipelines(args.entityType), {
       name: 'get_hubspot_pipelines',
-      description: 'Fetch all pipelines for an entity type (e.g., deal, ticket).',
+      description:
+        'Retrieve all pipelines in HubSpot associated with a specific object type, such as tickets or deals.',
       schema: getPipelinesSchema
     }),
     tool(async () => service.getOwners(), {

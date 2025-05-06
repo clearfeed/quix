@@ -146,7 +146,8 @@ export const ticketSearchSchema = z.object({
   category: ticketCategorySchema.optional().describe('Filter by ticket category.')
 });
 
-// Pipeline search schema
 export const getPipelinesSchema = z.object({
-  entityType: z.enum(['ticket', 'deal']).describe('Object type to search for pipelines')
+  entityType: z
+    .enum(['ticket', 'deal'])
+    .describe('HubSpot object type to retrieve pipelines for. Supported types: "ticket" or "deal".')
 });
