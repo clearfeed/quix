@@ -92,10 +92,16 @@ export class SlackService {
       code
     });
     if (response.ok && response.team?.id) {
+      const authTest = await this.webClient.auth.test({
+        token: response.access_token
+      });
+      const workspaceUrl = authTest.url || '';
+      const domain = workspaceUrl ? new URL(workspaceUrl).hostname.split('.')[0] : '';
       const [slackWorkspace] = await this.slackWorkspaceModel.upsert(
         {
           team_id: response.team?.id,
           name: response.team?.name || '',
+          domain,
           bot_access_token: response.access_token || '',
           authed_user_id: response.authed_user?.id || '',
           bot_user_id: response.bot_user_id || '',
@@ -107,6 +113,7 @@ export class SlackService {
         {
           fields: [
             'name',
+            'domain',
             'bot_access_token',
             'authed_user_id',
             'bot_user_id',
