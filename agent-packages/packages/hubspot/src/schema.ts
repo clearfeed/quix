@@ -108,7 +108,7 @@ export const baseTicketSchema = z.object({
     .string()
     .optional()
     .describe(
-      'ID of the stage within the selected ticket pipeline. Ensure the stage ID is valid for the specified pipeline. If the user provides a stage name instead of an ID, use "get_hubspot_pipelines" to look up the correct stage ID based on the pipeline ID.'
+      'ID of the stage (also referred to as status)  within the selected ticket pipeline. Ensure the stage ID is valid for the specified pipeline. If the user provides a stage name instead of an ID, use "get_hubspot_pipelines" to look up the correct stage ID based on the pipeline ID.'
     ),
   priority: ticketPrioritySchema
     .describe('Priority level of the ticket. Defaults to "Medium" if not specified.')
@@ -143,7 +143,10 @@ export const ticketUpdateSchema = z.object({
   subject: z.string().optional().describe('Updated subject or title of the ticket.'),
   content: z.string().optional().describe('Updated detailed description or content of the ticket.'),
   priority: ticketPrioritySchema.optional().describe('New priority level for the ticket.'),
-  stage: z.string().optional().describe('Updated stage name of the ticket.'),
+  stage: z
+    .string()
+    .optional()
+    .describe('Updated stage (also referred to as status) name for the ticket.'),
   ownerId: z.string().optional().describe('Updated HubSpot user ID to assign the ticket to.')
 });
 
