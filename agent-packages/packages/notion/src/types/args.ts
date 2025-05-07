@@ -3,7 +3,6 @@ import {
   appendBlockChildrenSchema,
   createCommentSchema,
   createDatabaseItemSchema,
-  createDatabaseSchema,
   deleteBlockSchema,
   deleteOrArchivePageSchema,
   listAllUsersSchema,
@@ -17,7 +16,6 @@ import {
   retrieveUserSchema,
   searchSchema,
   updateBlockSchema,
-  updateDatabaseSchema,
   updatePagePropertiesSchema
 } from './schema';
 import { richTextObjectSchema } from './common';
@@ -33,10 +31,8 @@ export type DeleteOrArchivePageArgs = z.infer<typeof deleteOrArchivePageSchema>;
 export type ListAllUsersArgs = z.infer<typeof listAllUsersSchema>;
 export type RetrieveUserArgs = z.infer<typeof retrieveUserSchema>;
 export type RetrieveBotUserArgs = z.infer<typeof retrieveBotUserSchema>;
-export type CreateDatabaseArgs = z.infer<typeof createDatabaseSchema>;
 export type QueryDatabaseArgs = z.infer<typeof queryDatabaseSchema>;
 export type RetrieveDatabaseArgs = z.infer<typeof retrieveDatabaseSchema>;
-export type UpdateDatabaseArgs = z.infer<typeof updateDatabaseSchema>;
 export type CreateDatabaseItemArgs = z.infer<typeof createDatabaseItemSchema>;
 export type CreateCommentArgs = z.infer<typeof createCommentSchema>;
 export type RetrieveCommentsArgs = z.infer<typeof retrieveCommentsSchema>;

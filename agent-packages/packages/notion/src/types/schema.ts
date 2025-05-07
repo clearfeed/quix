@@ -116,26 +116,6 @@ export const retrieveBotUserSchema = z.object({
 });
 
 // Databases tools
-export const createDatabaseSchema = z.object({
-  parent: z
-    .object({
-      type: z.literal('page_id'),
-      page_id: z
-        .string()
-        .describe('The ID of the page to create the database in.' + commonIdDescription)
-    })
-    .describe('Parent object of the database'),
-  title: z
-    .array(richTextObjectSchema)
-    .describe('Title of database as it appears in Notion. An array of rich text objects.')
-    .optional(),
-  properties: z
-    .record(z.any())
-    .describe(
-      'Property schema of database. The keys are the names of properties as they appear in Notion and the values are property schema objects.'
-    )
-});
-
 export const queryDatabaseSchema = z.object({
   database_id: z.string().describe('The ID of the database to query.' + commonIdDescription),
   sorts: z
@@ -154,22 +134,6 @@ export const queryDatabaseSchema = z.object({
 
 export const retrieveDatabaseSchema = z.object({
   database_id: z.string().describe('The ID of the database to retrieve.' + commonIdDescription)
-});
-
-export const updateDatabaseSchema = z.object({
-  database_id: z.string().describe('The ID of the database to update.' + commonIdDescription),
-  title: z
-    .array(richTextObjectSchema)
-    .describe(
-      'An array of rich text objects that represents the title of the database that is displayed in the Notion UI.'
-    )
-    .optional(),
-  description: z
-    .array(richTextObjectSchema)
-    .describe(
-      'An array of rich text objects that represents the description of the database that is displayed in the Notion UI.'
-    )
-    .optional()
 });
 
 export const createDatabaseItemSchema = z.object({

@@ -2,7 +2,6 @@ import { BaseResponse, BaseService } from '@clearfeed-ai/quix-common-agent';
 import axios from 'axios';
 import {
   BlockResponse,
-  CreateDatabaseArgs,
   DatabaseResponse,
   ListResponse,
   NotionConfig,
@@ -23,7 +22,6 @@ import {
   CreateCommentArgs,
   RetrieveCommentsArgs,
   SearchArgs,
-  UpdateDatabaseArgs,
   AppendBlockChildrenArgs,
   UpdatePagePropertiesArgs
 } from './types';
@@ -31,16 +29,8 @@ import {
 export * from './types';
 export * from './tools';
 
-function handleNotionError(e: unknown) {
-  let errorMsg = 'Unknown error';
-  if (e instanceof Error) {
-    errorMsg = e.message;
-  } else if (typeof e === 'string') {
-    errorMsg = e;
-  } else if (typeof e === 'object' && e !== null) {
-    errorMsg = JSON.stringify(e);
-  }
-  return { success: false, error: errorMsg };
+function handleNotionError(error: unknown) {
+  return { success: false, error: JSON.stringify(error) };
 }
 
 export class NotionService implements BaseService<NotionConfig> {
@@ -251,22 +241,6 @@ export class NotionService implements BaseService<NotionConfig> {
     }
   }
 
-  async createDatabase(args: CreateDatabaseArgs): Promise<BaseResponse<DatabaseResponse>> {
-    try {
-      const { parent, properties, title } = args;
-      const body = { parent, title, properties };
-      const response = await axios.post(`${this.baseUrl}/databases`, body, {
-        headers: this.headers
-      });
-      return {
-        success: true,
-        data: response.data
-      };
-    } catch (error) {
-      return handleNotionError(error);
-    }
-  }
-
   async queryDatabase(args: QueryDatabaseArgs): Promise<BaseResponse<ListResponse>> {
     try {
       const { database_id, sorts, start_cursor, page_size } = args;
@@ -290,24 +264,6 @@ export class NotionService implements BaseService<NotionConfig> {
     try {
       const { database_id } = args;
       const response = await axios.get(`${this.baseUrl}/databases/${database_id}`, {
-        headers: this.headers
-      });
-      return {
-        success: true,
-        data: response.data
-      };
-    } catch (error) {
-      return handleNotionError(error);
-    }
-  }
-
-  async updateDatabase(args: UpdateDatabaseArgs): Promise<BaseResponse<DatabaseResponse>> {
-    try {
-      const { database_id, title, description } = args;
-      const body: Record<string, any> = {};
-      if (title) body.title = title;
-      if (description) body.description = description;
-      const response = await axios.patch(`${this.baseUrl}/databases/${database_id}`, body, {
         headers: this.headers
       });
       return {

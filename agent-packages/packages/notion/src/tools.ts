@@ -4,7 +4,6 @@ import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import {
   CreateCommentArgs,
   createCommentSchema,
-  CreateDatabaseArgs,
   CreateDatabaseItemArgs,
   createDatabaseItemSchema,
   DeleteBlockArgs,
@@ -27,7 +26,6 @@ import {
   deleteBlockSchema,
   updateBlockSchema,
   retrievePageSchema,
-  createDatabaseSchema,
   queryDatabaseSchema,
   retrieveDatabaseSchema,
   retrieveCommentsSchema,
@@ -37,8 +35,6 @@ import {
   retrieveBotUserSchema,
   appendBlockChildrenSchema,
   AppendBlockChildrenArgs,
-  updateDatabaseSchema,
-  UpdateDatabaseArgs,
   UpdatePagePropertiesArgs
 } from './types';
 
@@ -113,11 +109,6 @@ export function createNotionToolsExport(config: NotionConfig): ToolConfig {
       description: 'Update properties of a page or an item in a Notion database',
       schema: updatePagePropertiesSchema
     }),
-    tool(async (args: CreateDatabaseArgs) => service.createDatabase(args), {
-      name: 'notion_create_database',
-      description: 'Create a database in Notion',
-      schema: createDatabaseSchema
-    }),
     tool(async (args: QueryDatabaseArgs) => service.queryDatabase(args), {
       name: 'notion_query_database',
       description: 'Query a database in Notion',
@@ -127,11 +118,6 @@ export function createNotionToolsExport(config: NotionConfig): ToolConfig {
       name: 'notion_retrieve_database',
       description: 'Retrieve a database in Notion',
       schema: retrieveDatabaseSchema
-    }),
-    tool(async (args: UpdateDatabaseArgs) => service.updateDatabase(args), {
-      name: 'notion_update_database',
-      description: 'Update a database in Notion',
-      schema: updateDatabaseSchema
     }),
     tool(async (args: CreateDatabaseItemArgs) => service.createDatabaseItem(args), {
       name: 'notion_create_database_item',
