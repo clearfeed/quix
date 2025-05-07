@@ -23,53 +23,39 @@ export const richTextObjectSchema = z.object({
     .describe('Styling information for the text. By default, give nothing for default text.')
 });
 
+const headingBlockObjectSchema = z.object({
+  rich_text: z
+    .array(richTextObjectSchema)
+    .describe('Array of rich text objects representing the heading content.'),
+  color: z.literal('default').describe('The color of the block.'),
+  is_toggleable: z.boolean().describe('Whether the heading can be toggled.').optional()
+});
+
 // Block object schema
 export const blockObjectSchema = z.object({
   object: z.literal('block').describe("Should be 'block'."),
   type: z
-    .string()
-    .describe(
-      "Type of the block. Possible values include 'paragraph', 'heading_1', 'heading_2', 'heading_3', 'bulleted_list_item', 'numbered_list_item'. Not all types are supported for creation via API."
-    ),
+    .enum([
+      'paragraph',
+      'heading_1',
+      'heading_2',
+      'heading_3',
+      'bulleted_list_item',
+      'numbered_list_item'
+    ])
+    .describe('Type of the block.'),
   paragraph: z
     .object({
       rich_text: z
         .array(richTextObjectSchema)
-        .describe('Array of rich text objects representing the comment content.'),
+        .describe('Array of rich text objects representing the content.'),
       color: z.literal('default').describe('The color of the block.')
     })
     .describe('Paragraph block object.')
     .optional(),
-  heading_1: z
-    .object({
-      rich_text: z
-        .array(richTextObjectSchema)
-        .describe('Array of rich text objects representing the heading content.'),
-      color: z.literal('default').describe('The color of the block.'),
-      is_toggleable: z.boolean().describe('Whether the heading can be toggled.').optional()
-    })
-    .describe('Heading 1 block object.')
-    .optional(),
-  heading_2: z
-    .object({
-      rich_text: z
-        .array(richTextObjectSchema)
-        .describe('Array of rich text objects representing the heading content.'),
-      color: z.literal('default').describe('The color of the block.'),
-      is_toggleable: z.boolean().describe('Whether the heading can be toggled.').optional()
-    })
-    .describe('Heading 2 block object.')
-    .optional(),
-  heading_3: z
-    .object({
-      rich_text: z
-        .array(richTextObjectSchema)
-        .describe('Array of rich text objects representing the heading content.'),
-      color: z.literal('default').describe('The color of the block.'),
-      is_toggleable: z.boolean().describe('Whether the heading can be toggled.').optional()
-    })
-    .describe('Heading 3 block object.')
-    .optional(),
+  heading_1: headingBlockObjectSchema.describe('Heading 1 block object.').optional(),
+  heading_2: headingBlockObjectSchema.describe('Heading 2 block object.').optional(),
+  heading_3: headingBlockObjectSchema.describe('Heading 3 block object.').optional(),
   bulleted_list_item: z
     .object({
       rich_text: z
