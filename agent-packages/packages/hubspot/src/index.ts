@@ -4,7 +4,7 @@ import {
   SimplePublicObjectInputForCreate,
   SimplePublicObjectInput
 } from '@hubspot/api-client/lib/codegen/crm/objects/tasks';
-import { BaseService } from '@clearfeed-ai/quix-common-agent';
+import { BaseResponse, BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   HubspotConfig,
   SearchDealsResponse,
@@ -24,11 +24,23 @@ import {
   Task,
   TaskSearchParams,
   HubspotOwner,
-  HubspotCompany
+  HubspotCompany,
+  CreateTicketParams,
+  CreateTicketResponse,
+  UpdateTicketParams,
+  UpdateTicketResponse,
+  TicketSearchParams,
+  SearchTicketsResponse,
+  HubspotTicket,
+  HubspotPipeline,
+  HubspotPipelineStage,
+  AssociateTicketWithEntityParams,
+  AssociateTicketWithEntityResponse
 } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 import { validateRequiredFields } from './utils';
 import { keyBy } from 'lodash';
+import { ASSOCIATION_TYPE_IDS } from './constants';
 
 export * from './types';
 export * from './tools';
@@ -51,23 +63,10 @@ export class HubspotService implements BaseService<HubspotConfig> {
     return { isValid: true };
   }
 
-  async getPipelines(): Promise<{ success: boolean; data?: any; error?: string }> {
-    try {
-      const response = await this.client.crm.pipelines.pipelinesApi.getAll('deals');
-      return { success: true, data: response.results };
-    } catch (error) {
-      console.error('Error fetching pipelines:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch pipelines'
-      };
-    }
-  }
-
   async getOwners(): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
       const response = await this.client.crm.owners.ownersApi.getPage();
-      return { success: true, data: response.results };
+      return { success: true, data: response.results ? response.results : [] };
     } catch (error) {
       console.error('Error fetching owners:', error);
       return {
@@ -315,9 +314,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
        * @see https://developers.hubspot.com/docs/guides/api/crm/associations/associations-v4#note-to-object
        */
       const associationTypeIds = {
-        [HubspotEntityType.DEAL]: 214,
-        [HubspotEntityType.COMPANY]: 190,
-        [HubspotEntityType.CONTACT]: 202
+        [HubspotEntityType.DEAL]: ASSOCIATION_TYPE_IDS.NOTE_TO_ENTITY.DEAL,
+        [HubspotEntityType.COMPANY]: ASSOCIATION_TYPE_IDS.NOTE_TO_ENTITY.COMPANY,
+        [HubspotEntityType.CONTACT]: ASSOCIATION_TYPE_IDS.NOTE_TO_ENTITY.CONTACT
       };
 
       const response = await this.client.crm.objects.notes.basicApi.create({
@@ -460,9 +459,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
        * @see https://developers.hubspot.com/docs/guides/api/crm/associations/associations-v4#task-to-object
        */
       const associationTypeIds = {
-        [HubspotEntityType.DEAL]: 216,
-        [HubspotEntityType.COMPANY]: 192,
-        [HubspotEntityType.CONTACT]: 204
+        [HubspotEntityType.DEAL]: ASSOCIATION_TYPE_IDS.TASK_TO_ENTITY.DEAL,
+        [HubspotEntityType.COMPANY]: ASSOCIATION_TYPE_IDS.TASK_TO_ENTITY.COMPANY,
+        [HubspotEntityType.CONTACT]: ASSOCIATION_TYPE_IDS.TASK_TO_ENTITY.CONTACT
       };
 
       const taskInput: SimplePublicObjectInputForCreate = {
@@ -738,6 +737,392 @@ export class HubspotService implements BaseService<HubspotConfig> {
     } catch (error) {
       console.error('Error fetching company details:', error);
       return [];
+    }
+  }
+
+  async createTicket(params: CreateTicketParams): Promise<CreateTicketResponse> {
+    try {
+      const { subject, content, priority, ownerId, stage, pipeline } = params;
+
+      const ticketInput: SimplePublicObjectInputForCreate = {
+        properties: {
+          subject,
+          content,
+          hs_ticket_priority: priority,
+          hs_pipeline: pipeline
+        },
+        associations: []
+      };
+
+      if (ownerId) {
+        ticketInput.properties.hubspot_owner_id = ownerId;
+      }
+
+      if (stage) {
+        ticketInput.properties.hs_pipeline_stage = stage;
+      } else {
+        const validStages = await this.getValidStagesByPipelineId(pipeline);
+        if (!validStages || !validStages.length) {
+          return {
+            success: false,
+            error: 'There is no valid stage for the pipeline. Atleast one valid stage is required.'
+          };
+        }
+        ticketInput.properties.hs_pipeline_stage = validStages[0].id;
+      }
+
+      const response = await this.client.crm.tickets.basicApi.create(ticketInput);
+
+      return {
+        success: true,
+        data: {
+          ticket: {
+            id: response.id,
+            subject: response.properties.subject || '',
+            stage: response.properties.hs_pipeline_stage || '',
+            priority: response.properties.hs_ticket_priority || '',
+            content: response.properties.hs_ticket_body || '',
+            url: this.getTicketUrl(response.id)
+          }
+        }
+      };
+    } catch (error) {
+      console.error('Error creating HubSpot ticket:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create HubSpot ticket'
+      };
+    }
+  }
+
+  async associateTicketWithEntity(
+    params: AssociateTicketWithEntityParams
+  ): Promise<AssociateTicketWithEntityResponse> {
+    try {
+      const { ticketId, associatedObjectType, associatedObjectId } = params;
+      const associationTypeIds: Record<string, number> = {
+        [HubspotEntityType.DEAL]: ASSOCIATION_TYPE_IDS.TICKET_TO_ENTITY.DEAL,
+        [HubspotEntityType.COMPANY]: ASSOCIATION_TYPE_IDS.TICKET_TO_ENTITY.COMPANY,
+        [HubspotEntityType.CONTACT]: ASSOCIATION_TYPE_IDS.TICKET_TO_ENTITY.CONTACT
+      };
+
+      const typeId = associationTypeIds[associatedObjectType];
+
+      await this.client.crm.associations.v4.basicApi.create(
+        'ticket',
+        ticketId,
+        associatedObjectType,
+        associatedObjectId,
+        [
+          {
+            associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
+            associationTypeId: typeId
+          }
+        ]
+      );
+
+      return {
+        success: true,
+        data: {
+          ticketId,
+          associatedObjectType,
+          associatedObjectId
+        }
+      };
+    } catch (error) {
+      console.error('Error associating ticket with entity:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to associate ticket with entity'
+      };
+    }
+  }
+
+  async updateTicket(params: UpdateTicketParams): Promise<UpdateTicketResponse> {
+    try {
+      const { subject, content, stage, priority, ownerId, ticketId } = params;
+      const properties: Record<string, string> = {};
+      if (subject) {
+        properties.subject = subject;
+      }
+      if (content) {
+        properties.content = content;
+      }
+      if (stage) {
+        const validStage = await this.validateTicketStatus({
+          ticketId: params.ticketId,
+          statusStage: stage
+        });
+        if (!validStage) {
+          return {
+            success: false,
+            error: 'Invalid ticket status. Please provide a valid ticket status.'
+          };
+        }
+        properties.hs_pipeline_stage = validStage;
+      }
+      if (priority) {
+        properties.hs_ticket_priority = priority;
+      }
+
+      if (ownerId) {
+        properties.hubspot_owner_id = ownerId;
+      }
+
+      const updateInput: SimplePublicObjectInput = { properties };
+
+      const response = await this.client.crm.tickets.basicApi.update(ticketId, updateInput);
+
+      return {
+        success: true,
+        data: {
+          ticket: {
+            id: response.id,
+            subject: response.properties.subject || '',
+            stage: response.properties.hs_pipeline_stage || '',
+            priority: response.properties.hs_ticket_priority || '',
+            url: this.getTicketUrl(response.id)
+          }
+        }
+      };
+    } catch (error) {
+      console.error('Error updating HubSpot ticket:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update HubSpot ticket'
+      };
+    }
+  }
+  private getTicketUrl(id: string): string {
+    return `https://app.hubspot.com/contacts/${this.config.hubId}/ticket/${id}`;
+  }
+
+  async getPipelines(entityType: string): Promise<BaseResponse<HubspotPipeline[]>> {
+    try {
+      const response = await this.client.crm.pipelines.pipelinesApi.getAll(entityType);
+
+      const result = response.results.map((pipeline) => {
+        return {
+          id: pipeline.id,
+          label: pipeline.label,
+          archived: pipeline.archived,
+          displayOrder: pipeline.displayOrder,
+          stages: pipeline.stages.map((stage) => {
+            return {
+              id: stage.id,
+              label: stage.label,
+              archived: stage.archived,
+              displayOrder: stage.displayOrder
+            };
+          })
+        };
+      });
+
+      return {
+        success: true,
+        data: result
+      };
+    } catch (error) {
+      console.error('Error fetching ticket pipelines:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch ticket pipelines'
+      };
+    }
+  }
+
+  async getValidStagesByPipelineId(pipelineId: string): Promise<HubspotPipelineStage[] | null> {
+    try {
+      const stageResponse = await this.client.crm.pipelines.pipelineStagesApi.getAll(
+        'ticket',
+        pipelineId
+      );
+      const validStages = stageResponse.results.filter((stage) => !stage.archived);
+      return validStages || null;
+    } catch (error) {
+      console.error('Error getting pipeline Id', error);
+      return null;
+    }
+  }
+
+  async getTicketById(ticketId: string): Promise<HubspotTicket | null> {
+    try {
+      const response = await this.client.crm.tickets.basicApi.getById(ticketId, [
+        'hs_pipeline',
+        'hs_pipeline_stage',
+        'hs_ticket_priority',
+        'hs_ticket_category',
+        'hubspot_owner_id'
+      ]);
+      const result = {
+        id: response.id,
+        subject: response.properties.subject || '',
+        content: response.properties.hs_ticket_body || '',
+        stage: response.properties.hs_pipeline_stage || '',
+        priority: response.properties.hs_ticket_priority || '',
+        category: response.properties.hs_ticket_category || '',
+        ownerId: response.properties.hubspot_owner_id || '',
+        createdAt: response.properties.createdate || '',
+        lastModifiedDate: response.properties.hs_lastmodifieddate || '',
+        pipeline: response.properties.hs_pipeline || ''
+      };
+      return result || null;
+    } catch (error) {
+      console.error('Error getting ticket by Id', error);
+      return null;
+    }
+  }
+
+  async validateTicketStatus(params: {
+    ticketId: string;
+    statusStage: string;
+  }): Promise<string | null> {
+    try {
+      const ticket = await this.getTicketById(params.ticketId);
+      if (!ticket?.pipeline) return null;
+      const validStages = await this.getValidStagesByPipelineId(ticket.pipeline);
+      if (!validStages) {
+        return null;
+      }
+
+      const validStage = validStages.find(
+        (stage) => stage.label.toLowerCase() === params.statusStage.toLowerCase()
+      );
+
+      return validStage?.id || null;
+    } catch (error) {
+      console.error('Error validating ticket status:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Search for tickets in HubSpot using various filters
+   */
+  async searchTickets(params: TicketSearchParams): Promise<SearchTicketsResponse> {
+    try {
+      const filterGroups: Array<{
+        filters: Array<{ propertyName: string; operator: FilterOperatorEnum; value: string }>;
+      }> = [];
+
+      if (params.keyword) {
+        filterGroups.push(
+          ...['subject', 'content'].map((property) => ({
+            filters: [
+              {
+                propertyName: property,
+                operator: FilterOperatorEnum.ContainsToken,
+                value: params.keyword!
+              }
+            ]
+          }))
+        );
+      }
+
+      if (params.ownerId) {
+        filterGroups.push({
+          filters: [
+            {
+              propertyName: 'hubspot_owner_id',
+              operator: FilterOperatorEnum.Eq,
+              value: params.ownerId
+            }
+          ]
+        });
+      }
+
+      if (params.stage) {
+        filterGroups.push({
+          filters: [
+            {
+              propertyName: 'hs_pipeline_stage',
+              operator: FilterOperatorEnum.Eq,
+              value: params.stage
+            }
+          ]
+        });
+      }
+
+      if (params.priority) {
+        filterGroups.push({
+          filters: [
+            {
+              propertyName: 'hs_ticket_priority',
+              operator: FilterOperatorEnum.Eq,
+              value: params.priority
+            }
+          ]
+        });
+      }
+
+      const searchRequest = {
+        ...(filterGroups.length > 0 ? { filterGroups } : {}),
+        properties: [
+          'subject',
+          'content',
+          'hs_ticket_priority',
+          'hs_ticket_category',
+          'createdate',
+          'hs_lastmodifieddate',
+          'hubspot_owner_id'
+        ],
+        limit: 100
+      };
+
+      const response = await this.client.crm.tickets.searchApi.doSearch(searchRequest);
+
+      // Collect owner IDs
+      const ownerIds = new Set<string>();
+      response.results.forEach((ticket) => {
+        if (ticket.properties.hubspot_owner_id) {
+          ownerIds.add(ticket.properties.hubspot_owner_id);
+        }
+      });
+
+      // Get owner details if needed
+      const ownerMap: Record<string, HubspotOwner> = {};
+      if (ownerIds.size > 0) {
+        const ownersResponse = await this.getOwners();
+        ownersResponse.data?.forEach((owner: HubspotOwner) => {
+          if (owner && owner.id && ownerIds.has(owner.id)) {
+            ownerMap[owner.id] = {
+              id: owner.id,
+              firstName: owner.firstName || '',
+              lastName: owner.lastName || '',
+              email: owner.email || ''
+            };
+          }
+        });
+      }
+
+      const tickets: HubspotTicket[] = response.results.map((ticket) => {
+        const ownerId = ticket.properties.hubspot_owner_id;
+        const owner = ownerId ? ownerMap[ownerId] : undefined;
+
+        return {
+          id: ticket.id,
+          url: this.getTicketUrl(ticket.id),
+          subject: ticket.properties.subject || '',
+          content: ticket.properties.content || '',
+          priority: ticket.properties.hs_ticket_priority || '',
+          stage: ticket.properties.hs_pipeline_stage || '',
+          category: ticket.properties.hs_ticket_category || '',
+          createdAt: ticket.properties.createdate || '',
+          lastModifiedDate: ticket.properties.hs_lastmodifieddate || '',
+          owner
+        };
+      });
+
+      return {
+        success: true,
+        data: { tickets }
+      };
+    } catch (error) {
+      console.error('Error searching HubSpot tickets:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to search HubSpot tickets'
+      };
     }
   }
 }
