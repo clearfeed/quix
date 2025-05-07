@@ -9,7 +9,9 @@ import {
   TaskSearchParams,
   GetPipelinesParams,
   CreateTicketParams,
-  AssociateTicketWithEntityParams
+  AssociateTicketWithEntityParams,
+  UpdateTicketParams,
+  TicketSearchParams
 } from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
@@ -21,7 +23,9 @@ import {
   taskSearchSchema,
   baseTicketSchema,
   getPipelinesSchema,
-  associateTicketWithEntitySchema
+  associateTicketWithEntitySchema,
+  ticketUpdateSchema,
+  ticketSearchSchema
 } from './schema';
 
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
@@ -244,6 +248,16 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       name: 'associate_ticket_with_entity',
       description: 'Associate an existing ticket with a HubSpot contact, company, or deal.',
       schema: associateTicketWithEntitySchema
+    }),
+    tool(async (args: UpdateTicketParams) => service.updateTicket(args), {
+      name: 'update_hubspot_ticket',
+      description: 'Update the details of an existing HubSpot ticket.',
+      schema: ticketUpdateSchema
+    }),
+    tool(async (args: TicketSearchParams) => service.searchTickets(args), {
+      name: 'search_hubspot_tickets',
+      description: 'Search for tickets in HubSpot based on a keyword, owner, stage, or priority.',
+      schema: ticketSearchSchema
     })
   ];
 
