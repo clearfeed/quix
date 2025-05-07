@@ -79,6 +79,10 @@ export class SlackWorkspace extends Model<
   @Column(DataType.STRING)
   declare app_id: string;
 
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  declare domain: string;
+
   @HasOne(() => JiraConfig, {
     foreignKey: 'team_id',
     as: 'jiraConfig'

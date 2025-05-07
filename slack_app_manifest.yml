@@ -22,7 +22,8 @@ oauth_config:
       - assistant:write
       - chat:write
       - im:history
-
+      - mpim:history
+      - team:read
       - channels:history
       - groups:history
       - users:read
