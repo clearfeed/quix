@@ -92,7 +92,9 @@ export class SlackService {
       code
     });
     if (response.ok && response.team?.id) {
-      const teamInfo = await this.webClient.team.info({ team: response.team.id });
+      const currentWorkspaceWebClient = new WebClient(response.access_token);
+      const teamInfo = await currentWorkspaceWebClient.team.info({ team: response.team.id });
+
 
       if (!teamInfo.ok || !teamInfo.team?.domain) {
         throw new Error('Failed to retrieve workspace domain from team.info');
