@@ -1,5 +1,10 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { AllSlackEvents, EventCallbackEvent, UrlVerificationEvent } from './types';
+import {
+  AllSlackEvents,
+  EventCallbackEvent,
+  UrlVerificationEvent,
+  MemberJoinedChannelEvent
+} from './types';
 import { AssistantThreadStartedEvent } from '@slack/types/dist/events/assistant';
 import { AppMentionEvent, GenericMessageEvent } from '@slack/web-api';
 import { AppHomeService } from './app_home.service';
@@ -12,6 +17,7 @@ import { encrypt } from '../lib/utils/encryption';
 import { INTEGRATIONS } from '@quix/lib/constants';
 import { keyBy, shuffle } from 'lodash';
 import { SlackWorkspace } from '../database/models';
+
 @Injectable()
 export class SlackEventsHandlerService {
   private readonly logger = new Logger(SlackEventsHandlerService.name);
@@ -40,6 +46,10 @@ export class SlackEventsHandlerService {
   private handleEventCallback(eventBody: EventCallbackEvent) {
     const innerEvent = eventBody.event,
       teamId = eventBody.team_id;
+    this.logger.log('📨  Slack event_callback received', {
+      teamId,
+      type: innerEvent.type
+    });
     switch (innerEvent.type) {
       case 'assistant_thread_started':
         return this.handleAssistantThreadStarted(innerEvent, teamId);
@@ -52,6 +62,9 @@ export class SlackEventsHandlerService {
         return this.handleAppMention(innerEvent);
       case 'app_home_opened':
         return this.appHomeService.handleAppHomeOpened(innerEvent, eventBody.team_id);
+      case 'member_joined_channel':
+        this.logger.log('👋  member_joined_channel event', innerEvent);
+        return this.handleMemberJoinedChannel(innerEvent as MemberJoinedChannelEvent, teamId);
       default:
         this.logger.log('Unhandled event', { event: eventBody });
     }
@@ -246,6 +259,70 @@ export class SlackEventsHandlerService {
           replyThreadTs
         );
       }
+    }
+  }
+
+  private async handleMemberJoinedChannel(event: MemberJoinedChannelEvent, teamId: string) {
+    this.logger.log('Received a member joined channel event', {
+      teamId,
+      channel: event.channel,
+      userThatJoined: event.user
+    });
+
+    try {
+      const slackWorkspace = await this.slackService.getSlackWorkspace(teamId);
+      if (!slackWorkspace) {
+        this.logger.error('Slack workspace not found', { teamId });
+        return;
+      }
+
+      if (event.user !== slackWorkspace.bot_user_id) {
+        this.logger.log('Event ignored - not the bot that joined', {
+          joinedUserId: event.user
+        });
+        return;
+      }
+
+      const webClient = new WebClient(slackWorkspace.bot_access_token);
+      this.logger.log('Verified bot joined - preparing intro message');
+
+      const integrationsByType = keyBy(INTEGRATIONS, 'value');
+      const connected = getConnectedIntegrations(slackWorkspace);
+      const names = connected.map((i) => integrationsByType[i]?.name ?? i);
+
+      const intro =
+        `
+👋 Hey team — I’m *Quix*, your AI assistant right inside Slack!
+
+I connect your tools and knowledge so you can get work done without leaving Slack.
+
+What I can help you do
+• Summarise long threads and surface key action items  
+• Create, update and search issues or tasks in JIRA, Linear, GitHub, etc.  
+• Add notes or update deals in HubSpot  
+• Answer questions about past conversations or your connected data  
+
+Currently Integrated With: ${
+          names.length ? names.join(', ') : 'no integrations yet — ask an admin to connect one'
+        }.
+
+Try me with a natural-language request, e.g.  
+` +
+        '@Quix summarise this thread and file a high-priority JIRA bug' +
+        `.
+
+Mention @Quix or DM me whenever you need a hand — I’ll take it from there 🚀
+`.trim();
+
+      this.logger.log('Sending intro message', {
+        channel: event.channel
+      });
+
+      await webClient.chat.postMessage({ channel: event.channel, text: intro });
+
+      this.logger.log('Intro message posted');
+    } catch (err) {
+      this.logger.error('Error in handleMemberJoinedChannel', err);
     }
   }
 }
