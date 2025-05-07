@@ -153,7 +153,7 @@ export const ticketUpdateSchema = z.object({
 export const ticketSearchSchema = z.object({
   keyword: z.string().optional().describe('Search term to look for in ticket subject or content.'),
   ownerId: z.string().optional().describe('Filter results by HubSpot user ID of the ticket owner.'),
-  stage: z.string().optional().describe('Filter by ticket stage.'),
+  stage: z.string().optional().describe('Filter by ticket stage (also referred to as status).'),
   priority: ticketPrioritySchema.optional().describe('Filter tickets by priority level.')
 });
 
