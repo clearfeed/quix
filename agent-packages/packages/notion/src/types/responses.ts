@@ -161,7 +161,21 @@ export type UserResponse = {
   person?: {
     email: string;
   };
-  bot?: Record<string, any>;
+  bot?: {
+    owner: {
+      type: string;
+      user: {
+        object: string;
+        id: string;
+        name: string;
+        avatar_url: string | null;
+        type: string;
+        person: {
+          email: string;
+        };
+      };
+    };
+  };
 };
 
 export type CommentResponse = {
