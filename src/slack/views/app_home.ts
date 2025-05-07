@@ -460,9 +460,14 @@ export const getOnboardingView = (): BlockBuilder[] => {
     Blocks.Section({
       text: `• *Mention @Quix* in any channel where the app is added\n• *Direct message* Quix for private conversations`
     }),
-    Blocks.Divider(),
+    Blocks.Divider()
+  ];
+};
+
+export const getCommunityLinkView = (): BlockBuilder[] => {
+  return [
     Blocks.Section({
-      text: `${Md.emoji('handshake')} *Join Our Slack Community*`
+      text: `${Md.emoji('handshake')} *Need help or want to connect with others?* Join our Slack community!`
     }).accessory(
       Elements.Button({
         text: 'Join',
