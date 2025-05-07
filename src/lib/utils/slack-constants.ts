@@ -80,7 +80,8 @@ export const SLACK_SCOPES = [
   'users:read.email',
   'channels:read',
   'reactions:write',
-  'channels:join'
+  'channels:join',
+  'team:read'
 ] as const;
 
 export const SLACK_MESSAGE_MAX_LENGTH = 3000;
