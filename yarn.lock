@@ -365,7 +365,7 @@
   dependencies:
     "@octokit/rest" "^21.1.1"
 
-"@clearfeed-ai/quix-hubspot-agent@^1.1.5":
+"@clearfeed-ai/quix-hubspot-agent@^1.1.6":
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-1.1.6.tgz#9f9758de3e69a83cdfb2630d1eeb2aacea637312"
   integrity sha512-vXDhW3CHWDH0EfpZqZpASJj8LoPXyjxDYlckDE9cIwyp/+tMdKR6h4/oWwpIF/Z0/zoYsNcBIxcTtJT44kvZSA==
