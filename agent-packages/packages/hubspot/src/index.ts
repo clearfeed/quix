@@ -853,9 +853,13 @@ export class HubspotService implements BaseService<HubspotConfig> {
           ticketId: params.ticketId,
           statusStage: stage
         });
-        if (validStage) {
-          properties.hs_pipeline_stage = validStage;
+        if (!validStage) {
+          return {
+            success: false,
+            error: 'Invalid ticket status. Please provide a valid ticket status.'
+          };
         }
+        properties.hs_pipeline_stage = validStage;
       }
       if (priority) {
         properties.hs_ticket_priority = priority;
