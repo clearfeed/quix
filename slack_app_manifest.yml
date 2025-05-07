@@ -1,7 +1,7 @@
 display_information:
   name: Quix
   description: Query your SaaS tools using Quix
-  background_color: "#4f46e5"
+  background_color: '#4f46e5'
 features:
   app_home:
     home_tab_enabled: true
@@ -22,7 +22,8 @@ oauth_config:
       - assistant:write
       - chat:write
       - im:history
-      
+      - mpim:history
+      - team:read
       - channels:history
       - groups:history
       - users:read

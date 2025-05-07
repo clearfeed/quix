@@ -92,24 +92,14 @@ export class SlackService {
       code
     });
     if (response.ok && response.team?.id) {
-      let workspaceUrl = '';
-      try {
-        const authTest = await this.webClient.auth.test({
-          token: response.access_token
-        });
-        workspaceUrl = authTest.url || '';
-      } catch (error) {
-        this.logger.error('Failed to get workspace URL from auth.test', error);
+      const teamInfo = await this.webClient.team.info({ team: response.team.id });
+
+      if (!teamInfo.ok || !teamInfo.team?.domain) {
+        throw new Error('Failed to retrieve workspace domain from team.info');
       }
-      let domain = '';
-      if (workspaceUrl) {
-        try {
-          domain = new URL(workspaceUrl).hostname.split('.')[0];
-        } catch (error) {
-          this.logger.error('Failed to extract domain from workspace URL', error);
-          // Consider setting a default domain or handling the error appropriately
-        }
-      }
+
+      const domain = teamInfo.team.domain;
+
       const [slackWorkspace] = await this.slackWorkspaceModel.upsert(
         {
           team_id: response.team?.id,
