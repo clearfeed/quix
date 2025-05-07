@@ -9,7 +9,6 @@ import {
   queryDatabaseSchema,
   retrieveBlockChildrenSchema,
   retrieveBlockSchema,
-  retrieveBotUserSchema,
   retrieveCommentsSchema,
   retrieveDatabaseSchema,
   retrievePageSchema,
@@ -18,7 +17,6 @@ import {
   updateBlockSchema,
   updatePagePropertiesSchema
 } from './schema';
-import { richTextObjectSchema } from './common';
 
 export type SearchArgs = z.infer<typeof searchSchema>;
 export type AppendBlockChildrenArgs = z.infer<typeof appendBlockChildrenSchema>;
@@ -30,11 +28,9 @@ export type RetrievePageArgs = z.infer<typeof retrievePageSchema>;
 export type DeleteOrArchivePageArgs = z.infer<typeof deleteOrArchivePageSchema>;
 export type ListAllUsersArgs = z.infer<typeof listAllUsersSchema>;
 export type RetrieveUserArgs = z.infer<typeof retrieveUserSchema>;
-export type RetrieveBotUserArgs = z.infer<typeof retrieveBotUserSchema>;
 export type QueryDatabaseArgs = z.infer<typeof queryDatabaseSchema>;
 export type RetrieveDatabaseArgs = z.infer<typeof retrieveDatabaseSchema>;
 export type CreateDatabaseItemArgs = z.infer<typeof createDatabaseItemSchema>;
 export type CreateCommentArgs = z.infer<typeof createCommentSchema>;
 export type RetrieveCommentsArgs = z.infer<typeof retrieveCommentsSchema>;
-export type RichTextObject = z.infer<typeof richTextObjectSchema>;
 export type UpdatePagePropertiesArgs = z.infer<typeof updatePagePropertiesSchema>;
