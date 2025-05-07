@@ -1,5 +1,11 @@
 import { z } from 'zod';
-import { TaskStatusEnum, TaskPriorityEnum, TaskTypeEnum } from './types';
+import {
+  TaskStatusEnum,
+  TaskPriorityEnum,
+  TaskTypeEnum,
+  TicketPriorityEnum,
+  HubspotEntityType
+} from './types';
 
 // Task Status Schema
 export const taskStatusSchema = z.nativeEnum(TaskStatusEnum);
@@ -9,6 +15,9 @@ export const taskPrioritySchema = z.nativeEnum(TaskPriorityEnum);
 
 // Task Type Schema
 export const taskTypeSchema = z.nativeEnum(TaskTypeEnum);
+
+// Ticket Priority Schema
+export const ticketPrioritySchema = z.nativeEnum(TicketPriorityEnum);
 
 // Base Task Schema
 export const baseTaskSchema = z.object({
@@ -82,5 +91,76 @@ export const taskUpdateSchema = z.object({
     .optional()
     .describe(
       "The ID of the user assigned to this task. Referred to as the task's **owner** or **assignee**—both terms are interchangeable."
+    )
+});
+
+export const baseTicketSchema = z.object({
+  subject: z
+    .string()
+    .describe(
+      'A short title summarizing the issue or request. This will be the ticket’s subject line.'
+    ),
+  content: z
+    .string()
+    .min(1)
+    .describe('A detailed description of the issue, request, or task for the ticket.'),
+  stage: z
+    .string()
+    .optional()
+    .describe(
+      'ID of the stage (also referred to as status)  within the selected ticket pipeline. Ensure the stage ID is valid for the specified pipeline. If the user provides a stage name instead of an ID, use "get_hubspot_pipelines" to look up the correct stage ID based on the pipeline ID.'
+    ),
+  priority: ticketPrioritySchema
+    .describe('Priority level of the ticket. Defaults to "Medium" if not specified.')
+    .default(TicketPriorityEnum.MEDIUM),
+  ownerId: z
+    .string()
+    .optional()
+    .describe(
+      'ID of the HubSpot user who should be assigned to this ticket. This user will be responsible for handling the ticket.'
+    ),
+  pipeline: z
+    .string()
+    .describe(
+      'ID of the pipeline where this ticket will be created. Use "get_hubspot_pipelines" to retrieve available pipelines for tickets.'
+    )
+});
+
+export const associateTicketWithEntitySchema = z.object({
+  ticketId: z.string().describe('ID of the existing ticket to associate with an entity.'),
+  associatedObjectType: z
+    .nativeEnum(HubspotEntityType)
+    .describe('Type of HubSpot object to associate with the ticket.'),
+  associatedObjectId: z
+    .string()
+    .describe(
+      'ID of the contact, company, or deal in HubSpot to associate with the ticket. If the ID is not available, use one of the search tools: "search_hubspot_contacts", "search_hubspot_companies", or "search_hubspot_deals" to find it.'
+    )
+});
+
+export const ticketUpdateSchema = z.object({
+  ticketId: z.string().describe('ID of the ticket to be updated.'),
+  subject: z.string().optional().describe('Updated subject or title of the ticket.'),
+  content: z.string().optional().describe('Updated detailed description or content of the ticket.'),
+  priority: ticketPrioritySchema.optional().describe('New priority level for the ticket.'),
+  stage: z
+    .string()
+    .optional()
+    .describe('Updated stage (also referred to as status) name for the ticket.'),
+  ownerId: z.string().optional().describe('Updated HubSpot user ID to assign the ticket to.')
+});
+
+export const ticketSearchSchema = z.object({
+  keyword: z.string().optional().describe('Search term to look for in ticket subject or content.'),
+  ownerId: z.string().optional().describe('Filter results by HubSpot user ID of the ticket owner.'),
+  stage: z.string().optional().describe('Filter by ticket stage (also referred to as status).'),
+  priority: ticketPrioritySchema.optional().describe('Filter tickets by priority level.')
+});
+
+export const getPipelinesSchema = z.object({
+  entityType: z
+    .enum(['ticket', 'deal'])
+    .describe(
+      'Type of HubSpot object for which to fetch pipelines. Use "ticket" to get ticket pipelines, or "deal" for deal pipelines.'
     )
 });
