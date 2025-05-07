@@ -18,7 +18,7 @@ export const richTextObjectSchema = z.object({
       strikethrough: z.boolean().default(false),
       underline: z.boolean().default(false),
       code: z.boolean().default(false),
-      color: z.string().default('default')
+      color: z.literal('default').describe('The color of the text.')
     })
     .describe('Styling information for the text. By default, give nothing for default text.')
 });
@@ -36,7 +36,7 @@ export const blockObjectSchema = z.object({
       rich_text: z
         .array(richTextObjectSchema)
         .describe('Array of rich text objects representing the comment content.'),
-      color: z.string().describe('The color of the block.').default('default')
+      color: z.literal('default').describe('The color of the block.')
     })
     .describe('Paragraph block object.')
     .optional(),
@@ -45,7 +45,7 @@ export const blockObjectSchema = z.object({
       rich_text: z
         .array(richTextObjectSchema)
         .describe('Array of rich text objects representing the heading content.'),
-      color: z.string().describe('The color of the block.').default('default'),
+      color: z.literal('default').describe('The color of the block.'),
       is_toggleable: z.boolean().describe('Whether the heading can be toggled.').optional()
     })
     .describe('Heading 1 block object.')
@@ -55,7 +55,7 @@ export const blockObjectSchema = z.object({
       rich_text: z
         .array(richTextObjectSchema)
         .describe('Array of rich text objects representing the heading content.'),
-      color: z.string().describe('The color of the block.').default('default'),
+      color: z.literal('default').describe('The color of the block.'),
       is_toggleable: z.boolean().describe('Whether the heading can be toggled.').optional()
     })
     .describe('Heading 2 block object.')
@@ -65,7 +65,7 @@ export const blockObjectSchema = z.object({
       rich_text: z
         .array(richTextObjectSchema)
         .describe('Array of rich text objects representing the heading content.'),
-      color: z.string().describe('The color of the block.').default('default'),
+      color: z.literal('default').describe('The color of the block.'),
       is_toggleable: z.boolean().describe('Whether the heading can be toggled.').optional()
     })
     .describe('Heading 3 block object.')
@@ -75,7 +75,7 @@ export const blockObjectSchema = z.object({
       rich_text: z
         .array(richTextObjectSchema)
         .describe('Array of rich text objects representing the list item content.'),
-      color: z.string().describe('The color of the block.').default('default')
+      color: z.literal('default').describe('The color of the block.')
     })
     .describe('Bulleted list item block object.')
     .optional(),
@@ -84,7 +84,7 @@ export const blockObjectSchema = z.object({
       rich_text: z
         .array(richTextObjectSchema)
         .describe('Array of rich text objects representing the list item content.'),
-      color: z.string().describe('The color of the block.').default('default')
+      color: z.literal('default').describe('The color of the block.')
     })
     .describe('Numbered list item block object.')
     .optional()
