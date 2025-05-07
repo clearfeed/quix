@@ -92,10 +92,21 @@ export class SlackService {
       code
     });
     if (response.ok && response.team?.id) {
+      const currentWorkspaceWebClient = new WebClient(response.access_token);
+      const teamInfo = await currentWorkspaceWebClient.team.info({ team: response.team.id });
+
+
+      if (!teamInfo.ok || !teamInfo.team?.domain) {
+        throw new Error('Failed to retrieve workspace domain from team.info');
+      }
+
+      const domain = teamInfo.team.domain;
+
       const [slackWorkspace] = await this.slackWorkspaceModel.upsert(
         {
           team_id: response.team?.id,
           name: response.team?.name || '',
+          domain,
           bot_access_token: response.access_token || '',
           authed_user_id: response.authed_user?.id || '',
           bot_user_id: response.bot_user_id || '',
@@ -107,6 +118,7 @@ export class SlackService {
         {
           fields: [
             'name',
+            'domain',
             'bot_access_token',
             'authed_user_id',
             'bot_user_id',
