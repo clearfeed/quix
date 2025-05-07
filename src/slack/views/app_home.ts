@@ -77,7 +77,8 @@ const getAvailableFns = async (selectedTool: SUPPORTED_INTEGRATIONS) => {
 
   if (selectedTool === SUPPORTED_INTEGRATIONS.HUBSPOT) {
     const tools = createHubspotToolsExport({
-      accessToken: 'test-access-token'
+      accessToken: 'test-access-token',
+      hubId: 1234567890
     }).tools;
 
     return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
