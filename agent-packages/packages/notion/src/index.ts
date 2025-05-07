@@ -196,10 +196,10 @@ export class NotionService implements BaseService<NotionConfig> {
 
   async listAllUsers(args: ListAllUsersArgs): Promise<BaseResponse<ListResponse>> {
     try {
-      const { start_cursor, page_size } = args;
+      const { start_cursor } = args;
       const params = new URLSearchParams();
       if (start_cursor) params.append('start_cursor', start_cursor);
-      if (page_size) params.append('page_size', page_size.toString());
+      params.append('page_size', '100');
       const response = await axios.get(`${this.baseUrl}/users?${params.toString()}`, {
         headers: this.headers
       });

@@ -5,7 +5,7 @@ export const commonIdDescription =
 
 // Rich text object schema
 export const richTextObjectSchema = z.object({
-  type: z.enum(['text']).describe('The type of this rich text object. Possible value: text.'),
+  type: z.literal('text').describe('The type of this rich text object. Possible value: text.'),
   text: z
     .object({
       content: z.string().describe('The actual text content.')

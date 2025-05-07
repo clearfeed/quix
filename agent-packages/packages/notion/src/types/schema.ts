@@ -103,17 +103,14 @@ export const deleteOrArchivePageSchema = z.object({
 });
 // Users tools
 export const listAllUsersSchema = z.object({
-  start_cursor: z.string().describe('Pagination start cursor for listing users').optional(),
-  page_size: z.number().describe('Number of users to retrieve (max 100)').optional().default(100)
+  start_cursor: z.string().describe('Pagination start cursor for listing users').optional()
 });
 
 export const retrieveUserSchema = z.object({
   user_id: z.string().describe('The ID of the user to retrieve.' + commonIdDescription)
 });
 
-export const retrieveBotUserSchema = z.object({
-  random_string: z.string().describe('Dummy parameter for no-parameter tools')
-});
+export const retrieveBotUserSchema = z.object({});
 
 // Databases tools
 export const queryDatabaseSchema = z.object({
