@@ -63,7 +63,7 @@ export class SlackEventsHandlerService {
       case 'app_home_opened':
         return this.appHomeService.handleAppHomeOpened(innerEvent, eventBody.team_id);
       case 'member_joined_channel':
-        this.logger.log('👋  member_joined_channel event', innerEvent);
+        this.logger.log('Received member_joined_channel event', innerEvent);
         return this.handleMemberJoinedChannel(innerEvent as MemberJoinedChannelEvent, teamId);
       default:
         this.logger.log('Unhandled event', { event: eventBody });
@@ -322,7 +322,11 @@ Mention @Quix or DM me whenever you need a hand — I’ll take it from there �
 
       this.logger.log('Intro message posted');
     } catch (err) {
-      this.logger.error('Error in handleMemberJoinedChannel', err);
+      this.logger.error('Error in handleMemberJoinedChannel', {
+        err,
+        teamId,
+        channel: event.channel
+      });
     }
   }
 }
