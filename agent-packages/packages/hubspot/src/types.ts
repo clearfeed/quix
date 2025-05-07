@@ -1,9 +1,19 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
-import { baseTaskSchema, taskSearchSchema, taskUpdateSchema } from './schema';
+import {
+  baseTaskSchema,
+  taskSearchSchema,
+  taskUpdateSchema,
+  baseTicketSchema,
+  ticketSearchSchema,
+  ticketUpdateSchema,
+  getPipelinesSchema,
+  associateTicketWithEntitySchema
+} from './schema';
 import { z } from 'zod';
 
 export interface HubspotConfig extends BaseConfig {
   accessToken: string;
+  hubId: number;
 }
 
 export interface HubspotOwner {
@@ -153,9 +163,9 @@ export type SearchTasksResponse = BaseResponse<{
 }>;
 
 export enum HubspotEntityType {
-  DEAL = 'deals',
-  COMPANY = 'companies',
-  CONTACT = 'contacts'
+  DEAL = 'deal',
+  COMPANY = 'company',
+  CONTACT = 'contact'
 }
 
 export interface CreateNoteParams {
@@ -169,3 +179,76 @@ export type AddNoteResponse = BaseResponse<{
 }>;
 
 export type AddNoteToDealResponse = AddNoteResponse;
+
+// Ticket related enums
+export enum TicketPriorityEnum {
+  HIGH = 'HIGH',
+  MEDIUM = 'MEDIUM',
+  LOW = 'LOW',
+  URGENT = 'URGENT'
+}
+
+export type GetPipelinesParams = z.infer<typeof getPipelinesSchema>;
+export type Ticket = z.infer<typeof baseTicketSchema>;
+export type TicketSearchParams = z.infer<typeof ticketSearchSchema>;
+export type UpdateTicketParams = z.infer<typeof ticketUpdateSchema>;
+export type CreateTicketParams = z.infer<typeof baseTicketSchema>;
+export type AssociateTicketWithEntityParams = z.infer<typeof associateTicketWithEntitySchema>;
+
+export type CreateTicketResponse = BaseResponse<{
+  ticket: {
+    id: string;
+    subject: string;
+    stage: string;
+    priority: string;
+    content: string;
+    url: string;
+  };
+}>;
+
+export type AssociateTicketWithEntityResponse = BaseResponse<{
+  ticketId: string;
+  associatedObjectType: HubspotEntityType;
+  associatedObjectId: string;
+}>;
+
+export type UpdateTicketResponse = BaseResponse<{
+  ticket: {
+    id: string;
+    subject: string;
+    stage: string;
+    priority: string;
+    url: string;
+  };
+}>;
+
+export interface HubspotTicket {
+  id: string;
+  subject: string;
+  content: string;
+  priority: string | undefined;
+  stage: string | undefined;
+  createdAt: string;
+  lastModifiedDate: string;
+  owner?: HubspotOwner;
+  pipeline?: string;
+}
+
+export type SearchTicketsResponse = BaseResponse<{
+  tickets: HubspotTicket[];
+}>;
+
+export type HubspotPipelineStage = {
+  id: string;
+  label: string;
+  archived: boolean;
+  displayOrder: number;
+};
+
+export type HubspotPipeline = {
+  id: string;
+  label: string;
+  archived: boolean;
+  displayOrder: number;
+  stages: HubspotPipelineStage[];
+};

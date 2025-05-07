@@ -6,7 +6,12 @@ import {
   CreateDealParams,
   HubspotEntityType,
   UpdateTaskParams,
-  TaskSearchParams
+  TaskSearchParams,
+  GetPipelinesParams,
+  CreateTicketParams,
+  AssociateTicketWithEntityParams,
+  UpdateTicketParams,
+  TicketSearchParams
 } from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
@@ -15,7 +20,12 @@ import {
   contactTaskSchema,
   companyTaskSchema,
   taskUpdateSchema,
-  taskSearchSchema
+  taskSearchSchema,
+  baseTicketSchema,
+  getPipelinesSchema,
+  associateTicketWithEntitySchema,
+  ticketUpdateSchema,
+  ticketSearchSchema
 } from './schema';
 
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
@@ -33,6 +43,7 @@ Consider using HubSpot tools when the user wants to:
 - Check company information like industry, size, revenue
 - View deal status, amount, pipeline stage, close date
 - Create, update, or search tasks and reminders
+- Create, update, or search tickets for support cases
 - Access ticket details, support history, resolutions
 - Get marketing campaign performance and engagement metrics
 - View and manage deals
@@ -46,6 +57,7 @@ When formatting HubSpot responses:
 - Present deal values and stages clearly
 - Include relevant contact properties and custom fields
 - Format dates in a human-readable format
+- For tickets, show priority, status, and category clearly
 `;
 
 export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
@@ -140,10 +152,11 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         company: z.string().optional().describe('The company associated with the contact')
       })
     }),
-    tool(async () => service.getPipelines(), {
+    tool(async (args: GetPipelinesParams) => service.getPipelines(args.entityType), {
       name: 'get_hubspot_pipelines',
-      description: 'Fetch all deal pipelines and their stages from HubSpot',
-      schema: z.object({})
+      description:
+        'Retrieve all pipelines in HubSpot associated with a specific object type, such as tickets or deals.',
+      schema: getPipelinesSchema
     }),
     tool(async () => service.getOwners(), {
       name: 'get_hubspot_owners',
@@ -224,6 +237,27 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       description:
         'Search for tasks in HubSpot using filters such as keyword, owner, status, priority, due date.',
       schema: taskSearchSchema
+    }),
+    tool(async (args: CreateTicketParams) => service.createTicket(args), {
+      name: 'create_hubspot_ticket',
+      description:
+        'Create a new HubSpot ticket. Optionally associate it with a contact, company, or deal by providing both `associatedObjectType` and `associatedObjectId`.',
+      schema: baseTicketSchema
+    }),
+    tool(async (args: AssociateTicketWithEntityParams) => service.associateTicketWithEntity(args), {
+      name: 'associate_ticket_with_entity',
+      description: 'Associate an existing ticket with a HubSpot contact, company, or deal.',
+      schema: associateTicketWithEntitySchema
+    }),
+    tool(async (args: UpdateTicketParams) => service.updateTicket(args), {
+      name: 'update_hubspot_ticket',
+      description: 'Update the details of an existing HubSpot ticket.',
+      schema: ticketUpdateSchema
+    }),
+    tool(async (args: TicketSearchParams) => service.searchTickets(args), {
+      name: 'search_hubspot_tickets',
+      description: 'Search for tickets in HubSpot based on a keyword, owner, stage, or priority.',
+      schema: ticketSearchSchema
     })
   ];
 
