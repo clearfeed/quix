@@ -137,6 +137,7 @@ export type CreateTaskResponse = BaseResponse<{
     hs_task_type: string;
     hs_timestamp: string;
     hs_task_body: string;
+    url: string;
   };
 }>;
 
@@ -149,6 +150,7 @@ export type UpdateTaskResponse = BaseResponse<{
     hs_task_type: string;
     hs_timestamp: string;
     hs_task_body: string;
+    url: string;
   };
 }>;
 
@@ -156,6 +158,7 @@ export interface HubspotTask extends Task {
   id: string;
   createdAt: string;
   lastModifiedDate: string;
+  url: string;
 }
 
 export type SearchTasksResponse = BaseResponse<{
