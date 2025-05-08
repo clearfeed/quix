@@ -17,6 +17,7 @@ import { encrypt } from '../lib/utils/encryption';
 import { INTEGRATIONS } from '@quix/lib/constants';
 import { keyBy, shuffle } from 'lodash';
 import { SlackWorkspace } from '../database/models';
+import { Md } from 'slack-block-builder';
 
 @Injectable()
 export class SlackEventsHandlerService {
@@ -291,16 +292,71 @@ export class SlackEventsHandlerService {
       const names = connected.map((i) => integrationsByType[i]?.name ?? i);
       const mcpServersNames = slackWorkspace.mcpConnections.map((mcp) => mcp.name);
 
+      const helpItems: string[] = [
+        'Summarise long threads and surface key action items',
+        'Answer questions about past conversations or your connected data'
+      ];
+
+      connected.forEach((integration) => {
+        switch (integration) {
+          case 'github':
+            helpItems.push(
+              'Interact with issues, pull requests, repositories, code searches, and files in GitHub'
+            );
+            break;
+
+          case 'jira':
+            helpItems.push(
+              'Find, create, update, and comment on issues—and manage users and issue types—in JIRA'
+            );
+            break;
+
+          case 'hubspot':
+            helpItems.push(
+              'Search and create deals, contacts, companies, and tasks, and add notes in HubSpot'
+            );
+            break;
+
+          case 'postgres':
+            helpItems.push(
+              'List tables, inspect schemas, and run SQL queries against your PostgreSQL database'
+            );
+            break;
+
+          case 'salesforce':
+            helpItems.push(
+              'Find users; manage tasks, accounts, and opportunities; and retrieve or update Salesforce records'
+            );
+            break;
+
+          case 'notion':
+            helpItems.push(
+              'Search, create, and update pages and databases in your Notion workspace'
+            );
+            break;
+
+          case 'okta':
+            helpItems.push('Manage users, groups, and application assignments in Okta');
+            break;
+
+          case 'linear':
+            helpItems.push('Create, update, and search issues and projects in Linear');
+            break;
+
+          default:
+            helpItems.push(`Interact with your ${integration} integration`);
+        }
+      });
+
+      const helpSection = helpItems.map((item) => `• ${item}`).join('  \n');
+
       const intro = `
-👋 Hey team — I’m *Quix*, your AI assistant right inside Slack!
+${Md.emoji('wave')} Hey team — I’m *Quix*, your AI assistant right inside Slack!
 
 I connect your tools and knowledge so you can get work done without leaving Slack.
 
-What I can help you do
-• Summarise long threads and surface key action items  
-• Create, update and search issues or tasks in JIRA, Linear, GitHub, etc.  
-• Add notes or update deals in HubSpot  
-• Answer questions about past conversations or your connected data  
+What I can help you do  
+${helpSection}
 
 Currently Integrated With: ${
         names.length ? names.join(', ') : 'no integrations yet — ask an admin to connect one'
@@ -313,7 +369,7 @@ Currently Integrated With: ${
 Try me with a natural-language request, e.g.
 @Quix summarise this thread and file a high-priority JIRA bug.
 
-Mention @Quix or DM me whenever you need a hand — I’ll take it from there 🚀
+Mention @Quix or DM me whenever you need a hand — I’ll take it from there ${Md.emoji('rocket')}
 `.trim();
 
       await webClient.chat.postMessage({ channel: event.channel, text: intro });
