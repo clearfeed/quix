@@ -11,7 +11,8 @@ import {
   getToolConnectionView,
   getIntegrationInfo,
   getNonAdminView,
-  getToolData
+  getToolData,
+  getCommunityLinkView
 } from './views/app_home';
 import {
   publishPostgresConnectionModal,
@@ -690,6 +691,8 @@ export class AppHomeService {
         Blocks.Section({ text: '\n\n\n' })
       );
     }
+
+    blocks.push(...getCommunityLinkView());
 
     return {
       type: 'home',
