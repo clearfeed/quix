@@ -468,10 +468,10 @@ export const getOnboardingView = (): BlockBuilder[] => {
 export const getCommunityLinkView = (): BlockBuilder[] => {
   return [
     Blocks.Section({
-      text: `${Md.emoji('handshake')} *Need help or want to connect with others?* Join our Slack community!`
+      text: `${Md.emoji('busts_in_silhouette')} Join our Slack community to get help and connect with other Quix users.`
     }).accessory(
       Elements.Button({
-        text: 'Join',
+        text: `${Md.emoji('slack')}  Join Community`,
         url: 'https://join.slack.com/t/quixagent/shared_invite/zt-33kbxkm6t-5nuOeJB2e20~_2Ru8Xmw~Q',
         actionId: 'join_slack_community'
       })
