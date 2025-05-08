@@ -317,8 +317,8 @@ I connect your tools and knowledge so you can get work done without leaving Slac
 Here's what I can help you do:
 ${helpSection}
 
-${Md.bold('Currently Integrated With')}: ${
-        names.length ? names.join(', ') : 'no integrations yet — ask an admin to connect one'
+${Md.bold('Currently integrated with')}: ${
+        names.length ? names.join(', ') : 'No integrations yet — ask an admin to connect one'
       }.${
         mcpServersNames.length
           ? `\nYou can also access your internal tools like ${mcpServersNames.join(', ')}.`
