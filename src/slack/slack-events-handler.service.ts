@@ -314,10 +314,6 @@ Try me with a natural-language request, e.g.
 Mention @Quix or DM me whenever you need a hand — I’ll take it from there 🚀
 `.trim();
 
-      this.logger.log('Sending intro message', {
-        channel: event.channel
-      });
-
       await webClient.chat.postMessage({ channel: event.channel, text: intro });
 
       this.logger.log('Intro message posted');
