@@ -35,10 +35,6 @@ export type EventCallbackEvent = {
   team_id: string;
 };
 
-export type MemberJoinedChannelEvent = SlackEvent & {
-  type: 'member_joined_channel';
-  user: string;
-  channel: string;
-};
+export type MemberJoinedChannelEvent = Extract<SlackEvent, { type: 'member_joined_channel' }>;
 
 export type AllSlackEvents = UrlVerificationEvent | EventCallbackEvent | MemberJoinedChannelEvent;

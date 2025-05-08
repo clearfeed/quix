@@ -46,7 +46,7 @@ export class SlackEventsHandlerService {
   private handleEventCallback(eventBody: EventCallbackEvent) {
     const innerEvent = eventBody.event,
       teamId = eventBody.team_id;
-    this.logger.log('📨  Slack event_callback received', {
+    this.logger.log('Slack event_callback received', {
       teamId,
       type: innerEvent.type
     });
@@ -266,7 +266,9 @@ export class SlackEventsHandlerService {
     this.logger.log('Received a member joined channel event', {
       teamId,
       channel: event.channel,
-      userThatJoined: event.user
+      userThatJoined: event.user,
+      eventChannelType: event.channel_type,
+      eventInviter: event.inviter
     });
 
     try {
@@ -284,8 +286,6 @@ export class SlackEventsHandlerService {
       }
 
       const webClient = new WebClient(slackWorkspace.bot_access_token);
-      this.logger.log('Verified bot joined - preparing intro message');
-
       const integrationsByType = keyBy(INTEGRATIONS, 'value');
       const connected = getConnectedIntegrations(slackWorkspace);
       const names = connected.map((i) => integrationsByType[i]?.name ?? i);
