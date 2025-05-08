@@ -464,3 +464,18 @@ export const getOnboardingView = (): BlockBuilder[] => {
     Blocks.Divider()
   ];
 };
+
+export const getCommunityLinkView = (): BlockBuilder[] => {
+  return [
+    Blocks.Section({
+      text: `${Md.emoji('busts_in_silhouette')} Join our Slack community to get help and connect with other Quix users.`
+    }).accessory(
+      Elements.Button({
+        text: `${Md.emoji('slack')}  Join Community`,
+        url: 'https://join.slack.com/t/quixagent/shared_invite/zt-33kbxkm6t-5nuOeJB2e20~_2Ru8Xmw~Q',
+        actionId: 'join_slack_community'
+      })
+    ),
+    Blocks.Divider()
+  ];
+};
