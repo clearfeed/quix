@@ -298,54 +298,8 @@ export class SlackEventsHandlerService {
       ];
 
       connected.forEach((integration) => {
-        switch (integration) {
-          case 'github':
-            helpItems.push(
-              'Interact with issues, pull requests, repositories, code searches, and files in GitHub'
-            );
-            break;
-
-          case 'jira':
-            helpItems.push(
-              'Find, create, update, and comment on issues—and manage users and issue types—in JIRA'
-            );
-            break;
-
-          case 'hubspot':
-            helpItems.push(
-              'Search and create deals, contacts, companies, and tasks, and add notes in HubSpot'
-            );
-            break;
-
-          case 'postgres':
-            helpItems.push(
-              'List tables, inspect schemas, and run SQL queries against your PostgreSQL database'
-            );
-            break;
-
-          case 'salesforce':
-            helpItems.push(
-              'Find users; manage tasks, accounts, and opportunities; and retrieve or update Salesforce records'
-            );
-            break;
-
-          case 'notion':
-            helpItems.push(
-              'Search, create, and update pages and databases in your Notion workspace'
-            );
-            break;
-
-          case 'okta':
-            helpItems.push('Manage users, groups, and application assignments in Okta');
-            break;
-
-          case 'linear':
-            helpItems.push('Create, update, and search issues and projects in Linear');
-            break;
-
-          default:
-            helpItems.push(`Interact with your ${integration} integration`);
-        }
+        const cfg = INTEGRATIONS.find((i) => i.value === integration);
+        helpItems.push(cfg?.oneLineSummary ?? `Interact with your ${integration} integration`);
       });
 
       const helpSection = helpItems.map((item) => `• ${item}`).join('  \n');
