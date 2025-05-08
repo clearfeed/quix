@@ -289,10 +289,10 @@ export class SlackEventsHandlerService {
       const integrationsByType = keyBy(INTEGRATIONS, 'value');
       const connected = getConnectedIntegrations(slackWorkspace);
       const names = connected.map((i) => integrationsByType[i]?.name ?? i);
+      const mcpServersNames = slackWorkspace.mcpConnections.map((mcp) => mcp.name);
 
-      const intro =
-        `
-👋 Hey team — I’m *Quix*, your AI assistant right inside Slack!
+      const intro = `
+👋 Hey team — I’m *Quix*, your AI assistant right inside Slack!
 
 I connect your tools and knowledge so you can get work done without leaving Slack.
 
@@ -303,13 +303,15 @@ What I can help you do
 • Answer questions about past conversations or your connected data  
 
 Currently Integrated With: ${
-          names.length ? names.join(', ') : 'no integrations yet — ask an admin to connect one'
-        }.
+        names.length ? names.join(', ') : 'no integrations yet — ask an admin to connect one'
+      }.${
+        mcpServersNames.length
+          ? `\nYou can also access your internal tools like ${mcpServersNames.join(', ')}.`
+          : ''
+      }
 
-Try me with a natural-language request, e.g.  
-` +
-        '@Quix summarise this thread and file a high-priority JIRA bug' +
-        `.
+Try me with a natural-language request, e.g.
+@Quix summarise this thread and file a high-priority JIRA bug.
 
 Mention @Quix or DM me whenever you need a hand — I’ll take it from there 🚀
 `.trim();
