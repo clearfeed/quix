@@ -303,8 +303,10 @@ export class SlackEventsHandlerService {
       ];
 
       connected.forEach((integration) => {
-        const cfg = INTEGRATIONS.find((i) => i.value === integration);
-        helpItems.push(cfg?.oneLineSummary ?? `Interact with your ${integration} integration`);
+        helpItems.push(
+          integrationsByType[integration]?.oneLineSummary ??
+            `Interact with your ${integration} integration`
+        );
       });
 
       const helpSection = helpItems.map((item) => `${Md.listBullet(item)}`).join('  \n');
