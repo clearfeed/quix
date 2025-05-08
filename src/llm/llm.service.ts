@@ -33,6 +33,7 @@ import slackify = require('slackify-markdown');
 
 @Injectable()
 export class LlmService {
+  private static readonly MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
   private readonly logger = new Logger(LlmService.name);
   constructor(
     private readonly llmProvider: LlmProviderService,
@@ -67,7 +68,14 @@ export class LlmService {
     this.logger.log(`Processing message for team ${slackWorkspace.team_id}`, {
       message: encrypt(message)
     });
-
+    const ok = await this.enforceRetention(slackWorkspace.team_id, channelId, threadTs);
+    if (!ok) {
+      // refuse to do any DB/LLM/tool calls
+      return (
+        '👋 This conversation is more than *7 days* old. ' +
+        'Please start a *new thread* to continue.'
+      );
+    }
     const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, args.slackWorkspace);
     const [conversationState] = await this.conversationStateModel.upsert(
       {
@@ -259,7 +267,21 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
     const finalContent = Array.isArray(llmResponse) ? llmResponse.join(' ') : llmResponse;
     return slackify(finalContent);
   }
+  private async enforceRetention(
+    teamId: string,
+    channelId: string,
+    threadTs: string
+  ): Promise<boolean> {
+    const state = await this.conversationStateModel.findOne({
+      where: { team_id: teamId, channel_id: channelId, thread_ts: threadTs }
+    });
 
+    // If there *is* an old state AND it’s >7 days old, we treat it as “no context allowed”
+    if (state && Date.now() - state.createdAt.getTime() > LlmService.MAX_AGE_MS) {
+      return false;
+    }
+    return true;
+  }
   private async toolSelection(
     message: string,
     tools: AvailableToolsWithConfig,
