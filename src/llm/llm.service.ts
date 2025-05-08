@@ -276,7 +276,6 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       where: { team_id: teamId, channel_id: channelId, thread_ts: threadTs }
     });
 
-    // If there *is* an old state AND it’s >7 days old, we treat it as “no context allowed”
     if (state && Date.now() - state.createdAt.getTime() > LlmService.MAX_AGE_MS) {
       return false;
     }

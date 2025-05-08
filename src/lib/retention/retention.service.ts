@@ -18,7 +18,6 @@ export class RetentionService {
     const sevenDaysAgo = new Date(nowMs - 7 * 24 * 60 * 60 * 1000);
     const twoMonthsAgo = new Date(nowMs - 60 * 24 * 60 * 60 * 1000);
 
-    // 1️⃣ Soft-reset: null out everything except PKs + timestamps + message_count
     const [numUpdated] = await ConversationState.update(
       {
         last_tool_calls: null,
@@ -33,7 +32,6 @@ export class RetentionService {
     );
     this.logger.log(`Soft-reset ${numUpdated} rows older than ${sevenDaysAgo.toISOString()}`);
 
-    // 2️⃣ Hard-delete: drop rows older than 2 months
     const numDeleted = await ConversationState.destroy({
       where: {
         createdAt: { [Op.lt]: twoMonthsAgo }
