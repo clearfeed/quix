@@ -18,6 +18,7 @@ import { INTEGRATIONS } from '@quix/lib/constants';
 import { keyBy, shuffle } from 'lodash';
 import { SlackWorkspace } from '../database/models';
 import { Md } from 'slack-block-builder';
+import { SLACK_BOT_USER_ID } from '../lib/utils/slack-constants';
 
 @Injectable()
 export class SlackEventsHandlerService {
@@ -130,6 +131,10 @@ export class SlackEventsHandlerService {
       ])
     });
     if (!event.team) return;
+    if (event.user === SLACK_BOT_USER_ID) {
+      this.logger.log('Ignoring message from Slack Bot', { teamId: event.team });
+      return;
+    }
     const replyThreadTs = event.thread_ts || event.ts;
     try {
       const slackWorkspace = await this.slackService.getSlackWorkspace(event.team);
@@ -302,17 +307,17 @@ export class SlackEventsHandlerService {
         helpItems.push(cfg?.oneLineSummary ?? `Interact with your ${integration} integration`);
       });
 
-      const helpSection = helpItems.map((item) => `• ${item}`).join('  \n');
+      const helpSection = helpItems.map((item) => `${Md.listBullet(item)}`).join('  \n');
 
       const intro = `
-${Md.emoji('wave')} Hey team — I’m *Quix*, your AI assistant right inside Slack!
+${Md.emoji('wave')} Hey team — I'm Quix, your AI assistant right inside Slack!
 
 I connect your tools and knowledge so you can get work done without leaving Slack.
 
-What I can help you do  
+Here's what I can help you do:
 ${helpSection}
 
-Currently Integrated With: ${
+${Md.bold('Currently Integrated With')}: ${
         names.length ? names.join(', ') : 'no integrations yet — ask an admin to connect one'
       }.${
         mcpServersNames.length
@@ -321,9 +326,9 @@ Currently Integrated With: ${
       }
 
 Try me with a natural-language request, e.g.
-@Quix summarise this thread and file a high-priority JIRA bug.
+${Md.codeBlock('@Quix summarise this thread and file a high-priority JIRA bug.')}
 
-Mention @Quix or DM me whenever you need a hand — I’ll take it from there ${Md.emoji('rocket')}
+Mention ${Md.user(slackWorkspace.bot_user_id)} or DM me whenever you need a hand — I'll take it from there ${Md.emoji('rocket')}
 `.trim();
 
       await webClient.chat.postMessage({ channel: event.channel, text: intro });
