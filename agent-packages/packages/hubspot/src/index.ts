@@ -498,14 +498,15 @@ export class HubspotService implements BaseService<HubspotConfig> {
       return {
         success: true,
         data: {
-          taskId: response.id,
-          taskDetails: {
-            hs_task_subject: response.properties.hs_task_subject || '',
-            hs_task_status: response.properties.hs_task_status || '',
-            hs_task_priority: response.properties.hs_task_priority || '',
-            hs_task_type: response.properties.hs_task_type || '',
-            hs_timestamp: response.properties.hs_timestamp || '',
-            hs_task_body: response.properties.hs_task_body || ''
+          task: {
+            id: response.id,
+            subject: response.properties.hs_task_subject || '',
+            status: response.properties.hs_task_status || '',
+            priority: response.properties.hs_task_priority || '',
+            type: response.properties.hs_task_type || '',
+            timestamp: response.properties.hs_timestamp || '',
+            body: response.properties.hs_task_body || '',
+            url: this.getTaskUrl(response.id)
           }
         }
       };
@@ -554,14 +555,15 @@ export class HubspotService implements BaseService<HubspotConfig> {
       return {
         success: true,
         data: {
-          taskId: response.id,
-          taskDetails: {
-            hs_task_subject: response.properties.hs_task_subject || '',
-            hs_task_status: response.properties.hs_task_status || '',
-            hs_task_priority: response.properties.hs_task_priority || '',
-            hs_task_type: response.properties.hs_task_type || '',
-            hs_timestamp: response.properties.hs_timestamp || '',
-            hs_task_body: response.properties.hs_task_body || ''
+          task: {
+            id: response.id,
+            subject: response.properties.hs_task_subject || '',
+            status: response.properties.hs_task_status || '',
+            priority: response.properties.hs_task_priority || '',
+            type: response.properties.hs_task_type || '',
+            timestamp: response.properties.hs_timestamp || '',
+            body: response.properties.hs_task_body || '',
+            url: this.getTaskUrl(response.id)
           }
         }
       };
@@ -686,7 +688,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
           dueDate: task.properties.hs_timestamp || '',
           ownerId: task.properties.hubspot_owner_id || undefined,
           createdAt: task.properties.createdate || '',
-          lastModifiedDate: task.properties.hs_lastmodifieddate || ''
+          lastModifiedDate: task.properties.hs_lastmodifieddate || '',
+          url: this.getTaskUrl(task.id)
         };
       });
 
@@ -701,6 +704,10 @@ export class HubspotService implements BaseService<HubspotConfig> {
         error: error instanceof Error ? error.message : 'Failed to search HubSpot tasks'
       };
     }
+  }
+
+  private getTaskUrl(taskId: string): string {
+    return `https://app.hubspot.com/tasks/${this.config.hubId}/view/all/task/${taskId}`;
   }
 
   async getOwner(ownerId: number): Promise<HubspotOwner | null> {
