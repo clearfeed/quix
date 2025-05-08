@@ -129,27 +129,27 @@ export type CreateTaskParams = z.infer<typeof baseTaskSchema> & {
 };
 
 export type CreateTaskResponse = BaseResponse<{
-  taskId: string;
-  taskDetails: {
-    hs_task_subject: string;
-    hs_task_status: string;
-    hs_task_priority: string;
-    hs_task_type: string;
-    hs_timestamp: string;
-    hs_task_body: string;
+  task: {
+    id: string;
+    subject: string;
+    status: string;
+    priority: string;
+    type: string;
+    timestamp: string;
+    body: string;
     url: string;
   };
 }>;
 
 export type UpdateTaskResponse = BaseResponse<{
-  taskId: string;
-  taskDetails: {
-    hs_task_subject: string;
-    hs_task_status: string;
-    hs_task_priority: string;
-    hs_task_type: string;
-    hs_timestamp: string;
-    hs_task_body: string;
+  task: {
+    id: string;
+    subject: string;
+    status: string;
+    priority: string;
+    type: string;
+    timestamp: string;
+    body: string;
     url: string;
   };
 }>;
