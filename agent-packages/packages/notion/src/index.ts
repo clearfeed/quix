@@ -2,7 +2,6 @@ import { BaseResponse, BaseService } from '@clearfeed-ai/quix-common-agent';
 import { Client } from '@notionhq/client';
 import {
   NotionConfig,
-  CommentResponse,
   RetrieveBlockArgs,
   RetrieveBlockChildrenArgs,
   DeleteBlockArgs,
@@ -24,6 +23,7 @@ import {
   AppendBlockChildrenResponse,
   BlockObjectRequest,
   CreateCommentParameters,
+  CreateCommentResponse,
   CreatePageResponse,
   DeleteBlockResponse,
   GetBlockResponse,
@@ -64,7 +64,7 @@ export class NotionService implements BaseService<NotionConfig> {
 
   async appendBlockChildren(
     args: AppendBlockChildrenArgs
-  ): Promise<BaseResponse<AppendBlockChildrenResponse>> {
+  ): Promise<BaseResponse<{ block_children: AppendBlockChildrenResponse }>> {
     try {
       const { block_id, children } = args;
       const response = await this.client.blocks.children.append({
@@ -73,14 +73,14 @@ export class NotionService implements BaseService<NotionConfig> {
       });
       return {
         success: true,
-        data: response
+        data: { block_children: response }
       };
     } catch (error) {
       return handleNotionError(error);
     }
   }
 
-  async retrieveBlock(args: RetrieveBlockArgs): Promise<BaseResponse<GetBlockResponse>> {
+  async retrieveBlock(args: RetrieveBlockArgs): Promise<BaseResponse<{ block: GetBlockResponse }>> {
     try {
       const { block_id } = args;
       const response = await this.client.blocks.retrieve({
@@ -88,7 +88,7 @@ export class NotionService implements BaseService<NotionConfig> {
       });
       return {
         success: true,
-        data: response
+        data: { block: response }
       };
     } catch (error) {
       return handleNotionError(error);
@@ -97,7 +97,7 @@ export class NotionService implements BaseService<NotionConfig> {
 
   async retrieveBlockChildren(
     args: RetrieveBlockChildrenArgs
-  ): Promise<BaseResponse<ListBlockChildrenResponse>> {
+  ): Promise<BaseResponse<{ block_children: ListBlockChildrenResponse }>> {
     try {
       const { block_id, start_cursor, page_size } = args;
       const response = await this.client.blocks.children.list({
@@ -107,14 +107,14 @@ export class NotionService implements BaseService<NotionConfig> {
       });
       return {
         success: true,
-        data: response
+        data: { block_children: response }
       };
     } catch (error) {
       return handleNotionError(error);
     }
   }
 
-  async deleteBlock(args: DeleteBlockArgs): Promise<BaseResponse<DeleteBlockResponse>> {
+  async deleteBlock(args: DeleteBlockArgs): Promise<BaseResponse<{ block: DeleteBlockResponse }>> {
     try {
       const { block_id } = args;
       const response = await this.client.blocks.delete({
@@ -122,14 +122,14 @@ export class NotionService implements BaseService<NotionConfig> {
       });
       return {
         success: true,
-        data: response
+        data: { block: response }
       };
     } catch (error) {
       return handleNotionError(error);
     }
   }
 
-  async updateBlock(args: UpdateBlockArgs): Promise<BaseResponse<UpdateBlockResponse>> {
+  async updateBlock(args: UpdateBlockArgs): Promise<BaseResponse<{ block: UpdateBlockResponse }>> {
     try {
       const {
         block_id,
@@ -155,14 +155,14 @@ export class NotionService implements BaseService<NotionConfig> {
       );
       return {
         success: true,
-        data: response
+        data: { block: response }
       };
     } catch (error) {
       return handleNotionError(error);
     }
   }
 
-  async retrievePage(args: RetrievePageArgs): Promise<BaseResponse<GetPageResponse>> {
+  async retrievePage(args: RetrievePageArgs): Promise<BaseResponse<{ page: GetPageResponse }>> {
     try {
       const { page_id } = args;
       const response = await this.client.pages.retrieve({
@@ -170,7 +170,7 @@ export class NotionService implements BaseService<NotionConfig> {
       });
       return {
         success: true,
-        data: response
+        data: { page: response }
       };
     } catch (error) {
       return handleNotionError(error);
@@ -179,7 +179,7 @@ export class NotionService implements BaseService<NotionConfig> {
 
   async deleteOrArchivePage(
     args: DeleteOrArchivePageArgs
-  ): Promise<BaseResponse<UpdatePageResponse>> {
+  ): Promise<BaseResponse<{ page: UpdatePageResponse }>> {
     try {
       const { page_id } = args;
       const response = await this.client.pages.update({
@@ -188,7 +188,7 @@ export class NotionService implements BaseService<NotionConfig> {
       });
       return {
         success: true,
-        data: response
+        data: { page: response }
       };
     } catch (error) {
       return handleNotionError(error);
@@ -197,7 +197,7 @@ export class NotionService implements BaseService<NotionConfig> {
 
   async updatePageProperties(
     args: UpdatePagePropertiesArgs
-  ): Promise<BaseResponse<UpdatePageResponse>> {
+  ): Promise<BaseResponse<{ page: UpdatePageResponse }>> {
     try {
       const { page_id, properties } = args;
       const response = await this.client.pages.update({
@@ -206,14 +206,14 @@ export class NotionService implements BaseService<NotionConfig> {
       });
       return {
         success: true,
-        data: response
+        data: { page: response }
       };
     } catch (error) {
       return handleNotionError(error);
     }
   }
 
-  async listAllUsers(args: ListAllUsersArgs): Promise<BaseResponse<ListUsersResponse>> {
+  async listAllUsers(args: ListAllUsersArgs): Promise<BaseResponse<{ users: ListUsersResponse }>> {
     try {
       const { start_cursor } = args;
       const response = await this.client.users.list({
@@ -222,14 +222,14 @@ export class NotionService implements BaseService<NotionConfig> {
       });
       return {
         success: true,
-        data: response
+        data: { users: response }
       };
     } catch (error) {
       return handleNotionError(error);
     }
   }
 
-  async retrieveUser(args: RetrieveUserArgs): Promise<BaseResponse<GetUserResponse>> {
+  async retrieveUser(args: RetrieveUserArgs): Promise<BaseResponse<{ user: GetUserResponse }>> {
     try {
       const { user_id } = args;
       const response = await this.client.users.retrieve({
@@ -237,26 +237,28 @@ export class NotionService implements BaseService<NotionConfig> {
       });
       return {
         success: true,
-        data: response
+        data: { user: response }
       };
     } catch (error) {
       return handleNotionError(error);
     }
   }
 
-  async retrieveBotUser(): Promise<BaseResponse<GetSelfResponse>> {
+  async retrieveBotUser(): Promise<BaseResponse<{ user: GetSelfResponse }>> {
     try {
       const response = await this.client.users.me({});
       return {
         success: true,
-        data: response
+        data: { user: response }
       };
     } catch (error) {
       return handleNotionError(error);
     }
   }
 
-  async queryDatabase(args: QueryDatabaseArgs): Promise<BaseResponse<QueryDatabaseResponse>> {
+  async queryDatabase(
+    args: QueryDatabaseArgs
+  ): Promise<BaseResponse<{ database: QueryDatabaseResponse }>> {
     try {
       const { database_id, sorts, start_cursor, page_size } = args;
 
@@ -301,14 +303,16 @@ export class NotionService implements BaseService<NotionConfig> {
 
       return {
         success: true,
-        data: response
+        data: { database: response }
       };
     } catch (error) {
       return handleNotionError(error);
     }
   }
 
-  async retrieveDatabase(args: RetrieveDatabaseArgs): Promise<BaseResponse<GetDatabaseResponse>> {
+  async retrieveDatabase(
+    args: RetrieveDatabaseArgs
+  ): Promise<BaseResponse<{ database: GetDatabaseResponse }>> {
     try {
       const { database_id } = args;
       const response = await this.client.databases.retrieve({
@@ -316,7 +320,7 @@ export class NotionService implements BaseService<NotionConfig> {
       });
       return {
         success: true,
-        data: response
+        data: { database: response }
       };
     } catch (error) {
       return handleNotionError(error);
@@ -325,7 +329,7 @@ export class NotionService implements BaseService<NotionConfig> {
 
   async createDatabaseItem(
     args: CreateDatabaseItemArgs
-  ): Promise<BaseResponse<CreatePageResponse>> {
+  ): Promise<BaseResponse<{ page: CreatePageResponse }>> {
     try {
       const { database_id, properties } = args;
       const response = await this.client.pages.create({
@@ -334,14 +338,16 @@ export class NotionService implements BaseService<NotionConfig> {
       });
       return {
         success: true,
-        data: response
+        data: { page: response }
       };
     } catch (error) {
       return handleNotionError(error);
     }
   }
 
-  async createComment(args: CreateCommentArgs): Promise<BaseResponse<CommentResponse>> {
+  async createComment(
+    args: CreateCommentArgs
+  ): Promise<BaseResponse<{ comment: CreateCommentResponse }>> {
     try {
       const { parent, discussion_id, rich_text } = args;
       if (!parent && !discussion_id) {
@@ -362,7 +368,7 @@ export class NotionService implements BaseService<NotionConfig> {
       const response = await this.client.comments.create(requestBody);
       return {
         success: true,
-        data: response as unknown as CommentResponse
+        data: { comment: response }
       };
     } catch (error) {
       return handleNotionError(error);

@@ -5,4 +5,3 @@ export interface NotionConfig extends BaseConfig {
 }
 
 export * from './args';
-export * from './responses';
