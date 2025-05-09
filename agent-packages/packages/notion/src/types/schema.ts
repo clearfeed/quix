@@ -179,8 +179,8 @@ export const searchSchema = z.object({
   query: z.string().describe('Text to search for in page or database titles').optional(),
   filter: z
     .object({
-      property: z.string().describe("Must be 'object'"),
-      value: z.string().describe("Either 'page' or 'database'")
+      property: z.literal('object').describe("Must be 'object'"),
+      value: z.enum(['page', 'database']).describe("Either 'page' or 'database'")
     })
     .describe('Filter results by object type (page or database)')
     .optional(),
