@@ -1,4 +1,10 @@
 import { z } from 'zod';
+import { BaseConfig } from '@clearfeed-ai/quix-common-agent';
+
+export interface NotionConfig extends BaseConfig {
+  token: string;
+}
+
 import {
   appendBlockChildrenSchema,
   createCommentSchema,
@@ -16,7 +22,7 @@ import {
   searchSchema,
   updateBlockSchema,
   updatePagePropertiesSchema
-} from '../schema';
+} from './schema';
 
 export type SearchArgs = z.infer<typeof searchSchema>;
 export type AppendBlockChildrenArgs = z.infer<typeof appendBlockChildrenSchema>;
