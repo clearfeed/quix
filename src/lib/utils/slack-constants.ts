@@ -96,3 +96,5 @@ export const TRIAL_DAYS = 7;
  * the user has not set their own OpenAI key.
  */
 export const TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT = 5;
+
+export const SLACK_BOT_USER_ID = 'USLACKBOT';

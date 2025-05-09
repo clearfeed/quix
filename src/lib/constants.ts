@@ -42,6 +42,7 @@ export const INTEGRATIONS: {
     title: string;
     message: string;
   };
+  oneLineSummary: string;
 }[] = [
   {
     name: 'JIRA',
@@ -54,7 +55,8 @@ export const INTEGRATIONS: {
     suggestedPrompt: {
       title: 'Get Jira issue details',
       message: "What's the status of my Jira issue PROJ-123?"
-    }
+    },
+    oneLineSummary: 'Create, search, and update issues in JIRA'
   },
   {
     name: 'GitHub',
@@ -67,7 +69,8 @@ export const INTEGRATIONS: {
     suggestedPrompt: {
       title: 'List open GitHub PRs',
       message: 'What are all the open pull requests in the main repository?'
-    }
+    },
+    oneLineSummary: 'Create, update, and search issues or PRs in GitHub'
   },
   {
     name: 'Hubspot',
@@ -80,7 +83,8 @@ export const INTEGRATIONS: {
     suggestedPrompt: {
       title: 'Get deal details from HubSpot',
       message: "What's the status of my deal with Tesla?"
-    }
+    },
+    oneLineSummary: 'Track contacts, companies, and deals in HubSpot'
   },
   // {
   //   name: 'Zendesk',
@@ -100,7 +104,8 @@ export const INTEGRATIONS: {
     suggestedPrompt: {
       title: 'Query Postgres database',
       message: 'Show me the first 10 rows from the users table'
-    }
+    },
+    oneLineSummary: 'Run natural-language queries on your Postgres database'
   },
   {
     name: 'Salesforce',
@@ -113,7 +118,8 @@ export const INTEGRATIONS: {
     suggestedPrompt: {
       title: 'Get Salesforce opportunity',
       message: "What's the status of the Acme Corp opportunity?"
-    }
+    },
+    oneLineSummary: 'View and update opportunities, contacts, and accounts in Salesforce'
   },
   {
     name: 'Notion',
@@ -126,7 +132,8 @@ export const INTEGRATIONS: {
     suggestedPrompt: {
       title: 'Search Notion documents',
       message: 'Find all Notion pages about product roadmap'
-    }
+    },
+    oneLineSummary: 'Search, browse, and retrieve content from your Notion workspace'
   },
   {
     name: 'Linear',
@@ -139,7 +146,8 @@ export const INTEGRATIONS: {
     suggestedPrompt: {
       title: 'Check Linear issues',
       message: 'Show me all high priority issues assigned to me'
-    }
+    },
+    oneLineSummary: 'Manage and search tasks or issues in Linear'
   },
   {
     name: 'Okta',
@@ -152,7 +160,8 @@ export const INTEGRATIONS: {
     suggestedPrompt: {
       title: 'Search Okta users',
       message: 'Find all Okta users in the Engineering department'
-    }
+    },
+    oneLineSummary: 'Look up users, groups, and apps in Okta'
   }
 ];
 

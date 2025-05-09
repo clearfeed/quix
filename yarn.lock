@@ -365,10 +365,10 @@
   dependencies:
     "@octokit/rest" "^21.1.1"
 
-"@clearfeed-ai/quix-hubspot-agent@^1.1.6":
-  version "1.1.6"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-1.1.6.tgz#9f9758de3e69a83cdfb2630d1eeb2aacea637312"
-  integrity sha512-vXDhW3CHWDH0EfpZqZpASJj8LoPXyjxDYlckDE9cIwyp/+tMdKR6h4/oWwpIF/Z0/zoYsNcBIxcTtJT44kvZSA==
+"@clearfeed-ai/quix-hubspot-agent@^1.1.7":
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-1.1.7.tgz#43fcdf4778b4392aafd77dcbc6ab1254d2e23d29"
+  integrity sha512-lNh7ZgIdJ1Q/5j9r514QWggtFI2kbmi+MPuGip/6VbyKTS+Sb4lwOPVEf+Ny7YLi2dlnSh1J7gj15uxZRmOmrw==
   dependencies:
     "@hubspot/api-client" "^12.0.1"
 
