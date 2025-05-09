@@ -3,12 +3,9 @@ import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import {
   CreateCommentArgs,
-  createCommentSchema,
   CreateDatabaseItemArgs,
-  createDatabaseItemSchema,
   DeleteBlockArgs,
   DeleteOrArchivePageArgs,
-  deleteOrArchivePageSchema,
   ListAllUsersArgs,
   NotionConfig,
   QueryDatabaseArgs,
@@ -20,6 +17,11 @@ import {
   RetrieveUserArgs,
   SearchArgs,
   UpdateBlockArgs,
+  AppendBlockChildrenArgs,
+  UpdatePagePropertiesArgs
+} from './types';
+
+import {
   updatePagePropertiesSchema,
   retrieveBlockSchema,
   retrieveBlockChildrenSchema,
@@ -34,9 +36,10 @@ import {
   retrieveUserSchema,
   retrieveBotUserSchema,
   appendBlockChildrenSchema,
-  AppendBlockChildrenArgs,
-  UpdatePagePropertiesArgs
-} from './types';
+  deleteOrArchivePageSchema,
+  createDatabaseItemSchema,
+  createCommentSchema
+} from './schema';
 
 const NOTION_TOOL_SELECTION_PROMPT = `
 Notion is a workspace productivity platform that manages:

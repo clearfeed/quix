@@ -1,7 +1,79 @@
 import { z } from 'zod';
-import { commonIdDescription, richTextObjectSchema, blockObjectSchema } from './common.js';
 
-// Blocks tools
+export const commonIdDescription =
+  'It should be a 32-character string (excluding hyphens) formatted as 8-4-4-4-12 with hyphens (-).';
+
+export const richTextObjectSchema = z.object({
+  type: z.literal('text').describe('The type of this rich text object. Possible value: text.'),
+  text: z
+    .object({
+      content: z.string().describe('The actual text content.')
+    })
+    .describe("Object containing text content and optional link info. Required if type is 'text'."),
+  annotations: z
+    .object({
+      bold: z.boolean().default(false),
+      italic: z.boolean().default(false),
+      strikethrough: z.boolean().default(false),
+      underline: z.boolean().default(false),
+      code: z.boolean().default(false),
+      color: z.literal('default').describe('The color of the text.')
+    })
+    .describe('Styling information for the text. By default, give nothing for default text.')
+});
+
+const headingBlockObjectSchema = z.object({
+  rich_text: z
+    .array(richTextObjectSchema)
+    .describe('Array of rich text objects representing the heading content.'),
+  color: z.literal('default').describe('The color of the block.'),
+  is_toggleable: z.boolean().describe('Whether the heading can be toggled.').optional()
+});
+
+export const blockObjectSchema = z.object({
+  object: z.literal('block').describe("Should be 'block'."),
+  type: z
+    .enum([
+      'paragraph',
+      'heading_1',
+      'heading_2',
+      'heading_3',
+      'bulleted_list_item',
+      'numbered_list_item'
+    ])
+    .describe('Type of the block.'),
+  paragraph: z
+    .object({
+      rich_text: z
+        .array(richTextObjectSchema)
+        .describe('Array of rich text objects representing the content.'),
+      color: z.literal('default').describe('The color of the block.')
+    })
+    .describe('Paragraph block object.')
+    .optional(),
+  heading_1: headingBlockObjectSchema.describe('Heading 1 block object.').optional(),
+  heading_2: headingBlockObjectSchema.describe('Heading 2 block object.').optional(),
+  heading_3: headingBlockObjectSchema.describe('Heading 3 block object.').optional(),
+  bulleted_list_item: z
+    .object({
+      rich_text: z
+        .array(richTextObjectSchema)
+        .describe('Array of rich text objects representing the list item content.'),
+      color: z.literal('default').describe('The color of the block.')
+    })
+    .describe('Bulleted list item block object.')
+    .optional(),
+  numbered_list_item: z
+    .object({
+      rich_text: z
+        .array(richTextObjectSchema)
+        .describe('Array of rich text objects representing the list item content.'),
+      color: z.literal('default').describe('The color of the block.')
+    })
+    .describe('Numbered list item block object.')
+    .optional()
+});
+
 export const appendBlockChildrenSchema = z.object({
   block_id: z.string().describe('The ID of the parent block.' + commonIdDescription),
   children: z
@@ -84,7 +156,6 @@ export const updateBlockSchema = z.object({
     .optional()
 });
 
-// Pages tools
 export const retrievePageSchema = z.object({
   page_id: z.string().describe('The ID of the page to retrieve.' + commonIdDescription)
 });
@@ -101,7 +172,7 @@ export const updatePagePropertiesSchema = z.object({
 export const deleteOrArchivePageSchema = z.object({
   page_id: z.string().describe('The ID of the page to delete or archive.' + commonIdDescription)
 });
-// Users tools
+
 export const listAllUsersSchema = z.object({
   start_cursor: z.string().describe('Pagination start cursor for listing users').optional()
 });
@@ -112,7 +183,6 @@ export const retrieveUserSchema = z.object({
 
 export const retrieveBotUserSchema = z.object({});
 
-// Databases tools
 export const queryDatabaseSchema = z.object({
   database_id: z.string().describe('The ID of the database to query.' + commonIdDescription),
   sorts: z
@@ -142,7 +212,6 @@ export const createDatabaseItemSchema = z.object({
     .describe('Properties of the new database item. These should match the database schema.')
 });
 
-// Comments tools
 export const createCommentSchema = z.object({
   parent: z
     .object({
@@ -174,7 +243,6 @@ export const retrieveCommentsSchema = z.object({
   page_size: z.number().describe('Number of comments to retrieve (max 100).').optional()
 });
 
-// Search tool
 export const searchSchema = z.object({
   query: z.string().describe('Text to search for in page or database titles').optional(),
   filter: z
