@@ -347,7 +347,7 @@ export const getIntegrationInfo = (
           .confirm(
             ConfirmationDialog()
               .title('Disconnect?')
-              .text(`Are you sure you want to disconnect *${mcpConnection.name}*?`)
+              .text(`Are you sure you want to disconnect ${mcpConnection.name}?`)
               .confirm('Yes, disconnect')
               .deny('Cancel')
           )
@@ -390,7 +390,7 @@ export const getIntegrationInfo = (
         .confirm(
           ConfirmationDialog()
             .title('Disconnect?')
-            .text(`Are you sure you want to disconnect *${integration.name}*?`)
+            .text(`Are you sure you want to disconnect ${integration.name}?`)
             .confirm('Yes, disconnect')
             .deny('Cancel')
         )
