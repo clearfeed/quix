@@ -31,6 +31,7 @@ import {
   GetPageResponse,
   GetSelfResponse,
   GetUserResponse,
+  ListBlockChildrenParameters,
   ListBlockChildrenResponse,
   ListCommentsResponse,
   ListUsersResponse,
@@ -100,11 +101,14 @@ export class NotionService implements BaseService<NotionConfig> {
   ): Promise<BaseResponse<{ block_children: ListBlockChildrenResponse }>> {
     try {
       const { block_id, start_cursor, page_size } = args;
-      const response = await this.client.blocks.children.list({
+
+      const body: ListBlockChildrenParameters = {
         block_id,
-        start_cursor,
-        page_size
-      });
+        page_size: page_size ?? 100,
+        ...(start_cursor ? { start_cursor } : {})
+      };
+
+      const response = await this.client.blocks.children.list(body);
       return {
         success: true,
         data: { block_children: response }

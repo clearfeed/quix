@@ -2,6 +2,7 @@ import { NotionService } from './index';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import {
+  AppendBlockChildrenArgs,
   CreateCommentArgs,
   CreateDatabaseItemArgs,
   DeleteBlockArgs,
@@ -17,7 +18,6 @@ import {
   RetrieveUserArgs,
   SearchArgs,
   UpdateBlockArgs,
-  AppendBlockChildrenArgs,
   UpdatePagePropertiesArgs
 } from './types';
 
@@ -35,10 +35,10 @@ import {
   listAllUsersSchema,
   retrieveUserSchema,
   retrieveBotUserSchema,
-  appendBlockChildrenSchema,
   deleteOrArchivePageSchema,
   createDatabaseItemSchema,
-  createCommentSchema
+  createCommentSchema,
+  appendBlockChildrenSchema
 } from './schema';
 
 const NOTION_TOOL_SELECTION_PROMPT = `
