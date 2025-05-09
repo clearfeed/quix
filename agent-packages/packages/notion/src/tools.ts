@@ -4,6 +4,7 @@ import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import {
   AppendBlockChildrenArgs,
   CreateCommentArgs,
+  CreateDatabaseArgs,
   CreateDatabaseItemArgs,
   DeleteBlockArgs,
   DeleteOrArchivePageArgs,
@@ -38,7 +39,8 @@ import {
   deleteOrArchivePageSchema,
   createDatabaseItemSchema,
   createCommentSchema,
-  appendBlockChildrenSchema
+  appendBlockChildrenSchema,
+  createDatabaseSchema
 } from './schema';
 
 const NOTION_TOOL_SELECTION_PROMPT = `
@@ -116,6 +118,11 @@ export function createNotionToolsExport(config: NotionConfig): ToolConfig {
       name: 'notion_query_database',
       description: 'Query a database in Notion',
       schema: queryDatabaseSchema
+    }),
+    tool(async (args: CreateDatabaseArgs) => service.createDatabase(args), {
+      name: 'notion_create_database',
+      description: 'Create a new database in Notion',
+      schema: createDatabaseSchema
     }),
     tool(async (args: RetrieveDatabaseArgs) => service.retrieveDatabase(args), {
       name: 'notion_retrieve_database',

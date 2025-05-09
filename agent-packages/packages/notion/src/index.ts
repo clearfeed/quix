@@ -17,13 +17,16 @@ import {
   RetrieveCommentsArgs,
   SearchArgs,
   AppendBlockChildrenArgs,
-  UpdatePagePropertiesArgs
+  UpdatePagePropertiesArgs,
+  CreateDatabaseArgs,
+  RichTextItemRequest
 } from './types';
 import {
   AppendBlockChildrenResponse,
   BlockObjectRequest,
   CreateCommentParameters,
   CreateCommentResponse,
+  CreateDatabaseResponse,
   CreatePageResponse,
   DeleteBlockResponse,
   GetBlockResponse,
@@ -38,7 +41,6 @@ import {
   QueryDatabaseResponse,
   SearchParameters,
   SearchResponse,
-  UpdateBlockParameters,
   UpdateBlockResponse,
   UpdatePageResponse
 } from '@notionhq/client/build/src/api-endpoints';
@@ -68,9 +70,19 @@ export class NotionService implements BaseService<NotionConfig> {
   ): Promise<BaseResponse<{ block_children: AppendBlockChildrenResponse }>> {
     try {
       const { block_id, children } = args;
+      const validChildren = children.map((child) => {
+        return {
+          object: 'block',
+          [child.type]: {
+            rich_text: child.rich_text,
+            color: child.color,
+            ...(child.children && { children: child.children })
+          }
+        };
+      });
       const response = await this.client.blocks.children.append({
         block_id,
-        children: children as unknown as BlockObjectRequest[]
+        children: validChildren as unknown as BlockObjectRequest[]
       });
       return {
         success: true,
@@ -135,28 +147,15 @@ export class NotionService implements BaseService<NotionConfig> {
 
   async updateBlock(args: UpdateBlockArgs): Promise<BaseResponse<{ block: UpdateBlockResponse }>> {
     try {
-      const {
+      const { block_id, type, rich_text } = args;
+
+      const blockData: Record<string, any> = {};
+      blockData[type] = { rich_text };
+
+      const response = await this.client.blocks.update({
         block_id,
-        paragraph,
-        heading_1,
-        heading_2,
-        heading_3,
-        bulleted_list_item,
-        numbered_list_item
-      } = args;
-
-      let requestBody!: Record<string, any>;
-
-      if (paragraph) requestBody = { paragraph, block_id };
-      if (heading_1) requestBody = { heading_1, block_id };
-      if (heading_2) requestBody = { heading_2, block_id };
-      if (heading_3) requestBody = { heading_3, block_id };
-      if (bulleted_list_item) requestBody = { bulleted_list_item, block_id };
-      if (numbered_list_item) requestBody = { numbered_list_item, block_id };
-
-      const response = await this.client.blocks.update(
-        requestBody as unknown as UpdateBlockParameters
-      );
+        ...blockData
+      });
       return {
         success: true,
         data: { block: response }
@@ -361,12 +360,12 @@ export class NotionService implements BaseService<NotionConfig> {
       if (parent) {
         requestBody = {
           parent,
-          rich_text
+          rich_text: rich_text as unknown as RichTextItemRequest[]
         };
       } else if (discussion_id) {
         requestBody = {
           discussion_id,
-          rich_text
+          rich_text: rich_text as unknown as RichTextItemRequest[]
         };
       }
       const response = await this.client.comments.create(requestBody);
@@ -386,7 +385,7 @@ export class NotionService implements BaseService<NotionConfig> {
       const { block_id, start_cursor, page_size } = args;
       const response = await this.client.comments.list({
         block_id,
-        start_cursor,
+        ...(start_cursor ? { start_cursor } : {}),
         page_size
       });
       return {
@@ -410,6 +409,27 @@ export class NotionService implements BaseService<NotionConfig> {
       return {
         success: true,
         data: response
+      };
+    } catch (error) {
+      return handleNotionError(error);
+    }
+  }
+
+  async createDatabase(
+    args: CreateDatabaseArgs
+  ): Promise<BaseResponse<{ database: CreateDatabaseResponse }>> {
+    try {
+      const { parent, title, properties } = args;
+      const response = await this.client.databases.create({
+        parent,
+        title: title as unknown as RichTextItemRequest[],
+        properties
+      });
+      return {
+        success: true,
+        data: {
+          database: response
+        }
       };
     } catch (error) {
       return handleNotionError(error);
