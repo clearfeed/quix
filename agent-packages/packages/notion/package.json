@@ -22,7 +22,6 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@notionhq/client": "^3.0.1",
-    "axios": "^1.8.2"
+    "@notionhq/client": "^3.0.1"
   }
 }
