@@ -15,8 +15,10 @@ export class RetentionService {
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async handleRetention(): Promise<void> {
     const nowMs = Date.now();
-    const sevenDaysAgo = new Date(nowMs - 7 * 24 * 60 * 60 * 1000);
-    const twoMonthsAgo = new Date(nowMs - 60 * 24 * 60 * 60 * 1000);
+    const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+    const sevenDaysAgo = new Date(nowMs - ONE_WEEK_MS);
+    const TWO_MONTHS_MS = 60 * 24 * 60 * 60 * 1000;
+    const twoMonthsAgo = new Date(nowMs - TWO_MONTHS_MS);
 
     const [numUpdated] = await ConversationState.update(
       {

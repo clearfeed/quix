@@ -68,14 +68,13 @@ export class LlmService {
     this.logger.log(`Processing message for team ${slackWorkspace.team_id}`, {
       message: encrypt(message)
     });
-    const ok = await this.enforceRetention(slackWorkspace.team_id, channelId, threadTs);
-    if (!ok) {
-      // refuse to do any DB/LLM/tool calls
-      return (
-        '👋 This conversation is more than *7 days* old. ' +
-        'Please start a *new thread* to continue.'
-      );
-    }
+
+    let ok = await this.enforceRetention(slackWorkspace.team_id, channelId, threadTs);
+    const STALE_REPLY =
+      '👋 This conversation is more than *7 days* old. ' +
+      'Please start a *new thread* to continue.';
+    if (!ok) return STALE_REPLY;
+
     const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, args.slackWorkspace);
     const [conversationState] = await this.conversationStateModel.upsert(
       {
@@ -91,6 +90,10 @@ export class LlmService {
         fields: []
       }
     );
+
+    ok = await this.enforceRetention(slackWorkspace.team_id, channelId, threadTs);
+    if (!ok) return STALE_REPLY;
+
     if (
       slackWorkspace.isTrialMode &&
       conversationState.message_count >= TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT
