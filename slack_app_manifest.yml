@@ -41,6 +41,7 @@ settings:
       - assistant_thread_started
       - message.im
       - message.mpim
+      - member_joined_channel
   interactivity:
     is_enabled: true
     request_url: <YOUR_INTERACTIONS_URL>
