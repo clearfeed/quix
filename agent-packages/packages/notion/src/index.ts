@@ -1,5 +1,11 @@
 import { BaseResponse, BaseService } from '@clearfeed-ai/quix-common-agent';
-import { Client } from '@notionhq/client';
+import {
+  APIResponseError,
+  Client,
+  isNotionClientError,
+  RequestTimeoutError,
+  UnknownHTTPResponseError
+} from '@notionhq/client';
 import {
   NotionConfig,
   RetrieveBlockArgs,
@@ -48,10 +54,6 @@ import {
 export * from './types';
 export * from './tools';
 
-function handleNotionError(error: unknown) {
-  return { success: false, error: JSON.stringify(error) };
-}
-
 export class NotionService implements BaseService<NotionConfig> {
   private client: Client;
 
@@ -64,6 +66,63 @@ export class NotionService implements BaseService<NotionConfig> {
   validateConfig(): { isValid: boolean; error?: string } & Record<string, any> {
     return { isValid: true };
   }
+
+  handleNotionError = (error: unknown) => {
+    if (isNotionClientError(error)) {
+      if (error instanceof APIResponseError) {
+        return {
+          success: false,
+          error: JSON.stringify({
+            name: error.name,
+            code: error.code,
+            status: error.status,
+            message: error.message,
+            type: 'APIResponseError',
+            body: error.body
+          })
+        };
+      }
+
+      if (error instanceof RequestTimeoutError) {
+        return {
+          success: false,
+          error: JSON.stringify({
+            name: error.name,
+            code: error.code,
+            message: error.message,
+            type: 'RequestTimeoutError'
+          })
+        };
+      }
+
+      if (error instanceof UnknownHTTPResponseError) {
+        return {
+          success: false,
+          error: JSON.stringify({
+            name: error.name,
+            code: error.code,
+            status: error.status,
+            message: error.message,
+            type: 'UnknownHTTPResponseError',
+            body: error.body
+          })
+        };
+      }
+
+      return {
+        success: false,
+        error: JSON.stringify(error)
+      };
+    }
+
+    return {
+      success: false,
+      error: JSON.stringify({
+        type: 'UnknownError',
+        message: error instanceof Error ? error.message : JSON.stringify(error)
+      })
+    };
+  };
 
   async appendBlockChildren(
     args: AppendBlockChildrenArgs
@@ -89,7 +148,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { block_children: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -104,7 +163,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { block: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -126,7 +185,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { block_children: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -141,7 +200,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { block: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -161,7 +220,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { block: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -176,7 +235,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { page: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -194,7 +253,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { page: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -212,7 +271,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { page: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -228,7 +287,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { users: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -243,7 +302,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { user: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -255,7 +314,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { user: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -309,7 +368,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { database: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -326,7 +385,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { database: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -344,7 +403,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { page: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -374,7 +433,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { comment: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -393,7 +452,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: { comments: response }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -411,7 +470,7 @@ export class NotionService implements BaseService<NotionConfig> {
         data: response
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 
@@ -432,7 +491,7 @@ export class NotionService implements BaseService<NotionConfig> {
         }
       };
     } catch (error) {
-      return handleNotionError(error);
+      return this.handleNotionError(error);
     }
   }
 }
