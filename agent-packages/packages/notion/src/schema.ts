@@ -3,41 +3,6 @@ import { z } from 'zod';
 export const commonIdDescription =
   'It should be a 32-character string (excluding hyphens) formatted as 8-4-4-4-12 with hyphens (-).';
 
-const templateMentionRequestSchema = z.union([
-  z
-    .object({
-      template_mention_date: z
-        .union([
-          z.literal('today').describe('The current date.'),
-          z.literal('now').describe('The current date and time.')
-        ])
-        .describe('A template mention representing a date value.'),
-      type: z
-        .literal('template_mention_date')
-        .optional()
-        .describe('The type identifier for the template mention date.')
-    })
-    .describe('Schema for date-related template mentions.'),
-  z
-    .object({
-      template_mention_user: z
-        .literal('me')
-        .describe('The user to mention, references the current user.'),
-      type: z
-        .literal('template_mention_user')
-        .optional()
-        .describe('The type identifier for the template mention user.')
-    })
-    .describe('Schema for user-related template mentions.')
-]);
-
-export const partialUserObjectResponseSchema = z
-  .object({
-    id: z.string().describe('The unique identifier of the user. ' + commonIdDescription),
-    object: z.literal('user').describe('The type of the object, always "user" for user objects.')
-  })
-  .describe('Schema for a partial user object response with minimal information.');
-
 export const richTextColorSchema = z
   .union([
     z.literal('default'),
@@ -222,9 +187,21 @@ export const richTextObjectSchema = z
                                               .describe(
                                                 'Detailed information about the bot owner as a person.'
                                               ),
-                                            partialUserObjectResponseSchema.describe(
-                                              'Minimal information about the bot owner.'
-                                            )
+                                            z
+                                              .object({
+                                                id: z
+                                                  .string()
+                                                  .describe(
+                                                    'The unique identifier of the user. ' +
+                                                      commonIdDescription
+                                                  ),
+                                                object: z
+                                                  .literal('user')
+                                                  .describe(
+                                                    'The type of the object, always "user" for user objects.'
+                                                  )
+                                              })
+                                              .describe('Minimal information about the bot owner.')
                                           ])
                                           .describe('Information about the user who owns the bot.')
                                       })
@@ -325,9 +302,35 @@ export const richTextObjectSchema = z
               .describe('A mention referencing a database.'),
             z
               .object({
-                template_mention: templateMentionRequestSchema.describe(
-                  'Information about the template being mentioned.'
-                )
+                template_mention: z
+                  .union([
+                    z
+                      .object({
+                        template_mention_date: z
+                          .union([
+                            z.literal('today').describe('The current date.'),
+                            z.literal('now').describe('The current date and time.')
+                          ])
+                          .describe('A template mention representing a date value.'),
+                        type: z
+                          .literal('template_mention_date')
+                          .optional()
+                          .describe('The type identifier for the template mention date.')
+                      })
+                      .describe('Schema for date-related template mentions.'),
+                    z
+                      .object({
+                        template_mention_user: z
+                          .literal('me')
+                          .describe('The user to mention, references the current user.'),
+                        type: z
+                          .literal('template_mention_user')
+                          .optional()
+                          .describe('The type identifier for the template mention user.')
+                      })
+                      .describe('Schema for user-related template mentions.')
+                  ])
+                  .describe('Information about the template being mentioned.')
               })
               .describe('A mention referencing a template.'),
             z
