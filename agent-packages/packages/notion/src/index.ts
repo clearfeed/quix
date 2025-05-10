@@ -19,7 +19,7 @@ import {
   AppendBlockChildrenArgs,
   UpdatePagePropertiesArgs,
   CreateDatabaseArgs,
-  RichTextItemRequest
+  RichTextObject
 } from './types';
 import {
   AppendBlockChildrenResponse,
@@ -360,12 +360,12 @@ export class NotionService implements BaseService<NotionConfig> {
       if (parent) {
         requestBody = {
           parent,
-          rich_text: rich_text as unknown as RichTextItemRequest[]
+          rich_text: rich_text as unknown as RichTextObject[]
         };
       } else if (discussion_id) {
         requestBody = {
           discussion_id,
-          rich_text: rich_text as unknown as RichTextItemRequest[]
+          rich_text: rich_text as unknown as RichTextObject[]
         };
       }
       const response = await this.client.comments.create(requestBody);
@@ -422,7 +422,7 @@ export class NotionService implements BaseService<NotionConfig> {
       const { parent, title, properties } = args;
       const response = await this.client.databases.create({
         parent,
-        title: title as unknown as RichTextItemRequest[],
+        title: title as unknown as RichTextObject[],
         properties
       });
       return {
