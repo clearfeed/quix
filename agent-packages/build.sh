@@ -50,4 +50,10 @@ yarn install
 yarn link "@clearfeed-ai/quix-common-agent"
 yarn build
 
+# Link and build notion package
+cd ../notion
+yarn install
+yarn link "@clearfeed-ai/quix-common-agent"
+yarn build
+
 echo "All packages built successfully!"

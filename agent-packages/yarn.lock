@@ -565,6 +565,11 @@
     zod "^3.22.4"
     zod-to-json-schema "^3.22.3"
 
+"@notionhq/client@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@notionhq/client/-/client-3.0.1.tgz#a31e775b19d4227df871e6905a9f502ea710316b"
+  integrity sha512-vHtFKrRKQg2PZSky1A9fTe+L9/WxNYRJWHmD6ZiBNgeN5jnFmv27ootRl9ROzEm/N+mOxfTo37EnuCHsaPgETg==
+
 "@octokit/auth-token@^5.0.0":
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/@octokit/auth-token/-/auth-token-5.1.2.tgz#68a486714d7a7fd1df56cb9bc89a860a0de866de"
