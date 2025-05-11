@@ -153,14 +153,12 @@ export function createNotionToolsExport(config: NotionConfig): ToolConfig {
     }),
     tool(async (args: ListAllUsersArgs) => service.listAllUsers(args), {
       name: 'notion_list_all_users',
-      description:
-        'List all users in the Notion workspace. **Note:** This function requires upgrading to the Notion Enterprise plan and using an Organization API key to avoid permission errors.',
+      description: 'List all users in the Notion workspace.',
       schema: listAllUsersSchema
     }),
     tool(async (args: RetrieveUserArgs) => service.retrieveUser(args), {
       name: 'notion_retrieve_user',
-      description:
-        'Retrieve a specific user by user_id in Notion. **Note:** This function requires upgrading to the Notion Enterprise plan and using an Organization API key to avoid permission errors.',
+      description: 'Retrieve a specific user by user_id in Notion.',
       schema: retrieveUserSchema
     }),
     tool(async () => service.retrieveBotUser(), {

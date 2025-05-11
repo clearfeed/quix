@@ -279,7 +279,7 @@ export class NotionService implements BaseService<NotionConfig> {
     try {
       const { start_cursor } = args;
       const response = await this.client.users.list({
-        start_cursor,
+        ...(start_cursor ? { start_cursor } : {}),
         page_size: 100
       });
       return {
