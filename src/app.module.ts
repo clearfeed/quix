@@ -11,11 +11,13 @@ import { DatabaseModule } from './database/database.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RetentionService } from './lib/retention/retention.service';
+import retentionConfig from './lib/retention/retention.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true
+      isGlobal: true,
+      load: [retentionConfig]
     }),
     EventEmitterModule.forRoot({
       wildcard: true,
