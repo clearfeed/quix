@@ -166,7 +166,6 @@ export class SlackEventsHandlerService {
       if (event.text) {
         const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
         const messages = await createLLMContext(event, userInfoMap, slackWorkspace, event.ts);
-        if (!event.team) return;
         try {
           const response = await this.llmService.processMessage({
             message: replaceSlackUserMentions({
@@ -246,7 +245,6 @@ export class SlackEventsHandlerService {
 
       const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
       const messages = await createLLMContext(event, userInfoMap, slackWorkspace, event.ts);
-      if (!event.team) return;
       const response = await this.llmService.processMessage({
         message: replaceSlackUserMentions({
           message: event.text,
