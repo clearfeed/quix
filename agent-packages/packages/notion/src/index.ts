@@ -419,12 +419,12 @@ export class NotionService implements BaseService<NotionConfig> {
       if (parent) {
         requestBody = {
           parent,
-          rich_text: rich_text as unknown as RichTextObject[]
+          rich_text
         };
       } else if (discussion_id) {
         requestBody = {
           discussion_id,
-          rich_text: rich_text as unknown as RichTextObject[]
+          rich_text
         };
       }
       const response = await this.client.comments.create(requestBody);
@@ -481,7 +481,7 @@ export class NotionService implements BaseService<NotionConfig> {
       const { parent, title, properties } = args;
       const response = await this.client.databases.create({
         parent,
-        title: title as unknown as RichTextObject[],
+        title,
         properties
       });
       return {
