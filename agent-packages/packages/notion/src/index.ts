@@ -43,6 +43,7 @@ import {
   ListBlockChildrenResponse,
   ListCommentsResponse,
   ListUsersResponse,
+  QueryDatabaseParameters,
   QueryDatabaseResponse,
   SearchParameters,
   SearchResponse,
@@ -321,45 +322,14 @@ export class NotionService implements BaseService<NotionConfig> {
     args: QueryDatabaseArgs
   ): Promise<BaseResponse<{ database: QueryDatabaseResponse }>> {
     try {
-      const { database_id, sorts, start_cursor, page_size } = args;
-
-      const formattedSorts = sorts
-        ?.map((sort) => {
-          if ('property' in sort && sort.property) {
-            return {
-              property: sort.property,
-              direction: sort.direction
-            } as { property: string; direction: 'ascending' | 'descending' };
-          } else if (
-            'timestamp' in sort &&
-            (sort.timestamp === 'last_edited_time' || sort.timestamp === 'created_time')
-          ) {
-            return {
-              timestamp: sort.timestamp as 'last_edited_time' | 'created_time',
-              direction: sort.direction
-            } as {
-              timestamp: 'last_edited_time' | 'created_time';
-              direction: 'ascending' | 'descending';
-            };
-          }
-          return undefined;
-        })
-        .filter(
-          (
-            s
-          ): s is
-            | { property: string; direction: 'ascending' | 'descending' }
-            | {
-                timestamp: 'last_edited_time' | 'created_time';
-                direction: 'ascending' | 'descending';
-              } => s !== undefined
-        );
+      const { database_id, sorts, start_cursor, page_size, filter } = args;
 
       const response = await this.client.databases.query({
         database_id,
-        sorts: formattedSorts,
+        sorts: sorts as QueryDatabaseParameters['sorts'],
         start_cursor,
-        page_size
+        page_size,
+        filter: filter as QueryDatabaseParameters['filter']
       });
 
       return {

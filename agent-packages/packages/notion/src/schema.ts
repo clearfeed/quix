@@ -467,7 +467,7 @@ export const retrieveBlockSchema = z.object({
 export const retrieveBlockChildrenSchema = z.object({
   block_id: z.string().describe('The ID of the block.' + commonIdDescription),
   start_cursor: z.string().describe('Pagination cursor for next page of results').optional(),
-  page_size: z.number().describe('Number of results per page (max 100)').optional()
+  page_size: z.number().describe('Number of results per page (max 100)').default(100)
 });
 
 export const deleteBlockSchema = z.object({
@@ -513,6 +513,7 @@ export const retrieveBotUserSchema = z.object({});
 
 export const queryDatabaseSchema = z.object({
   database_id: z.string().describe('The ID of the database to query.' + commonIdDescription),
+  filter: z.record(z.any()).describe('Filter conditions').optional(),
   sorts: z
     .array(
       z.object({
@@ -523,8 +524,8 @@ export const queryDatabaseSchema = z.object({
     )
     .describe('Sort conditions')
     .optional(),
-  start_cursor: z.string().describe('Pagination cursor for next page of results').optional(),
-  page_size: z.number().describe('Number of results per page (max 100)').optional()
+  start_cursor: z.string().min(1).describe('Pagination cursor for next page of results').optional(),
+  page_size: z.number().describe('Number of results per page (max 100)').default(100)
 });
 
 export const retrieveDatabaseSchema = z.object({
@@ -570,11 +571,7 @@ export const retrieveCommentsSchema = z.object({
     .describe('If supplied, returns a page of results starting after the cursor.')
     .min(1)
     .optional(),
-  page_size: z
-    .number()
-    .describe('Number of comments to retrieve (max 100).')
-    .optional()
-    .default(100)
+  page_size: z.number().describe('Number of comments to retrieve (max 100).').default(100)
 });
 
 export const searchSchema = z.object({
