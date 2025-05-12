@@ -24,8 +24,7 @@ import {
   SearchArgs,
   AppendBlockChildrenArgs,
   UpdatePagePropertiesArgs,
-  CreateDatabaseArgs,
-  RichTextObject
+  CreateDatabaseArgs
 } from './types';
 import {
   AppendBlockChildrenResponse,
@@ -444,7 +443,7 @@ export class NotionService implements BaseService<NotionConfig> {
       const { block_id, start_cursor, page_size } = args;
       const response = await this.client.comments.list({
         block_id,
-        ...(start_cursor ? { start_cursor } : {}),
+        start_cursor,
         page_size
       });
       return {

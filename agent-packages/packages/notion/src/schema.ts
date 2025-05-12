@@ -568,6 +568,7 @@ export const retrieveCommentsSchema = z.object({
   start_cursor: z
     .string()
     .describe('If supplied, returns a page of results starting after the cursor.')
+    .min(1)
     .optional(),
   page_size: z
     .number()
