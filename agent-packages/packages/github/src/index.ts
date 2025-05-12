@@ -249,21 +249,35 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  async createIssue(params: CreateIssueParams): Promise<BaseResponse<{ issueUrl: string }>> {
+  async createIssue(
+    params: CreateIssueParams
+  ): Promise<BaseResponse<{ issueUrl: string; messages?: string[] }>> {
     try {
-      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
-      const repo = validation.repoName;
-      const owner = validation.repoOwner;
+      let messages: string[] = [];
+      const { owner, repo, title, description, assignee } = params;
+
       const response = await this.client.issues.create({
         owner,
         repo,
-        title: params.title,
-        body: params.description || ''
+        title,
+        body: description || ''
       });
+
+      const issueNumber = response.data.number;
+      if (assignee) {
+        const isAssigned = await this.addAssigneeToIssue(issueNumber, assignee, {
+          owner,
+          repo
+        });
+        if (!isAssigned.success) {
+          messages.push(isAssigned.error || 'Failed to assign user to issue');
+        }
+      }
       return {
         success: true,
         data: {
-          issueUrl: response.data.html_url
+          issueUrl: response.data.html_url,
+          ...(messages.length > 0 && { messages })
         }
       };
     } catch (error) {
