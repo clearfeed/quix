@@ -1,15 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import { ConversationState } from '@quix/database/models';
-import { InjectModel } from '@nestjs/sequelize';
+import { InjectModel, InjectConnection } from '@nestjs/sequelize';
 
 @Injectable()
 export class RetentionService {
   private readonly logger = new Logger(RetentionService.name);
   constructor(
     @InjectModel(ConversationState)
-    private readonly conversationStateModel: typeof ConversationState
+    private readonly conversationStateModel: typeof ConversationState,
+    @InjectConnection()
+    private readonly sequelize: Sequelize
   ) {}
   /**
    * Runs every day at 03:00 AM server time.
@@ -18,12 +20,6 @@ export class RetentionService {
    */
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async handleRetention(): Promise<void> {
-    const nowMs = Date.now();
-    const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-    const sevenDaysAgo = new Date(nowMs - ONE_WEEK_MS);
-    const TWO_MONTHS_MS = 60 * 24 * 60 * 60 * 1000;
-    const twoMonthsAgo = new Date(nowMs - TWO_MONTHS_MS);
-
     const [numUpdated] = await this.conversationStateModel.update(
       {
         last_tool_calls: null,
@@ -32,17 +28,17 @@ export class RetentionService {
       },
       {
         where: {
-          createdAt: { [Op.lt]: sevenDaysAgo }
+          createdAt: { [Op.lt]: this.sequelize.literal("NOW() - INTERVAL '7 day'") }
         }
       }
     );
-    this.logger.log(`Soft-reset ${numUpdated} rows older than ${sevenDaysAgo.toISOString()}`);
+    this.logger.log(`Soft-reset ${numUpdated} rows older than 7 days`);
 
     const numDeleted = await this.conversationStateModel.destroy({
       where: {
-        createdAt: { [Op.lt]: twoMonthsAgo }
+        createdAt: { [Op.lt]: this.sequelize.literal("NOW() - INTERVAL '2 month'") }
       }
     });
-    this.logger.log(`Deleted ${numDeleted} rows older than ${twoMonthsAgo.toISOString()}`);
+    this.logger.log(`Deleted ${numDeleted} rows older than 2 months`);
   }
 }
