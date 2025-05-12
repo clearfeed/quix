@@ -2,11 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Op } from 'sequelize';
 import { ConversationState } from '@quix/database/models';
+import { InjectModel } from '@nestjs/sequelize';
 
 @Injectable()
 export class RetentionService {
   private readonly logger = new Logger(RetentionService.name);
-
+  constructor(
+    @InjectModel(ConversationState)
+    private readonly conversationStateModel: typeof ConversationState
+  ) {}
   /**
    * Runs every day at 03:00 AM server time.
    * - Soft-reset any state older than 7 days by nulling its JSON/count fields.
@@ -20,7 +24,7 @@ export class RetentionService {
     const TWO_MONTHS_MS = 60 * 24 * 60 * 60 * 1000;
     const twoMonthsAgo = new Date(nowMs - TWO_MONTHS_MS);
 
-    const [numUpdated] = await ConversationState.update(
+    const [numUpdated] = await this.conversationStateModel.update(
       {
         last_tool_calls: null,
         last_plan: null,
@@ -34,7 +38,7 @@ export class RetentionService {
     );
     this.logger.log(`Soft-reset ${numUpdated} rows older than ${sevenDaysAgo.toISOString()}`);
 
-    const numDeleted = await ConversationState.destroy({
+    const numDeleted = await this.conversationStateModel.destroy({
       where: {
         createdAt: { [Op.lt]: twoMonthsAgo }
       }

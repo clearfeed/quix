@@ -69,12 +69,6 @@ export class LlmService {
       message: encrypt(message)
     });
 
-    let ok = await this.enforceRetention(slackWorkspace.team_id, channelId, threadTs);
-    const STALE_REPLY =
-      '👋 This conversation is more than *7 days* old. ' +
-      'Please start a *new thread* to continue.';
-    if (!ok) return STALE_REPLY;
-
     const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, args.slackWorkspace);
     const [conversationState] = await this.conversationStateModel.upsert(
       {
@@ -85,14 +79,19 @@ export class LlmService {
         last_plan: null,
         contextual_memory: {}
       },
-      {
-        // on conflict, update nothing
-        fields: []
-      }
+      { returning: true }
     );
 
-    ok = await this.enforceRetention(slackWorkspace.team_id, channelId, threadTs);
-    if (!ok) return STALE_REPLY;
+    if (Date.now() - conversationState.createdAt.getTime() > LlmService.MAX_AGE_MS) {
+      return (
+        '👋 This conversation is more than ' +
+        Md.bold('7 days') +
+        ' old. ' +
+        'Please start a ' +
+        Md.bold('new thread') +
+        ' to continue.'
+      );
+    }
 
     if (
       slackWorkspace.isTrialMode &&
@@ -270,20 +269,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
     const finalContent = Array.isArray(llmResponse) ? llmResponse.join(' ') : llmResponse;
     return slackify(finalContent);
   }
-  private async enforceRetention(
-    teamId: string,
-    channelId: string,
-    threadTs: string
-  ): Promise<boolean> {
-    const state = await this.conversationStateModel.findOne({
-      where: { team_id: teamId, channel_id: channelId, thread_ts: threadTs }
-    });
 
-    if (state && Date.now() - state.createdAt.getTime() > LlmService.MAX_AGE_MS) {
-      return false;
-    }
-    return true;
-  }
   private async toolSelection(
     message: string,
     tools: AvailableToolsWithConfig,
