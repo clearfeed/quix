@@ -454,10 +454,18 @@ export const blockObjectSchema = z
   .describe('A Notion block object.');
 
 export const appendBlockChildrenSchema = z.object({
-  block_id: z.string().describe('The ID of the parent block.' + commonIdDescription),
+  block_id: z.string().describe('The ID of the parent block. ' + commonIdDescription),
   children: z
     .array(blockObjectSchema)
-    .describe('Array of block objects to append. Each block must follow the Notion block schema.')
+    .describe('Array of block objects to append. Each block must follow the Notion block schema.'),
+  after: z
+    .string()
+    .min(1)
+    .describe(
+      'The ID of the existing block that the new block should be appended after. ' +
+        commonIdDescription
+    )
+    .optional()
 });
 
 export const retrieveBlockSchema = z.object({
@@ -466,8 +474,8 @@ export const retrieveBlockSchema = z.object({
 
 export const retrieveBlockChildrenSchema = z.object({
   block_id: z.string().describe('The ID of the block.' + commonIdDescription),
-  start_cursor: z.string().describe('Pagination cursor for next page of results').optional(),
-  page_size: z.number().describe('Number of results per page (max 100)').default(100)
+  start_cursor: z.string().min(1).describe('Pagination cursor for next page of results').optional(),
+  page_size: z.number().int().min(1).max(100).describe('Number of results per page.').default(100)
 });
 
 export const deleteBlockSchema = z.object({
@@ -502,7 +510,8 @@ export const deleteOrArchivePageSchema = z.object({
 });
 
 export const listAllUsersSchema = z.object({
-  start_cursor: z.string().describe('Pagination start cursor for listing users').optional()
+  start_cursor: z.string().min(1).describe('Pagination start cursor for listing users').optional(),
+  page_size: z.number().int().min(1).max(100).describe('Number of users to retrieve.').default(100)
 });
 
 export const retrieveUserSchema = z.object({
@@ -525,7 +534,7 @@ export const queryDatabaseSchema = z.object({
     .describe('Sort conditions')
     .optional(),
   start_cursor: z.string().min(1).describe('Pagination cursor for next page of results').optional(),
-  page_size: z.number().describe('Number of results per page (max 100)').default(100)
+  page_size: z.number().int().min(1).max(100).describe('Number of results per page.').default(100)
 });
 
 export const retrieveDatabaseSchema = z.object({
@@ -571,7 +580,13 @@ export const retrieveCommentsSchema = z.object({
     .describe('If supplied, returns a page of results starting after the cursor.')
     .min(1)
     .optional(),
-  page_size: z.number().describe('Number of comments to retrieve (max 100).').default(100)
+  page_size: z
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .describe('Number of comments to retrieve.')
+    .default(100)
 });
 
 export const searchSchema = z.object({
@@ -590,7 +605,8 @@ export const searchSchema = z.object({
     })
     .describe('Sort order of results')
     .optional(),
-  start_cursor: z.string().describe('Pagination start cursor').optional()
+  start_cursor: z.string().min(1).describe('Pagination start cursor').optional(),
+  page_size: z.number().int().min(1).max(100).describe('Number of results to return.').default(100)
 });
 
 export const createDatabaseSchema = z.object({

@@ -27,6 +27,7 @@ import {
   CreateDatabaseArgs
 } from './types';
 import {
+  AppendBlockChildrenParameters,
   AppendBlockChildrenResponse,
   BlockObjectRequest,
   CreateCommentParameters,
@@ -128,7 +129,7 @@ export class NotionService implements BaseService<NotionConfig> {
     args: AppendBlockChildrenArgs
   ): Promise<BaseResponse<{ block_children: AppendBlockChildrenResponse }>> {
     try {
-      const { block_id, children } = args;
+      const { block_id, children, after } = args;
       const validChildren = children.map((child) => {
         return {
           object: 'block',
@@ -139,10 +140,15 @@ export class NotionService implements BaseService<NotionConfig> {
           }
         };
       });
-      const response = await this.client.blocks.children.append({
+
+      const body: AppendBlockChildrenParameters = {
         block_id,
         children: validChildren as unknown as BlockObjectRequest[]
-      });
+      };
+      if (after) {
+        body.after = after;
+      }
+      const response = await this.client.blocks.children.append(body);
       return {
         success: true,
         data: { block_children: response }
@@ -277,10 +283,10 @@ export class NotionService implements BaseService<NotionConfig> {
 
   async listAllUsers(args: ListAllUsersArgs): Promise<BaseResponse<{ users: ListUsersResponse }>> {
     try {
-      const { start_cursor } = args;
+      const { start_cursor, page_size } = args;
       const response = await this.client.users.list({
-        ...(start_cursor ? { start_cursor } : {}),
-        page_size: 100
+        start_cursor,
+        page_size
       });
       return {
         success: true,
@@ -427,8 +433,8 @@ export class NotionService implements BaseService<NotionConfig> {
 
   async search(args: SearchArgs): Promise<BaseResponse<SearchResponse>> {
     try {
-      const { query, filter, sort, start_cursor } = args;
-      const searchParams: SearchParameters = { page_size: 100 };
+      const { query, filter, sort, start_cursor, page_size } = args;
+      const searchParams: SearchParameters = { page_size };
       if (query) searchParams.query = query;
       if (filter) searchParams.filter = filter;
       if (sort) searchParams.sort = sort;
