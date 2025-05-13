@@ -14,6 +14,7 @@ import { createCommonToolsExport } from '@clearfeed-ai/quix-common-agent';
 import { AvailableToolsWithConfig } from './types';
 import { createSlackToolsExport } from '@clearfeed-ai/quix-slack-agent';
 import { createOktaToolsExport } from '@clearfeed-ai/quix-okta-agent';
+import { createNotionToolsExport } from '@clearfeed-ai/quix-notion-agent';
 
 @Injectable()
 export class ToolService {
@@ -130,32 +131,16 @@ export class ToolService {
         config: oktaConfig
       };
     }
-
+    const notionConfig = slackWorkspace.notionConfig;
+    if (notionConfig) {
+      tools.notion = {
+        toolConfig: createNotionToolsExport({ token: notionConfig.access_token }),
+        config: notionConfig
+      };
+    }
     // Handle MCP-based integrations
     try {
       // Call MCP service to get tools for all integrations
-      if (slackWorkspace.notionConfig) {
-        const notionMcpTools = await this.mcpService.getMcpServerTools(
-          SUPPORTED_INTEGRATIONS.NOTION,
-          {
-            NOTION_API_TOKEN: slackWorkspace.notionConfig.access_token
-          }
-        );
-        if (notionMcpTools && notionMcpTools.tools.length > 0) {
-          this.runningTools.push(notionMcpTools.cleanup);
-          tools.notion = {
-            toolConfig: {
-              tools: notionMcpTools.tools,
-              prompts: {
-                toolSelection: QuixPrompts.NOTION.toolSelection,
-                responseGeneration: QuixPrompts.NOTION.responseGeneration
-              }
-            },
-            config: slackWorkspace.notionConfig
-          };
-        }
-      }
-
       if (slackWorkspace.linearConfig) {
         const linearMcpTools = await this.mcpService.getMcpServerTools(
           SUPPORTED_INTEGRATIONS.LINEAR,
