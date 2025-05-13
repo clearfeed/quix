@@ -4,7 +4,7 @@ import { Op, Sequelize } from 'sequelize';
 import { ConversationState } from '@quix/database/models';
 import { InjectModel, InjectConnection } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
-
+import { SOFT_RETENTION_DAYS, HARD_RETENTION_MONTHS } from '../constants';
 @Injectable()
 export class RetentionService {
   private readonly logger = new Logger(RetentionService.name);
@@ -12,8 +12,7 @@ export class RetentionService {
   constructor(
     @InjectModel(ConversationState)
     private readonly conversationStateModel: typeof ConversationState,
-    @InjectConnection() private readonly sequelize: Sequelize,
-    private readonly config: ConfigService
+    @InjectConnection() private readonly sequelize: Sequelize
   ) {}
   /**
    * Runs every day at 03:00 AM server time.
@@ -22,13 +21,8 @@ export class RetentionService {
    */
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async handleRetention(): Promise<void> {
-    const { softDays, hardMonths } = this.config.get<{
-      softDays: number;
-      hardMonths: number;
-    }>('retention', { softDays: 7, hardMonths: 2 });
-
-    const softInterval = `NOW() - INTERVAL '${softDays} day'`;
-    const hardInterval = `NOW() - INTERVAL '${hardMonths} month'`;
+    const softInterval = `NOW() - INTERVAL '${SOFT_RETENTION_DAYS} day'`;
+    const hardInterval = `NOW() - INTERVAL '${HARD_RETENTION_MONTHS} month'`;
 
     const [numUpdated] = await this.conversationStateModel.update(
       {
@@ -42,13 +36,13 @@ export class RetentionService {
         }
       }
     );
-    this.logger.log(`Soft-reset ${numUpdated} rows older than ${softDays} days`);
+    this.logger.log(`Soft-reset ${numUpdated} rows older than ${SOFT_RETENTION_DAYS} days`);
 
     const numDeleted = await this.conversationStateModel.destroy({
       where: {
         createdAt: { [Op.lt]: this.sequelize.literal(hardInterval) }
       }
     });
-    this.logger.log(`Deleted ${numDeleted} rows older than ${hardMonths} months`);
+    this.logger.log(`Deleted ${numDeleted} rows older than ${HARD_RETENTION_MONTHS} months`);
   }
 }

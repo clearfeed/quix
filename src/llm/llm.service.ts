@@ -29,7 +29,7 @@ import { Md } from 'slack-block-builder';
 import { encrypt } from '../lib/utils/encryption';
 import { formatToOpenAITool } from '@langchain/openai';
 import { isEqual } from 'lodash';
-import { ConfigService } from '@nestjs/config';
+import { SOFT_RETENTION_DAYS } from '../lib/constants';
 import slackify = require('slackify-markdown');
 
 @Injectable()
@@ -39,8 +39,7 @@ export class LlmService {
     private readonly llmProvider: LlmProviderService,
     private readonly tool: ToolService,
     @InjectModel(ConversationState)
-    private readonly conversationStateModel: typeof ConversationState,
-    private readonly config: ConfigService
+    private readonly conversationStateModel: typeof ConversationState
   ) {}
 
   private enhanceMessagesWithToolContext(
@@ -82,12 +81,11 @@ export class LlmService {
       },
       { returning: true }
     );
-    const { softDays } = this.config.get('retention', { softDays: 7, hardMonths: 2 });
-    const maxAgeMs = softDays * 24 * 60 * 60 * 1000;
+    const maxAgeMs = SOFT_RETENTION_DAYS * 24 * 60 * 60 * 1000;
     if (Date.now() - conversationState.createdAt.getTime() > maxAgeMs) {
       return (
         '👋 This conversation is more than ' +
-        Md.bold('7 days') +
+        Md.bold(`${SOFT_RETENTION_DAYS} days`) +
         ' old. ' +
         'Please start a ' +
         Md.bold('new thread') +
