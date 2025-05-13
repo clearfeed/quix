@@ -114,9 +114,13 @@ export class JiraService implements BaseService<JiraConfig> {
       const issueData: CreateIssueParams = {
         summary,
         projectKey,
-        issueTypeId,
-        labels: params.labels
+        issueTypeId
       };
+
+      if (params.labels) {
+        issueData.labels = params.labels;
+      }
+
       if (params.assigneeId) {
         issueData.assigneeId = params.assigneeId;
       }

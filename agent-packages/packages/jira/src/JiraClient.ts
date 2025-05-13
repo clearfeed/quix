@@ -145,7 +145,7 @@ export class JiraClient {
                 }
               }
             : {}),
-          labels
+          ...(labels && labels.length > 0 ? { labels } : {})
         }
       }
     });
