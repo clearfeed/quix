@@ -249,9 +249,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  async createIssue(
-    params: CreateIssueParams
-  ): Promise<BaseResponse<{ issueUrl: string; messages?: string[] }>> {
+  async createIssue(params: CreateIssueParams): Promise<BaseResponse<{ issueUrl: string }>> {
     try {
       let messages: string[] = [];
       const { owner, repo, title, description, assignee } = params;
@@ -270,15 +268,15 @@ export class GitHubService implements BaseService<GitHubConfig> {
           repo
         });
         if (!isAssigned.success) {
-          messages.push(isAssigned.error || 'Failed to assign user to issue');
+          messages.push(isAssigned.error || `Failed to assign user ${assignee} to issue`);
         }
       }
       return {
         success: true,
         data: {
-          issueUrl: response.data.html_url,
-          ...(messages.length > 0 && { messages })
-        }
+          issueUrl: response.data.html_url
+        },
+        messages
       };
     } catch (error) {
       console.error('Error creating GitHub issue:', error);
