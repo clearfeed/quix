@@ -29,6 +29,7 @@ import { Md } from 'slack-block-builder';
 import { encrypt } from '../lib/utils/encryption';
 import { formatToOpenAITool } from '@langchain/openai';
 import { isEqual } from 'lodash';
+import { SOFT_RETENTION_DAYS } from '../lib/constants';
 import slackify = require('slackify-markdown');
 
 @Injectable()
@@ -78,11 +79,20 @@ export class LlmService {
         last_plan: null,
         contextual_memory: {}
       },
-      {
-        // on conflict, update nothing
-        fields: []
-      }
+      { returning: true }
     );
+    const maxAgeMs = SOFT_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+    if (Date.now() - conversationState.createdAt.getTime() > maxAgeMs) {
+      return (
+        '👋 This conversation is more than ' +
+        Md.bold(`${SOFT_RETENTION_DAYS} days`) +
+        ' old. ' +
+        'Please start a ' +
+        Md.bold('new thread') +
+        ' to continue.'
+      );
+    }
+
     if (
       slackWorkspace.isTrialMode &&
       conversationState.message_count >= TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT
