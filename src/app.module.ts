@@ -10,6 +10,7 @@ import { CacheModule, CacheModuleOptions } from '@nestjs/cache-manager';
 import { DatabaseModule } from './database/database.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
+import { RetentionService } from './lib/retention/retention.service';
 
 @Module({
   imports: [
@@ -46,6 +47,6 @@ import { ScheduleModule } from '@nestjs/schedule';
     IntegrationsModule
   ],
   controllers: [AppController],
-  providers: [AppService]
+  providers: [AppService, RetentionService]
 })
 export class AppModule {}

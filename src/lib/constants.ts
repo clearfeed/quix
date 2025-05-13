@@ -189,6 +189,10 @@ export const TimeInMinutes = {
   ONE_YEAR: 525600
 };
 
+export const SOFT_RETENTION_DAYS = 7;
+
+export const HARD_RETENTION_MONTHS = 2;
+
 export const SlackMessageUserIdRegex = new RegExp(/<@([U|W]\w+)>/g);
 
 export const QuixPrompts = {
