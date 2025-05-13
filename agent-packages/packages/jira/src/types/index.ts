@@ -89,6 +89,7 @@ export interface CreateIssueParams {
   issueTypeId: string;
   priority?: string;
   assigneeId?: string;
+  labels?: string[];
 }
 
 export type SearchIssuesResponse = {

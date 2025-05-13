@@ -100,7 +100,8 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
           .describe(
             'The account ID of the user to assign the issue to. Use the "search_jira_users" tool to find account ID of a user by name or email.'
           )
-          .optional()
+          .optional(),
+        labels: z.array(z.string()).optional().describe('Labels to attach to the issue')
       }),
       func: async (params: CreateIssueParams): Promise<GetIssueResponse> =>
         service.createIssue(params)

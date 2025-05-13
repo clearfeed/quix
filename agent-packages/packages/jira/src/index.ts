@@ -116,6 +116,11 @@ export class JiraService implements BaseService<JiraConfig> {
         projectKey,
         issueTypeId
       };
+
+      if (params.labels) {
+        issueData.labels = params.labels;
+      }
+
       if (params.assigneeId) {
         issueData.assigneeId = params.assigneeId;
       }
