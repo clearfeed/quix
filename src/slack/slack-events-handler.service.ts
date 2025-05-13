@@ -10,7 +10,11 @@ import { AppMentionEvent, GenericMessageEvent } from '@slack/web-api';
 import { AppHomeService } from './app_home.service';
 import { LlmService } from '@quix/llm/llm.service';
 import { WebClient } from '@slack/web-api';
-import { createLLMContext, getConnectedIntegrations } from '@quix/lib/utils/slack';
+import {
+  createLLMContext,
+  getConnectedIntegrations,
+  replaceSlackUserMentions
+} from '@quix/lib/utils/slack';
 import { SlackService } from './slack.service';
 import { pick } from 'lodash';
 import { encrypt } from '../lib/utils/encryption';
@@ -162,10 +166,12 @@ export class SlackEventsHandlerService {
       if (event.text) {
         const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
         const messages = await createLLMContext(event, userInfoMap, slackWorkspace, event.ts);
-        if (!event.team) return;
         try {
           const response = await this.llmService.processMessage({
-            message: event.text,
+            message: replaceSlackUserMentions({
+              message: event.text,
+              userInfoMap: userInfoMap
+            }),
             slackWorkspace,
             threadTs: replyThreadTs,
             channelId: event.channel,
@@ -239,9 +245,11 @@ export class SlackEventsHandlerService {
 
       const userInfoMap = await this.slackService.getUserInfoMap(slackWorkspace);
       const messages = await createLLMContext(event, userInfoMap, slackWorkspace, event.ts);
-      if (!event.team) return;
       const response = await this.llmService.processMessage({
-        message: event.text,
+        message: replaceSlackUserMentions({
+          message: event.text,
+          userInfoMap: userInfoMap
+        }),
         slackWorkspace,
         threadTs: replyThreadTs,
         channelId: event.channel,
