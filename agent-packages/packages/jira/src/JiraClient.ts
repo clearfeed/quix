@@ -121,7 +121,7 @@ export class JiraClient {
   }
 
   async createIssue(params: CreateIssueParams): Promise<JiraIssueResponse> {
-    const { projectKey, summary, issueTypeId, priority, assigneeId, description } = params;
+    const { projectKey, summary, issueTypeId, priority, assigneeId, description, labels } = params;
 
     const project = await this.getProject(projectKey);
     if (!project) {
@@ -144,7 +144,8 @@ export class JiraClient {
                   content: [{ type: 'paragraph', content: [{ type: 'text', text: description }] }]
                 }
               }
-            : {})
+            : {}),
+          ...(labels && labels.length > 0 ? { labels } : {})
         }
       }
     });
