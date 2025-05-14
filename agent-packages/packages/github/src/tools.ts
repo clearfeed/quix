@@ -227,7 +227,8 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
           ? z.string().describe('The owner of the repository').optional().default(config.owner)
           : z.string().describe('The owner of the repository (requied)'),
         title: z.string().describe('The title of the issue'),
-        description: z.string().optional().describe('The description of the issue')
+        description: z.string().optional().describe('The description of the issue'),
+        assignee: z.string().min(1).describe('The GitHub username of the assignee').optional()
       }),
       func: async (params: CreateIssueParams) => service.createIssue(params)
     }),

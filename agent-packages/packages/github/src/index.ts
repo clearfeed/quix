@@ -51,17 +51,37 @@ export class GitHubService implements BaseService<GitHubConfig> {
     return new GitHubService(config);
   }
 
-  private async checkUserCanBeAssigned(params: {
+  private async checkUserCanBeAssignedToIssue(params: {
     owner: string;
     repo: string;
     issueNumber: number;
     assignee: string;
   }): Promise<boolean> {
     try {
-      await this.client.issues.checkUserCanBeAssigned({
+      await this.client.issues.checkUserCanBeAssignedToIssue({
         owner: params.owner,
         repo: params.repo,
         issue_number: params.issueNumber,
+        assignee: params.assignee
+      });
+      return true;
+    } catch (error: any) {
+      if (error.status === 404) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  private async checkUserCanBeAssigned(params: {
+    owner: string;
+    repo: string;
+    assignee: string;
+  }): Promise<boolean> {
+    try {
+      await this.client.issues.checkUserCanBeAssigned({
+        owner: params.owner,
+        repo: params.repo,
         assignee: params.assignee
       });
       return true;
@@ -134,7 +154,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
   ): Promise<BaseResponse<RestEndpointMethodTypes['issues']['addAssignees']['response']['data']>> {
     try {
       const { repo, owner } = params;
-      const canBeAssigned = await this.checkUserCanBeAssigned({
+      const canBeAssigned = await this.checkUserCanBeAssignedToIssue({
         owner,
         repo,
         issueNumber,
@@ -171,7 +191,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
   > {
     try {
       const { repo, owner } = params;
-      const canBeAssigned = await this.checkUserCanBeAssigned({
+      const canBeAssigned = await this.checkUserCanBeAssignedToIssue({
         owner,
         repo,
         issueNumber,
@@ -218,13 +238,29 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async createIssue(params: CreateIssueParams): Promise<BaseResponse<{ issueUrl: string }>> {
     try {
-      const { repo, owner, title, description } = params;
-      const response = await this.client.issues.create({
-        owner,
+      const { owner, repo, title, description, assignee } = params;
+      const body: RestEndpointMethodTypes['issues']['create']['parameters'] = {
         repo,
+        owner,
         title,
         body: description || ''
-      });
+      };
+      if (assignee) {
+        const canBeAssigned = await this.checkUserCanBeAssigned({
+          owner,
+          repo,
+          assignee
+        });
+        if (!canBeAssigned) {
+          throw new Error(
+            `User '${assignee}' cannot be assigned to this issue. Please provide a valid GitHub username of the user who can be assigned to an issue or pull request in this repository.`
+          );
+        }
+        body.assignees = [assignee];
+      }
+
+      const response = await this.client.issues.create(body);
+
       return {
         success: true,
         data: {
