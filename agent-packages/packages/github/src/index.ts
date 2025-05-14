@@ -251,7 +251,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async createIssue(params: CreateIssueParams): Promise<BaseResponse<{ issueUrl: string }>> {
     try {
-      let messages: string[] = [];
+      let error: string | undefined;
       const { owner, repo, title, description, assignee } = params;
 
       const response = await this.client.issues.create({
@@ -268,7 +268,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
           repo
         });
         if (!isAssigned.success) {
-          messages.push(isAssigned.error || `Failed to assign user ${assignee} to issue`);
+          error = isAssigned.error || `Failed to assign user ${assignee} to issue`;
         }
       }
       return {
@@ -276,7 +276,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
         data: {
           issueUrl: response.data.html_url
         },
-        messages
+        error
       };
     } catch (error) {
       console.error('Error creating GitHub issue:', error);
