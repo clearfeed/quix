@@ -272,7 +272,12 @@ export class GitHubService implements BaseService<GitHubConfig> {
   async createIssue(params: CreateIssueParams): Promise<BaseResponse<{ issueUrl: string }>> {
     try {
       const { owner, repo, title, description, assignee } = params;
-
+      const body: RestEndpointMethodTypes['issues']['create']['parameters'] = {
+        repo,
+        owner,
+        title,
+        body: description || ''
+      };
       if (assignee) {
         const canBeAssigned = await this.checkUserCanBeAssigned({
           owner,
@@ -284,13 +289,10 @@ export class GitHubService implements BaseService<GitHubConfig> {
             `User '${assignee}' cannot be assigned to this issue. Please provide a valid GitHub username of the user who can be assigned to an issue or pull request in this repository.`
           );
         }
+        body.assignees = [assignee];
       }
-      const response = await this.client.issues.create({
-        owner,
-        repo,
-        title,
-        body: description || ''
-      });
+
+      const response = await this.client.issues.create(body);
 
       return {
         success: true,
