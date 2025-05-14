@@ -10,8 +10,10 @@ export * from './types';
 // Export the service class
 export class SalesforceService implements BaseService<SalesforceConfig> {
   connection: Connection;
+  config: SalesforceConfig;
 
-  constructor(private config: SalesforceConfig) {
+  constructor(config: SalesforceConfig) {
+    this.config = config;
     this.connection = new Connection({
       instanceUrl: config.instanceUrl,
       accessToken: config.accessToken
