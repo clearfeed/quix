@@ -59,8 +59,13 @@ export class LlmService {
       const ws = await this.slackWorkspaceModel.findOne({
         where: { team_id: teamId }
       });
-      const slackDomain = ws?.domain;
-      this.logger.log(slackDomain);
+      if (!ws) {
+        this.logger.error(
+          `SlackWorkspace not found for team ID: ${teamId}; skipping Slack URL injection.`
+        );
+      }
+      const slackDomain = ws?.domain ?? '';
+
       const slackUrl = getSlackMessageUrl({
         slackDomain: slackDomain || '',
         channelId,
