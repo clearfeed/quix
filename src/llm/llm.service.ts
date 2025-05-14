@@ -26,10 +26,10 @@ import { ConversationState } from '../database/models/conversation-state.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT } from '../lib/utils/slack-constants';
 import { Md } from 'slack-block-builder';
-import { encrypt } from '../lib/utils/encryption';
 import { formatToOpenAITool } from '@langchain/openai';
 import { isEqual } from 'lodash';
 import { SOFT_RETENTION_DAYS } from '../lib/constants';
+import { createTrajectoryMatchEvaluator } from 'agentevals';
 import slackify = require('slackify-markdown');
 
 @Injectable()
@@ -66,7 +66,7 @@ export class LlmService {
   async processMessage(args: MessageProcessingArgs): Promise<string> {
     const { message, threadTs, previousMessages, channelId, authorName, slackWorkspace } = args;
     this.logger.log(`Processing message for team ${slackWorkspace.team_id}`, {
-      message: encrypt(message)
+      message
     });
 
     const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, args.slackWorkspace);
@@ -124,7 +124,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       enhancedPreviousMessages = previousMessages;
     }
     this.logger.log(`Enhanced previous messages`, {
-      enhancedPreviousMessages: encrypt(JSON.stringify(enhancedPreviousMessages))
+      enhancedPreviousMessages
     });
 
     const toolSelection = await this.toolSelection(
@@ -136,7 +136,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
     );
     this.logger.log(`Tool selection complete`, {
       selectedTools: toolSelection.selectedTools,
-      reason: encrypt(toolSelection.reason)
+      reason: toolSelection.reason
     });
 
     if (toolSelection.selectedTools === 'none' || isEqual(toolSelection.selectedTools, ['none'])) {
@@ -187,7 +187,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       })
       .join('\n');
     this.logger.log(`Plan generated for user's request`, {
-      plan: encrypt(formattedPlan)
+      plan: formattedPlan
     });
     // Store the plan in conversation state
     conversationState.last_plan = {
@@ -198,10 +198,10 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
     const agent = createReactAgent({
       llm,
       tools: availableFunctions.flatMap((func) => func.availableTools),
-      prompt:
-        toolSelection.selectedTools.length > 1
-          ? QuixPrompts.multiStepBasePrompt(formattedPlan, authorName, customInstructions)
-          : QuixPrompts.basePrompt(authorName)
+      prompt: QuixPrompts.multiStepBasePrompt(formattedPlan, authorName, customInstructions)
+      // toolSelection.selectedTools.length > 1
+      //   ? QuixPrompts.multiStepBasePrompt(formattedPlan, authorName, customInstructions)
+      //   : QuixPrompts.basePrompt(authorName)
     });
 
     // Create a callback to track tool calls
@@ -216,6 +216,61 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
         callbacks: [toolCallTracker]
       }
     );
+
+    console.log(`------------------------------------------------------------`);
+    var util = require('util');
+    console.log(util.inspect({ result }, { showHidden: false, depth: null, colors: true }));
+    console.log(`------------------------------------------------------------`);
+
+    const evaluator = createTrajectoryMatchEvaluator({
+      trajectoryMatchMode: 'superset',
+      toolArgsMatchMode: 'exact',
+      toolArgsMatchOverrides: {}
+    });
+
+    const evalResult = await evaluator({
+      outputs: result.messages,
+      referenceOutputs: [
+        new AIMessage({
+          tool_calls: [
+            {
+              id: Date.now().toString(),
+              name: 'get_jira_issue_types',
+              args: { projectKey: 'TEST' }
+            }
+          ],
+          content: ''
+        }),
+        new AIMessage({
+          tool_calls: [
+            {
+              id: Date.now().toString(),
+              name: 'search_jira_users',
+              args: { query: 'Amitvikram' }
+            }
+          ],
+          content: ''
+        }),
+        new AIMessage({
+          tool_calls: [
+            {
+              id: Date.now().toString(),
+              name: 'create_jira_issue',
+              args: {
+                projectKey: 'TEST',
+                issueTypeId: '10076'
+              }
+            }
+          ],
+          content: ''
+        })
+      ]
+    });
+
+    console.log(`------------------------------------------------------------`);
+    var util = require('util');
+    console.log(util.inspect({ evalResult }, { showHidden: false, depth: null, colors: true }));
+    console.log(`------------------------------------------------------------`);
 
     // Update conversation state with tool calls
     if (toolCallTracker.toolCalls) {
