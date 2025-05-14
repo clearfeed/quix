@@ -372,13 +372,20 @@
   dependencies:
     "@hubspot/api-client" "^12.0.1"
 
-"@clearfeed-ai/quix-jira-agent@^1.2.12":
-  version "1.2.12"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.2.12.tgz#025eed127114fb8803a15c23382725afabcd9acc"
-  integrity sha512-RvsLbgpm3RmungMV8UCjEuBjpxZ1jYUNCKqpBw4nqeWNrPTS4TXDfVFWbFPjwizYP0WAOKSndrx55JmVVBclfQ==
+"@clearfeed-ai/quix-jira-agent@^1.2.13":
+  version "1.2.13"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.2.13.tgz#feeba33fbac36884908b5694d905da6dcaa2b542"
+  integrity sha512-8soK+gGUvpx7HVb8+qvEPuITQFobcLHUftKmLjNtXaHLegkAMv+OwrSx4RVBuE1vXBtxDE580QlAEOTmmuy86g==
   dependencies:
     atlassian-jwt "^2.0.3"
     axios "^1.8.2"
+
+"@clearfeed-ai/quix-notion-agent@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-notion-agent/-/quix-notion-agent-1.0.0.tgz#8f360056c45e9aa01f77792b9214464e36dd6e47"
+  integrity sha512-Q5jfjPI62lWOd253Px85llGHsMji9rsh6pyOvLWZvjtzoUn/ktY2f/uHnswwPlHXocqVXf8Gq4ynqAa7hUQRlQ==
+  dependencies:
+    "@notionhq/client" "^3.0.1"
 
 "@clearfeed-ai/quix-okta-agent@^1.0.0":
   version "1.0.0"
@@ -1292,6 +1299,11 @@
   dependencies:
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
+
+"@notionhq/client@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@notionhq/client/-/client-3.0.1.tgz#a31e775b19d4227df871e6905a9f502ea710316b"
+  integrity sha512-vHtFKrRKQg2PZSky1A9fTe+L9/WxNYRJWHmD6ZiBNgeN5jnFmv27ootRl9ROzEm/N+mOxfTo37EnuCHsaPgETg==
 
 "@nuxt/opencollective@0.4.1":
   version "0.4.1"
