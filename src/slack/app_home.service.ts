@@ -26,7 +26,8 @@ import {
   publishSalesforceConfigModal,
   publishOpenaiKeyModal,
   publishOktaConnectionModal,
-  publishHubspotConfigModal
+  publishHubspotConfigModal,
+  publishDisconnectConfirmationModal
 } from './views/modals';
 import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
@@ -377,50 +378,20 @@ export class AppHomeService {
               break;
           }
           break;
-        case 'disconnect':
-          switch (connectionInfo.type) {
-            case SUPPORTED_INTEGRATIONS.POSTGRES:
-              await this.integrationsService.removePostgresConfig(teamId);
-              break;
-            case SUPPORTED_INTEGRATIONS.HUBSPOT:
-              await this.integrationsService.removeHubspotConfig(teamId);
-              break;
-            case SUPPORTED_INTEGRATIONS.JIRA:
-              await this.integrationsService.removeJiraConfig(teamId);
-              break;
-            case SUPPORTED_INTEGRATIONS.SALESFORCE:
-              await this.integrationsService.removeSalesforceConfig(teamId);
-              break;
-            case SUPPORTED_INTEGRATIONS.GITHUB:
-              await this.integrationsService.removeGithubConfig(teamId);
-              break;
-            case SUPPORTED_INTEGRATIONS.NOTION:
-              await this.integrationsService.removeNotionConfig(teamId);
-              break;
-            case SUPPORTED_INTEGRATIONS.LINEAR:
-              await this.integrationsService.removeLinearConfig(teamId);
-              break;
-            case 'mcp':
-              await this.integrationsService.removeMcpConnection(teamId, connectionInfo.id);
-              break;
-            case SUPPORTED_INTEGRATIONS.OKTA:
-              await this.integrationsService.removeOktaConfig(teamId);
-              break;
-            default:
-              break;
-          }
-          await slackWorkspace.reload({
-            include: TOOL_CONNECTION_MODELS
-          });
-          await webClient.views.publish({
-            user_id: userId,
-            view: await this.getHomeView({
-              slackWorkspace,
-              connection: undefined,
-              userId
-            })
+        case 'disconnect': {
+          const connectionName =
+            connectionInfo.type === 'mcp'
+              ? 'MCP Server'
+              : (INTEGRATIONS.find((i) => i.value === connectionInfo.type)?.name ??
+                connectionInfo.type);
+
+          await publishDisconnectConfirmationModal(webClient, {
+            triggerId,
+            connectionName,
+            connectionInfoPayload: JSON.stringify(connectionInfo)
           });
           break;
+        }
       }
     } catch (error) {
       this.logger.error('Error parsing connection info', { error, blockId: action.block_id });

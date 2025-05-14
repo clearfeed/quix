@@ -1,4 +1,11 @@
-import { Elements, BlockCollection, ContextBuilder, Md, SectionBuilder } from 'slack-block-builder';
+import {
+  Elements,
+  BlockCollection,
+  ContextBuilder,
+  Md,
+  SectionBuilder,
+  Actions
+} from 'slack-block-builder';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { Block, View } from '@slack/web-api';
 import { Bits, Section, Input, Image } from 'slack-block-builder';
@@ -881,4 +888,29 @@ export const publishOktaConnectionModal = async (
     console.error('Error publishing Okta connection modal:', error);
     throw error;
   }
+};
+
+export const publishDisconnectConfirmationModal = async (
+  client: WebClient,
+  args: {
+    triggerId: string;
+    connectionName: string;
+    connectionInfoPayload: string;
+  }
+): Promise<void> => {
+  await client.views.open({
+    trigger_id: args.triggerId,
+    view: {
+      ...Surfaces.Modal({
+        title: 'Disconnect?',
+        submit: 'Yes, disconnect',
+        close: 'Cancel',
+        callbackId: SLACK_ACTIONS.DISCONNECT_CONFIRM_MODAL.SUBMIT
+      }).buildToObject(),
+      private_metadata: args.connectionInfoPayload,
+      blocks: BlockCollection([
+        Section({ text: `Are you sure you want to disconnect *${args.connectionName}*?` })
+      ])
+    }
+  });
 };
