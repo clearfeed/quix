@@ -237,3 +237,39 @@ export const getConnectedIntegrations = (
   }
   return connectedIntegration;
 };
+
+/**
+ * @returns true if the given ts & threadTs are of a parent message.
+ * @returns false if it is of a threaded message.
+ */
+export const isParentSlackMessage = ({
+  threadTs,
+  ts
+}: {
+  threadTs: Nullable<string>;
+  ts: string;
+}): boolean => isEmpty(threadTs) || threadTs === ts;
+
+/**
+ * @returns the link to the message on Slack.
+ */
+export function getSlackMessageUrl(payload: {
+  slackDomain: string;
+  channelId: string;
+  messageExternalId: string;
+  parentMessageExternalId?: string;
+}): string {
+  const url = `https://${payload.slackDomain}.slack.com/archives/${
+    payload.channelId
+  }/p${payload.messageExternalId.replace('.', '')}`;
+  if (
+    isParentSlackMessage({
+      ts: payload.messageExternalId,
+      threadTs: payload.parentMessageExternalId ?? ''
+    })
+  ) {
+    return url;
+  } else {
+    return url + '?thread_ts=' + payload.parentMessageExternalId;
+  }
+}

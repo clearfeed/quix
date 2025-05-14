@@ -30,23 +30,48 @@ import { encrypt } from '../lib/utils/encryption';
 import { formatToOpenAITool } from '@langchain/openai';
 import { isEqual } from 'lodash';
 import { SOFT_RETENTION_DAYS } from '../lib/constants';
+import { getSlackMessageUrl } from '@quix/lib/utils/slack';
+import { SlackWorkspace } from '@quix/database/models';
 import slackify = require('slackify-markdown');
 
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);
   constructor(
+    @InjectModel(SlackWorkspace)
+    private readonly slackWorkspaceModel: typeof SlackWorkspace,
     private readonly llmProvider: LlmProviderService,
     private readonly tool: ToolService,
     @InjectModel(ConversationState)
     private readonly conversationStateModel: typeof ConversationState
   ) {}
 
-  private enhanceMessagesWithToolContext(
+  private async enhanceMessagesWithToolContext(
     previousMessages: LLMContext[],
-    lastToolCalls: ConversationState['last_tool_calls']
-  ): LLMContext[] {
+    lastToolCalls: ConversationState['last_tool_calls'],
+    teamId: string,
+    channelId: string,
+    threadTs?: string
+  ): Promise<LLMContext[]> {
     const enhancedPreviousMessages = [...previousMessages];
+
+    if (channelId && threadTs) {
+      const ws = await this.slackWorkspaceModel.findOne({
+        where: { team_id: teamId }
+      });
+      const slackDomain = ws?.domain;
+      this.logger.log(slackDomain);
+      const slackUrl = getSlackMessageUrl({
+        slackDomain: slackDomain || '',
+        channelId,
+        messageExternalId: threadTs
+      });
+
+      enhancedPreviousMessages.push({
+        role: 'system',
+        content: `Slack thread URL: ${slackUrl}\nPlease include this link in every Jira, Github Issue and HubSpot tickets,  description or comment.`
+      });
+    }
 
     if (lastToolCalls) {
       enhancedPreviousMessages.push({
@@ -115,9 +140,12 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
     // Add previous tool calls to system context for better continuity
     let enhancedPreviousMessages: LLMContext[] = [];
     try {
-      enhancedPreviousMessages = this.enhanceMessagesWithToolContext(
+      enhancedPreviousMessages = await this.enhanceMessagesWithToolContext(
         previousMessages,
-        conversationState.last_tool_calls
+        conversationState.last_tool_calls,
+        conversationState.team_id,
+        conversationState.channel_id,
+        conversationState.thread_ts
       );
     } catch (error) {
       this.logger.error(`Error enhancing messages with tool context`, error);
