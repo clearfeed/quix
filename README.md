@@ -70,7 +70,6 @@ Quix is an AI-powered Slack agent that can interact with your business tools suc
    - `OPENAI_API_KEY`: OpenAI API key
    - `SLACK_BOT_TOKEN`: Slack bot token
    - `SLACK_SIGNING_SECRET`: Slack signing secret
-   - `OPENAI_API_KEY`: OpenAI API key
 
    - `SLACK_BOT_TOKEN`: Slack bot token
    - `SLACK_SIGNING_SECRET`: Slack signing secret
