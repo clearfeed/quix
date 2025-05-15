@@ -26,7 +26,7 @@ import { ConversationState } from '../database/models/conversation-state.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { TRIAL_MAX_MESSAGE_PER_CONVERSATION_COUNT } from '../lib/utils/slack-constants';
 import { Md } from 'slack-block-builder';
-import { encryptForLogs } from '../lib/utils/encryption';
+import { encrypt } from '../lib/utils/encryption';
 import { formatToOpenAITool } from '@langchain/openai';
 import { isEqual } from 'lodash';
 import { SOFT_RETENTION_DAYS } from '../lib/constants';
@@ -55,16 +55,18 @@ export class LlmService {
   ): Promise<LLMContext[]> {
     const enhancedPreviousMessages = [...previousMessages];
 
-    const slackUrl = getSlackMessageUrl({
-      slackDomain: domain || '',
-      channelId,
-      messageExternalId: threadTs ?? ''
-    });
+    if (threadTs) {
+      const slackUrl = getSlackMessageUrl({
+        slackDomain: domain || '',
+        channelId,
+        messageExternalId: threadTs
+      });
 
-    enhancedPreviousMessages.push({
-      role: 'system',
-      content: `Slack thread URL: ${slackUrl}\nPlease include this link in the description or comment whenever you create or update any resource—issues, tickets, records, or cases—across all integrations (Jira, GitHub, HubSpot, Salesforce, Notion, Linear, and beyond).`
-    });
+      enhancedPreviousMessages.push({
+        role: 'system',
+        content: `Slack thread URL: ${slackUrl}\nPlease include this link in the description or comment whenever you create or update any resource—issues, tickets, records, or cases—across all integrations (Jira, GitHub, HubSpot, Salesforce, Notion, Linear, and beyond).`
+      });
+    }
 
     if (lastToolCalls) {
       enhancedPreviousMessages.push({
@@ -84,7 +86,7 @@ export class LlmService {
   async processMessage(args: MessageProcessingArgs): Promise<string> {
     const { message, threadTs, previousMessages, channelId, authorName, slackWorkspace } = args;
     this.logger.log(`Processing message for team ${slackWorkspace.team_id}`, {
-      message: encryptForLogs(message)
+      message: encrypt(message)
     });
 
     const llm = await this.llmProvider.getProvider(SupportedChatModels.OPENAI, args.slackWorkspace);
@@ -145,7 +147,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       enhancedPreviousMessages = previousMessages;
     }
     this.logger.log(`Enhanced previous messages`, {
-      enhancedPreviousMessages: encryptForLogs(JSON.stringify(enhancedPreviousMessages))
+      enhancedPreviousMessages: encrypt(JSON.stringify(enhancedPreviousMessages))
     });
 
     const toolSelection = await this.toolSelection(
@@ -157,7 +159,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
     );
     this.logger.log(`Tool selection complete`, {
       selectedTools: toolSelection.selectedTools,
-      reason: encryptForLogs(toolSelection.reason)
+      reason: encrypt(toolSelection.reason)
     });
 
     if (toolSelection.selectedTools === 'none' || isEqual(toolSelection.selectedTools, ['none'])) {
@@ -208,7 +210,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       })
       .join('\n');
     this.logger.log(`Plan generated for user's request`, {
-      plan: encryptForLogs(formattedPlan)
+      plan: encrypt(formattedPlan)
     });
     // Store the plan in conversation state
     conversationState.last_plan = {
