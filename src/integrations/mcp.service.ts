@@ -11,7 +11,7 @@ import { jsonSchemaToZod, JsonSchema } from '@n8n/json-schema-to-zod';
 import { z } from 'zod';
 import { SUPPORTED_INTEGRATIONS } from '../lib/constants';
 import * as _ from 'lodash';
-import { encrypt } from '@quix/lib/utils/encryption';
+import { encryptForLogs } from '@quix/lib/utils/encryption';
 import { McpConnection } from '../database/models/mcp-connection.model';
 /**
  * Interface for MCP servers configuration
@@ -274,7 +274,7 @@ export class McpService {
             schema: this.convertJsonToZod(tool.inputSchema as JsonSchema, defaultConfig),
             func: async function (input) {
               logger.log(`MCP tool "${serverName}"/"${tool.name}" received input:`, {
-                input: encrypt(JSON.stringify(input))
+                input: encryptForLogs(JSON.stringify(input))
               });
 
               try {
