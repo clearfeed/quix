@@ -40,3 +40,13 @@ export function decrypt(encryptedText: string): string {
     throw new Error('Failed to decrypt data');
   }
 }
+
+/**
+ * Encrypts a string value for logging purposes
+ * @param text The text to encrypt
+ * @returns The encrypted text as a base64 string
+ * In development mode, the text is not encrypted
+ */
+export function encryptForLogs(text: string): string {
+  return process.env.NODE_ENV === 'development' ? text : encrypt(text);
+}

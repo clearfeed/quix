@@ -17,7 +17,7 @@ import {
 } from '@quix/lib/utils/slack';
 import { SlackService } from './slack.service';
 import { pick } from 'lodash';
-import { encrypt } from '../lib/utils/encryption';
+import { encryptForLogs } from '../lib/utils/encryption';
 import { INTEGRATIONS } from '@quix/lib/constants';
 import { keyBy, shuffle } from 'lodash';
 import { SlackWorkspace } from '../database/models';
@@ -181,7 +181,7 @@ export class SlackEventsHandlerService {
           await slackWorkspace.postMessage(response, event.channel, replyThreadTs);
           this.logger.log('Sent response to message', {
             channel: event.channel,
-            response: encrypt(response)
+            response: encryptForLogs(response)
           });
         } catch (error) {
           this.logger.error('Error processing message:', error);
@@ -259,7 +259,7 @@ export class SlackEventsHandlerService {
       await slackWorkspace.postMessage(response, event.channel, replyThreadTs);
       this.logger.log('Sent response to app mention', {
         channel: event.channel,
-        response: encrypt(response)
+        response: encryptForLogs(response)
       });
     } catch (error) {
       this.logger.error('Error sending response:', error);
