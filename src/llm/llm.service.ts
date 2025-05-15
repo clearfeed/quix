@@ -49,34 +49,22 @@ export class LlmService {
   private async enhanceMessagesWithToolContext(
     previousMessages: LLMContext[],
     lastToolCalls: ConversationState['last_tool_calls'],
-    teamId: string,
     channelId: string,
-    threadTs?: string
+    threadTs?: string,
+    domain?: string
   ): Promise<LLMContext[]> {
     const enhancedPreviousMessages = [...previousMessages];
 
-    if (channelId && threadTs) {
-      const ws = await this.slackWorkspaceModel.findOne({
-        where: { team_id: teamId }
-      });
-      if (!ws) {
-        this.logger.error(
-          `SlackWorkspace not found for team ID: ${teamId}; skipping Slack URL injection.`
-        );
-      }
-      const slackDomain = ws?.domain ?? '';
+    const slackUrl = getSlackMessageUrl({
+      slackDomain: domain || '',
+      channelId,
+      messageExternalId: threadTs ?? ''
+    });
 
-      const slackUrl = getSlackMessageUrl({
-        slackDomain: slackDomain || '',
-        channelId,
-        messageExternalId: threadTs
-      });
-
-      enhancedPreviousMessages.push({
-        role: 'system',
-        content: `Slack thread URL: ${slackUrl}\nPlease include this link in every Jira, Github Issue and HubSpot tickets,  description or comment.`
-      });
-    }
+    enhancedPreviousMessages.push({
+      role: 'system',
+      content: `Slack thread URL: ${slackUrl}\nPlease include this link in the description or comment whenever you create or update any resource—issues, tickets, records, or cases—across all integrations (Jira, GitHub, HubSpot, Salesforce, Notion, Linear, and beyond).`
+    });
 
     if (lastToolCalls) {
       enhancedPreviousMessages.push({
@@ -148,9 +136,9 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       enhancedPreviousMessages = await this.enhanceMessagesWithToolContext(
         previousMessages,
         conversationState.last_tool_calls,
-        conversationState.team_id,
         conversationState.channel_id,
-        conversationState.thread_ts
+        conversationState.thread_ts,
+        slackWorkspace.domain
       );
     } catch (error) {
       this.logger.error(`Error enhancing messages with tool context`, error);
