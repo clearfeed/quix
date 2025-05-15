@@ -2,6 +2,7 @@ import { SlackWorkspace } from '@quix/database/models';
 import { INTEGRATIONS } from '@quix/lib/constants';
 import { Connections } from '@quix/lib/types/common';
 import { ModalView, ViewsOpenResponse, ViewsUpdateResponse, WebClient } from '@slack/web-api';
+import { SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 
 export type HomeViewArgs = {
   slackWorkspace: SlackWorkspace;
@@ -139,3 +140,5 @@ export type HubspotConfigModalArgs = {
     defaultPrompt?: string | null;
   };
 };
+
+export type ConnectionInfo = { type: SUPPORTED_INTEGRATIONS } | { type: 'mcp'; id: string };

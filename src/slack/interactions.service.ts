@@ -17,6 +17,7 @@ import { SlackService } from './slack.service';
 import { getMCPConnectionDropDownValue } from './views/app_home';
 import { OktaConfig } from '@quix/database/models';
 import { IntegrationsService } from '@quix/integrations/integrations.service';
+import { ConnectionInfo } from './views/types';
 @Injectable()
 export class InteractionsService {
   private readonly logger = new Logger(InteractionsService.name);
@@ -327,9 +328,7 @@ export class InteractionsService {
           });
         }
       case SLACK_ACTIONS.DISCONNECT_CONFIRM_MODAL.SUBMIT: {
-        const connectionInfo = JSON.parse(payload.view.private_metadata) as
-          | { type: SUPPORTED_INTEGRATIONS }
-          | { type: 'mcp'; id: string };
+        const connectionInfo: ConnectionInfo = JSON.parse(payload.view.private_metadata);
 
         switch (connectionInfo.type) {
           case SUPPORTED_INTEGRATIONS.POSTGRES:
@@ -364,15 +363,14 @@ export class InteractionsService {
             break;
         }
 
-        // finally re-publish the App-Home
         await this.appHomeService.handleIntegrationConnected(
           payload.user.id,
           payload.view.team_id,
-          undefined, // selectedTool
-          undefined // connection
+          undefined,
+          undefined
         );
 
-        return; // closing the modal is automatic on submit
+        return;
       }
       default:
         return;

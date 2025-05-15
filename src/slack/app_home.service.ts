@@ -39,6 +39,7 @@ import { Blocks } from 'slack-block-builder';
 import { BlockCollection } from 'slack-block-builder';
 import { McpService } from '../integrations/mcp.service';
 import { TOOL_CONNECTION_MODELS } from './constants';
+import { ConnectionInfo } from './views/types';
 
 @Injectable()
 export class AppHomeService {
@@ -239,14 +240,7 @@ export class AppHomeService {
   ) {
     const selectedOption = action.selected_option?.value as 'edit' | 'disconnect' | undefined;
     try {
-      const connectionInfo:
-        | {
-            type: SUPPORTED_INTEGRATIONS;
-          }
-        | {
-            type: 'mcp';
-            id: string;
-          } = JSON.parse(action.block_id);
+      const connectionInfo: ConnectionInfo = JSON.parse(action.block_id);
       const integration = INTEGRATIONS.find(
         (integration) => integration.value === connectionInfo.type
       );
@@ -388,7 +382,7 @@ export class AppHomeService {
           await publishDisconnectConfirmationModal(webClient, {
             triggerId,
             connectionName,
-            connectionInfoPayload: JSON.stringify(connectionInfo)
+            connectionInfoPayload: connectionInfo
           });
           break;
         }
