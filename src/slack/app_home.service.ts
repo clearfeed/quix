@@ -38,7 +38,6 @@ import { Md } from 'slack-block-builder';
 import { Blocks } from 'slack-block-builder';
 import { BlockCollection } from 'slack-block-builder';
 import { McpService } from '../integrations/mcp.service';
-import { TOOL_CONNECTION_MODELS } from './constants';
 import { ConnectionInfo } from './views/types';
 
 @Injectable()
@@ -376,8 +375,8 @@ export class AppHomeService {
           const connectionName =
             connectionInfo.type === 'mcp'
               ? 'MCP Server'
-              : (INTEGRATIONS.find((i) => i.value === connectionInfo.type)?.name ??
-                connectionInfo.type);
+              : (INTEGRATIONS.find((integration) => integration.value === connectionInfo.type)
+                  ?.name ?? connectionInfo.type);
 
           await publishDisconnectConfirmationModal(webClient, {
             triggerId,
