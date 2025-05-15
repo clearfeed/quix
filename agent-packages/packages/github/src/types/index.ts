@@ -72,6 +72,7 @@ export interface CreateIssueParams {
   repo: string;
   title: string;
   description?: string;
+  assignee?: string;
 }
 
 // Search interfaces

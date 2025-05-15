@@ -358,10 +358,10 @@
   dependencies:
     zod "^3.24.2"
 
-"@clearfeed-ai/quix-github-agent@^1.2.8":
-  version "1.2.8"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.2.8.tgz#f466868712d34ab13f121a95c595323c0166a752"
-  integrity sha512-PLLnWI5br8wrZyMMiVFIU/bBWgciwQc6MaBI/RX5fD4219D5QnTGrA9ouwEewG6NtMtSjt4EdGDCEpzP50cUYw==
+"@clearfeed-ai/quix-github-agent@^1.2.9":
+  version "1.2.9"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.2.9.tgz#5cf2aac25c9395de23fcacf93937811c69c38a09"
+  integrity sha512-WwHzy/qVyS2cs0zOK5uOXPAoDWmxmxceEU0zz2gnKBSGlMJeB1HxVmNe/AoaVFNqtvLnh4X/IrEnKUiYXId2AA==
   dependencies:
     "@octokit/rest" "^21.1.1"
 
