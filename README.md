@@ -70,12 +70,19 @@ Quix is an AI-powered Slack agent that can interact with your business tools suc
    - `OPENAI_API_KEY`: OpenAI API key
    - `SLACK_BOT_TOKEN`: Slack bot token
    - `SLACK_SIGNING_SECRET`: Slack signing secret
+   - `OPENAI_API_KEY`: OpenAI API key
+
+   - `SLACK_BOT_TOKEN`: Slack bot token
+   - `SLACK_SIGNING_SECRET`: Slack signing secret
+
    - `SELFSERVER_URL`: Your Domain (for development use your ngrok url)
+
    - `DB_HOST` : Database Hostname
    - `DB_PORT` : Database Port
    - `DB_USER` : Database User
    - `DB_PASSWORD` : Database Password
    - `DB_NAME` : Database Name
+
    - `REDIS_HOST` : Redis Hostname
    - `REDIS_PORT` : Redis PORT
 
