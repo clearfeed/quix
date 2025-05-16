@@ -42,9 +42,18 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
   const tools: DynamicStructuredTool<any>[] = [
     new DynamicStructuredTool({
       name: 'find_jira_ticket',
-      description: 'Find JIRA issues based on a keyword',
+      description:
+        'Search Jira issues by free-text (summary / description). ' +
+        'Use when the user gives a topic like "timeout bug" or "login error". ' +
+        'If you already have an exact issue key such as "PROJ-123", ' +
+        'call get_jira_issue instead.',
       schema: z.object({
-        keyword: z.string().describe('The keyword to search for in Jira issues')
+        keyword: z
+          .string()
+          .describe(
+            'Free-text phrase to search for in Jira (e.g., "authentication bug").\n' +
+              'Do not pass a full issue key like "PROJ-123"; use get_jira_issue for that.'
+          )
       }),
       func: async ({ keyword }: { keyword: string }): Promise<BaseResponse<SearchIssuesResponse>> =>
         service.searchIssues(keyword)
@@ -53,7 +62,12 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
       name: 'get_jira_issue',
       description: 'Get detailed information about a specific Jira issue by ID',
       schema: z.object({
-        issueId: z.string().describe('The Jira issue ID (e.g., PROJ-123)')
+        issueId: z
+          .string()
+          .describe(
+            'The Jira issue ID (e.g., PROJ-123)' +
+              'Use this when the user has supplied the key or when you retrieved it from find_jira_ticket.'
+          )
       }),
       func: async ({ issueId }: { issueId: string }): Promise<GetIssueResponse> =>
         service.getIssue(issueId)
