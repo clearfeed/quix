@@ -31,15 +31,12 @@ import { formatToOpenAITool } from '@langchain/openai';
 import { isEqual } from 'lodash';
 import { SOFT_RETENTION_DAYS } from '../lib/constants';
 import { getSlackMessageUrl } from '@quix/lib/utils/slack';
-import { SlackWorkspace } from '@quix/database/models';
 import slackify = require('slackify-markdown');
 
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);
   constructor(
-    @InjectModel(SlackWorkspace)
-    private readonly slackWorkspaceModel: typeof SlackWorkspace,
     private readonly llmProvider: LlmProviderService,
     private readonly tool: ToolService,
     @InjectModel(ConversationState)
@@ -51,20 +48,20 @@ export class LlmService {
     lastToolCalls: ConversationState['last_tool_calls'],
     channelId: string,
     threadTs?: string,
-    domain?: string
+    slackWorkspaceDomain?: string
   ): Promise<LLMContext[]> {
     const enhancedPreviousMessages = [...previousMessages];
 
-    if (threadTs) {
+    if (slackWorkspaceDomain) {
       const slackUrl = getSlackMessageUrl({
-        slackDomain: domain || '',
+        slackDomain: slackWorkspaceDomain || '',
         channelId,
-        messageExternalId: threadTs
+        messageExternalId: threadTs ?? ''
       });
 
       enhancedPreviousMessages.push({
         role: 'system',
-        content: `Slack thread URL: ${slackUrl}\nPlease include this link in the description or comment whenever you create or update any resource—issues, tickets, records, or cases—across all integrations (Jira, GitHub, HubSpot, Salesforce, Notion, Linear, and beyond).`
+        content: `Slack thread URL: ${slackUrl}\nYou must include this link in the description or comment whenever you create or update a resource—such as an issue, ticket, record, or case.`
       });
     }
 
