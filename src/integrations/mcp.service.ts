@@ -72,8 +72,7 @@ export class McpService {
    * Static for testing and extension outside the class
    */
   static readonly INTEGRATION_TO_MCP_SERVER = {
-    [SUPPORTED_INTEGRATIONS.LINEAR]: '@ibraheem4/linear-mcp',
-    [SUPPORTED_INTEGRATIONS.OKTA]: '@yiyang.1i/okta-mcp-server'
+    [SUPPORTED_INTEGRATIONS.LINEAR]: '@ibraheem4/linear-mcp'
   } as const satisfies Partial<Record<SUPPORTED_INTEGRATIONS, string>>;
 
   constructor() {}
@@ -89,14 +88,6 @@ export class McpService {
     integration: SUPPORTED_INTEGRATIONS.LINEAR,
     envVars: { LINEAR_API_KEY: string },
     defaultConfig?: { teamId: string }
-  ): Promise<{
-    tools: DynamicStructuredTool<any>[];
-    cleanup: McpServerCleanupFn;
-  }>;
-  async getMcpServerTools(
-    integration: SUPPORTED_INTEGRATIONS.OKTA,
-    envVars: { API_TOKEN: string; OKTA_DOMAIN: string },
-    defaultConfig?: Record<string, string>
   ): Promise<{
     tools: DynamicStructuredTool<any>[];
     cleanup: McpServerCleanupFn;
