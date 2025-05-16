@@ -49,7 +49,7 @@ export class LlmService {
     channelId: string,
     threadTs?: string,
     slackWorkspaceDomain?: string
-  ): Promise<LLMContext[]> {
+  ): LLMContext[] {
     const enhancedPreviousMessages = [...previousMessages];
 
     if (slackWorkspaceDomain) {
