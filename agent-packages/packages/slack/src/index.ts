@@ -60,12 +60,6 @@ export class SlackService implements BaseService<SlackConfig> {
     this.client = new WebClient(config.token);
   }
 
-  validateConfig(
-    config?: Record<string, any>
-  ): { isValid: boolean; error?: string } & Record<string, any> {
-    return { isValid: true };
-  }
-
   async listChannels(
     params: ListChannelsParams
   ): Promise<BaseResponse<ConversationsListResponse['channels']>> {

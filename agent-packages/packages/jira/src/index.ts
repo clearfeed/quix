@@ -31,27 +31,12 @@ export class JiraService implements BaseService<JiraConfig> {
     this.client = new JiraClient(jiraOpts);
   }
 
-  validateConfig(): { isValid: boolean; error?: string } {
-    if (!this.config.host) {
-      return {
-        isValid: false,
-        error: 'JIRA integration is not configured. Please pass in a host and auth object.'
-      };
-    }
-    return { isValid: true };
-  }
-
   async searchIssues(
     keyword: string
   ): Promise<
     BaseResponse<{ issues: (SearchIssuesResponse['issues'][number] & { url: string })[] }>
   > {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return { success: false, error: validation.error };
-      }
-
       const jql = `text ~ "${keyword}" ORDER BY updated DESC`;
       const response = await this.client.searchIssues(jql, { maxResults: 10 });
 
@@ -75,11 +60,6 @@ export class JiraService implements BaseService<JiraConfig> {
 
   async getIssue(issueId: string): Promise<GetIssueResponse> {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return { success: false, error: validation.error };
-      }
-
       const issue = await this.client.getIssue(issueId);
 
       return {
@@ -211,11 +191,6 @@ export class JiraService implements BaseService<JiraConfig> {
 
   async addComment(params: AddCommentParams): Promise<AddCommentResponse> {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return { success: false, error: validation.error };
-      }
-
       const comment = await this.client.addComment(params.issueId, params.comment);
 
       return {
@@ -238,11 +213,6 @@ export class JiraService implements BaseService<JiraConfig> {
 
   async getComments(issueId: string): Promise<GetCommentsResponse> {
     try {
-      const validation = this.validateConfig();
-      if (!validation.isValid) {
-        return { success: false, error: validation.error };
-      }
-
       const comments = await this.client.getComments(issueId, { maxResults: 20 });
 
       return {

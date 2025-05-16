@@ -77,9 +77,11 @@ export interface CreateIssueParams {
 
 // Search interfaces
 export interface CodeSearchParams {
-  owner?: string;
-  repo?: string;
+  owner: string;
+  repo: string;
   query: string;
+  page: number;
+  per_page: number;
 }
 type SearchResultItem =
   RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'][number];
