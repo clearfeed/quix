@@ -16,12 +16,15 @@ import { WebClient } from '@slack/web-api';
 import { SlackService } from './slack.service';
 import { getMCPConnectionDropDownValue } from './views/app_home';
 import { OktaConfig } from '@quix/database/models';
+import { IntegrationsService } from '@quix/integrations/integrations.service';
+import { ConnectionInfo } from './views/types';
 @Injectable()
 export class InteractionsService {
   private readonly logger = new Logger(InteractionsService.name);
   constructor(
     private readonly appHomeService: AppHomeService,
     private readonly integrationsInstallService: IntegrationsInstallService,
+    private readonly integrationsService: IntegrationsService,
     private readonly slackService: SlackService
   ) {}
 
@@ -324,6 +327,51 @@ export class InteractionsService {
             web: new WebClient(slackWorkspace.bot_access_token)
           });
         }
+      case SLACK_ACTIONS.DISCONNECT_CONFIRM_MODAL.SUBMIT: {
+        const connectionInfo: ConnectionInfo = JSON.parse(payload.view.private_metadata);
+
+        switch (connectionInfo.type) {
+          case SUPPORTED_INTEGRATIONS.POSTGRES:
+            await this.integrationsService.removePostgresConfig(payload.view.team_id);
+            break;
+          case SUPPORTED_INTEGRATIONS.HUBSPOT:
+            await this.integrationsService.removeHubspotConfig(payload.view.team_id);
+            break;
+          case SUPPORTED_INTEGRATIONS.JIRA:
+            await this.integrationsService.removeJiraConfig(payload.view.team_id);
+            break;
+          case SUPPORTED_INTEGRATIONS.SALESFORCE:
+            await this.integrationsService.removeSalesforceConfig(payload.view.team_id);
+            break;
+          case SUPPORTED_INTEGRATIONS.GITHUB:
+            await this.integrationsService.removeGithubConfig(payload.view.team_id);
+            break;
+          case SUPPORTED_INTEGRATIONS.NOTION:
+            await this.integrationsService.removeNotionConfig(payload.view.team_id);
+            break;
+          case SUPPORTED_INTEGRATIONS.LINEAR:
+            await this.integrationsService.removeLinearConfig(payload.view.team_id);
+            break;
+          case SUPPORTED_INTEGRATIONS.OKTA:
+            await this.integrationsService.removeOktaConfig(payload.view.team_id);
+            break;
+          case 'mcp':
+            await this.integrationsService.removeMcpConnection(
+              payload.view.team_id,
+              connectionInfo.id
+            );
+            break;
+        }
+
+        await this.appHomeService.handleIntegrationConnected(
+          payload.user.id,
+          payload.view.team_id,
+          undefined,
+          undefined
+        );
+
+        return;
+      }
       default:
         return;
     }

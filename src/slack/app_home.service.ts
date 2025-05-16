@@ -26,7 +26,8 @@ import {
   publishSalesforceConfigModal,
   publishOpenaiKeyModal,
   publishOktaConnectionModal,
-  publishHubspotConfigModal
+  publishHubspotConfigModal,
+  publishDisconnectConfirmationModal
 } from './views/modals';
 import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
@@ -37,7 +38,7 @@ import { Md } from 'slack-block-builder';
 import { Blocks } from 'slack-block-builder';
 import { BlockCollection } from 'slack-block-builder';
 import { McpService } from '../integrations/mcp.service';
-import { TOOL_CONNECTION_MODELS } from './constants';
+import { ConnectionInfo } from './views/types';
 
 @Injectable()
 export class AppHomeService {
@@ -238,14 +239,7 @@ export class AppHomeService {
   ) {
     const selectedOption = action.selected_option?.value as 'edit' | 'disconnect' | undefined;
     try {
-      const connectionInfo:
-        | {
-            type: SUPPORTED_INTEGRATIONS;
-          }
-        | {
-            type: 'mcp';
-            id: string;
-          } = JSON.parse(action.block_id);
+      const connectionInfo: ConnectionInfo = JSON.parse(action.block_id);
       const integration = INTEGRATIONS.find(
         (integration) => integration.value === connectionInfo.type
       );
@@ -377,50 +371,20 @@ export class AppHomeService {
               break;
           }
           break;
-        case 'disconnect':
-          switch (connectionInfo.type) {
-            case SUPPORTED_INTEGRATIONS.POSTGRES:
-              await this.integrationsService.removePostgresConfig(teamId);
-              break;
-            case SUPPORTED_INTEGRATIONS.HUBSPOT:
-              await this.integrationsService.removeHubspotConfig(teamId);
-              break;
-            case SUPPORTED_INTEGRATIONS.JIRA:
-              await this.integrationsService.removeJiraConfig(teamId);
-              break;
-            case SUPPORTED_INTEGRATIONS.SALESFORCE:
-              await this.integrationsService.removeSalesforceConfig(teamId);
-              break;
-            case SUPPORTED_INTEGRATIONS.GITHUB:
-              await this.integrationsService.removeGithubConfig(teamId);
-              break;
-            case SUPPORTED_INTEGRATIONS.NOTION:
-              await this.integrationsService.removeNotionConfig(teamId);
-              break;
-            case SUPPORTED_INTEGRATIONS.LINEAR:
-              await this.integrationsService.removeLinearConfig(teamId);
-              break;
-            case 'mcp':
-              await this.integrationsService.removeMcpConnection(teamId, connectionInfo.id);
-              break;
-            case SUPPORTED_INTEGRATIONS.OKTA:
-              await this.integrationsService.removeOktaConfig(teamId);
-              break;
-            default:
-              break;
-          }
-          await slackWorkspace.reload({
-            include: TOOL_CONNECTION_MODELS
-          });
-          await webClient.views.publish({
-            user_id: userId,
-            view: await this.getHomeView({
-              slackWorkspace,
-              connection: undefined,
-              userId
-            })
+        case 'disconnect': {
+          const connectionName =
+            connectionInfo.type === 'mcp'
+              ? 'MCP Server'
+              : (INTEGRATIONS.find((integration) => integration.value === connectionInfo.type)
+                  ?.name ?? connectionInfo.type);
+
+          await publishDisconnectConfirmationModal(webClient, {
+            triggerId,
+            connectionName,
+            connectionInfoPayload: connectionInfo
           });
           break;
+        }
       }
     } catch (error) {
       this.logger.error('Error parsing connection info', { error, blockId: action.block_id });
