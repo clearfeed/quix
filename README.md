@@ -8,6 +8,10 @@ Quix is an AI-powered Slack agent that can interact with your business tools suc
 - ![Jira](https://img.shields.io/badge/Jira-0052CC?style=for-the-badge&logo=jira&logoColor=white) - Project and issue tracking
 - ![HubSpot](https://img.shields.io/badge/HubSpot-FF7A59?style=for-the-badge&logo=hubspot&logoColor=white) - CRM and marketing
 - ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white) - Database queries
+- ![Notion](https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white) - Workspace docs and knowledge management
+- ![Okta](https://img.shields.io/badge/Okta-007DC1?style=for-the-badge&logo=okta&logoColor=white) - Identity and access management
+- ![Salesforce](https://img.shields.io/badge/Salesforce-00A1E0?style=for-the-badge&logo=salesforce&logoColor=white) - CRM and sales automation
+- ![Slack](https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white) - Messaging and collaboration
 
 ## ✨ Key Features
 
@@ -32,6 +36,10 @@ Quix is an AI-powered Slack agent that can interact with your business tools suc
 │       ├── github/        # GitHub integration
 │       ├── jira/          # Jira integration
 │       ├── hubspot/       # HubSpot integration
+│       ├── notion/        # Notion integration
+│       ├── okta/          # Okta integration
+│       ├── salesforce/    # Salesforce integration
+│       ├── slack/         # Slack integration
 │       └── postgres/      # PostgreSQL integration
 ```
 
@@ -62,8 +70,20 @@ Quix is an AI-powered Slack agent that can interact with your business tools suc
    - `OPENAI_API_KEY`: OpenAI API key
    - `SLACK_BOT_TOKEN`: Slack bot token
    - `SLACK_SIGNING_SECRET`: Slack signing secret
-   - Integration-specific keys (GitHub, Jira, HubSpot)
-   - Database and Redis configurations
+
+   - `SLACK_BOT_TOKEN`: Slack bot token
+   - `SLACK_SIGNING_SECRET`: Slack signing secret
+
+   - `SELFSERVER_URL`: Your Domain (for development use your ngrok url)
+
+   - `DB_HOST` : Database Hostname
+   - `DB_PORT` : Database Port
+   - `DB_USER` : Database User
+   - `DB_PASSWORD` : Database Password
+   - `DB_NAME` : Database Name
+
+   - `REDIS_HOST` : Redis Hostname
+   - `REDIS_PORT` : Redis PORT
 
 4. **Slack App Setup**:
 
@@ -92,7 +112,7 @@ Quix is an AI-powered Slack agent that can interact with your business tools suc
 
       - `<YOUR_EVENTS_URL>` → `https://your-domain/slack/events`
       - `<YOUR_INTERACTIONS_URL>` → `https://your-domain/slack/interactions`
-      - `<YOUR_REDIRECT_URL>` → `https://your-domain/slack/oauth/callback`
+      - `<YOUR_REDIRECT_URL>` → `https://your-domain/slack/install`
 
       For local development, use your ngrok URL: `https://your-ngrok-url.ngrok.io/slack/...`
 
