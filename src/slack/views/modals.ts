@@ -14,7 +14,8 @@ import {
   GithubDefaultConfigModalArgs,
   SalesforceConfigModalArgs,
   HubspotConfigModalArgs,
-  OktaConnectionModalArgs
+  OktaConnectionModalArgs,
+  ConnectionInfo
 } from './types';
 import { WebClient } from '@slack/web-api';
 import { Surfaces } from 'slack-block-builder';
@@ -881,4 +882,29 @@ export const publishOktaConnectionModal = async (
     console.error('Error publishing Okta connection modal:', error);
     throw error;
   }
+};
+
+export const publishDisconnectConfirmationModal = async (
+  client: WebClient,
+  args: {
+    triggerId: string;
+    connectionName: string;
+    connectionInfoPayload: ConnectionInfo;
+  }
+): Promise<void> => {
+  await client.views.open({
+    trigger_id: args.triggerId,
+    view: {
+      ...Surfaces.Modal({
+        title: `Disconnect ${args.connectionName}?`,
+        submit: 'Yes, disconnect',
+        close: 'Cancel',
+        callbackId: SLACK_ACTIONS.DISCONNECT_CONFIRM_MODAL.SUBMIT
+      }).buildToObject(),
+      private_metadata: JSON.stringify(args.connectionInfoPayload),
+      blocks: BlockCollection([
+        Section({ text: `Are you sure you want to disconnect ${Md.bold(args.connectionName)}?` })
+      ])
+    }
+  });
 };
