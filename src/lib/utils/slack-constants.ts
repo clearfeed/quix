@@ -21,6 +21,9 @@ export const SLACK_ACTIONS = {
     SUBMIT: 'submit-postgres-connection'
   },
   CONNECTION_OVERFLOW_MENU: 'connection-overflow-menu',
+  DISCONNECT_CONFIRM_MODAL: {
+    SUBMIT: 'disconnect_confirm_modal_submit'
+  },
   JIRA_CONFIG_MODAL: {
     SUBMIT: 'jira-config-modal-submit',
     PROJECT_KEY_INPUT: 'jira-config-modal-project-key-input',
