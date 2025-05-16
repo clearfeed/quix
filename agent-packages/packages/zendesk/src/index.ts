@@ -40,12 +40,6 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
     }
   }
 
-  validateConfig(
-    config?: Record<string, any>
-  ): { isValid: boolean; error?: string } & Record<string, any> {
-    return { isValid: true };
-  }
-
   async searchTickets(params: SearchTicketsParams): Promise<BaseResponse<Ticket[]>> {
     try {
       const response = await this.client.search.query(`type:ticket ${params.query}`);

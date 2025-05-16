@@ -12,10 +12,6 @@ export class PostgresService implements BaseService<PostgresConfig> {
     this.pool = new Pool(this.config);
   }
 
-  validateConfig(): { isValid: boolean; error?: string } {
-    return { isValid: true };
-  }
-
   async listTables(): Promise<BaseResponse<string[]>> {
     const client = await this.pool.connect();
     try {
