@@ -1,21 +1,9 @@
-import { DescribeObjectParams, SalesforceObjectName, UpdateTaskParams } from './types/index';
+import { DescribeObjectParams, SalesforceObjectName } from './types/index';
 import { Connection } from 'jsforce';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
-import {
-  SalesforceConfig,
-  SearchOpportunitiesResponse,
-  AddNoteToOpportunityResponse,
-  SearchOpportunitiesParams
-} from './types';
+import { SalesforceConfig } from './types';
 import { BaseResponse } from '@clearfeed-ai/quix-common-agent';
 
-import {
-  SalesforceOpportunity,
-  SalesforceNote,
-  CreateTaskParams,
-  SalesforceTask
-} from './types/index';
-import { filterOpportunities } from './utils';
 // Export all types
 export * from './types';
 
@@ -26,10 +14,6 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
 
   constructor(config: SalesforceConfig) {
     this.config = config;
-    const validation = this.validateConfig();
-    if (!validation.isValid) {
-      throw new Error(validation.error);
-    }
     this.connection = new Connection({
       instanceUrl: config.instanceUrl,
       accessToken: config.accessToken
@@ -38,16 +22,6 @@ export class SalesforceService implements BaseService<SalesforceConfig> {
 
   getTaskUrl(taskId: string): string {
     return `${this.config.instanceUrl}/lightning/r/Task/${taskId}/view`;
-  }
-
-  validateConfig(): { isValid: boolean; error?: string } {
-    if (!this.config.accessToken) {
-      return { isValid: false, error: 'Salesforce access token is not configured' };
-    }
-    if (!this.config.instanceUrl) {
-      return { isValid: false, error: 'Salesforce instance URL is not configured' };
-    }
-    return { isValid: true };
   }
 
   async findUser(userIdentifier: {

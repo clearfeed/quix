@@ -64,10 +64,6 @@ export class NotionService implements BaseService<NotionConfig> {
     });
   }
 
-  validateConfig(): { isValid: boolean; error?: string } & Record<string, any> {
-    return { isValid: true };
-  }
-
   handleNotionError = (error: unknown) => {
     if (isNotionClientError(error)) {
       if (error instanceof APIResponseError) {
