@@ -41,30 +41,9 @@ const loadOctokit = async (): Promise<typeof Octokit> => {
 
 export class GitHubService implements BaseService<GitHubConfig> {
   private client: OctokitType;
-  private config: GitHubConfig;
 
-  validateConfig(
-    config?: Record<string, any>
-  ): { isValid: boolean; error?: string } & Record<string, any> {
-    const repoOwner = config?.owner || this.config.owner;
-    const repoName = config?.repo || this.config.repo;
-
-    if (!repoOwner) {
-      return { isValid: false, error: 'Owner must be provided or configured.' };
-    }
-    if (!repoName) {
-      return { isValid: false, error: 'Repository name must be provided or configured.' };
-    }
-
-    return { isValid: true, repoOwner, repoName };
-  }
-
-  private constructor(config: GitHubConfig) {
-    this.config = config;
+  private constructor(private config: GitHubConfig) {
     this.client = new Octokit({ auth: config.token });
-    if (!config.token) {
-      throw new Error('GitHub integration is not configured. Please pass in a token.');
-    }
   }
 
   static async create(config: GitHubConfig): Promise<GitHubService> {
@@ -118,15 +97,12 @@ export class GitHubService implements BaseService<GitHubConfig> {
     params: SearchIssuesParams
   ): Promise<BaseResponse<SearchIssuesResponse['data']>> {
     try {
-      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
-      const repo = validation.repoName;
-      const owner = validation.repoOwner;
+      const { repo, owner, keyword, type, reporter, status } = params;
+      let query = `repo:${owner}/${repo} is:${type}`;
 
-      let query = `repo:${owner}/${repo} is:${params.type}`;
-
-      if (params.keyword) query += ` in:title,body ${params.keyword}`;
-      if (params.reporter) query += ` author:${params.reporter}`;
-      if (params.status) query += ` state:${params.status}`;
+      if (keyword) query += ` in:title,body ${keyword}`;
+      if (reporter) query += ` author:${reporter}`;
+      if (status) query += ` state:${status}`;
 
       const response = await this.client.search.issuesAndPullRequests({
         q: query,
@@ -152,12 +128,10 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async getIssue(
     issueNumber: number,
-    params: { owner?: string; repo?: string }
+    params: { owner: string; repo: string }
   ): Promise<BaseResponse<RestEndpointMethodTypes['issues']['get']['response']['data']>> {
     try {
-      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
-      const repo = validation.repoName;
-      const owner = validation.repoOwner;
+      const { repo, owner } = params;
       const response = await this.client.issues.get({
         owner,
         repo,
@@ -176,13 +150,10 @@ export class GitHubService implements BaseService<GitHubConfig> {
   async addAssigneeToIssue(
     issueNumber: number,
     assignee: string,
-    params: { owner?: string; repo?: string }
+    params: { owner: string; repo: string }
   ): Promise<BaseResponse<RestEndpointMethodTypes['issues']['addAssignees']['response']['data']>> {
     try {
-      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
-      const repo = validation.repoName;
-      const owner = validation.repoOwner;
-
+      const { repo, owner } = params;
       const canBeAssigned = await this.checkUserCanBeAssignedToIssue({
         owner,
         repo,
@@ -214,14 +185,12 @@ export class GitHubService implements BaseService<GitHubConfig> {
   async removeAssigneeFromIssue(
     issueNumber: number,
     assignee: string,
-    params: { owner?: string; repo?: string }
+    params: { owner: string; repo: string }
   ): Promise<
     BaseResponse<RestEndpointMethodTypes['issues']['removeAssignees']['response']['data']>
   > {
     try {
-      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
-      const repo = validation.repoName;
-      const owner = validation.repoOwner;
+      const { repo, owner } = params;
       const canBeAssigned = await this.checkUserCanBeAssignedToIssue({
         owner,
         repo,
@@ -250,14 +219,12 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  async getUsers(
+  async getOrganizationUsers(
     owner: string
   ): Promise<BaseResponse<RestEndpointMethodTypes['orgs']['listMembers']['response']['data']>> {
     try {
-      const orgOwner = owner || this.config.owner;
-      if (!orgOwner) throw new Error('Owner must be provided when no default owner is configured.');
       const response = await this.client.orgs.listMembers({
-        org: orgOwner
+        org: owner
       });
       return { success: true, data: response.data };
     } catch (error) {
@@ -313,20 +280,14 @@ export class GitHubService implements BaseService<GitHubConfig> {
     params: CodeSearchParams
   ): Promise<BaseResponse<RestEndpointMethodTypes['search']['code']['response']['data']['items']>> {
     try {
-      const query = params.query;
-      const validation = this.validateConfig({ owner: params.owner, repo: params.repo });
-      const repo = validation.repoName;
-      const owner = validation.repoOwner;
-
+      const { owner, repo, query, page, per_page } = params;
+      const searchQuery = query + ` repo:${owner}/${repo}`;
       const response = await this.client.search.code({
-        q: `${query} repo:${owner}/${repo}`,
-        per_page: 10
+        q: searchQuery,
+        per_page,
+        page
       });
-
-      return {
-        success: true,
-        data: response.data.items
-      };
+      return { success: true, data: response.data.items };
     } catch (error) {
       console.error('Error searching GitHub code:', error);
       return {

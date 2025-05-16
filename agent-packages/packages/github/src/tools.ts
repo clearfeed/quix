@@ -208,7 +208,7 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
           ? z.string().describe('Github Organizarion name').optional().default(config.owner)
           : z.string().describe('Github Organizarion name (required)')
       }),
-      func: async (args: { owner: string }) => service.getUsers(args.owner)
+      func: async (args: { owner: string }) => service.getOrganizationUsers(args.owner)
     }),
     new DynamicStructuredTool({
       name: 'create_github_issue',
@@ -237,21 +237,29 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
       description:
         'Search for code within a specific repository using natural language or keywords',
       schema: z.object({
-        repo: config?.repo
+        repo: config.repo
           ? z
               .string()
               .describe('The name of the GitHub repository to search in')
               .optional()
               .default(config.repo)
           : z.string().describe('The name of the GitHub repository to search in (required)'),
-        owner: config?.owner
+        owner: config.owner
           ? z
               .string()
               .describe('The owner of the GitHub repository')
               .optional()
               .default(config.owner)
           : z.string().describe('The owner of the GitHub repository (required)'),
-        query: z.string().describe('The keyword to search for in code files within the repository')
+        query: z.string().describe('The keyword to search for in code files within the repository'),
+        page: z.number().default(1).describe('The page number to search for'),
+        per_page: z
+          .number()
+          .int('Page size must be an integer')
+          .min(1, 'Page size must be at least 1')
+          .max(100, 'GitHub API limits page size to maximum of 100')
+          .describe('Number of items per page (min: 1, max: 100)')
+          .default(100)
       }),
       func: async (params: CodeSearchParams) => service.searchCode(params)
     }),
@@ -738,6 +746,7 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
           .min(1, 'Page size must be at least 1')
           .max(100, 'GitHub API limits page size to maximum of 100')
           .describe('Number of results per page (min: 1, max: 100)')
+          .default(100)
           .optional()
       }),
       func: async (params: SearchIssuesGlobalParams) => service.searchIssuesGlobal(params)
