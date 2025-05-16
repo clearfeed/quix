@@ -43,7 +43,7 @@ export class LlmService {
     private readonly conversationStateModel: typeof ConversationState
   ) {}
 
-  private async enhanceMessagesWithToolContext(
+  private enhanceMessagesWithToolContext(
     previousMessages: LLMContext[],
     lastToolCalls: ConversationState['last_tool_calls'],
     channelId: string,
@@ -54,7 +54,7 @@ export class LlmService {
 
     if (slackWorkspaceDomain) {
       const slackUrl = getSlackMessageUrl({
-        slackDomain: slackWorkspaceDomain || '',
+        slackDomain: slackWorkspaceDomain,
         channelId,
         messageExternalId: threadTs ?? ''
       });
@@ -132,7 +132,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
     // Add previous tool calls to system context for better continuity
     let enhancedPreviousMessages: LLMContext[] = [];
     try {
-      enhancedPreviousMessages = await this.enhanceMessagesWithToolContext(
+      enhancedPreviousMessages = this.enhanceMessagesWithToolContext(
         previousMessages,
         conversationState.last_tool_calls,
         conversationState.channel_id,
