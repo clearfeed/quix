@@ -38,7 +38,6 @@ import {
   AssociateTicketWithEntityResponse
 } from './types';
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
-import { validateRequiredFields } from './utils';
 import { keyBy } from 'lodash';
 import { ASSOCIATION_TYPE_IDS } from './constants';
 
@@ -47,20 +46,8 @@ export * from './tools';
 
 export class HubspotService implements BaseService<HubspotConfig> {
   private client: Client;
-
   constructor(private config: HubspotConfig) {
-    const validation = this.validateConfig();
-    if (!validation.isValid) {
-      throw new Error(validation.error);
-    }
     this.client = new Client({ accessToken: config.accessToken });
-  }
-
-  validateConfig(): { isValid: boolean; error?: string } {
-    if (!this.config.accessToken) {
-      return { isValid: false, error: 'HubSpot access token is not configured' };
-    }
-    return { isValid: true };
   }
 
   async getOwners(): Promise<{ success: boolean; data?: any; error?: string }> {
@@ -352,11 +339,6 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async createDeal(params: CreateDealParams): Promise<CreateDealResponse> {
     try {
-      validateRequiredFields({
-        params,
-        requiredFields: ['name', 'stage']
-      });
-
       const properties: Record<string, string> = {
         dealname: params.name,
         dealstage: params.stage,
@@ -406,11 +388,6 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async createContact(params: CreateContactParams): Promise<CreateContactResponse> {
     try {
-      validateRequiredFields({
-        params,
-        requiredFields: ['firstName', 'lastName', 'email']
-      });
-
       const properties: Record<string, string> = {
         firstname: params.firstName,
         lastname: params.lastName,

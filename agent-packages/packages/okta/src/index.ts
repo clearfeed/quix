@@ -26,24 +26,10 @@ export class OktaService implements BaseService<OktaConfig> {
   private client: Client;
 
   constructor(private config: OktaConfig) {
-    const validation = this.validateConfig();
-    if (!validation.isValid) {
-      throw new Error(validation.error);
-    }
     this.client = new Client({
       orgUrl: config.orgUrl,
       token: config.token
     });
-  }
-
-  validateConfig(): { isValid: boolean; error?: string } {
-    if (!this.config.orgUrl) {
-      return { isValid: false, error: 'Okta organization URL is not configured' };
-    }
-    if (!this.config.token) {
-      return { isValid: false, error: 'Okta API token is not configured' };
-    }
-    return { isValid: true };
   }
 
   // === USER METHODS ===
