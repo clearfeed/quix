@@ -33,7 +33,7 @@ export type QuixAgentResult =
   | {
       stepCompleted: 'agent_execution';
       toolSelectionOutput: QuixAgentResultToolSelectionOutput;
-      plan: ReturnType<typeof this.generatePlan>;
+      plan: Awaited<ReturnType<typeof QuixAgent.prototype.generatePlan>>;
       formattedPlan: string;
       agentExecutionOutput: { messages: BaseMessage[] };
       toolCallTracker: QuixCallBackManager;
@@ -152,7 +152,7 @@ export class QuixAgent {
     };
   }
 
-  private async toolSelection(
+  async toolSelection(
     message: string,
     tools: AvailableToolsWithConfig,
     previousMessages: LLMContext[],
@@ -226,7 +226,7 @@ export class QuixAgent {
     };
   }
 
-  private async generatePlan(
+  async generatePlan(
     availableTools: ToolConfig['tools'],
     customInstructions: string[],
     previousMessages: LLMContext[],
