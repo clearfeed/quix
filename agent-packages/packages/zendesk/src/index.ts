@@ -25,7 +25,6 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
   private client;
 
   constructor(private config: ZendeskConfig) {
-    console.log('Config', config);
     this.client = createClient({
       subdomain: config.subdomain,
       username: config.email,
