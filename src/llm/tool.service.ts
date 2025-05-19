@@ -15,6 +15,7 @@ import { AvailableToolsWithConfig } from './types';
 import { createSlackToolsExport } from '@clearfeed-ai/quix-slack-agent';
 import { createOktaToolsExport } from '@clearfeed-ai/quix-okta-agent';
 import { createNotionToolsExport } from '@clearfeed-ai/quix-notion-agent';
+import { createZendeskToolsExport } from '@clearfeed-ai/quix-zendesk-agent';
 
 @Injectable()
 export class ToolService {
@@ -39,7 +40,8 @@ export class ToolService {
         'notionConfig',
         'linearConfig',
         'mcpConnections',
-        'oktaConfig'
+        'oktaConfig',
+        'zendeskConfig'
       ]
     });
     if (!slackWorkspace) return;
@@ -136,6 +138,17 @@ export class ToolService {
       tools.notion = {
         toolConfig: createNotionToolsExport({ token: notionConfig.access_token }),
         config: notionConfig
+      };
+    }
+    const zendeskConfig = slackWorkspace.zendeskConfig;
+    if (zendeskConfig) {
+      tools.zendesk = {
+        toolConfig: createZendeskToolsExport({
+          token: zendeskConfig.access_token,
+          email: zendeskConfig.email,
+          subdomain: zendeskConfig.subdomain
+        }),
+        config: zendeskConfig
       };
     }
     // Handle MCP-based integrations

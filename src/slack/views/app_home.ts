@@ -12,7 +12,8 @@ import {
   NotionConfig,
   LinearConfig,
   McpConnection,
-  OktaConfig
+  OktaConfig,
+  ZendeskConfig
 } from '@quix/database/models';
 import {
   Elements,
@@ -21,8 +22,7 @@ import {
   Md,
   BlockBuilder,
   OptionBuilder,
-  OptionGroupBuilder,
-  ConfirmationDialog
+  OptionGroupBuilder
 } from 'slack-block-builder';
 import { createHubspotToolsExport } from '@clearfeed-ai/quix-hubspot-agent';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
@@ -294,6 +294,8 @@ export const getConnectionInfo = (connection: HomeViewArgs['connection']): strin
       return `Connected to ${connection.workspace_name}`;
     case connection instanceof OktaConfig:
       return `Connected to ${connection.org_url}`;
+    case connection instanceof ZendeskConfig:
+      return `Connected to ${connection.subdomain}.zendesk.com`;
     default:
       return '';
   }
@@ -366,7 +368,9 @@ export const getIntegrationInfo = (
     connection instanceof GithubConfig ||
     connection instanceof SalesforceConfig ||
     connection instanceof HubspotConfig ||
-    connection instanceof LinearConfig
+    connection instanceof LinearConfig ||
+    connection instanceof OktaConfig ||
+    connection instanceof ZendeskConfig
   ) {
     overflowMenuOptions.unshift(
       Bits.Option({

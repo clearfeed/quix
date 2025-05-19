@@ -1,18 +1,10 @@
 import { BaseConfig } from '@clearfeed-ai/quix-common-agent';
 import { Ticket, TicketComment } from 'node-zendesk/dist/types/clients/core/tickets';
 
-export type ZendeskAuth =
-  | {
-      token: string;
-      username: string;
-    }
-  | {
-      oauthToken: string;
-    };
-
 export interface ZendeskConfig extends BaseConfig {
   subdomain: string;
-  auth: ZendeskAuth;
+  email: string;
+  token: string;
 }
 
 // Handler param types

@@ -68,6 +68,13 @@ export const SLACK_ACTIONS = {
   HUBSPOT_CONFIG_MODAL: {
     DEFAULT_PROMPT: 'hubspot-default-prompt',
     SUBMIT: 'submit-hubspot-config-modal'
+  },
+  ZENDESK_CONNECTION_ACTIONS: {
+    API_TOKEN: 'zendesk-api-token',
+    SUBDOMAIN: 'zendesk-subdomain',
+    DEFAULT_PROMPT: 'zendesk-default-prompt',
+    SUBMIT: 'submit-zendesk-connection',
+    EMAIL: 'zendesk-email'
   }
 } as const;
 

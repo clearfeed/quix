@@ -177,6 +177,40 @@ export class InteractionsService {
             web: new WebClient(slackWorkspace.bot_access_token)
           });
         }
+      case SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.SUBMIT:
+        try {
+          this.integrationsInstallService
+            .zendesk(payload)
+            .then(async (zendeskConfig) => {
+              await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
+                text: 'Zendesk connected successfully',
+                viewId: payload.view.id
+              });
+              this.appHomeService.handleIntegrationConnected(
+                payload.user.id,
+                payload.view.team_id,
+                SUPPORTED_INTEGRATIONS.ZENDESK,
+                zendeskConfig
+              );
+            })
+            .catch((error) => {
+              return displayErrorModal({
+                error,
+                backgroundCaller: true,
+                viewId: payload.view.id,
+                web: new WebClient(slackWorkspace.bot_access_token)
+              });
+            });
+          return displayLoadingModal('Please Wait');
+        } catch (error) {
+          console.error(error);
+          return displayErrorModal({
+            error,
+            backgroundCaller: true,
+            viewId: payload.view.id,
+            web: new WebClient(slackWorkspace.bot_access_token)
+          });
+        }
       case SLACK_ACTIONS.LINEAR_CONNECTION_ACTIONS.SUBMIT:
         try {
           this.integrationsInstallService
@@ -354,6 +388,9 @@ export class InteractionsService {
             break;
           case SUPPORTED_INTEGRATIONS.OKTA:
             await this.integrationsService.removeOktaConfig(payload.view.team_id);
+            break;
+          case SUPPORTED_INTEGRATIONS.ZENDESK:
+            await this.integrationsService.removeZendeskConfig(payload.view.team_id);
             break;
           case 'mcp':
             await this.integrationsService.removeMcpConnection(
