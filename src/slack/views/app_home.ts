@@ -333,24 +333,16 @@ export const getIntegrationInfo = (
       }).accessory(
         Elements.OverflowMenu({
           actionId: SLACK_ACTIONS.CONNECTION_OVERFLOW_MENU
-        })
-          .options([
-            Bits.Option({
-              text: `${Md.emoji('pencil')} Edit`,
-              value: 'edit'
-            }),
-            Bits.Option({
-              text: `${Md.emoji('no_entry')} Disconnect`,
-              value: 'disconnect'
-            })
-          ])
-          .confirm(
-            ConfirmationDialog()
-              .title('Disconnect?')
-              .text(`Are you sure you want to disconnect ${mcpConnection.name}?`)
-              .confirm('Yes, disconnect')
-              .deny('Cancel')
-          )
+        }).options([
+          Bits.Option({
+            text: `${Md.emoji('pencil')} Edit`,
+            value: 'edit'
+          }),
+          Bits.Option({
+            text: `${Md.emoji('no_entry')} Disconnect`,
+            value: 'disconnect'
+          })
+        ])
       )
     ];
   }
@@ -385,15 +377,9 @@ export const getIntegrationInfo = (
   }
 
   const accessory = connection
-    ? Elements.OverflowMenu({ actionId: SLACK_ACTIONS.CONNECTION_OVERFLOW_MENU })
-        .options(overflowMenuOptions)
-        .confirm(
-          ConfirmationDialog()
-            .title('Disconnect?')
-            .text(`Are you sure you want to disconnect ${integration.name}?`)
-            .confirm('Yes, disconnect')
-            .deny('Cancel')
-        )
+    ? Elements.OverflowMenu({ actionId: SLACK_ACTIONS.CONNECTION_OVERFLOW_MENU }).options(
+        overflowMenuOptions
+      )
     : Elements.Button({
         text: 'Connect',
         actionId: SLACK_ACTIONS.INSTALL_TOOL,

@@ -4,7 +4,8 @@ import {
   AvailableToolsWithConfig,
   LLMContext,
   MessageProcessingArgs,
-  SupportedChatModels
+  SupportedChatModels,
+  ToolContextParams
 } from './types';
 import { LlmProviderService } from './llm.provider';
 import { DynamicStructuredTool } from '@langchain/core/tools';
@@ -30,6 +31,7 @@ import { encryptForLogs } from '../lib/utils/encryption';
 import { formatToOpenAITool } from '@langchain/openai';
 import { isEqual } from 'lodash';
 import { SOFT_RETENTION_DAYS } from '../lib/constants';
+import { getSlackMessageUrl } from '@quix/lib/utils/slack';
 import slackify = require('slackify-markdown');
 
 @Injectable()
@@ -42,11 +44,27 @@ export class LlmService {
     private readonly conversationStateModel: typeof ConversationState
   ) {}
 
-  private enhanceMessagesWithToolContext(
-    previousMessages: LLMContext[],
-    lastToolCalls: ConversationState['last_tool_calls']
-  ): LLMContext[] {
+  private enhanceMessagesWithToolContext({
+    previousMessages,
+    lastToolCalls,
+    channelId,
+    threadTs,
+    slackWorkspaceDomain
+  }: ToolContextParams): LLMContext[] {
     const enhancedPreviousMessages = [...previousMessages];
+
+    if (slackWorkspaceDomain) {
+      const slackUrl = getSlackMessageUrl({
+        slackDomain: slackWorkspaceDomain,
+        channelId,
+        messageExternalId: threadTs ?? ''
+      });
+
+      enhancedPreviousMessages.push({
+        role: 'system',
+        content: `Slack thread URL: ${slackUrl}\nYou must include this link in the description or comment whenever you create or update a resource—such as an issue, ticket, record, or case.`
+      });
+    }
 
     if (lastToolCalls) {
       enhancedPreviousMessages.push({
@@ -115,10 +133,13 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
     // Add previous tool calls to system context for better continuity
     let enhancedPreviousMessages: LLMContext[] = [];
     try {
-      enhancedPreviousMessages = this.enhanceMessagesWithToolContext(
+      enhancedPreviousMessages = this.enhanceMessagesWithToolContext({
         previousMessages,
-        conversationState.last_tool_calls
-      );
+        lastToolCalls: conversationState.last_tool_calls,
+        channelId: conversationState.channel_id,
+        threadTs: conversationState.thread_ts,
+        slackWorkspaceDomain: slackWorkspace.domain
+      });
     } catch (error) {
       this.logger.error(`Error enhancing messages with tool context`, error);
       enhancedPreviousMessages = previousMessages;
