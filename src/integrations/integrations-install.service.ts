@@ -710,7 +710,10 @@ export class IntegrationsInstallService {
         .selectedValue as string;
       const defaultPrompt = parsed[SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.DEFAULT_PROMPT]
         ?.selectedValue as string;
-      const email = parsed[SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.EMAIL]?.selectedValue as string;
+if (!apiToken || !subdomain || !email) {
+  this.logger.error('Zendesk connection failed: Missing required fields from Slack modal submission.');
+  throw new BadRequestException('Missing required fields: API Token, Subdomain, and Email are required.');
+}
 
       const authHeader = Buffer.from(`${email}/token:${apiToken}`).toString('base64');
 
