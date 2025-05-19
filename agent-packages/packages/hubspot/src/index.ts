@@ -45,14 +45,13 @@ import {
   SimplePublicObjectInputForCreate as TicketParametersWithAssociations,
   SimplePublicObjectInput as TicketParameters
 } from '@hubspot/api-client/lib/codegen/crm/tickets';
-import { AssociationSpecAssociationCategoryEnum as NoteAssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
 import {
   FilterOperatorEnum as TaskFilterOperatorEnum,
   AssociationSpecAssociationCategoryEnum as TaskAssociationSpecAssociationCategoryEnum,
   SimplePublicObjectInputForCreate as TaskParametersWithAssociations,
   SimplePublicObjectInput as TaskParameters
 } from '@hubspot/api-client/lib/codegen/crm/objects/tasks';
-
+import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects';
 import { keyBy } from 'lodash';
 import { ASSOCIATION_TYPE_IDS } from './constants';
 
@@ -374,7 +373,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
             to: { id: entityId },
             types: [
               {
-                associationCategory: NoteAssociationSpecAssociationCategoryEnum.HubspotDefined,
+                associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
                 associationTypeId: associationTypeIds[entityType]
               }
             ]
