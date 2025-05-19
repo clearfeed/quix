@@ -413,7 +413,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         pipeline: pipelineId || 'default'
       };
 
-      if (pipelineId) {
+      if (pipelineId && dealstage) {
         const validStages = await this.getValidStagesByPipelineId('deal', pipelineId);
         if (!validStages || !validStages.length) {
           return {
