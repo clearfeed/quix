@@ -31,7 +31,9 @@ import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
 import { Tool } from '@clearfeed-ai/quix-common-agent';
 import { partition, isEmpty } from 'lodash';
-
+import { createNotionToolsExport } from 'agent-packages/packages/notion/dist/tools';
+import { createZendeskToolsExport } from 'agent-packages/packages/zendesk/dist';
+import { createOktaToolsExport } from 'agent-packages/packages/okta/dist/tools';
 export const getToolData = async (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined
 ) => {
@@ -107,6 +109,33 @@ const getAvailableFns = async (selectedTool: SUPPORTED_INTEGRATIONS) => {
     return tools.map(
       (tool: Tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description
     );
+  }
+
+  if (selectedTool === SUPPORTED_INTEGRATIONS.OKTA) {
+    const tools = createOktaToolsExport({
+      orgUrl: 'test-org-url',
+      token: 'test-access-token'
+    }).tools;
+
+    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
+  }
+
+  if (selectedTool === SUPPORTED_INTEGRATIONS.NOTION) {
+    const tools = createNotionToolsExport({
+      token: ''
+    }).tools;
+
+    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
+  }
+
+  if (selectedTool === SUPPORTED_INTEGRATIONS.ZENDESK) {
+    const tools = createZendeskToolsExport({
+      subdomain: '',
+      email: '',
+      token: ''
+    }).tools;
+
+    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
   }
 
   return [];
