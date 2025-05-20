@@ -931,13 +931,13 @@ export const publishZendeskConnectionModal = async (
 
     Input({
       label: 'Default Prompt',
-      blockId: 'zendesk_default_prompt'
+      blockId: 'zendesk_default_prompt',
+      hint: 'Please provide a default prompt for Zendesk. This will be used when Quix interacts with Zendesk.'
     })
       .optional(true)
       .element(
         Elements.TextInput({
-          placeholder:
-            'Please provide a default prompt for Zendesk. This will be used when Quix interacts with Zendesk.',
+          placeholder: 'When creating Zendesk tickets...',
           multiline: true,
           actionId: SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.DEFAULT_PROMPT,
           initialValue: args.initialValues?.defaultPrompt || ''
