@@ -17,29 +17,33 @@ export interface SearchCodeParams {
 }
 
 export interface SearchIssuesGlobalParams {
-  q: string;
+  type: 'issue' | 'pr';
+  keyword?: string;
+  status?: 'open' | 'closed';
+  label?: string;
   sort?: 'comments' | 'reactions' | 'created' | 'updated';
   order?: 'asc' | 'desc';
-  page?: number;
-  per_page?: number;
+  page: number;
 }
 
-export interface SearchIssuesParams {
+export interface SearchIssuesOrPullRequestsParams {
   repo: string;
   owner: string;
-  type: 'issue' | 'pull-request';
-  keyword: string;
+  type: 'issue' | 'pr';
+  keyword?: string;
   reporter?: string;
+  assignee?: string;
   status?: 'open' | 'closed';
+  sort?: 'comments' | 'reactions' | 'created' | 'updated';
+  order?: 'asc' | 'desc';
+  label?: string;
+  page: number;
 }
 
 export type SearchCodeResponse = Endpoints['GET /search/code']['response']['data'];
 export type SearchIssuesResponse = BaseResponse<{
   issues: RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'];
-}>;
-
-export type SearchPullRequestsResponse = BaseResponse<{
-  pullRequests: RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'];
+  pagination: string;
 }>;
 
 type SearchResultItem =
@@ -112,18 +116,6 @@ export interface ListCommitsParams {
   perPage?: number;
 }
 
-export interface ListIssuesParams {
-  owner: string;
-  repo: string;
-  state?: 'open' | 'closed' | 'all';
-  sort?: 'created' | 'updated' | 'comments';
-  direction?: 'asc' | 'desc';
-  since?: string;
-  page?: number;
-  per_page?: number;
-  labels?: string[];
-}
-
 export interface UpdateIssueParams {
   owner: string;
   repo: string;
@@ -155,18 +147,6 @@ export interface PullRequestParams {
   owner: string;
   repo: string;
   pull_number: number;
-}
-
-export interface ListPullRequestsParams {
-  owner: string;
-  repo: string;
-  state?: 'open' | 'closed' | 'all';
-  author?: string;
-  sort?: 'created' | 'updated' | 'comments' | 'interactions' | 'reactions';
-  order?: 'asc' | 'desc';
-  per_page: number;
-  page?: number;
-  keyword?: string;
 }
 
 export interface CreatePullRequestReviewParams extends PullRequestParams {
