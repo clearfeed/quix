@@ -110,7 +110,8 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
           .optional(),
         order: z
           .enum(['asc', 'desc'])
-          .describe('Sort order: ascending (oldest/least first) or descending (newest/most first)'),
+          .describe('Sort order: ascending (oldest/least first) or descending (newest/most first)')
+          .optional(),
         label: z
           .string()
           .describe(
