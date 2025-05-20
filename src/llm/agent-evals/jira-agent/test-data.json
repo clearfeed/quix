@@ -1,0 +1,45 @@
+[
+  {
+    "description": "Use get_jira_issue_types, search_jira_users and create_jira_issue to file and assign an UPLOAD issue for S3 permission errors",
+    "conversation_context": [
+      {
+        "user": "Alice",
+        "message": "We're still getting 500 errors when uploading files. @Bob, can you take a look?"
+      },
+      {
+        "user": "Bob",
+        "message": "Sure, I see the logs. Looks like an S3 permission issue."
+      }
+    ],
+    "invocation": {
+      "user": "Alice",
+      "message": "@Quix create a Jira issue in project 'UPLOAD' titled 'Investigate S3 permission errors during file uploads' and assign it to jdoe."
+    },
+    "tool_calls": [
+      {
+        "name": "get_jira_issue_types",
+        "arguments": {
+          "projectKey": "UPLOAD"
+        }
+      },
+      {
+        "name": "search_jira_users",
+        "arguments": {
+          "query": "jdoe"
+        }
+      },
+      {
+        "name": "create_jira_issue",
+        "arguments": {
+          "projectKey": "UPLOAD",
+          "summary": "Investigate S3 permission errors during file uploads",
+          "description": "We are experiencing 500 errors when uploading files, which appear to be related to S3 permission issues. This needs to be investigated to resolve the problem.",
+          "issueTypeId": "10001",
+          "priority": "Medium",
+          "assigneeId": "USER_ID_FROM_SEARCH",
+          "labels": ["S3", "upload", "error"]
+        }
+      }
+    ]
+  }
+]

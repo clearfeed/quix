@@ -1,95 +1,161 @@
+import { describe, it, expect, beforeAll } from '@jest/globals';
 import { ChatOpenAI } from '@langchain/openai';
-import { QuixAgent } from '../../quix-agent';
-import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
-import { createCommonToolsExport } from '@clearfeed-ai/quix-common-agent';
-import { createSlackToolsExport } from '@clearfeed-ai/quix-slack-agent';
-import { AIMessage } from '@langchain/core/messages';
 import { createTrajectoryMatchEvaluator } from 'agentevals';
-import { AvailableToolsWithConfig } from '../../types';
+import { QuixAgent, QuixAgentResult } from '../../quix-agent';
+import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
+import { createMockedTools, TestCase } from '../mocks/jira-mock';
+import type { AvailableToolsWithConfig, LLMContext } from '@quix/llm/types';
+import type { ToolResponseTypeMap } from '../mocks/jira-mock';
+import { Logger } from '@nestjs/common';
 
-const availableTools: AvailableToolsWithConfig = {
-  jira: {
-    toolConfig: createJiraToolsExport({
-      host: 'https://jira.atlassian.com',
-      apiHost: 'https://api.atlassian.com/ex/jira',
-      auth: { bearerToken: 'your_bearer_token' }
-    })
-  },
-  common: {
-    toolConfig: createCommonToolsExport()
-  },
-  slack: {
-    toolConfig: createSlackToolsExport({
-      token: 'your_slack_token',
-      teamId: 'your_team_id'
-    })
-  }
+const testCases = require('./test-data.json');
+type ExecResult = Extract<QuixAgentResult, { stepCompleted: 'agent_execution' }>;
+function isExecResult(r: QuixAgentResult): r is ExecResult {
+  return r.stepCompleted === 'agent_execution';
+}
+
+type MessageOutput = {
+  role: 'assistant';
+  content: string;
+  tool_calls: Array<{
+    function: {
+      name: keyof ToolResponseTypeMap;
+      arguments: string;
+    };
+  }>;
 };
 
-describe('Jira Agent', () => {
-  it('Should create Jira issue when asked', async () => {
-    const agent = new QuixAgent();
-    const result = await agent.processWithTools(
-      'Create a Jira issue',
-      availableTools,
-      [],
-      new ChatOpenAI({
-        model: 'gpt-4o',
-        temperature: 0.1,
-        apiKey: process.env.OPENAI_API_KEY
-      }),
-      'John Doe'
-    );
-    if (result.stepCompleted !== 'agent_execution') {
-      expect(true).toBe(false);
-      return;
-    }
+describe('QuixAgent Jira – real LLM + mocked tools', () => {
+  let agent: QuixAgent;
+  let jiraToolsDef: ReturnType<typeof createJiraToolsExport>;
+  let llm: ChatOpenAI;
+  let evaluator: ReturnType<typeof createTrajectoryMatchEvaluator>;
 
-    const evaluator = createTrajectoryMatchEvaluator({
-      trajectoryMatchMode: 'superset',
+  beforeAll(() => {
+    jiraToolsDef = createJiraToolsExport({
+      host: 'https://example.atlassian.net',
+      apiHost: 'https://api.atlassian.com/ex/jira/FAKE',
+      auth: { bearerToken: 'dummy-token' },
+      defaultConfig: { projectKey: 'UPLOAD' }
+    });
+
+    llm = new ChatOpenAI({
+      modelName: 'gpt-4o-mini',
+      temperature: 0,
+      apiKey: process.env.OPENAI_API_KEY
+    });
+
+    evaluator = createTrajectoryMatchEvaluator({
+      trajectoryMatchMode: 'strict',
       toolArgsMatchMode: 'exact',
       toolArgsMatchOverrides: {}
     });
 
-    const evalResult = await evaluator({
-      outputs: result.agentExecutionOutput.messages,
-      referenceOutputs: [
-        new AIMessage({
-          tool_calls: [
-            {
-              id: Date.now().toString(),
-              name: 'get_jira_issue_types',
-              args: { projectKey: 'TEST' }
+    agent = new QuixAgent();
+  });
+
+  for (const tc of testCases as TestCase[]) {
+    it(
+      tc.description,
+      async () => {
+        const mockedJiraTools = createMockedTools(
+          {
+            host: 'https://example.atlassian.net',
+            apiHost: 'https://api.atlassian.com/ex/jira/FAKE',
+            auth: { bearerToken: 'dummy-token' },
+            defaultConfig: { projectKey: 'UPLOAD' }
+          },
+          tc
+        );
+
+        const toolsConfig: AvailableToolsWithConfig = {
+          jira: {
+            toolConfig: {
+              tools: mockedJiraTools,
+              prompts: jiraToolsDef.prompts
             }
-          ],
-          content: ''
-        }),
-        new AIMessage({
+          }
+        };
+
+        const previousMessages: LLMContext[] = tc.conversation_context.map((m) => ({
+          role: 'user',
+          content: m.message
+        }));
+
+        const result = await agent.processWithTools(
+          tc.invocation.message,
+          toolsConfig,
+          previousMessages,
+          llm,
+          tc.invocation.user
+        );
+
+        if (!isExecResult(result)) {
+          throw new Error(`Expected agent_execution but got ${result.stepCompleted}`);
+        }
+
+        const outputs = result.agentExecutionOutput.messages.map(
+          (msg: any): MessageOutput => ({
+            role: 'assistant',
+            content: msg.content,
+            tool_calls: (msg.tool_calls ?? []).map((c: any) => ({
+              function: {
+                name: c.name as keyof ToolResponseTypeMap,
+                arguments: JSON.stringify(c.args)
+              }
+            }))
+          })
+        );
+
+        const referenceOutputs: MessageOutput[] = tc.tool_calls.map((c) => ({
+          role: 'assistant',
+          content: '',
           tool_calls: [
             {
-              id: Date.now().toString(),
-              name: 'search_jira_users',
-              args: { query: 'Amitvikram' }
-            }
-          ],
-          content: ''
-        }),
-        new AIMessage({
-          tool_calls: [
-            {
-              id: Date.now().toString(),
-              name: 'create_jira_issue',
-              args: {
-                projectKey: 'TEST',
-                issueTypeId: '10076'
+              function: {
+                name: c.name as keyof ToolResponseTypeMap,
+                arguments: JSON.stringify(c.arguments)
               }
             }
-          ],
-          content: ''
-        })
-      ]
-    });
+          ]
+        }));
 
-    expect(evalResult.score).toBe(true);
-  });
+        Logger.log('Actual Outputs:');
+        Logger.log(JSON.stringify(outputs, null, 2));
+        Logger.log('Reference Outputs:');
+        Logger.log(JSON.stringify(referenceOutputs, null, 2));
+
+        const evalResult = await evaluator({ outputs, referenceOutputs });
+        Logger.log('Evaluation Result:');
+        Logger.log(JSON.stringify(evalResult, null, 2));
+
+        const actualToolCalls = outputs.flatMap((o) =>
+          o.tool_calls.map((tc) => ({
+            name: tc.function.name,
+            arguments: JSON.parse(tc.function.arguments)
+          }))
+        );
+
+        const expectedToolCalls = tc.tool_calls.map((c) => ({
+          name: c.name,
+          arguments: c.arguments
+        }));
+
+        for (const expected of expectedToolCalls) {
+          const found = actualToolCalls.some(
+            (actual) =>
+              actual.name === expected.name &&
+              JSON.stringify(actual.arguments) === JSON.stringify(expected.arguments)
+          );
+          expect(found).toBe(true);
+          if (!found) {
+            throw new Error(
+              `Expected tool call ${expected.name} with args ${JSON.stringify(expected.arguments)} not found`
+            );
+          }
+        }
+      },
+      30000
+    );
+  }
 });
