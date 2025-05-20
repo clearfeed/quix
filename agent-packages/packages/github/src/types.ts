@@ -41,8 +41,8 @@ export interface SearchIssuesOrPullRequestsParams {
 }
 
 export type SearchCodeResponse = Endpoints['GET /search/code']['response']['data'];
-export type SearchIssuesResponse = BaseResponse<{
-  issues: RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'];
+export type SearchIssuesOrPullRequestsResponse = BaseResponse<{
+  issuesOrPullRequests: Endpoints['GET /search/issues']['response']['data']['items'];
   pagination: string;
 }>;
 

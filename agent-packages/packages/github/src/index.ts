@@ -1,7 +1,6 @@
 import { BaseResponse, BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   GitHubConfig,
-  SearchIssuesResponse,
   CreateOrUpdateFileParams,
   SearchRepositoriesParams,
   CreateRepositoryParams,
@@ -19,7 +18,8 @@ import {
   SearchCodeParams,
   SearchCodeResponse,
   SearchIssuesGlobalParams,
-  SearchIssuesOrPullRequestsParams
+  SearchIssuesOrPullRequestsParams,
+  SearchIssuesOrPullRequestsResponse
 } from './types';
 import { CodeSearchParams, CreateIssueParams } from './types/index';
 import type { OctokitType, RestEndpointMethodTypes } from './types/oktokit';
@@ -92,7 +92,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async searchIssuesOrPullRequests(
     params: SearchIssuesOrPullRequestsParams
-  ): Promise<BaseResponse<SearchIssuesResponse['data']>> {
+  ): Promise<BaseResponse<SearchIssuesOrPullRequestsResponse['data']>> {
     try {
       const { repo, owner, keyword, type, reporter, status, sort, order, label, page, assignee } =
         params;
@@ -116,7 +116,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
         success: true,
         data: {
           pagination: `Showing ${response.data.items.length} of ${response.data.total_count} results of page ${page}. Ask the user if they want to see more results.`,
-          issues: response.data.items
+          issuesOrPullRequests: response.data.items
         }
       };
     } catch (error) {
@@ -731,7 +731,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async searchIssuesGlobal(
     params: SearchIssuesGlobalParams
-  ): Promise<BaseResponse<SearchIssuesResponse['data']>> {
+  ): Promise<BaseResponse<SearchIssuesOrPullRequestsResponse['data']>> {
     try {
       const { type, keyword, status, label, sort, order, page } = params;
 
@@ -751,7 +751,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
         success: true,
         data: {
           pagination: `Showing ${response.data.items.length} of ${response.data.total_count} results of page ${page}. Ask the user if they want to see more results.`,
-          issues: response.data.items
+          issuesOrPullRequests: response.data.items
         }
       };
     } catch (error) {
