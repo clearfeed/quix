@@ -34,88 +34,119 @@ const createAdfContent = (text: string) => ({
 });
 
 export type ToolResponseTypeMap = {
-  get_jira_issue_types: GetIssueTypesResponse;
-  search_jira_users: SearchUsersResponse;
-  find_jira_ticket: SearchIssuesResponse;
-  create_jira_issue: GetIssueResponse;
-  assign_jira_issue: AssignIssueResponse;
-  add_jira_comment: AddCommentResponse;
-  get_jira_comments: GetCommentsResponse;
-  update_jira_issue: UpdateIssueResponse;
+  get_jira_issue_types: () => GetIssueTypesResponse;
+  search_jira_users: (options?: { assigneeName?: string }) => SearchUsersResponse;
+  find_jira_ticket: () => SearchIssuesResponse;
+  create_jira_issue: () => GetIssueResponse;
+  assign_jira_issue: () => AssignIssueResponse;
+  add_jira_comment: () => AddCommentResponse;
+  get_jira_comments: () => GetCommentsResponse;
+  update_jira_issue: () => UpdateIssueResponse;
 };
 
-const toolResponseMap: Record<keyof ToolResponseTypeMap, any> = {
-  get_jira_issue_types: {
+const toolResponseMap: ToolResponseTypeMap = {
+  get_jira_issue_types: (): GetIssueTypesResponse => ({
     success: true,
     data: {
       issueTypes: [
         {
           id: '10001',
           name: 'Bug',
-          description: 'A problem which impairs or prevents the functions of the product.'
+          description: 'A problem which impairs or prevents the functions of the product.',
+          self: 'https://example.atlassian.net/rest/api/2/issuetype/10001',
+          iconUrl: 'https://example.atlassian.net/images/icons/issuetypes/bug.svg',
+          subtask: false
         },
-        { id: '10002', name: 'Story', description: 'A user story' }
+        {
+          id: '10002',
+          name: 'Story',
+          description: 'A user story',
+          self: 'https://example.atlassian.net/rest/api/2/issuetype/10002',
+          iconUrl: 'https://example.atlassian.net/images/icons/issuetypes/story.svg',
+          subtask: false
+        }
       ]
     }
-  } as GetIssueTypesResponse,
-
-  search_jira_users: {
+  }),
+  search_jira_users: ({
+    assigneeName = 'John'
+  }: {
+    assigneeName?: string;
+  }): SearchUsersResponse => ({
     success: true,
     data: {
       users: [
         {
           accountId: 'USER_ID_FROM_SEARCH',
-          displayName: 'Stub User',
+          displayName: assigneeName,
           emailAddress: 'stub@example.com',
           active: true,
-          self: 'https://example.atlassian.net/rest/api/2/user?accountId=USER_ID_FROM_SEARCH'
+          self: 'https://example.atlassian.net/rest/api/2/user?accountId=USER_ID_FROM_SEARCH',
+          accountType: 'atlassian'
         }
       ]
     }
-  } as SearchUsersResponse,
+  }),
 
-  find_jira_ticket: {
+  find_jira_ticket: (issueKey = 'UPLOAD-123'): SearchIssuesResponse =>
+    ({
+      success: true,
+      issues: [
+        {
+          id: issueKey,
+          key: issueKey,
+          fields: {
+            summary: 'Existing issue',
+            description: createAdfContent(''),
+            status: {
+              name: 'Open',
+              id: '1',
+              statusCategory: { key: 'new', name: 'To Do' }
+            },
+            assignee: null,
+            priority: { id: '2', name: 'High' }
+          }
+        }
+      ]
+    }) as SearchIssuesResponse,
+
+  create_jira_issue: (): GetIssueResponse => ({
     success: true,
-    issues: [
-      {
-        id: 'UPLOAD-123',
-        key: 'UPLOAD-123',
+    data: {
+      issue: {
+        id: 'UPLOAD-124',
+        key: 'UPLOAD-124',
+        self: 'https://example.atlassian.net/rest/api/2/issue/UPLOAD-124',
         fields: {
-          summary: 'Existing issue',
+          summary: 'New issue',
           description: createAdfContent(''),
           status: {
-            name: 'Open',
+            name: 'To Do',
             id: '1',
             statusCategory: { key: 'new', name: 'To Do' }
           },
           assignee: null,
-          priority: { id: '2', name: 'High' }
-        }
-      }
-    ]
-  } as SearchIssuesResponse,
-
-  create_jira_issue: {
-    success: true,
-    issue: {
-      id: 'UPLOAD-124',
-      key: 'UPLOAD-124',
-      fields: {
-        summary: 'New issue',
-        description: createAdfContent(''),
-        status: {
-          name: 'To Do',
-          id: '1',
-          statusCategory: { key: 'new', name: 'To Do' }
+          priority: { id: '2', name: 'High' },
+          issuetype: {
+            id: '10001',
+            name: 'Bug',
+            description: 'A problem which impairs or prevents the functions of the product.'
+          },
+          created: new Date().toISOString(),
+          reporter: {
+            accountId: 'USER_ID_FROM_SEARCH',
+            displayName: 'Stub User',
+            emailAddress: 'stub@example.com'
+          },
+          updated: new Date().toISOString(),
+          labels: []
         },
-        assignee: null,
-        priority: { id: '2', name: 'High' }
-      },
-      url: 'https://example.atlassian.net/browse/UPLOAD-124'
+        url: 'https://example.atlassian.net/browse/UPLOAD-124'
+      }
     }
-  } as GetIssueResponse,
+  }),
 
-  assign_jira_issue: {
+  assign_jira_issue: (): AssignIssueResponse => ({
     success: true,
     data: {
       issueId: 'UPLOAD-124',
@@ -126,14 +157,15 @@ const toolResponseMap: Record<keyof ToolResponseTypeMap, any> = {
           displayName: 'Stub User',
           emailAddress: 'stub@example.com',
           active: true,
-          self: 'https://example.atlassian.net/rest/api/2/user?accountId=USER_ID_FROM_SEARCH'
+          self: 'https://example.atlassian.net/rest/api/2/user?accountId=USER_ID_FROM_SEARCH',
+          accountType: 'atlassian'
         }
       },
       url: 'https://example.atlassian.net/browse/UPLOAD-124'
     }
-  } as AssignIssueResponse,
+  }),
 
-  add_jira_comment: {
+  add_jira_comment: (): AddCommentResponse => ({
     success: true,
     data: {
       comment: {
@@ -150,9 +182,9 @@ const toolResponseMap: Record<keyof ToolResponseTypeMap, any> = {
         url: 'https://example.atlassian.net/browse/UPLOAD-124?focusedCommentId=c1'
       }
     }
-  } as AddCommentResponse,
+  }),
 
-  get_jira_comments: {
+  get_jira_comments: (): GetCommentsResponse => ({
     success: true,
     data: {
       comments: [
@@ -171,22 +203,21 @@ const toolResponseMap: Record<keyof ToolResponseTypeMap, any> = {
         }
       ]
     }
-  } as GetCommentsResponse,
-
-  update_jira_issue: {
+  }),
+  update_jira_issue: (): UpdateIssueResponse => ({
     success: true,
-    issueId: 'UPLOAD-124',
-    url: 'https://example.atlassian.net/browse/UPLOAD-124',
-    fields: {
-      summary: 'Updated issue',
-      description: 'Updated description',
-      status: {
-        name: 'In Progress',
-        id: '2',
-        statusCategory: { key: 'indeterminate', name: 'In Progress' }
+    data: {
+      issueId: 'UPLOAD-124',
+      url: 'https://example.atlassian.net/browse/UPLOAD-124',
+      fields: {
+        summary: 'Updated issue',
+        description: 'Updated description',
+        priority: 'High',
+        assigneeId: 'USER_ID_FROM_SEARCH',
+        labels: ['label1', 'label2']
       }
     }
-  } as UpdateIssueResponse
+  })
 };
 
 export function createMockedTools(
@@ -200,7 +231,8 @@ export function createMockedTools(
       new DynamicStructuredTool({
         ...tool,
         func: async (args: any) => {
-          return toolResponseMap[tool.name as keyof ToolResponseTypeMap] ?? { success: true };
+          const handler = toolResponseMap[tool.name as keyof ToolResponseTypeMap];
+          return handler ? handler() : { success: true };
         }
       })
   );

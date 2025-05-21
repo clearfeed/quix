@@ -40,6 +40,11 @@
           "labels": ["S3", "upload", "error"]
         }
       }
-    ]
+    ],
+    "overrides": {
+      "search_jira_users": {
+        "assigneeName": "jdoe"
+      }
+    }
   }
 ]
