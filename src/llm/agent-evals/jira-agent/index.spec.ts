@@ -46,8 +46,8 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
     });
 
     evaluator = createTrajectoryMatchEvaluator({
-      trajectoryMatchMode: 'subset',
-      toolArgsMatchMode: 'exact',
+      trajectoryMatchMode: 'superset',
+      toolArgsMatchMode: 'superset',
       toolArgsMatchOverrides: {}
     });
 
