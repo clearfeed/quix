@@ -247,14 +247,14 @@ export class HubspotService implements BaseService<HubspotConfig> {
           ]
         });
       }
-
       if (stage) {
+        const modifiedStage = stage?.toLowerCase().replace(/\s+/g, '');
         filterGroups.push({
           filters: [
             {
               propertyName: 'dealstage',
               operator: DealFilterOperatorEnum.Eq,
-              value: stage
+              value: modifiedStage
             }
           ]
         });
