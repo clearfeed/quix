@@ -42,13 +42,12 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
   const tools: DynamicStructuredTool<any>[] = [
     new DynamicStructuredTool({
       name: 'find_jira_ticket',
-      description: `Search Jira issues by free-text (summary / description).Use when the user gives a topic like "timeout bug" or "login error".
-        If you already have an exact issue key such as "PROJ-123", call get_jira_issue instead.`,
+      description: `Search Jira issues by keyword or phrase in the summary or description. Use this when the user provides a general phrase to look up related issues. If an exact issue key is known, use get_jira_issue instead.`,
       schema: z.object({
         keyword: z
           .string()
           .describe(
-            `Free-text phrase to search for in Jira (e.g., "authentication bug").Do not pass a full issue key like "PROJ-123"; use get_jira_issue for that.`
+            'A keyword or phrase describing the issue to search for, such as an error message or feature name.'
           )
       }),
       func: async ({ keyword }: { keyword: string }): Promise<BaseResponse<SearchIssuesResponse>> =>
@@ -56,13 +55,10 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
     }),
     new DynamicStructuredTool<ZodObject<{ issueId: z.ZodString }>>({
       name: 'get_jira_issue',
-      description: 'Get detailed information about a specific Jira issue by ID',
+      description:
+        'Retrieve detailed information about a specific Jira issue using its key or ID. Use this when the user provides an exact issue key or ID.',
       schema: z.object({
-        issueId: z
-          .string()
-          .describe(
-            `The Jira issue ID (e.g., PROJ-123). Use this when the user has supplied the key or when you retrieved it from find_jira_ticket.`
-          )
+        issueId: z.string().describe('The key or ID of the Jira issue (e.g., "PROJ-123").')
       }),
       func: async ({ issueId }: { issueId: string }): Promise<GetIssueResponse> =>
         service.getIssue(issueId)
