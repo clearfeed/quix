@@ -403,7 +403,10 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       if (pipeline && dealstage) {
         properties.pipeline = pipeline;
-        const validStages = await this.getValidStagesByPipelineId('deal', pipeline);
+        const validStages = await this.getValidStagesByPipelineId({
+          entityType: 'deal',
+          pipelineId: pipeline
+        });
         if (!validStages || !validStages.length) {
           return {
             success: false,
@@ -871,7 +874,10 @@ export class HubspotService implements BaseService<HubspotConfig> {
       if (stage) {
         ticketInput.properties.hs_pipeline_stage = stage;
       } else {
-        const validStages = await this.getValidStagesByPipelineId('ticket', pipeline);
+        const validStages = await this.getValidStagesByPipelineId({
+          entityType: 'ticket',
+          pipelineId: pipeline
+        });
         if (!validStages || !validStages.length) {
           return {
             success: false,
@@ -1041,10 +1047,13 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
-  async getValidStagesByPipelineId(
-    entityType: string,
-    pipelineId: string
-  ): Promise<HubspotPipelineStage[] | null> {
+  async getValidStagesByPipelineId({
+    entityType,
+    pipelineId
+  }: {
+    entityType: string;
+    pipelineId: string;
+  }): Promise<HubspotPipelineStage[] | null> {
     try {
       const stageResponse = await this.client.crm.pipelines.pipelineStagesApi.getAll(
         entityType,
@@ -1093,7 +1102,10 @@ export class HubspotService implements BaseService<HubspotConfig> {
     try {
       const ticket = await this.getTicketById(params.ticketId);
       if (!ticket?.pipeline) return null;
-      const validStages = await this.getValidStagesByPipelineId('ticket', ticket.pipeline);
+      const validStages = await this.getValidStagesByPipelineId({
+        entityType: 'ticket',
+        pipelineId: ticket.pipeline
+      });
       if (!validStages) {
         return null;
       }
@@ -1131,7 +1143,10 @@ export class HubspotService implements BaseService<HubspotConfig> {
     try {
       const deal = await this.getDealById(params.dealId);
       if (!deal?.properties.pipeline) return null;
-      const validStages = await this.getValidStagesByPipelineId('deal', deal.properties.pipeline);
+      const validStages = await this.getValidStagesByPipelineId({
+        entityType: 'deal',
+        pipelineId: deal.properties.pipeline
+      });
       if (!validStages) {
         return null;
       }
