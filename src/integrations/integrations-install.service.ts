@@ -40,7 +40,7 @@ import { KnownBlock } from '@slack/web-api';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { Sequelize } from 'sequelize-typescript';
 import { McpService } from './mcp.service';
-import { encryptForLogs } from '@quix/lib/utils/encryption';
+import { decrypt, encryptForLogs } from '@quix/lib/utils/encryption';
 @Injectable()
 export class IntegrationsInstallService {
   private readonly logger = new Logger(IntegrationsInstallService.name);
@@ -705,29 +705,33 @@ export class IntegrationsInstallService {
         payload.view.state.values
       );
 
-      const apiToken = parsed[SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.API_TOKEN]
+      let apiToken = parsed[SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.API_TOKEN]
         ?.selectedValue as string;
       const subdomain = parsed[SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.SUBDOMAIN]
         ?.selectedValue as string;
       const defaultPrompt = parsed[SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.DEFAULT_PROMPT]
         ?.selectedValue as string;
       const email = parsed[SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.EMAIL]?.selectedValue as string;
-      if (!apiToken || !subdomain || !email) {
-        this.logger.error(
-          'Zendesk connection failed: Missing required fields from Slack modal submission.'
-        );
-        throw new BadRequestException(
-          'Missing required fields: API Token, Subdomain, and Email are required.'
-        );
+
+      if (!apiToken) {
+        const existingZendeskConfig = await this.zendeskConfigModel.findOne({
+          where: { team_id: payload.view.team_id }
+        });
+        apiToken = decrypt(existingZendeskConfig!.access_token);
       }
 
       const authHeader = Buffer.from(`${email}/token:${apiToken}`).toString('base64');
-
-      await this.httpService.axiosRef.get(`https://${subdomain}.zendesk.com/api/v2/users/me.json`, {
-        headers: {
-          Authorization: `Basic ${authHeader}`
+      const response = await this.httpService.axiosRef.get(
+        `https://${subdomain}.zendesk.com/api/v2/users/me.json`,
+        {
+          headers: {
+            Authorization: `Basic ${authHeader}`
+          }
         }
-      });
+      );
+      if (!response.data.user?.id) {
+        throw new BadRequestException('Invalid Zendesk API token or email');
+      }
 
       const [zendeskConfig] = await this.zendeskConfigModel.upsert({
         access_token: apiToken,
@@ -747,7 +751,7 @@ export class IntegrationsInstallService {
       return zendeskConfig;
     } catch (error) {
       this.logger.error('Zendesk connection failed:', encryptForLogs(JSON.stringify(error)));
-      throw new BadRequestException('Invalid Zendesk API token or subdomain');
+      throw new BadRequestException('Invalid Zendesk API token or subdomain or email');
     }
   }
 }

@@ -923,12 +923,14 @@ export const publishZendeskConnectionModal = async (
         hint: args.initialValues?.apiToken
           ? 'Current token is not displayed for security reasons. Enter a new token to update it.'
           : 'Generate a token from Zendesk Admin > API.'
-      }).element(
-        Elements.TextInput({
-          placeholder: 'ZENDESK_API_TOKEN',
-          actionId: SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.API_TOKEN
-        })
-      ),
+      })
+        .optional(!!args.initialValues?.apiToken)
+        .element(
+          Elements.TextInput({
+            placeholder: 'ZENDESK_API_TOKEN',
+            actionId: SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.API_TOKEN
+          })
+        ),
 
       Input({
         label: 'Default Prompt',
