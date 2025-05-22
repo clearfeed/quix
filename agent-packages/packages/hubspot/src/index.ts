@@ -472,7 +472,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async updateDeal(params: UpdateDealParams): Promise<BaseResponse<{ deal: DealResponse }>> {
     try {
-      const { dealId } = params;
+      const { dealId, dealstage } = params;
       let error: string | undefined = undefined;
       const properties: Record<string, string> = {};
 
@@ -484,15 +484,15 @@ export class HubspotService implements BaseService<HubspotConfig> {
         }
       );
 
-      if (params.dealstage) {
+      if (dealstage) {
         const validStage = await this.validateDealStage({
           dealId,
-          stage: params.dealstage
+          stage: dealstage
         });
         if (validStage) {
           properties.dealstage = validStage;
         } else {
-          error = 'Deal stage is not valid for the pipeline';
+          error = `The provided deal stage '${dealstage}' is not valid for the pipeline associated with deal ID '${dealId}'. Please provide a valid stage for this deal's pipeline.`;
         }
       }
 
