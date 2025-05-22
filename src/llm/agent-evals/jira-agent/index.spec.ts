@@ -104,7 +104,8 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
 
         const previousMessages: LLMContext[] = tc.conversation_context.map((m) => ({
           role: m.user === 'Quix (bot)' ? 'assistant' : 'user',
-          content: m.message
+          content: m.message,
+          name: m.user === 'Quix (bot)' ? undefined : m.user
         }));
 
         const result = await agent.processWithTools(
