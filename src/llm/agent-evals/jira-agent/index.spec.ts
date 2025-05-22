@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { ChatOpenAI } from '@langchain/openai';
 import { createTrajectoryMatchEvaluator } from 'agentevals';
 import { QuixAgent, QuixAgentResult } from '../../quix-agent';
@@ -8,8 +8,16 @@ import type { AvailableToolsWithConfig, LLMContext } from '@quix/llm/types';
 import type { ToolResponseTypeMap } from '../mocks/jira-mock';
 import { Logger } from '@nestjs/common';
 import { testCases } from './test-data';
+import * as fs from 'fs';
+import * as path from 'path';
+import { BaseMessage } from '@langchain/core/messages';
 
-type ExecResult = Extract<QuixAgentResult, { stepCompleted: 'agent_execution' }>;
+type ExecResult = Extract<QuixAgentResult, { stepCompleted: 'agent_execution' }> & {
+  agentExecutionOutput: {
+    messages: BaseMessage[];
+    plan?: string;
+  };
+};
 function isExecResult(r: QuixAgentResult): r is ExecResult {
   return r.stepCompleted === 'agent_execution';
 }
@@ -25,11 +33,22 @@ type MessageOutput = {
   }>;
 };
 
+type TestRunDetail = {
+  description: string;
+  previousMessages: LLMContext[];
+  invocation: { user: string; message: string };
+  agentPlan?: string;
+  actualToolCalls: MessageOutput[];
+  expectedToolCalls: MessageOutput[];
+  evaluationResult: any;
+};
+
 describe('QuixAgent Jira – real LLM + mocked tools', () => {
   let agent: QuixAgent;
   let jiraToolsDef: ReturnType<typeof createJiraToolsExport>;
   let llm: ChatOpenAI;
   let evaluator: ReturnType<typeof createTrajectoryMatchEvaluator>;
+  const allTestRunDetails: TestRunDetail[] = [];
 
   beforeAll(() => {
     jiraToolsDef = createJiraToolsExport({
@@ -52,6 +71,12 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
     });
 
     agent = new QuixAgent();
+  });
+
+  afterAll(() => {
+    const outputPath = path.join(__dirname, 'test-results.json');
+    fs.writeFileSync(outputPath, JSON.stringify(allTestRunDetails, null, 2));
+    Logger.log(`Test results written to ${outputPath}`);
   });
 
   for (const tc of testCases) {
@@ -78,7 +103,7 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
         };
 
         const previousMessages: LLMContext[] = tc.conversation_context.map((m) => ({
-          role: 'user',
+          role: m.user === 'Quix (bot)' ? 'assistant' : 'user',
           content: m.message
         }));
 
@@ -94,18 +119,20 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
           throw new Error(`Expected agent_execution but got ${result.stepCompleted}`);
         }
 
-        const outputs = result.agentExecutionOutput.messages.map(
-          (msg: any): MessageOutput => ({
-            role: 'assistant',
-            content: msg.content,
-            tool_calls: (msg.tool_calls ?? []).map((c: any) => ({
-              function: {
-                name: c.name as keyof ToolResponseTypeMap,
-                arguments: JSON.stringify(c.args)
-              }
-            }))
-          })
-        );
+        const outputs = result.agentExecutionOutput.messages
+          .filter((msg: any) => msg.tool_calls && msg.tool_calls.length > 0)
+          .map(
+            (msg: any): MessageOutput => ({
+              role: 'assistant',
+              content: msg.content,
+              tool_calls: (msg.tool_calls ?? []).map((c: any) => ({
+                function: {
+                  name: c.name as keyof ToolResponseTypeMap,
+                  arguments: JSON.stringify(c.args)
+                }
+              }))
+            })
+          );
 
         const referenceOutputs: MessageOutput[] = tc.tool_calls.map((c) => ({
           role: 'assistant',
@@ -154,8 +181,18 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
             );
           }
         }
+
+        allTestRunDetails.push({
+          description: tc.description,
+          previousMessages,
+          invocation: tc.invocation,
+          agentPlan: result.agentExecutionOutput.plan,
+          actualToolCalls: outputs,
+          expectedToolCalls: referenceOutputs,
+          evaluationResult: evalResult
+        });
       },
-      30000
+      60_000
     );
   }
 });
