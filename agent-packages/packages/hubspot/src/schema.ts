@@ -166,18 +166,21 @@ export const getPipelinesSchema = z.object({
 });
 
 // Deal Schema
-export const createDealSchema = z.object({
-  name: z.string().describe('The name of the deal'),
+const baseDealSchema = z.object({
   description: z.string().optional().describe('The description of the deal'),
   amount: z.number().optional().describe('The deal amount'),
   dealstage: z.string().optional().describe('The deal stage'),
-  closeDate: z
+  closedate: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')
     .optional()
     .describe('The close date (YYYY-MM-DD)'),
-  pipelineId: z.string().optional().describe('The pipeline ID'),
-  ownerId: z.string().optional().describe('The owner ID'),
+  pipeline: z.string().optional().describe('The pipeline ID'),
+  hubspot_owner_id: z.string().optional().describe('The owner ID')
+});
+
+export const createDealSchema = baseDealSchema.extend({
+  dealname: z.string().describe('The name of the deal'),
   companyId: z.string().optional().describe('The associated company ID'),
   contactId: z.string().optional().describe('The associated contact ID')
 });
@@ -188,13 +191,7 @@ export const searchDealsSchema = z.object({
   stage: z.string().optional().describe('The deal stage')
 });
 
-export const updateDealSchema = z.object({
+export const updateDealSchema = baseDealSchema.extend({
   dealId: z.string().describe('The ID of the deal to update'),
-  dealname: z.string().optional().describe('The name of the deal'),
-  description: z.string().optional().describe('The description of the deal'),
-  amount: z.number().optional().describe('The deal amount'),
-  dealstage: z.string().optional().describe('The deal stage'),
-  closedate: z.string().optional().describe('The close date (YYYY-MM-DD)'),
-  pipeline: z.string().optional().describe('The pipeline ID'),
-  hubspot_owner_id: z.string().optional().describe('The owner ID')
+  dealname: z.string().optional().describe('The name of the deal')
 });

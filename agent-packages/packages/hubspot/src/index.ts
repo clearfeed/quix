@@ -396,24 +396,14 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async createDeal(params: CreateDealParams): Promise<BaseResponse<{ deal: DealResponse }>> {
     try {
-      const {
-        name,
-        dealstage,
-        pipelineId,
-        description,
-        amount,
-        closeDate,
-        ownerId,
-        companyId,
-        contactId
-      } = params;
+      const { dealname, dealstage, pipeline, companyId, contactId } = params;
       const properties: Record<string, string> = {
-        dealname: name,
-        pipeline: pipelineId || 'default'
+        dealname
       };
 
-      if (pipelineId && dealstage) {
-        const validStages = await this.getValidStagesByPipelineId('deal', pipelineId);
+      if (pipeline && dealstage) {
+        properties.pipeline = pipeline;
+        const validStages = await this.getValidStagesByPipelineId('deal', pipeline);
         if (!validStages || !validStages.length) {
           return {
             success: false,
@@ -433,18 +423,12 @@ export class HubspotService implements BaseService<HubspotConfig> {
         properties.dealstage = validStage.id;
       }
 
-      if (description) {
-        properties.description = description;
-      }
-      if (amount !== undefined) {
-        properties.amount = amount.toString();
-      }
-      if (closeDate) {
-        properties.closedate = closeDate;
-      }
-      if (ownerId) {
-        properties.hubspot_owner_id = ownerId;
-      }
+      ['description', 'amount', 'closedate', 'hubspot_owner_id'].forEach((property) => {
+        if (params[property as keyof CreateDealParams]) {
+          properties[property] = params[property as keyof CreateDealParams] as string;
+        }
+      });
+
       const associations = [];
       if (companyId) {
         associations.push({
