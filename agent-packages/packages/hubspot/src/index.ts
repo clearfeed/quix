@@ -399,7 +399,17 @@ export class HubspotService implements BaseService<HubspotConfig> {
     params: CreateDealParams
   ): Promise<BaseResponse<{ deal: DealResponse; dealUrl: string }>> {
     try {
-      const { dealname, dealstage, pipeline, companyId, contactId, ownerId } = params;
+      const {
+        dealname,
+        dealstage,
+        pipeline,
+        companyId,
+        contactId,
+        ownerId,
+        amount,
+        closedate,
+        description
+      } = params;
       const properties: Record<string, string> = {
         dealname
       };
@@ -429,11 +439,17 @@ export class HubspotService implements BaseService<HubspotConfig> {
         properties.dealstage = validStage.id;
       }
 
-      ['description', 'amount', 'closedate'].forEach((property) => {
-        if (params[property as keyof CreateDealParams]) {
-          properties[property] = params[property as keyof CreateDealParams] as string;
-        }
-      });
+      if (amount !== undefined) {
+        properties.amount = amount.toString();
+      }
+
+      if (closedate) {
+        properties.closedate = closedate;
+      }
+
+      if (description) {
+        properties.description = description;
+      }
 
       if (ownerId) {
         properties.hubspot_owner_id = ownerId;
@@ -488,9 +504,17 @@ export class HubspotService implements BaseService<HubspotConfig> {
       let error: string | undefined = undefined;
       const properties: Record<string, string> = {};
 
-      ['dealname', 'amount', 'closedate', 'pipeline', 'description'].forEach((property) => {
-        if (params[property as keyof UpdateDealParams]) {
-          properties[property] = params[property as keyof UpdateDealParams] as string;
+      const propertiesToUpdate: (keyof UpdateDealParams)[] = [
+        'dealname',
+        'amount',
+        'closedate',
+        'pipeline',
+        'description'
+      ];
+
+      propertiesToUpdate.forEach((property) => {
+        if (params[property]) {
+          properties[property] = params[property] as string;
         }
       });
 
