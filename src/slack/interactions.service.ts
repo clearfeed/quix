@@ -203,7 +203,7 @@ export class InteractionsService {
             });
           return displayLoadingModal('Please Wait');
         } catch (error) {
-          console.error(error);
+          this.logger.error('Zendesk connection failed:', error);
           return displayErrorModal({
             error,
             backgroundCaller: true,
