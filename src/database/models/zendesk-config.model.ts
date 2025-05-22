@@ -40,11 +40,19 @@ export class ZendeskConfig extends Model<
   declare subdomain: string;
 
   @AllowNull(false)
-  @Column(DataType.TEXT)
+  @Column({
+    type: DataType.TEXT
+  })
   get access_token(): string {
-    return decrypt(this.getDataValue('access_token')!);
+    const value = this.getDataValue('access_token') as string;
+    if (!value) return value;
+    return decrypt(value);
   }
   set access_token(value: string) {
+    if (!value) {
+      this.setDataValue('access_token', value);
+      return;
+    }
     this.setDataValue('access_token', encrypt(value));
   }
 
