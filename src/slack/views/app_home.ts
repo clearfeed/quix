@@ -31,9 +31,9 @@ import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
 import { Tool } from '@clearfeed-ai/quix-common-agent';
 import { partition, isEmpty } from 'lodash';
-import { createNotionToolsExport } from 'agent-packages/packages/notion/dist/tools';
-import { createZendeskToolsExport } from 'agent-packages/packages/zendesk/dist';
-import { createOktaToolsExport } from 'agent-packages/packages/okta/dist/tools';
+import { createNotionToolsExport } from '@clearfeed-ai/quix-notion-agent';
+import { createZendeskToolsExport } from '@clearfeed-ai/quix-zendesk-agent';
+import { createOktaToolsExport } from '@clearfeed-ai/quix-okta-agent';
 export const getToolData = async (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined
 ) => {
