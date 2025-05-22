@@ -321,7 +321,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           if (deal.properties.hubspot_owner_id) {
             owner = await this.getOwner(Number(deal.properties.hubspot_owner_id));
           }
-
+          const dealUrl = this.getDealUrl(deal.id);
           return {
             id: deal.id,
             name: deal.properties.dealname || '',
@@ -332,7 +332,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
             ...(owner && { owner }),
             companies: associatedCompanies,
             createdAt: deal.properties.createdate || '',
-            lastModifiedDate: deal.properties.hs_lastmodifieddate || ''
+            lastModifiedDate: deal.properties.hs_lastmodifieddate || '',
+            dealUrl
           };
         })
       );
@@ -394,7 +395,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
-  async createDeal(params: CreateDealParams): Promise<BaseResponse<{ deal: DealResponse }>> {
+  async createDeal(
+    params: CreateDealParams
+  ): Promise<BaseResponse<{ deal: DealResponse; dealUrl: string }>> {
     try {
       const { dealname, dealstage, pipeline, companyId, contactId } = params;
       const properties: Record<string, string> = {
@@ -462,7 +465,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       return {
         success: true,
-        data: { deal: response }
+        data: { deal: response, dealUrl: this.getDealUrl(response.id) }
       };
     } catch (error) {
       console.error('Error creating HubSpot deal:', error);
@@ -473,7 +476,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
-  async updateDeal(params: UpdateDealParams): Promise<BaseResponse<{ deal: DealResponse }>> {
+  async updateDeal(
+    params: UpdateDealParams
+  ): Promise<BaseResponse<{ deal: DealResponse; dealUrl: string }>> {
     try {
       const { dealId, dealstage } = params;
       let error: string | undefined = undefined;
@@ -503,7 +508,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       return {
         success: true,
-        data: { deal: response },
+        data: { deal: response, dealUrl: this.getDealUrl(dealId) },
         error
       };
     } catch (error) {
@@ -513,6 +518,10 @@ export class HubspotService implements BaseService<HubspotConfig> {
         error: error instanceof Error ? error.message : 'Failed to update HubSpot deal'
       };
     }
+  }
+
+  private getDealUrl(dealId: string): string {
+    return `https://app.hubspot.com/contacts/${this.config.hubId}/deal/${dealId}`;
   }
 
   async createContact(params: CreateContactParams): Promise<CreateContactResponse> {

@@ -46,6 +46,7 @@ export interface Deal {
   companies: HubspotCompany[];
   createdAt: string;
   lastModifiedDate: string;
+  dealUrl: string;
 }
 
 export interface Contact {
