@@ -176,7 +176,7 @@ const baseDealSchema = z.object({
     .optional()
     .describe('The close date (YYYY-MM-DD)'),
   pipeline: z.string().optional().describe('The pipeline ID'),
-  hubspot_owner_id: z.string().optional().describe('The owner ID')
+  ownerId: z.string().optional().describe('The owner ID')
 });
 
 export const createDealSchema = baseDealSchema.extend({

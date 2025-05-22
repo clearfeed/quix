@@ -399,7 +399,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
     params: CreateDealParams
   ): Promise<BaseResponse<{ deal: DealResponse; dealUrl: string }>> {
     try {
-      const { dealname, dealstage, pipeline, companyId, contactId } = params;
+      const { dealname, dealstage, pipeline, companyId, contactId, ownerId } = params;
       const properties: Record<string, string> = {
         dealname
       };
@@ -429,11 +429,15 @@ export class HubspotService implements BaseService<HubspotConfig> {
         properties.dealstage = validStage.id;
       }
 
-      ['description', 'amount', 'closedate', 'hubspot_owner_id'].forEach((property) => {
+      ['description', 'amount', 'closedate'].forEach((property) => {
         if (params[property as keyof CreateDealParams]) {
           properties[property] = params[property as keyof CreateDealParams] as string;
         }
       });
+
+      if (ownerId) {
+        properties.hubspot_owner_id = ownerId;
+      }
 
       const associations = [];
       if (companyId) {
@@ -480,17 +484,19 @@ export class HubspotService implements BaseService<HubspotConfig> {
     params: UpdateDealParams
   ): Promise<BaseResponse<{ deal: DealResponse; dealUrl: string }>> {
     try {
-      const { dealId, dealstage } = params;
+      const { dealId, dealstage, ownerId } = params;
       let error: string | undefined = undefined;
       const properties: Record<string, string> = {};
 
-      ['dealname', 'amount', 'closedate', 'pipeline', 'hubspot_owner_id', 'description'].forEach(
-        (property) => {
-          if (params[property as keyof UpdateDealParams]) {
-            properties[property] = params[property as keyof UpdateDealParams] as string;
-          }
+      ['dealname', 'amount', 'closedate', 'pipeline', 'description'].forEach((property) => {
+        if (params[property as keyof UpdateDealParams]) {
+          properties[property] = params[property as keyof UpdateDealParams] as string;
         }
-      );
+      });
+
+      if (ownerId) {
+        properties.hubspot_owner_id = ownerId;
+      }
 
       if (dealstage) {
         const validStage = await this.validateDealStage({
