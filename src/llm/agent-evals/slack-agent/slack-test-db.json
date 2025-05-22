@@ -1,0 +1,169 @@
+{
+  "channels": [
+    {
+      "id": "C134DSD",
+      "name": "general"
+    },
+    {
+      "id": "C874HKJ",
+      "name": "project-x"
+    },
+    {
+      "id": "C239PLM",
+      "name": "new-members"
+    }
+  ],
+  "messages": {
+    "C134DSD": [
+      {
+        "text": "Welcome everyone! Let's have a great week.",
+        "user": "U43SDADF",
+        "ts": "1716282000.000001",
+        "replies": [
+          {
+            "text": "Absolutely! Let's crush it 🚀",
+            "user": "U53KHJKL",
+            "ts": "1716282050.000002"
+          },
+          {
+            "text": "Excited to work with everyone.",
+            "user": "U89KJHFD",
+            "ts": "1716282100.000003"
+          }
+        ]
+      },
+      {
+        "text": "Reminder: Stand-up at 10 AM every day.",
+        "user": "U23HKDF",
+        "ts": "1716282150.000004",
+        "replies": []
+      }
+    ],
+    "C874HKJ": [
+      {
+        "text": "Feature XYZ is ready for QA. Please start testing.",
+        "user": "U89KJHFD",
+        "ts": "1716282200.000005",
+        "replies": [
+          {
+            "text": "On it. Will update by EOD.",
+            "user": "U23HKDF",
+            "ts": "1716282250.000006"
+          }
+        ]
+      },
+      {
+        "text": "Found a bug in the dashboard rendering.",
+        "user": "U53KHJKL",
+        "ts": "1716282300.000007",
+        "replies": [
+          {
+            "text": "Thanks, assigning it to Robb.",
+            "user": "U43SDADF",
+            "ts": "1716282350.000008"
+          },
+          {
+            "text": "Fixing it now. Should be done soon.",
+            "user": "U12ROBBT",
+            "ts": "1716282400.000009"
+          }
+        ]
+      }
+    ],
+    "C239PLM": [
+      {
+        "text": "Hey all, I’m Jamie, excited to join the team!",
+        "user": "U90JAMIW",
+        "ts": "1716282450.000010",
+        "replies": [
+          {
+            "text": "Welcome Jamie! 🎉",
+            "user": "U43SDADF",
+            "ts": "1716282500.000011"
+          },
+          {
+            "text": "Glad to have you here!",
+            "user": "U89KJHFD",
+            "ts": "1716282550.000012"
+          }
+        ]
+      },
+      {
+        "text": "New joiners, please complete onboarding docs by tomorrow.",
+        "user": "U23HKDF",
+        "ts": "1716282600.000013",
+        "replies": []
+      }
+    ]
+  },
+  "users": [
+    {
+      "id": "U43SDADF",
+      "name": "John"
+    },
+    {
+      "id": "U53KHJKL",
+      "name": "Obreyn"
+    },
+    {
+      "id": "U12ROBBT",
+      "name": "Robb"
+    },
+    {
+      "id": "U90JAMIW",
+      "name": "Jamie"
+    },
+    {
+      "id": "U23HKDF",
+      "name": "SystemBot"
+    },
+    {
+      "id": "U89KJHFD",
+      "name": "Alice"
+    }
+  ],
+  "user_details": {
+    "U43SDADF": {
+      "real_name": "John Snow",
+      "email": "john@snow.com",
+      "first_name": "John",
+      "last_name": "Snow",
+      "title": "Software Engineer"
+    },
+    "U53KHJKL": {
+      "real_name": "Obreyn Martell",
+      "email": "obreyn@sun.com",
+      "first_name": "Obreyn",
+      "last_name": "Martell",
+      "title": "Product Manager"
+    },
+    "U12ROBBT": {
+      "real_name": "Robb Stark",
+      "email": "robb@north.com",
+      "first_name": "Robb",
+      "last_name": "Stark",
+      "title": "Frontend Developer"
+    },
+    "U90JAMIW": {
+      "real_name": "Jamie Lannister",
+      "email": "jamie@casterly.com",
+      "first_name": "Jamie",
+      "last_name": "Lannister",
+      "title": "Backend Developer"
+    },
+    "U23HKDF": {
+      "real_name": "Slack Bot",
+      "email": "bot@slack.com",
+      "first_name": "System",
+      "last_name": "Bot",
+      "title": "Automation"
+    },
+    "U89KJHFD": {
+      "real_name": "Alice Hightower",
+      "email": "alice@company.com",
+      "first_name": "Alice",
+      "last_name": "Hightower",
+      "title": "QA Engineer"
+    }
+  }
+}
