@@ -40,6 +40,7 @@ import { KnownBlock } from '@slack/web-api';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { Sequelize } from 'sequelize-typescript';
 import { McpService } from './mcp.service';
+import { encryptForLogs } from '@quix/lib/utils/encryption';
 @Injectable()
 export class IntegrationsInstallService {
   private readonly logger = new Logger(IntegrationsInstallService.name);
@@ -745,7 +746,7 @@ export class IntegrationsInstallService {
 
       return zendeskConfig;
     } catch (error) {
-      this.logger.error('Zendesk connection failed:', error);
+      this.logger.error('Zendesk connection failed:', encryptForLogs(JSON.stringify(error)));
       throw new BadRequestException('Invalid Zendesk API token or subdomain');
     }
   }
