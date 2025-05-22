@@ -705,9 +705,9 @@ export class IntegrationsInstallService {
       );
 
       const apiToken = parsed[SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.API_TOKEN]
-        .selectedValue as string;
+        ?.selectedValue as string;
       const subdomain = parsed[SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.SUBDOMAIN]
-        .selectedValue as string;
+        ?.selectedValue as string;
       const defaultPrompt = parsed[SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.DEFAULT_PROMPT]
         ?.selectedValue as string;
       const email = parsed[SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.EMAIL]?.selectedValue as string;
