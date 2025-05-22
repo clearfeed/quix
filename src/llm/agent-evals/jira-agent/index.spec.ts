@@ -3,12 +3,12 @@ import { ChatOpenAI } from '@langchain/openai';
 import { createTrajectoryMatchEvaluator } from 'agentevals';
 import { QuixAgent, QuixAgentResult } from '../../quix-agent';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
-import { createMockedTools, TestCase } from '../mocks/jira-mock';
+import { createMockedTools } from '../mocks/jira-mock';
 import type { AvailableToolsWithConfig, LLMContext } from '@quix/llm/types';
 import type { ToolResponseTypeMap } from '../mocks/jira-mock';
 import { Logger } from '@nestjs/common';
+import { testCases } from './test-data';
 
-const testCases = require('./test-data.json');
 type ExecResult = Extract<QuixAgentResult, { stepCompleted: 'agent_execution' }>;
 function isExecResult(r: QuixAgentResult): r is ExecResult {
   return r.stepCompleted === 'agent_execution';
@@ -54,7 +54,7 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
     agent = new QuixAgent();
   });
 
-  for (const tc of testCases as TestCase[]) {
+  for (const tc of testCases) {
     it(
       tc.description,
       async () => {

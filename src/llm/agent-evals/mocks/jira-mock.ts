@@ -17,6 +17,7 @@ export type ToolCall = { name: string; arguments: any };
 
 export interface TestCase {
   description: string;
+  verified?: boolean;
   conversation_context: Array<{ user: string; message: string }>;
   invocation: { user: string; message: string };
   tool_calls: ToolCall[];
@@ -37,6 +38,18 @@ const createAdfContent = (text: string) => ({
 });
 
 export type ToolResponseTypeMap = {
+  get_jira_issue: (overrides?: {
+    issueKey?: string;
+    summary?: string;
+    status?: string;
+    priority?: string;
+    assignee?: string | null;
+    assigneeId?: string;
+    description?: string;
+    success?: boolean;
+    error?: string;
+    labels?: string[];
+  }) => GetIssueResponse;
   get_jira_issue_types: (overrides?: Record<string, any>) => GetIssueTypesResponse;
   search_jira_users: (overrides?: {
     assigneeName?: string;
@@ -57,7 +70,7 @@ export type ToolResponseTypeMap = {
       summary: string;
       description?: string;
       status?: string;
-      assignee?: string;
+      assignee?: string | null;
       assigneeId?: string;
       priority?: string;
       labels?: string[];
@@ -68,7 +81,7 @@ export type ToolResponseTypeMap = {
     summary?: string;
     description?: string;
     status?: string;
-    assignee?: string;
+    assignee?: string | null;
     assigneeId?: string;
     priority?: string;
     labels?: string[];
@@ -76,7 +89,7 @@ export type ToolResponseTypeMap = {
   assign_jira_issue: (overrides?: {
     issueId?: string;
     accountId?: string;
-    assignee?: string;
+    assignee?: string | null;
   }) => AssignIssueResponse;
   add_jira_comment: (overrides?: {
     issueId?: string;
@@ -99,11 +112,54 @@ export type ToolResponseTypeMap = {
     description?: string;
     priority?: string;
     assigneeId?: string;
+    assignee?: string | null;
     labels?: string[];
   }) => UpdateIssueResponse;
 };
 
 const toolResponseMap: ToolResponseTypeMap = {
+  get_jira_issue: (overrides = {}): GetIssueResponse => ({
+    success: true,
+    data: {
+      issue: {
+        id: overrides.issueKey || 'UPLOAD-124',
+        key: overrides.issueKey || 'UPLOAD-124',
+        self: `https://example.atlassian.net/rest/api/2/issue/${overrides.issueKey || 'UPLOAD-124'}`,
+        fields: {
+          summary: overrides.summary || 'New issue',
+          description: createAdfContent(overrides.description || ''),
+          status: {
+            name: overrides.status || 'To Do',
+            id: '1',
+            statusCategory: { key: 'new', name: 'To Do' }
+          },
+          assignee: overrides.assignee
+            ? {
+                accountId: overrides.assigneeId || 'USER_ID_FROM_SEARCH',
+                displayName: overrides.assignee,
+                emailAddress: 'stub@example.com'
+              }
+            : null,
+          priority: { id: '2', name: overrides.priority || 'High' },
+          issuetype: {
+            id: '10001',
+            name: 'Bug',
+            description: 'A problem which impairs or prevents the functions of the product.'
+          },
+          created: new Date().toISOString(),
+          reporter: {
+            accountId: 'USER_ID_FROM_SEARCH',
+            displayName: 'Stub User',
+            emailAddress: 'stub@example.com'
+          },
+          updated: new Date().toISOString(),
+          labels: overrides.labels || []
+        },
+        url: `https://example.atlassian.net/browse/${overrides.issueKey || 'UPLOAD-124'}`
+      }
+    }
+  }),
+
   get_jira_issue_types: (overrides = {}): GetIssueTypesResponse => ({
     success: true,
     data: {
