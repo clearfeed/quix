@@ -171,7 +171,11 @@ export const createDealSchema = z.object({
   description: z.string().optional().describe('The description of the deal'),
   amount: z.number().optional().describe('The deal amount'),
   dealstage: z.string().optional().describe('The deal stage'),
-  closeDate: z.string().optional().describe('The close date (YYYY-MM-DD)'),
+  closeDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')
+    .optional()
+    .describe('The close date (YYYY-MM-DD)'),
   pipelineId: z.string().optional().describe('The pipeline ID'),
   ownerId: z.string().optional().describe('The owner ID'),
   companyId: z.string().optional().describe('The associated company ID'),
