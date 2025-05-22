@@ -34,7 +34,7 @@
     "@clearfeed-ai/quix-common-agent": "^1.1.5",
     "@clearfeed-ai/quix-github-agent": "^1.2.10",
     "@clearfeed-ai/quix-hubspot-agent": "^1.1.8",
-    "@clearfeed-ai/quix-jira-agent": "^1.2.14",
+    "@clearfeed-ai/quix-jira-agent": "^1.2.15",
     "@clearfeed-ai/quix-okta-agent": "^1.0.1",
     "@clearfeed-ai/quix-postgres-agent": "^1.0.1",
     "@clearfeed-ai/quix-salesforce-agent": "^1.0.9",
