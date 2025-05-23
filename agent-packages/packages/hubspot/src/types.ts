@@ -7,7 +7,10 @@ import {
   ticketSearchSchema,
   ticketUpdateSchema,
   getPipelinesSchema,
-  associateTicketWithEntitySchema
+  associateTicketWithEntitySchema,
+  createDealSchema,
+  searchDealsSchema,
+  updateDealSchema
 } from './schema';
 import { z } from 'zod';
 
@@ -43,6 +46,7 @@ export interface Deal {
   companies: HubspotCompany[];
   createdAt: string;
   lastModifiedDate: string;
+  dealUrl: string;
 }
 
 export interface Contact {
@@ -68,20 +72,6 @@ export type ContactWithCompanies = Contact & {
 
 export type SearchContactsResponse = BaseResponse<{
   contacts: ContactWithCompanies[];
-}>;
-
-export interface CreateDealParams {
-  name: string;
-  amount?: number;
-  stage: string;
-  closeDate?: string;
-  pipeline?: string;
-  ownerId?: string;
-  companyId?: string;
-}
-
-export type CreateDealResponse = BaseResponse<{
-  dealId: string;
 }>;
 
 export interface CreateContactParams {
@@ -255,3 +245,7 @@ export type HubspotPipeline = {
   displayOrder: number;
   stages: HubspotPipelineStage[];
 };
+
+export type CreateDealParams = z.infer<typeof createDealSchema>;
+export type SearchDealsParams = z.infer<typeof searchDealsSchema>;
+export type UpdateDealParams = z.infer<typeof updateDealSchema>;
