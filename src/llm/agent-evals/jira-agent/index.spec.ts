@@ -7,7 +7,7 @@ import { createMockedTools } from '../mocks/jira-mock';
 import type { AvailableToolsWithConfig, LLMContext } from '@quix/llm/types';
 import type { ToolResponseTypeMap } from '../mocks/jira-mock';
 import { Logger } from '@nestjs/common';
-import { testCases } from './test-data';
+import { TestCase, testCases } from './test-data';
 import * as fs from 'fs';
 import * as path from 'path';
 import { BaseMessage } from '@langchain/core/messages';
@@ -36,7 +36,7 @@ type MessageOutput = {
 type TestRunDetail = {
   description: string;
   previousMessages: LLMContext[];
-  invocation: { user: string; message: string };
+  invocation: TestCase['invocation'];
   agentPlan?: string;
   actualToolCalls: MessageOutput[];
   expectedToolCalls: MessageOutput[];
@@ -79,9 +79,9 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
     Logger.log(`Test results written to ${outputPath}`);
   });
 
-  for (const tc of testCases) {
+  for (const testCase of testCases) {
     it(
-      tc.description,
+      testCase.description,
       async () => {
         const mockedJiraTools = createMockedTools(
           {
@@ -90,7 +90,7 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
             auth: { bearerToken: 'dummy-token' },
             defaultConfig: { projectKey: 'UPLOAD' }
           },
-          tc
+          testCase
         );
 
         const toolsConfig: AvailableToolsWithConfig = {
@@ -102,18 +102,18 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
           }
         };
 
-        const previousMessages: LLMContext[] = tc.conversation_context.map((m) => ({
-          role: m.user === 'Quix (bot)' ? 'assistant' : 'user',
+        const previousMessages: LLMContext[] = testCase.chat_history.map((m) => ({
+          role: m.is_bot ? 'assistant' : 'user',
           content: m.message,
-          name: m.user === 'Quix (bot)' ? undefined : m.user
+          name: m.is_bot ? 'Quix' : m.author
         }));
 
         const result = await agent.processWithTools(
-          tc.invocation.message,
+          testCase.invocation.message,
           toolsConfig,
           previousMessages,
           llm,
-          tc.invocation.user
+          testCase.invocation.initiator_name
         );
 
         if (!isExecResult(result)) {
@@ -135,7 +135,7 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
             })
           );
 
-        const referenceOutputs: MessageOutput[] = tc.tool_calls.map((c) => ({
+        const referenceOutputs: MessageOutput[] = testCase.reference_tool_calls.map((c) => ({
           role: 'assistant',
           content: '',
           tool_calls: [
@@ -164,7 +164,7 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
           }))
         );
 
-        const expectedToolCalls = tc.tool_calls.map((c) => ({
+        const expectedToolCalls = testCase.reference_tool_calls.map((c) => ({
           name: c.name,
           arguments: c.arguments
         }));
@@ -184,9 +184,9 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
         }
 
         allTestRunDetails.push({
-          description: tc.description,
+          description: testCase.description,
           previousMessages,
-          invocation: tc.invocation,
+          invocation: testCase.invocation,
           agentPlan: result.agentExecutionOutput.plan,
           actualToolCalls: outputs,
           expectedToolCalls: referenceOutputs,
