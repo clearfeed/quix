@@ -75,6 +75,17 @@ export type OktaConnectionModalArgs = {
   };
 };
 
+export type ZendeskConnectionModalArgs = {
+  triggerId: string;
+  teamId: string;
+  initialValues?: {
+    apiToken?: string;
+    email?: string;
+    subdomain?: string;
+    defaultPrompt?: string | null;
+  };
+};
+
 export type McpConnectionModalArgs = {
   triggerId: string;
   teamId: string;

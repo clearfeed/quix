@@ -15,7 +15,8 @@ import {
   SalesforceConfigModalArgs,
   HubspotConfigModalArgs,
   OktaConnectionModalArgs,
-  ConnectionInfo
+  ConnectionInfo,
+  ZendeskConnectionModalArgs
 } from './types';
 import { WebClient } from '@slack/web-api';
 import { Surfaces } from 'slack-block-builder';
@@ -880,6 +881,87 @@ export const publishOktaConnectionModal = async (
     });
   } catch (error) {
     console.error('Error publishing Okta connection modal:', error);
+    throw error;
+  }
+};
+
+export const publishZendeskConnectionModal = async (
+  client: WebClient,
+  args: ZendeskConnectionModalArgs
+): Promise<void> => {
+  try {
+    const blocks = [
+      Section({ text: 'Please provide your Zendesk API token, email and subdomain:' }),
+
+      Input({
+        label: 'Subdomain',
+        blockId: 'zendesk_subdomain',
+        hint: 'Your Zendesk subdomain (e.g., `mycompany` for `mycompany.zendesk.com`)'
+      }).element(
+        Elements.TextInput({
+          placeholder: 'mycompany',
+          actionId: SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.SUBDOMAIN,
+          initialValue: args.initialValues?.subdomain || ''
+        })
+      ),
+
+      Input({
+        label: 'Email',
+        blockId: 'zendesk_email',
+        hint: 'The Zendesk admin email to authenticate with your API token.'
+      }).element(
+        Elements.TextInput({
+          placeholder: 'you@company.com',
+          actionId: SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.EMAIL,
+          initialValue: args.initialValues?.email || ''
+        })
+      ),
+
+      Input({
+        label: 'API Token',
+        blockId: 'zendesk_token',
+        hint: args.initialValues?.apiToken
+          ? 'Current token is not displayed for security reasons. Enter a new token to update it.'
+          : 'Generate a token from Zendesk Admin > API.'
+      })
+        .optional(!!args.initialValues?.apiToken)
+        .element(
+          Elements.TextInput({
+            placeholder: 'ZENDESK_API_TOKEN',
+            actionId: SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.API_TOKEN
+          })
+        ),
+
+      Input({
+        label: 'Default Prompt',
+        blockId: 'zendesk_default_prompt',
+        hint: 'Please provide a default prompt for Zendesk. This will be used when Quix interacts with Zendesk.'
+      })
+        .optional(true)
+        .element(
+          Elements.TextInput({
+            placeholder: 'When creating Zendesk tickets...',
+            multiline: true,
+            actionId: SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.DEFAULT_PROMPT,
+            initialValue: args.initialValues?.defaultPrompt || ''
+          })
+        )
+    ];
+
+    await client.views.open({
+      trigger_id: args.triggerId,
+      view: {
+        ...Surfaces.Modal({
+          title: 'Zendesk Configuration',
+          submit: 'Submit',
+          close: 'Cancel',
+          callbackId: SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.SUBMIT
+        }).buildToObject(),
+        blocks: BlockCollection(blocks)
+      }
+    });
+  } catch (error) {
+    console.error('Error publishing Zendesk connection modal:', error);
     throw error;
   }
 };

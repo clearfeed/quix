@@ -86,13 +86,20 @@ export const INTEGRATIONS: {
     },
     oneLineSummary: 'Track contacts, companies, and deals in HubSpot'
   },
-  // {
-  //   name: 'Zendesk',
-  //   value: SUPPORTED_INTEGRATIONS.ZENDESK,
-  //   helpText: 'Connect Zendesk to create, update, and view tickets.',
-  //   connectedText: 'Zendesk has been successfully connected! You can now query Zendesk by chatting with me or mentioning me in any channel. Try asking me things like "What is the status of PROJ-1465" or "Is there a bug related to the login page?"',
-  //   relation: 'zendeskConfig',
-  // }
+  {
+    name: 'Zendesk',
+    value: SUPPORTED_INTEGRATIONS.ZENDESK,
+    helpText: 'Connect Zendesk to create, update, and view tickets.',
+    connectedText:
+      'Zendesk has been successfully connected! You can now query Zendesk by chatting with me or mentioning me in any channel. Try asking me things like "Get me zendesk tickets related to authentication" or "Get me details related to zendesk ticket #618"',
+    relation: 'zendeskConfig',
+    oauth: false,
+    suggestedPrompt: {
+      title: 'Query Zendesk tickets',
+      message: 'Get me zendesk tickets related to authentication'
+    },
+    oneLineSummary: 'Create, update, and view tickets in Zendesk'
+  },
   {
     name: 'Postgres',
     value: SUPPORTED_INTEGRATIONS.POSTGRES,

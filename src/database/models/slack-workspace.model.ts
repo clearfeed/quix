@@ -28,6 +28,7 @@ import { LinearConfig } from './linear-config.model';
 import { McpConnection } from './mcp-connection.model';
 import { ConversationState } from './conversation-state.model';
 import { OktaConfig } from './okta-config.model';
+import { ZendeskConfig } from './zendesk-config.model';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -112,6 +113,12 @@ export class SlackWorkspace extends Model<
     as: 'salesforceConfig'
   })
   declare salesforceConfig?: NonAttribute<SalesforceConfig>;
+
+  @HasOne(() => ZendeskConfig, {
+    foreignKey: 'team_id',
+    as: 'zendeskConfig'
+  })
+  declare zendeskConfig?: NonAttribute<ZendeskConfig>;
 
   /**
    * Returns true if the openai key is not set and the Slack Workspace was created in the last week.
