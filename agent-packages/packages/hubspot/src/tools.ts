@@ -11,7 +11,9 @@ import {
   CreateTicketParams,
   AssociateTicketWithEntityParams,
   UpdateTicketParams,
-  TicketSearchParams
+  TicketSearchParams,
+  SearchDealsParams,
+  UpdateDealParams
 } from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
@@ -25,7 +27,10 @@ import {
   getPipelinesSchema,
   associateTicketWithEntitySchema,
   ticketUpdateSchema,
-  ticketSearchSchema
+  ticketSearchSchema,
+  createDealSchema,
+  searchDealsSchema,
+  updateDealSchema
 } from './schema';
 
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
@@ -64,12 +69,10 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
   const service = new HubspotService(config);
 
   const tools: DynamicStructuredTool<any>[] = [
-    tool(async (args: { keyword: string }) => service.searchDeals(args.keyword), {
+    tool(async (args: SearchDealsParams) => service.searchDeals(args), {
       name: 'search_hubspot_deals',
-      description: 'Search for deals in HubSpot based on a keyword',
-      schema: z.object({
-        keyword: z.string().describe('The keyword to search for in HubSpot deals')
-      })
+      description: 'Search for deals in HubSpot',
+      schema: searchDealsSchema
     }),
     tool(async (args: { keyword: string }) => service.searchContacts(args.keyword), {
       name: 'search_hubspot_contacts',
@@ -131,15 +134,12 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
     tool(async (args: CreateDealParams) => service.createDeal(args), {
       name: 'create_hubspot_deal',
       description: 'Create a new deal in HubSpot',
-      schema: z.object({
-        name: z.string().describe('The name of the deal'),
-        amount: z.number().optional().describe('The deal amount'),
-        stage: z.string().describe('The deal stage'),
-        closeDate: z.string().optional().describe('The close date (YYYY-MM-DD)'),
-        pipeline: z.string().optional().describe('The pipeline ID'),
-        ownerId: z.string().optional().describe('The owner ID'),
-        companyId: z.string().optional().describe('The associated company ID')
-      })
+      schema: createDealSchema
+    }),
+    tool(async (args: UpdateDealParams) => service.updateDeal(args), {
+      name: 'update_hubspot_deal',
+      description: 'Update the details of an existing HubSpot deal.',
+      schema: updateDealSchema
     }),
     tool(async (args: CreateContactParams) => service.createContact(args), {
       name: 'create_hubspot_contact',
