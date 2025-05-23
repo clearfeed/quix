@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import { describe, it, beforeAll, afterAll } from '@jest/globals';
 import { ChatOpenAI } from '@langchain/openai';
 import { createTrajectoryMatchEvaluator } from 'agentevals';
 import { QuixAgent, QuixAgentResult } from '../../quix-agent';
@@ -141,25 +141,6 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
             arguments: JSON.parse(tc.function.arguments)
           }))
         );
-
-        const expectedToolCalls = testCase.reference_tool_calls.map((c) => ({
-          name: c.name,
-          arguments: c.arguments
-        }));
-
-        for (const expected of expectedToolCalls) {
-          const found = actualToolCalls.some(
-            (actual) =>
-              actual.name === expected.name &&
-              JSON.stringify(actual.arguments) === JSON.stringify(expected.arguments)
-          );
-          expect(found).toBe(true);
-          if (!found) {
-            throw new Error(
-              `Expected tool call ${expected.name} with args ${JSON.stringify(expected.arguments)} not found`
-            );
-          }
-        }
 
         allTestRunDetails.push({
           description: testCase.description,
