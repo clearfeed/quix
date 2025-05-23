@@ -7,7 +7,7 @@ import {
   AddCommentResponse,
   GetCommentsResponse,
   UpdateIssueResponse
-} from '@clearfeed-ai/quix-jira-agent/dist/types';
+} from '@clearfeed-ai/quix-jira-agent';
 import { TestCase } from '../common/types/test-data';
 import { createMockedTools } from '../common/utils';
 

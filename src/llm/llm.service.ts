@@ -139,7 +139,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
       authorName
     );
     if (agentResult.stepCompleted === 'tool_selection') {
-      return slackify(agentResult.incomplteExecutionOutput);
+      return slackify(agentResult.incompleteExecutionOutput);
     }
 
     // Store the plan in conversation state

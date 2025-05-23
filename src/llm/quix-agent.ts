@@ -8,7 +8,7 @@ import {
   HumanMessagePromptTemplate,
   MessagesPlaceholder
 } from '@langchain/core/prompts';
-import { RunnableSequence } from '@langchain/core/runnables';
+import { RunnableSequence, Runnable } from '@langchain/core/runnables';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { QuixPrompts } from '../lib/constants';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
@@ -28,7 +28,7 @@ export type QuixAgentResult =
   | {
       stepCompleted: 'tool_selection';
       toolSelectionOutput: QuixAgentResultToolSelectionOutput;
-      incomplteExecutionOutput: string;
+      incompleteExecutionOutput: string;
     }
   | {
       stepCompleted: 'agent_execution';
@@ -68,7 +68,7 @@ export class QuixAgent {
     ) {
       return {
         stepCompleted: 'tool_selection',
-        incomplteExecutionOutput: toolSelectionOutput.content
+        incompleteExecutionOutput: toolSelectionOutput.content
           ? toolSelectionOutput.content
           : `I could not find any tools to fulfill your request.`,
         toolSelectionOutput
@@ -90,7 +90,7 @@ export class QuixAgent {
     if (!availableFunctions) {
       return {
         stepCompleted: 'tool_selection',
-        incomplteExecutionOutput:
+        incompleteExecutionOutput:
           "I apologize, but I don't have any tools configured to help with your request at the moment.",
         toolSelectionOutput
       };
@@ -189,7 +189,7 @@ export class QuixAgent {
       }
     });
 
-    let llmProviderWithTools;
+    let llmProviderWithTools: Runnable | undefined;
     if ('bindTools' in llm && typeof llm.bindTools === 'function') {
       llmProviderWithTools = llm.bindTools([toolSelectionFunction]);
     }

@@ -11,6 +11,7 @@ import { testCases } from './test-data';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ExecResult, MessageOutput, TestRunDetail } from '../common/types/types';
+import { AIMessage } from '@langchain/core/messages';
 
 function isExecResult(r: QuixAgentResult): r is ExecResult {
   return r.stepCompleted === 'agent_execution';
@@ -95,12 +96,15 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
         }
 
         const outputs = result.agentExecutionOutput.messages
-          .filter((msg: any) => msg.tool_calls && msg.tool_calls.length > 0)
+          .filter(
+            (msg): msg is AIMessage & { tool_calls: NonNullable<AIMessage['tool_calls']> } =>
+              msg instanceof AIMessage && Array.isArray(msg.tool_calls) && msg.tool_calls.length > 0
+          )
           .map(
-            (msg: any): MessageOutput => ({
+            (msg): MessageOutput => ({
               role: 'assistant',
-              content: msg.content,
-              tool_calls: (msg.tool_calls ?? []).map((c: any) => ({
+              content: typeof msg.content === 'string' ? msg.content : '',
+              tool_calls: msg.tool_calls.map((c) => ({
                 function: {
                   name: c.name as keyof ToolResponseTypeMap,
                   arguments: JSON.stringify(c.args)
