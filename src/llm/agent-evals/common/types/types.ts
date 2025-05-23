@@ -1,5 +1,5 @@
 import { BaseMessage } from '@langchain/core/messages';
-import { QuixAgentResult } from '../../../quix-agent';
+import { QuixAgentResult } from '@quix/llm/types';
 import { LLMContext } from '@quix/llm/types';
 import { TestCase } from './test-data';
 import { ToolResponseTypeMap } from '../../jira-agent/mock';

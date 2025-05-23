@@ -1,7 +1,8 @@
 import { describe, it, beforeAll, afterAll } from '@jest/globals';
 import { ChatOpenAI } from '@langchain/openai';
 import { createTrajectoryMatchEvaluator } from 'agentevals';
-import { QuixAgent, QuixAgentResult } from '../../quix-agent';
+import { QuixAgent } from '../../quix-agent';
+import { QuixAgentResult } from '@quix/llm/types';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
 import { createJiraMockedTools } from './mock';
 import type { AvailableToolsWithConfig, LLMContext } from '@quix/llm/types';
