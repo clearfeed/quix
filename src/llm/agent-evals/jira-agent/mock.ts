@@ -1,5 +1,4 @@
 import {
-  JiraConfig,
   GetIssueTypesResponse,
   SearchUsersResponse,
   SearchIssuesResponse,
@@ -9,12 +8,8 @@ import {
   GetCommentsResponse,
   UpdateIssueResponse
 } from '@clearfeed-ai/quix-jira-agent/dist/types';
-import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
-import { DynamicStructuredTool } from '@langchain/core/tools';
-import { TestCase } from '../jira-agent/test-data';
-
-export type ToolCall = { name: string; arguments: any };
+import { TestCase } from '../common/types/test-data';
+import { createMockedTools } from '../common/utils';
 
 const createAdfContent = (text: string) => ({
   type: 'doc',
@@ -372,23 +367,10 @@ const toolResponseMap: ToolResponseTypeMap = {
   })
 };
 
-export function createMockedTools(
-  jiraConfig: JiraConfig,
-  testCase: TestCase<ToolResponseTypeMap>
-): ToolConfig['tools'] {
-  const { tools: originalTools } = createJiraToolsExport(jiraConfig);
-
-  return originalTools.map(
-    (tool) =>
-      new DynamicStructuredTool({
-        ...tool,
-        func: async (args: any) => {
-          const handler = toolResponseMap[tool.name as keyof ToolResponseTypeMap];
-          if (!handler) return { success: true };
-          const toolOverrides =
-            testCase.tool_mock_response_overrides?.[tool.name as keyof ToolResponseTypeMap];
-          return handler(toolOverrides || {});
-        }
-      })
-  );
+export function createJiraMockedTools(
+  config: unknown,
+  testCase: TestCase<ToolResponseTypeMap>,
+  originalTools: any[]
+) {
+  return createMockedTools(config, testCase, toolResponseMap, originalTools);
 }

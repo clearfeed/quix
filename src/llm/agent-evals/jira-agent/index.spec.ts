@@ -3,45 +3,18 @@ import { ChatOpenAI } from '@langchain/openai';
 import { createTrajectoryMatchEvaluator } from 'agentevals';
 import { QuixAgent, QuixAgentResult } from '../../quix-agent';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
-import { createMockedTools } from '../mocks/jira-mock';
+import { createJiraMockedTools } from './mock';
 import type { AvailableToolsWithConfig, LLMContext } from '@quix/llm/types';
-import type { ToolResponseTypeMap } from '../mocks/jira-mock';
+import type { ToolResponseTypeMap } from './mock';
 import { Logger } from '@nestjs/common';
-import { TestCase, testCases } from './test-data';
+import { testCases } from './test-data';
 import * as fs from 'fs';
 import * as path from 'path';
-import { BaseMessage } from '@langchain/core/messages';
+import { ExecResult, MessageOutput, TestRunDetail } from '../common/types/types';
 
-type ExecResult = Extract<QuixAgentResult, { stepCompleted: 'agent_execution' }> & {
-  agentExecutionOutput: {
-    messages: BaseMessage[];
-    plan?: string;
-  };
-};
 function isExecResult(r: QuixAgentResult): r is ExecResult {
   return r.stepCompleted === 'agent_execution';
 }
-
-type MessageOutput = {
-  role: 'assistant';
-  content: string;
-  tool_calls: Array<{
-    function: {
-      name: keyof ToolResponseTypeMap;
-      arguments: string;
-    };
-  }>;
-};
-
-type TestRunDetail = {
-  description: string;
-  previousMessages: LLMContext[];
-  invocation: TestCase['invocation'];
-  agentPlan?: string;
-  actualToolCalls: MessageOutput[];
-  expectedToolCalls: MessageOutput[];
-  evaluationResult: any;
-};
 
 describe('QuixAgent Jira – real LLM + mocked tools', () => {
   let agent: QuixAgent;
@@ -83,14 +56,15 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
     it(
       testCase.description,
       async () => {
-        const mockedJiraTools = createMockedTools(
+        const mockedJiraTools = createJiraMockedTools(
           {
             host: 'https://example.atlassian.net',
             apiHost: 'https://api.atlassian.com/ex/jira/FAKE',
             auth: { bearerToken: 'dummy-token' },
             defaultConfig: { projectKey: 'UPLOAD' }
           },
-          testCase
+          testCase,
+          jiraToolsDef.tools
         );
 
         const toolsConfig: AvailableToolsWithConfig = {

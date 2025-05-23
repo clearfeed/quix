@@ -1,64 +1,9 @@
-import { ToolResponseTypeMap } from '../mocks/jira-mock';
-
-export type TestCase<
-  T extends Record<string, (overrides?: unknown) => unknown> = Record<
-    string,
-    (overrides?: unknown) => unknown
-  >
-> = {
-  description: string;
-  verified?: boolean;
-  chat_history: Array<{
-    /**
-     * The name of the author of the message
-     */
-    author: string;
-    /**
-     * The message content
-     */
-    message: string;
-    /**
-     * Indicates if the message is from the Agent bot
-     */
-    is_bot?: boolean;
-  }>;
-  /**
-   * The query that invokes the agent
-   */
-  invocation: {
-    /**
-     * The name of the initiator of the query
-     */
-    initiator_name: string;
-    /**
-     * The query message
-     */
-    message: string;
-  };
-  /**
-   * The tool calls that are expected to be made by the agent for this test case
-   */
-  reference_tool_calls: Array<{
-    name: keyof T;
-    arguments: Record<string, unknown>;
-  }>;
-  expected_response: string;
-  /**
-   * A record of tool and some parameters to override the mocked responses of that tool.
-   * These overrides will be passed to the function that generates the mock responses for the tool
-   * to override the default mock responses.
-   */
-  tool_mock_response_overrides?: {
-    [K in keyof T]?: Parameters<T[K]>[0] & {
-      error?: string;
-    };
-  };
-};
+import { ToolResponseTypeMap } from './mock';
+import { TestCase } from '../common/types/test-data';
 
 export const testCases: TestCase<ToolResponseTypeMap>[] = [
   {
     description: 'Retrieve a JIRA issue by its key.',
-    verified: true,
     chat_history: [],
     invocation: {
       initiator_name: 'Alice',
@@ -88,7 +33,6 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   },
   {
     description: 'Search for JIRA issues using a keyword.',
-    verified: true,
     chat_history: [],
     invocation: {
       initiator_name: 'Bob',
@@ -134,7 +78,6 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   },
   {
     description: 'Search for JIRA users by name.',
-    verified: true,
     chat_history: [],
     invocation: {
       initiator_name: 'Charlie',
@@ -160,7 +103,6 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   },
   {
     description: 'Retrieve comments for a specific JIRA issue.',
-    verified: true,
     chat_history: [
       {
         author: 'Dana',
@@ -195,7 +137,6 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   },
   {
     description: 'Create a basic JIRA issue (bug) with minimal fields in project FEAT.',
-    verified: true,
     chat_history: [],
     invocation: {
       initiator_name: 'Eve',
@@ -234,7 +175,6 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   {
     description:
       'Create a JIRA issue (task) with multiple fields including priority, assignee, and description in project FEAT.',
-    verified: true,
     chat_history: [],
     invocation: {
       initiator_name: 'Frank',
@@ -286,7 +226,6 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   },
   {
     description: 'Assign FEAT-102 to Bob if it is currently unassigned.',
-    verified: true,
     chat_history: [
       {
         author: 'Grace',
