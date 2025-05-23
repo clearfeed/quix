@@ -1,6 +1,8 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import type { RestEndpointMethodTypes } from './types/oktokit';
 import type { Endpoints } from '@octokit/types';
+import { baseSearchIssuesOrPullRequestsSchema, searchIssuesOrPullRequestsSchema } from './schema';
+import { z } from 'zod';
 
 export interface GitHubConfig extends BaseConfig {
   token: string;
@@ -16,29 +18,9 @@ export interface SearchCodeParams {
   per_page?: number;
 }
 
-export interface SearchIssuesGlobalParams {
-  type: 'issue' | 'pr';
-  keyword?: string;
-  status?: 'open' | 'closed';
-  label?: string;
-  sort?: 'comments' | 'reactions' | 'created' | 'updated';
-  order?: 'asc' | 'desc';
-  page: number;
-}
+export type SearchIssuesGlobalParams = z.infer<typeof baseSearchIssuesOrPullRequestsSchema>;
 
-export interface SearchIssuesOrPullRequestsParams {
-  repo: string;
-  owner: string;
-  type: 'issue' | 'pr';
-  keyword?: string;
-  reporter?: string;
-  assignee?: string;
-  status?: 'open' | 'closed';
-  sort?: 'comments' | 'reactions' | 'created' | 'updated';
-  order?: 'asc' | 'desc';
-  label?: string;
-  page: number;
-}
+export type SearchIssuesOrPullRequestsParams = z.infer<typeof searchIssuesOrPullRequestsSchema>;
 
 export type SearchCodeResponse = Endpoints['GET /search/code']['response']['data'];
 export type SearchIssuesOrPullRequestsResponse = BaseResponse<{

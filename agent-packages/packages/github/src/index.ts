@@ -733,12 +733,14 @@ export class GitHubService implements BaseService<GitHubConfig> {
     params: SearchIssuesGlobalParams
   ): Promise<BaseResponse<SearchIssuesOrPullRequestsResponse['data']>> {
     try {
-      const { type, keyword, status, label, sort, order, page } = params;
+      const { type, keyword, status, sort, order, label, page, assignee, reporter } = params;
 
       let query = `is:${type}`;
       if (keyword) query += ` in:title,body ${keyword}`;
       if (status) query += ` state:${status}`;
       if (label) query += ` label:${label}`;
+      if (assignee) query += ` assignee:${assignee}`;
+      if (reporter) query += ` author:${reporter}`;
 
       const response = await this.client.request('GET /search/issues', {
         q: query,
