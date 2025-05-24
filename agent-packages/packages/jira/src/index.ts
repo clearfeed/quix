@@ -32,13 +32,12 @@ export class JiraService implements BaseService<JiraConfig> {
   }
 
   async searchIssues(
-    keyword: string
+    jql_query: string
   ): Promise<
     BaseResponse<{ issues: (SearchIssuesResponse['issues'][number] & { url: string })[] }>
   > {
     try {
-      const jql = `text ~ "${keyword}" ORDER BY updated DESC`;
-      const response = await this.client.searchIssues(jql, { maxResults: 10 });
+      const response = await this.client.searchIssues(jql_query, { maxResults: 10 });
 
       return {
         success: true,
