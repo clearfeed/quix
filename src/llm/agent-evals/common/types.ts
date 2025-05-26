@@ -1,4 +1,4 @@
-import { LLMContext, QuixAgentPlan } from '@quix/llm/types';
+import { LLMContext, QuixAgentPlan, QuixAgentResultToolSelectionOutput } from '@quix/llm/types';
 import { ToolResponseTypeMap } from '../jira-agent/mock';
 
 export type TestCase<
@@ -70,8 +70,17 @@ export type TestRunDetail = {
   description: string;
   previousMessages: LLMContext[];
   invocation: TestCase['invocation'];
-  agentPlan: QuixAgentPlan;
-  actualToolCalls: MessageOutput[];
-  expectedToolCalls: MessageOutput[];
-  evaluationResult: unknown;
-};
+} & (
+  | {
+      stepCompleted: 'agent_execution';
+      agentPlan: QuixAgentPlan;
+      actualToolCalls: MessageOutput[];
+      expectedToolCalls: MessageOutput[];
+      evaluationResult: unknown;
+    }
+  | {
+      stepCompleted: 'tool_selection';
+      toolSelectionOutput: QuixAgentResultToolSelectionOutput;
+      incompleteExecutionOutput: string;
+    }
+);

@@ -87,8 +87,18 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
           testCase.invocation.initiator_name
         );
 
+        expect(result.stepCompleted).toBe('agent_execution');
         if (result.stepCompleted !== 'agent_execution') {
-          throw new Error(`Expected agent_execution but got ${result.stepCompleted}`);
+          Logger.log(`Could not reach agent execution step`);
+          allTestRunDetails.push({
+            description: testCase.description,
+            previousMessages,
+            invocation: testCase.invocation,
+            stepCompleted: 'tool_selection',
+            toolSelectionOutput: result.toolSelectionOutput,
+            incompleteExecutionOutput: result.incompleteExecutionOutput
+          });
+          return;
         }
 
         const outputs = result.agentExecutionOutput.messages
@@ -139,6 +149,7 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
         );
 
         allTestRunDetails.push({
+          stepCompleted: 'agent_execution',
           description: testCase.description,
           previousMessages,
           invocation: testCase.invocation,
