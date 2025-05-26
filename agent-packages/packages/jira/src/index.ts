@@ -37,6 +37,7 @@ export class JiraService implements BaseService<JiraConfig> {
     BaseResponse<{ issues: (SearchIssuesResponse['issues'][number] & { url: string })[] }>
   > {
     try {
+      await this.client.validateJql(jql_query);
       const response = await this.client.searchIssues(jql_query, { maxResults: 10 });
 
       return {
