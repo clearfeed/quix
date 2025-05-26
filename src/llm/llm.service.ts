@@ -219,10 +219,7 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
     const agent = createReactAgent({
       llm,
       tools: availableFunctions.flatMap((func) => func.availableTools),
-      prompt:
-        toolSelection.selectedTools.length > 1
-          ? QuixPrompts.multiStepBasePrompt(formattedPlan, authorName, customInstructions)
-          : QuixPrompts.basePrompt(authorName)
+      prompt: QuixPrompts.multiStepBasePrompt(formattedPlan, authorName, customInstructions)
     });
 
     // Create a callback to track tool calls
