@@ -1,5 +1,5 @@
 import { ToolResponseTypeMap } from './mock';
-import { TestCase } from '../common/types/test-data';
+import { TestCase } from '../common/types';
 
 export const testCases: TestCase<ToolResponseTypeMap>[] = [
   {

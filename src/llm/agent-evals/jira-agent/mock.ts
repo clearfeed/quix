@@ -8,7 +8,7 @@ import {
   GetCommentsResponse,
   UpdateIssueResponse
 } from '@clearfeed-ai/quix-jira-agent';
-import { TestCase } from '../common/types/test-data';
+import { TestCase } from '../common/types';
 import { createMockedTools } from '../common/utils';
 
 const createAdfContent = (text: string) => ({

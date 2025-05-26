@@ -1,6 +1,6 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
-import { TestCase } from './types/test-data';
+import { TestCase } from './types';
 
 export function createMockedTools<T extends Record<string, any>>(
   config: unknown,

@@ -11,7 +11,7 @@ import { Logger } from '@nestjs/common';
 import { testCases } from './test-data';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ExecResult, MessageOutput, TestRunDetail } from '../common/types/types';
+import { ExecResult, MessageOutput, TestRunDetail } from '../common/types';
 import { AIMessage } from '@langchain/core/messages';
 
 function isExecResult(r: QuixAgentResult): r is ExecResult {
