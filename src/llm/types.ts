@@ -4,7 +4,6 @@ import { Connections } from '@quix/lib/types/common';
 import { ConversationState } from '@quix/database/models';
 import { BaseMessage } from '@langchain/core/messages';
 import { QuixCallBackManager } from './callback-manager';
-import { QuixAgent } from './quix-agent';
 
 export type LLMContext = {
   role: 'user' | 'assistant' | 'system';
@@ -44,6 +43,13 @@ export type QuixAgentResultToolSelectionOutput = {
   reason: string;
 };
 
+export type QuixAgentPlan = {
+  type: 'tool' | 'reason';
+  tool?: string | undefined;
+  args?: {} | undefined;
+  input?: string | undefined;
+}[];
+
 export type QuixAgentResult =
   | {
       stepCompleted: 'tool_selection';
@@ -53,7 +59,7 @@ export type QuixAgentResult =
   | {
       stepCompleted: 'agent_execution';
       toolSelectionOutput: QuixAgentResultToolSelectionOutput;
-      plan: Awaited<ReturnType<typeof QuixAgent.prototype.generatePlan>>;
+      plan: QuixAgentPlan;
       formattedPlan: string;
       agentExecutionOutput: { messages: BaseMessage[] };
       toolCallTracker: QuixCallBackManager;

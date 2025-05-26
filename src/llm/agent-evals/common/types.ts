@@ -1,6 +1,4 @@
-import { BaseMessage } from '@langchain/core/messages';
-import { QuixAgentResult } from '@quix/llm/types';
-import { LLMContext } from '@quix/llm/types';
+import { LLMContext, QuixAgentPlan } from '@quix/llm/types';
 import { ToolResponseTypeMap } from '../jira-agent/mock';
 
 export type TestCase<
@@ -57,13 +55,6 @@ export type TestCase<
   };
 };
 
-export type ExecResult = Extract<QuixAgentResult, { stepCompleted: 'agent_execution' }> & {
-  agentExecutionOutput: {
-    messages: BaseMessage[];
-    plan?: string;
-  };
-};
-
 export type MessageOutput = {
   role: 'assistant';
   content: string;
@@ -79,10 +70,8 @@ export type TestRunDetail = {
   description: string;
   previousMessages: LLMContext[];
   invocation: TestCase['invocation'];
-  agentPlan?: string;
+  agentPlan: QuixAgentPlan;
   actualToolCalls: MessageOutput[];
   expectedToolCalls: MessageOutput[];
   evaluationResult: unknown;
 };
-
-export type ToolCall = { name: string; arguments: unknown };

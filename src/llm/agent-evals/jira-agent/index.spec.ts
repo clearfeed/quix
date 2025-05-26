@@ -2,7 +2,6 @@ import { describe, it, beforeAll, afterAll } from '@jest/globals';
 import { ChatOpenAI } from '@langchain/openai';
 import { createTrajectoryMatchEvaluator } from 'agentevals';
 import { QuixAgent } from '../../quix-agent';
-import { QuixAgentResult } from '@quix/llm/types';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
 import { createJiraMockedTools } from './mock';
 import type { AvailableToolsWithConfig, LLMContext } from '@quix/llm/types';
@@ -11,12 +10,8 @@ import { Logger } from '@nestjs/common';
 import { testCases } from './test-data';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ExecResult, MessageOutput, TestRunDetail } from '../common/types';
+import { MessageOutput, TestRunDetail } from '../common/types';
 import { AIMessage } from '@langchain/core/messages';
-
-function isExecResult(r: QuixAgentResult): r is ExecResult {
-  return r.stepCompleted === 'agent_execution';
-}
 
 describe('QuixAgent Jira – real LLM + mocked tools', () => {
   let agent: QuixAgent;
@@ -92,7 +87,7 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
           testCase.invocation.initiator_name
         );
 
-        if (!isExecResult(result)) {
+        if (result.stepCompleted !== 'agent_execution') {
           throw new Error(`Expected agent_execution but got ${result.stepCompleted}`);
         }
 
@@ -147,7 +142,7 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
           description: testCase.description,
           previousMessages,
           invocation: testCase.invocation,
-          agentPlan: result.agentExecutionOutput.plan,
+          agentPlan: result.plan,
           actualToolCalls: outputs,
           expectedToolCalls: referenceOutputs,
           evaluationResult: evalResult
