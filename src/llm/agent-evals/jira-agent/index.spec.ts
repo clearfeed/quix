@@ -10,7 +10,7 @@ import { Logger } from '@nestjs/common';
 import { testCases } from './test-data';
 import * as fs from 'fs';
 import * as path from 'path';
-import { MessageOutput, TestRunDetail } from '../common/types';
+import { TestRunDetail } from '../common/types';
 import { AIMessage } from '@langchain/core/messages';
 
 describe('QuixAgent Jira – real LLM + mocked tools', () => {
@@ -29,7 +29,7 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
     });
 
     llm = new ChatOpenAI({
-      modelName: 'gpt-4o-mini',
+      modelName: 'gpt-4o',
       temperature: 0,
       apiKey: process.env.OPENAI_API_KEY
     });
@@ -101,52 +101,31 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
           return;
         }
 
-        const outputs = result.agentExecutionOutput.messages
-          .filter(
-            (msg): msg is AIMessage & { tool_calls: NonNullable<AIMessage['tool_calls']> } =>
-              msg instanceof AIMessage && Array.isArray(msg.tool_calls) && msg.tool_calls.length > 0
-          )
-          .map(
-            (msg): MessageOutput => ({
-              role: 'assistant',
-              content: typeof msg.content === 'string' ? msg.content : '',
-              tool_calls: msg.tool_calls.map((c) => ({
-                function: {
+        const referenceOutputs = testCase.reference_tool_calls.map(
+          (c) =>
+            new AIMessage({
+              content: '',
+              tool_calls: [
+                {
+                  id: Date.now().toString(),
                   name: c.name as keyof ToolResponseTypeMap,
-                  arguments: JSON.stringify(c.args)
+                  args: c.arguments
                 }
-              }))
+              ]
             })
-          );
-
-        const referenceOutputs: MessageOutput[] = testCase.reference_tool_calls.map((c) => ({
-          role: 'assistant',
-          content: '',
-          tool_calls: [
-            {
-              function: {
-                name: c.name as keyof ToolResponseTypeMap,
-                arguments: JSON.stringify(c.arguments)
-              }
-            }
-          ]
-        }));
+        );
 
         Logger.log('Actual Outputs:');
-        Logger.log(JSON.stringify(outputs, null, 2));
+        Logger.log(JSON.stringify(result.agentExecutionOutput.messages, null, 2));
         Logger.log('Reference Outputs:');
         Logger.log(JSON.stringify(referenceOutputs, null, 2));
 
-        const evalResult = await evaluator({ outputs, referenceOutputs });
+        const evalResult = await evaluator({
+          outputs: result.agentExecutionOutput.messages,
+          referenceOutputs
+        });
         Logger.log('Evaluation Result:');
         Logger.log(JSON.stringify(evalResult, null, 2));
-
-        const actualToolCalls = outputs.flatMap((o) =>
-          o.tool_calls.map((tc) => ({
-            name: tc.function.name,
-            arguments: JSON.parse(tc.function.arguments)
-          }))
-        );
 
         allTestRunDetails.push({
           stepCompleted: 'agent_execution',
@@ -154,7 +133,7 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
           previousMessages,
           invocation: testCase.invocation,
           agentPlan: result.plan,
-          actualToolCalls: outputs,
+          agentTrajectory: result.agentExecutionOutput.messages.map((message) => message.toDict()),
           expectedToolCalls: referenceOutputs,
           evaluationResult: evalResult
         });

@@ -1,5 +1,5 @@
 import { LLMContext, QuixAgentPlan, QuixAgentResultToolSelectionOutput } from '@quix/llm/types';
-import { ToolResponseTypeMap } from '../jira-agent/mock';
+import { AIMessage, StoredMessage } from '@langchain/core/messages';
 
 export type TestCase<
   T extends Record<string, (overrides?: unknown) => unknown> = Record<
@@ -55,17 +55,6 @@ export type TestCase<
   };
 };
 
-export type MessageOutput = {
-  role: 'assistant';
-  content: string;
-  tool_calls: Array<{
-    function: {
-      name: keyof ToolResponseTypeMap;
-      arguments: string;
-    };
-  }>;
-};
-
 export type TestRunDetail = {
   description: string;
   previousMessages: LLMContext[];
@@ -74,9 +63,9 @@ export type TestRunDetail = {
   | {
       stepCompleted: 'agent_execution';
       agentPlan: QuixAgentPlan;
-      actualToolCalls: MessageOutput[];
-      expectedToolCalls: MessageOutput[];
-      evaluationResult: unknown;
+      agentTrajectory: StoredMessage[];
+      expectedToolCalls: AIMessage[];
+      evaluationResult: import('langsmith/vitest').SimpleEvaluationResult;
     }
   | {
       stepCompleted: 'tool_selection';
