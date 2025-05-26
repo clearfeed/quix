@@ -1,6 +1,7 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { TestCase } from './types';
+import { ChatOpenAI } from '@langchain/openai';
 
 export function createMockedTools<T extends Record<string, any>>(
   config: unknown,
@@ -20,4 +21,12 @@ export function createMockedTools<T extends Record<string, any>>(
         }
       })
   );
+}
+
+export function getTestOpenAIProvider(apiKey = process.env.OPENAI_API_KEY) {
+  return new ChatOpenAI({
+    modelName: 'gpt-4o',
+    temperature: 0.1,
+    apiKey
+  });
 }

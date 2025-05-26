@@ -1,5 +1,4 @@
 import { describe, it, beforeAll, afterAll } from '@jest/globals';
-import { ChatOpenAI } from '@langchain/openai';
 import { createTrajectoryMatchEvaluator } from 'agentevals';
 import { QuixAgent } from '../../quix-agent';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
@@ -12,27 +11,25 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { TestRunDetail } from '../common/types';
 import { AIMessage } from '@langchain/core/messages';
+import { getTestOpenAIProvider } from '../common/utils';
 
 describe('QuixAgent Jira – real LLM + mocked tools', () => {
   let agent: QuixAgent;
   let jiraToolsDef: ReturnType<typeof createJiraToolsExport>;
-  let llm: ChatOpenAI;
+  let llm: ReturnType<typeof getTestOpenAIProvider>;
   let evaluator: ReturnType<typeof createTrajectoryMatchEvaluator>;
   const allTestRunDetails: TestRunDetail[] = [];
+  const jiraConfig = {
+    host: 'https://example.atlassian.net',
+    apiHost: 'https://api.atlassian.com/ex/jira/FAKE',
+    auth: { bearerToken: 'dummy-token' },
+    defaultConfig: { projectKey: 'UPLOAD' }
+  };
 
   beforeAll(() => {
-    jiraToolsDef = createJiraToolsExport({
-      host: 'https://example.atlassian.net',
-      apiHost: 'https://api.atlassian.com/ex/jira/FAKE',
-      auth: { bearerToken: 'dummy-token' },
-      defaultConfig: { projectKey: 'UPLOAD' }
-    });
+    jiraToolsDef = createJiraToolsExport(jiraConfig);
 
-    llm = new ChatOpenAI({
-      modelName: 'gpt-4o',
-      temperature: 0,
-      apiKey: process.env.OPENAI_API_KEY
-    });
+    llm = getTestOpenAIProvider(process.env.OPENAI_API_KEY);
 
     evaluator = createTrajectoryMatchEvaluator({
       trajectoryMatchMode: 'superset',
@@ -53,16 +50,7 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
     it(
       testCase.description,
       async () => {
-        const mockedJiraTools = createJiraMockedTools(
-          {
-            host: 'https://example.atlassian.net',
-            apiHost: 'https://api.atlassian.com/ex/jira/FAKE',
-            auth: { bearerToken: 'dummy-token' },
-            defaultConfig: { projectKey: 'UPLOAD' }
-          },
-          testCase,
-          jiraToolsDef.tools
-        );
+        const mockedJiraTools = createJiraMockedTools(jiraConfig, testCase, jiraToolsDef.tools);
 
         const toolsConfig: AvailableToolsWithConfig = {
           jira: {
