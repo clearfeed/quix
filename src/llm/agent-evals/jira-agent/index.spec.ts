@@ -137,6 +137,7 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
           expectedToolCalls: referenceOutputs,
           evaluationResult: evalResult
         });
+        expect(evalResult.score).toBe(true);
       },
       60_000
     );
