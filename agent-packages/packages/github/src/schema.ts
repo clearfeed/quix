@@ -40,16 +40,3 @@ export const baseSearchIssuesOrPullRequestsSchema = z.object({
     .optional(),
   page: z.number().describe('Page number for pagination, starting at 1')
 });
-
-export const searchIssuesOrPullRequestsSchema = baseSearchIssuesOrPullRequestsSchema.extend({
-  repo: z
-    .string()
-    .describe(
-      'Name of the repository to search in. This identifies which project to look for issues/PRs'
-    ),
-  owner: z
-    .string()
-    .describe(
-      'Username or organization that owns the repository. This is the first part of the repository URL'
-    )
-});

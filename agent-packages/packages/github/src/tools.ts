@@ -23,7 +23,7 @@ import {
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { CodeSearchParams, CreateIssueParams } from './types/index';
-import { baseSearchIssuesOrPullRequestsSchema, searchIssuesOrPullRequestsSchema } from './schema';
+import { baseSearchIssuesOrPullRequestsSchema } from './schema';
 
 const GITHUB_TOOL_SELECTION_PROMPT = `
 For GitHub-related queries, consider using GitHub tools when the user wants to:
@@ -53,7 +53,7 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
       name: 'search_issues_or_pull_requests',
       description:
         'Search issues or PRs within a specific repository based on status, keywords, and reporter',
-      schema: searchIssuesOrPullRequestsSchema.extend({
+      schema: baseSearchIssuesOrPullRequestsSchema.extend({
         repo: config.repo
           ? z
               .string()
