@@ -2,6 +2,8 @@ import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { SlackWorkspace } from '@quix/database/models';
 import { Connections } from '@quix/lib/types/common';
 import { ConversationState } from '@quix/database/models';
+import { BaseMessage } from '@langchain/core/messages';
+import { QuixCallBackManager } from './callback-manager';
 
 export type LLMContext = {
   role: 'user' | 'assistant' | 'system';
@@ -34,3 +36,31 @@ export interface ToolContextParams {
   threadTs?: string;
   slackWorkspaceDomain?: string;
 }
+
+export type QuixAgentResultToolSelectionOutput = {
+  selectedTools: string[] | 'none';
+  content: string;
+  reason: string;
+};
+
+export type QuixAgentPlan = {
+  type: 'tool' | 'reason';
+  tool?: string | undefined;
+  args?: {} | undefined;
+  input?: string | undefined;
+}[];
+
+export type QuixAgentResult =
+  | {
+      stepCompleted: 'tool_selection';
+      toolSelectionOutput: QuixAgentResultToolSelectionOutput;
+      incompleteExecutionOutput: string;
+    }
+  | {
+      stepCompleted: 'agent_execution';
+      toolSelectionOutput: QuixAgentResultToolSelectionOutput;
+      plan: QuixAgentPlan;
+      formattedPlan: string;
+      agentExecutionOutput: { messages: BaseMessage[] };
+      toolCallTracker: QuixCallBackManager;
+    };

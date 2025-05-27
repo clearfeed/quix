@@ -1,5 +1,5 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { AvailableToolsWithConfig, LLMContext } from './types';
+import { AvailableToolsWithConfig, LLMContext, QuixAgentResult } from './types';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import {
@@ -8,37 +8,16 @@ import {
   HumanMessagePromptTemplate,
   MessagesPlaceholder
 } from '@langchain/core/prompts';
-import { RunnableSequence } from '@langchain/core/runnables';
+import { RunnableSequence, Runnable } from '@langchain/core/runnables';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { QuixPrompts } from '../lib/constants';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
-import { BaseMessage, SystemMessage } from '@langchain/core/messages';
+import { SystemMessage } from '@langchain/core/messages';
 import { QuixCallBackManager } from './callback-manager';
 import { isEqual } from 'lodash';
 import { formatToOpenAITool } from '@langchain/openai';
 import { Logger } from '@nestjs/common';
 import { encryptForLogs } from '../lib/utils/encryption';
-type QuixAgentResultToolSelectionOutput = {
-  selectedTools: string[] | 'none';
-  content: string;
-  reason: string;
-};
-
-export type QuixAgentResult =
-  | {
-      stepCompleted: 'tool_selection';
-      toolSelectionOutput: QuixAgentResultToolSelectionOutput;
-      incomplteExecutionOutput: string;
-    }
-  | {
-      stepCompleted: 'agent_execution';
-      toolSelectionOutput: QuixAgentResultToolSelectionOutput;
-      plan: Awaited<ReturnType<typeof QuixAgent.prototype.generatePlan>>;
-      formattedPlan: string;
-      agentExecutionOutput: { messages: BaseMessage[] };
-      toolCallTracker: QuixCallBackManager;
-    };
-
 export class QuixAgent {
   private readonly logger = new Logger(QuixAgent.name);
   constructor() {}
@@ -68,7 +47,7 @@ export class QuixAgent {
     ) {
       return {
         stepCompleted: 'tool_selection',
-        incomplteExecutionOutput: toolSelectionOutput.content
+        incompleteExecutionOutput: toolSelectionOutput.content
           ? toolSelectionOutput.content
           : `I could not find any tools to fulfill your request.`,
         toolSelectionOutput
@@ -90,7 +69,7 @@ export class QuixAgent {
     if (!availableFunctions) {
       return {
         stepCompleted: 'tool_selection',
-        incomplteExecutionOutput:
+        incompleteExecutionOutput:
           "I apologize, but I don't have any tools configured to help with your request at the moment.",
         toolSelectionOutput
       };
@@ -189,7 +168,7 @@ export class QuixAgent {
       }
     });
 
-    let llmProviderWithTools;
+    let llmProviderWithTools: Runnable | undefined;
     if ('bindTools' in llm && typeof llm.bindTools === 'function') {
       llmProviderWithTools = llm.bindTools([toolSelectionFunction]);
     }

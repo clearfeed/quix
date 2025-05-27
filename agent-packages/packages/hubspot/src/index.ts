@@ -1,9 +1,4 @@
 import { Client } from '@hubspot/api-client';
-import { FilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/deals';
-import {
-  SimplePublicObjectInputForCreate,
-  SimplePublicObjectInput
-} from '@hubspot/api-client/lib/codegen/crm/objects/tasks';
 import { BaseResponse, BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   HubspotConfig,
@@ -11,7 +6,6 @@ import {
   CreateContactParams,
   CreateContactResponse,
   CreateDealParams,
-  CreateDealResponse,
   CreateNoteParams,
   AddNoteResponse,
   HubspotEntityType,
@@ -35,9 +29,29 @@ import {
   HubspotPipeline,
   HubspotPipelineStage,
   AssociateTicketWithEntityParams,
-  AssociateTicketWithEntityResponse
+  AssociateTicketWithEntityResponse,
+  SearchDealsParams,
+  UpdateDealParams
 } from './types';
-import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects/notes';
+import { FilterOperatorEnum as CompanyFilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/companies';
+import { FilterOperatorEnum as ContactFilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/contacts';
+import {
+  AssociationSpecAssociationCategoryEnum as DealAssociationSpecAssociationCategoryEnum,
+  SimplePublicObject as DealResponse,
+  FilterOperatorEnum as DealFilterOperatorEnum
+} from '@hubspot/api-client/lib/codegen/crm/deals';
+import {
+  FilterOperatorEnum as TicketFilterOperatorEnum,
+  SimplePublicObjectInputForCreate as TicketParametersWithAssociations,
+  SimplePublicObjectInput as TicketParameters
+} from '@hubspot/api-client/lib/codegen/crm/tickets';
+import {
+  FilterOperatorEnum as TaskFilterOperatorEnum,
+  AssociationSpecAssociationCategoryEnum as TaskAssociationSpecAssociationCategoryEnum,
+  SimplePublicObjectInputForCreate as TaskParametersWithAssociations,
+  SimplePublicObjectInput as TaskParameters
+} from '@hubspot/api-client/lib/codegen/crm/objects/tasks';
+import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects';
 import { keyBy } from 'lodash';
 import { ASSOCIATION_TYPE_IDS } from './constants';
 
@@ -73,7 +87,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
             filters: [
               {
                 propertyName: 'name',
-                operator: FilterOperatorEnum.ContainsToken,
+                operator: CompanyFilterOperatorEnum.ContainsToken,
                 value: keyword
               }
             ]
@@ -108,7 +122,11 @@ export class HubspotService implements BaseService<HubspotConfig> {
         filterGroups: ['email', 'firstname', 'lastname'].map((property) => {
           return {
             filters: [
-              { propertyName: property, operator: FilterOperatorEnum.ContainsToken, value: keyword }
+              {
+                propertyName: property,
+                operator: ContactFilterOperatorEnum.ContainsToken,
+                value: keyword
+              }
             ]
           };
         }),
@@ -192,20 +210,58 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
-  async searchDeals(keyword: string): Promise<SearchDealsResponse> {
+  async searchDeals(params: SearchDealsParams): Promise<SearchDealsResponse> {
     try {
-      const response = await this.client.crm.deals.searchApi.doSearch({
-        filterGroups: [
-          {
+      const { keyword, ownerId, stage } = params;
+
+      const filterGroups: Array<{
+        filters: Array<{
+          propertyName: string;
+          operator: DealFilterOperatorEnum;
+          value: string;
+        }>;
+      }> = [];
+
+      if (keyword) {
+        filterGroups.push(
+          ...['dealname', 'description'].map((property) => ({
             filters: [
               {
-                propertyName: 'dealname',
-                operator: FilterOperatorEnum.ContainsToken,
+                propertyName: property,
+                operator: DealFilterOperatorEnum.ContainsToken,
                 value: keyword
               }
             ]
-          }
-        ],
+          }))
+        );
+      }
+
+      if (ownerId) {
+        filterGroups.push({
+          filters: [
+            {
+              propertyName: 'hubspot_owner_id',
+              operator: DealFilterOperatorEnum.Eq,
+              value: ownerId
+            }
+          ]
+        });
+      }
+      if (stage) {
+        const modifiedStage = stage?.toLowerCase().replace(/\s+/g, '');
+        filterGroups.push({
+          filters: [
+            {
+              propertyName: 'dealstage',
+              operator: DealFilterOperatorEnum.Eq,
+              value: modifiedStage
+            }
+          ]
+        });
+      }
+
+      const searchRequest = {
+        ...(filterGroups.length > 0 ? { filterGroups } : {}),
         properties: [
           'dealname',
           'pipeline',
@@ -217,7 +273,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
           'hs_lastmodifieddate'
         ],
         limit: 100
-      });
+      };
+      const response = await this.client.crm.deals.searchApi.doSearch(searchRequest);
 
       // First, collect all company IDs from all deals
       const dealCompanyMap = new Map<string, Set<string>>();
@@ -264,7 +321,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           if (deal.properties.hubspot_owner_id) {
             owner = await this.getOwner(Number(deal.properties.hubspot_owner_id));
           }
-
+          const dealUrl = this.getDealUrl(deal.id);
           return {
             id: deal.id,
             name: deal.properties.dealname || '',
@@ -275,7 +332,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
             ...(owner && { owner }),
             companies: associatedCompanies,
             createdAt: deal.properties.createdate || '',
-            lastModifiedDate: deal.properties.hs_lastmodifieddate || ''
+            lastModifiedDate: deal.properties.hs_lastmodifieddate || '',
+            dealUrl
           };
         })
       );
@@ -337,37 +395,89 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
-  async createDeal(params: CreateDealParams): Promise<CreateDealResponse> {
+  async createDeal(
+    params: CreateDealParams
+  ): Promise<BaseResponse<{ deal: DealResponse; dealUrl: string }>> {
     try {
+      const {
+        dealname,
+        dealstage,
+        pipeline,
+        companyId,
+        contactId,
+        ownerId,
+        amount,
+        closedate,
+        description
+      } = params;
       const properties: Record<string, string> = {
-        dealname: params.name,
-        dealstage: params.stage,
-        pipeline: params.pipeline || 'default'
+        dealname
       };
 
-      if (params.amount !== undefined) {
-        properties.amount = params.amount.toString();
+      if (pipeline && dealstage) {
+        properties.pipeline = pipeline;
+        const validStages = await this.getValidStagesByPipelineId({
+          entityType: 'deal',
+          pipelineId: pipeline
+        });
+        if (!validStages || !validStages.length) {
+          return {
+            success: false,
+            error: 'There is no valid stage for the pipeline. Atleast one valid stage is required.'
+          };
+        }
+        const validStage = validStages.find(
+          (stage) =>
+            stage.label.toLowerCase() === dealstage?.toLowerCase() || stage.id === dealstage
+        );
+        if (!validStage) {
+          return {
+            success: false,
+            error: 'Deal stage is not valid for the pipeline'
+          };
+        }
+        properties.dealstage = validStage.id;
       }
-      if (params.closeDate) {
-        properties.closedate = params.closeDate;
+
+      if (amount !== undefined) {
+        properties.amount = amount.toString();
       }
-      if (params.ownerId) {
-        properties.hubspot_owner_id = params.ownerId;
+
+      if (closedate) {
+        properties.closedate = closedate;
+      }
+
+      if (description) {
+        properties.description = description;
+      }
+
+      if (ownerId) {
+        properties.hubspot_owner_id = ownerId;
       }
 
       const associations = [];
-      if (params.companyId) {
+      if (companyId) {
         associations.push({
-          to: { id: params.companyId },
+          to: { id: companyId },
           types: [
             {
-              associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
-              associationTypeId: 5
+              associationCategory: DealAssociationSpecAssociationCategoryEnum.HubspotDefined,
+              associationTypeId: ASSOCIATION_TYPE_IDS.DEAL_TO_ENTITY.COMPANY
             }
           ]
         });
       }
-
+      if (contactId) {
+        associations.push({
+          to: { id: contactId },
+          types: [
+            {
+              associationCategory: DealAssociationSpecAssociationCategoryEnum.HubspotDefined,
+              associationTypeId: ASSOCIATION_TYPE_IDS.DEAL_TO_ENTITY.CONTACT
+            }
+          ]
+        });
+      }
       const response = await this.client.crm.deals.basicApi.create({
         properties,
         associations
@@ -375,7 +485,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       return {
         success: true,
-        data: { dealId: response.id }
+        data: { deal: response, dealUrl: this.getDealUrl(response.id) }
       };
     } catch (error) {
       console.error('Error creating HubSpot deal:', error);
@@ -384,6 +494,64 @@ export class HubspotService implements BaseService<HubspotConfig> {
         error: error instanceof Error ? error.message : 'Failed to create HubSpot deal'
       };
     }
+  }
+
+  async updateDeal(
+    params: UpdateDealParams
+  ): Promise<BaseResponse<{ deal: DealResponse; dealUrl: string }>> {
+    try {
+      const { dealId, dealstage, ownerId } = params;
+      let error: string | undefined = undefined;
+      const properties: Record<string, string> = {};
+
+      const propertiesToUpdate: (keyof UpdateDealParams)[] = [
+        'dealname',
+        'amount',
+        'closedate',
+        'pipeline',
+        'description'
+      ];
+
+      propertiesToUpdate.forEach((property) => {
+        if (params[property]) {
+          properties[property] = params[property] as string;
+        }
+      });
+
+      if (ownerId) {
+        properties.hubspot_owner_id = ownerId;
+      }
+
+      if (dealstage) {
+        const validStage = await this.validateDealStage({
+          dealId,
+          stage: dealstage
+        });
+        if (validStage) {
+          properties.dealstage = validStage;
+        } else {
+          error = `The provided deal stage '${dealstage}' is not valid for the pipeline associated with deal ID '${dealId}'. Please provide a valid stage for this deal's pipeline.`;
+        }
+      }
+
+      const response = await this.client.crm.deals.basicApi.update(dealId, { properties });
+
+      return {
+        success: true,
+        data: { deal: response, dealUrl: this.getDealUrl(dealId) },
+        error
+      };
+    } catch (error) {
+      console.error('Error updating HubSpot deal:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update HubSpot deal'
+      };
+    }
+  }
+
+  private getDealUrl(dealId: string): string {
+    return `https://app.hubspot.com/contacts/${this.config.hubId}/deal/${dealId}`;
   }
 
   async createContact(params: CreateContactParams): Promise<CreateContactResponse> {
@@ -441,7 +609,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         [HubspotEntityType.CONTACT]: ASSOCIATION_TYPE_IDS.TASK_TO_ENTITY.CONTACT
       };
 
-      const taskInput: SimplePublicObjectInputForCreate = {
+      const taskInput: TaskParametersWithAssociations = {
         properties: {
           hs_task_subject: title,
           hs_task_status: status,
@@ -464,7 +632,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         to: { id: associatedObjectId },
         types: [
           {
-            associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
+            associationCategory: TaskAssociationSpecAssociationCategoryEnum.HubspotDefined,
             associationTypeId: associationTypeIds[associatedObjectType as HubspotEntityType]
           }
         ]
@@ -498,7 +666,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async updateTask(params: UpdateTaskParams): Promise<UpdateTaskResponse> {
     try {
-      const properties: Record<string, string> = {};
+      const properties: TaskParameters['properties'] = {};
 
       if (params.title) {
         properties.hs_task_subject = params.title;
@@ -522,7 +690,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         properties.hubspot_owner_id = params.ownerId;
       }
 
-      const updateInput: SimplePublicObjectInput = { properties };
+      const updateInput: TaskParameters = { properties };
 
       const response = await this.client.crm.objects.tasks.basicApi.update(
         params.taskId,
@@ -556,7 +724,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
   async searchTasks(params: TaskSearchParams): Promise<SearchTasksResponse> {
     try {
       const filterGroups: Array<{
-        filters: Array<{ propertyName: string; operator: FilterOperatorEnum; value: string }>;
+        filters: Array<{ propertyName: string; operator: TaskFilterOperatorEnum; value: string }>;
       }> = [];
 
       // Add keyword search filters if keyword is provided
@@ -566,7 +734,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
             filters: [
               {
                 propertyName: property,
-                operator: FilterOperatorEnum.ContainsToken,
+                operator: TaskFilterOperatorEnum.ContainsToken,
                 value: params.keyword!
               }
             ]
@@ -580,7 +748,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           filters: [
             {
               propertyName: 'hubspot_owner_id',
-              operator: FilterOperatorEnum.Eq,
+              operator: TaskFilterOperatorEnum.Eq,
               value: params.ownerId
             }
           ]
@@ -593,7 +761,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           filters: [
             {
               propertyName: 'hs_task_status',
-              operator: FilterOperatorEnum.Eq,
+              operator: TaskFilterOperatorEnum.Eq,
               value: params.status
             }
           ]
@@ -606,7 +774,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           filters: [
             {
               propertyName: 'hs_task_priority',
-              operator: FilterOperatorEnum.Eq,
+              operator: TaskFilterOperatorEnum.Eq,
               value: params.priority
             }
           ]
@@ -619,7 +787,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           filters: [
             {
               propertyName: 'hs_timestamp',
-              operator: FilterOperatorEnum.Gte,
+              operator: TaskFilterOperatorEnum.Gte,
               value: params.dueDateFrom
             }
           ]
@@ -631,7 +799,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           filters: [
             {
               propertyName: 'hs_timestamp',
-              operator: FilterOperatorEnum.Lte,
+              operator: TaskFilterOperatorEnum.Lte,
               value: params.dueDateTo
             }
           ]
@@ -728,7 +896,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
     try {
       const { subject, content, priority, ownerId, stage, pipeline } = params;
 
-      const ticketInput: SimplePublicObjectInputForCreate = {
+      const ticketInput: TicketParametersWithAssociations = {
         properties: {
           subject,
           content,
@@ -745,7 +913,10 @@ export class HubspotService implements BaseService<HubspotConfig> {
       if (stage) {
         ticketInput.properties.hs_pipeline_stage = stage;
       } else {
-        const validStages = await this.getValidStagesByPipelineId(pipeline);
+        const validStages = await this.getValidStagesByPipelineId({
+          entityType: 'ticket',
+          pipelineId: pipeline
+        });
         if (!validStages || !validStages.length) {
           return {
             success: false,
@@ -799,7 +970,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         associatedObjectId,
         [
           {
-            associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
+            associationCategory: TaskAssociationSpecAssociationCategoryEnum.HubspotDefined,
             associationTypeId: typeId
           }
         ]
@@ -853,7 +1024,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         properties.hubspot_owner_id = ownerId;
       }
 
-      const updateInput: SimplePublicObjectInput = { properties };
+      const updateInput: TicketParameters = { properties };
 
       const response = await this.client.crm.tickets.basicApi.update(ticketId, updateInput);
 
@@ -915,10 +1086,16 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
-  async getValidStagesByPipelineId(pipelineId: string): Promise<HubspotPipelineStage[] | null> {
+  async getValidStagesByPipelineId({
+    entityType,
+    pipelineId
+  }: {
+    entityType: string;
+    pipelineId: string;
+  }): Promise<HubspotPipelineStage[] | null> {
     try {
       const stageResponse = await this.client.crm.pipelines.pipelineStagesApi.getAll(
-        'ticket',
+        entityType,
         pipelineId
       );
       const validStages = stageResponse.results.filter((stage) => !stage.archived);
@@ -964,7 +1141,10 @@ export class HubspotService implements BaseService<HubspotConfig> {
     try {
       const ticket = await this.getTicketById(params.ticketId);
       if (!ticket?.pipeline) return null;
-      const validStages = await this.getValidStagesByPipelineId(ticket.pipeline);
+      const validStages = await this.getValidStagesByPipelineId({
+        entityType: 'ticket',
+        pipelineId: ticket.pipeline
+      });
       if (!validStages) {
         return null;
       }
@@ -980,13 +1160,57 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
+  async getDealById(dealId: string): Promise<DealResponse | null> {
+    try {
+      const response = await this.client.crm.deals.basicApi.getById(dealId, [
+        'dealname',
+        'dealstage',
+        'amount',
+        'closedate',
+        'description',
+        'pipeline',
+        'hubspot_owner_id'
+      ]);
+      return response;
+    } catch (error) {
+      console.error('Error getting deal by Id', error);
+      return null;
+    }
+  }
+
+  async validateDealStage(params: { dealId: string; stage: string }): Promise<string | null> {
+    try {
+      const deal = await this.getDealById(params.dealId);
+      if (!deal?.properties.pipeline) return null;
+      const validStages = await this.getValidStagesByPipelineId({
+        entityType: 'deal',
+        pipelineId: deal.properties.pipeline
+      });
+      if (!validStages) {
+        return null;
+      }
+      const validStage = validStages.find(
+        (stage) =>
+          stage.label.toLowerCase() === params.stage.toLowerCase() || stage.id === params.stage
+      );
+      return validStage?.id || null;
+    } catch (error) {
+      console.error('Error validating deal stage:', error);
+      return null;
+    }
+  }
+
   /**
    * Search for tickets in HubSpot using various filters
    */
   async searchTickets(params: TicketSearchParams): Promise<SearchTicketsResponse> {
     try {
       const filterGroups: Array<{
-        filters: Array<{ propertyName: string; operator: FilterOperatorEnum; value: string }>;
+        filters: Array<{
+          propertyName: string;
+          operator: TicketFilterOperatorEnum;
+          value: string;
+        }>;
       }> = [];
 
       if (params.keyword) {
@@ -995,7 +1219,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
             filters: [
               {
                 propertyName: property,
-                operator: FilterOperatorEnum.ContainsToken,
+                operator: TicketFilterOperatorEnum.ContainsToken,
                 value: params.keyword!
               }
             ]
@@ -1008,7 +1232,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           filters: [
             {
               propertyName: 'hubspot_owner_id',
-              operator: FilterOperatorEnum.Eq,
+              operator: TicketFilterOperatorEnum.Eq,
               value: params.ownerId
             }
           ]
@@ -1020,7 +1244,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           filters: [
             {
               propertyName: 'hs_pipeline_stage',
-              operator: FilterOperatorEnum.Eq,
+              operator: TicketFilterOperatorEnum.Eq,
               value: params.stage
             }
           ]
@@ -1032,7 +1256,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
           filters: [
             {
               propertyName: 'hs_ticket_priority',
-              operator: FilterOperatorEnum.Eq,
+              operator: TicketFilterOperatorEnum.Eq,
               value: params.priority
             }
           ]

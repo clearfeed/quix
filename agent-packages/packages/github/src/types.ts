@@ -1,6 +1,8 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import type { RestEndpointMethodTypes } from './types/oktokit';
 import type { Endpoints } from '@octokit/types';
+import { baseSearchIssuesOrPullRequestsSchema } from './schema';
+import { z } from 'zod';
 
 export interface GitHubConfig extends BaseConfig {
   token: string;
@@ -16,30 +18,19 @@ export interface SearchCodeParams {
   per_page?: number;
 }
 
-export interface SearchIssuesGlobalParams {
-  q: string;
-  sort?: 'comments' | 'reactions' | 'created' | 'updated';
-  order?: 'asc' | 'desc';
-  page?: number;
-  per_page?: number;
-}
+export type SearchIssuesGlobalParams = z.infer<typeof baseSearchIssuesOrPullRequestsSchema>;
 
-export interface SearchIssuesParams {
+export type SearchIssuesOrPullRequestsParams = z.infer<
+  typeof baseSearchIssuesOrPullRequestsSchema
+> & {
   repo: string;
   owner: string;
-  type: 'issue' | 'pull-request';
-  keyword: string;
-  reporter?: string;
-  status?: 'open' | 'closed';
-}
+};
 
 export type SearchCodeResponse = Endpoints['GET /search/code']['response']['data'];
-export type SearchIssuesResponse = BaseResponse<{
-  issues: RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'];
-}>;
-
-export type SearchPullRequestsResponse = BaseResponse<{
-  pullRequests: RestEndpointMethodTypes['search']['issuesAndPullRequests']['response']['data']['items'];
+export type SearchIssuesOrPullRequestsResponse = BaseResponse<{
+  issuesOrPullRequests: Endpoints['GET /search/issues']['response']['data']['items'];
+  pagination: string;
 }>;
 
 type SearchResultItem =
@@ -112,18 +103,6 @@ export interface ListCommitsParams {
   perPage?: number;
 }
 
-export interface ListIssuesParams {
-  owner: string;
-  repo: string;
-  state?: 'open' | 'closed' | 'all';
-  sort?: 'created' | 'updated' | 'comments';
-  direction?: 'asc' | 'desc';
-  since?: string;
-  page?: number;
-  per_page?: number;
-  labels?: string[];
-}
-
 export interface UpdateIssueParams {
   owner: string;
   repo: string;
@@ -155,18 +134,6 @@ export interface PullRequestParams {
   owner: string;
   repo: string;
   pull_number: number;
-}
-
-export interface ListPullRequestsParams {
-  owner: string;
-  repo: string;
-  state?: 'open' | 'closed' | 'all';
-  author?: string;
-  sort?: 'created' | 'updated' | 'comments' | 'interactions' | 'reactions';
-  order?: 'asc' | 'desc';
-  per_page: number;
-  page?: number;
-  keyword?: string;
 }
 
 export interface CreatePullRequestReviewParams extends PullRequestParams {
