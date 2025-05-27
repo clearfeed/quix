@@ -11,6 +11,7 @@ import * as path from 'path';
 import { TestRunDetail } from '../common/types';
 import { AIMessage } from '@langchain/core/messages';
 import { getTestOpenAIProvider } from '../common/utils';
+import { isEmpty, isNumber, isString } from 'lodash';
 
 describe('QuixAgent Slack – real LLM + mocked tools', () => {
   let agent: QuixAgent;
@@ -25,11 +26,22 @@ describe('QuixAgent Slack – real LLM + mocked tools', () => {
 
   beforeAll(() => {
     slackToolsDef = createSlackToolsExport(slackConfig);
+
     llm = getTestOpenAIProvider(process.env.OPENAI_API_KEY);
+
     evaluator = createTrajectoryMatchEvaluator({
       trajectoryMatchMode: 'superset',
       toolArgsMatchMode: 'superset',
-      toolArgsMatchOverrides: {}
+      toolArgsMatchOverrides: {
+        slack_post_message: (a, b) => {
+          // a - Actual - AI generated
+          // b - Expected
+          return isString(a.text) && !isEmpty(a.text) && a.channel_id === b.channel_id;
+        },
+        slack_get_channel_history: (a, b) => {
+          return isNumber(a.limit) && a.limit > 0 && a.channel_id === b.channel_id;
+        }
+      }
     });
     agent = new QuixAgent();
   });

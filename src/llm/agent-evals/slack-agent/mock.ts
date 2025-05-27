@@ -140,6 +140,18 @@ const DEFAULT_MESSAGES = [
     user: 'U23HKDF',
     ts: '1716282150.000004',
     replies: []
+  },
+  {
+    text: 'We have a login issue in the first page',
+    user: 'U43SDADF',
+    ts: '1716282200.000005',
+    replies: [
+      {
+        text: 'I have filed a jira for that?',
+        user: 'U53KHJKL',
+        ts: '1716282250.000002'
+      }
+    ]
   }
 ];
 const DEFAULT_THREAD_REPLIES = [

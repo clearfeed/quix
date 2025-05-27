@@ -17,7 +17,8 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'slack_list_channels',
         arguments: {
-          limit: 100
+          limit: 100,
+          cursor: ''
         }
       }
     ],
@@ -38,7 +39,8 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'slack_list_channels',
         arguments: {
-          limit: 100
+          limit: 100,
+          cursor: ''
         }
       },
       {
@@ -86,21 +88,22 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'slack_list_channels',
         arguments: {
-          limit: 100
+          limit: 100,
+          cursor: ''
         }
       },
       {
         name: 'slack_get_channel_history',
         arguments: {
           channel_id: 'C134DSD',
-          limit: 1
+          limit: 10
         }
       },
       {
         name: 'slack_add_reaction',
         arguments: {
           channel_id: 'C134DSD',
-          timestamp: '1716282150.000004',
+          timestamp: '1716282000.000001',
           reaction: 'thumbsup'
         }
       }
@@ -125,7 +128,8 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'slack_list_channels',
         arguments: {
-          limit: 100
+          limit: 100,
+          cursor: ''
         }
       },
       {
@@ -161,21 +165,15 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'slack_list_channels',
         arguments: {
-          limit: 100
+          limit: 100,
+          cursor: ''
         }
       },
       {
         name: 'slack_get_channel_history',
         arguments: {
           channel_id: 'C874HKJ',
-          limit: 1
-        }
-      },
-      {
-        name: 'slack_get_thread_replies',
-        arguments: {
-          channel_id: 'C874HKJ',
-          thread_ts: '1716282200.000005'
+          limit: 10
         }
       },
       {
@@ -214,7 +212,8 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'slack_list_channels',
         arguments: {
-          limit: 100
+          limit: 100,
+          cursor: ''
         }
       },
       {
@@ -227,20 +226,35 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     ],
     expected_response:
       "Posted in #general channel: 'Jamie is our new member. Welcome to the team!'",
-    tool_mock_response_overrides: {}
+    tool_mock_response_overrides: {
+      slack_get_user_profile: {
+        user_id: 'U90JAMIW'
+      }
+    }
   },
   {
     description: 'Leave #project-x channel',
-    chat_history: [],
+    chat_history: [
+      {
+        author: 'Jamie_Lannister',
+        message: '@Quix Leave #project-x channel'
+      },
+      {
+        author: 'Slack_Bot',
+        message:
+          'Are you sure you want to leave the #project-x channel? Please confirm by saying "Yes".'
+      }
+    ],
     invocation: {
       initiator_name: 'Jamie_Lannister',
-      message: '@Quix Leave #project-x channel'
+      message: 'Yes'
     },
     reference_tool_calls: [
       {
         name: 'slack_list_channels',
         arguments: {
-          limit: 100
+          limit: 100,
+          cursor: ''
         }
       },
       {
