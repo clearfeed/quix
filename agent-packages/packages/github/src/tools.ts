@@ -2,7 +2,6 @@ import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { GitHubService } from './index';
 import {
   GitHubConfig,
-  SearchIssuesParams,
   CreateOrUpdateFileParams,
   SearchRepositoriesParams,
   CreateRepositoryParams,
@@ -10,21 +9,21 @@ import {
   CreatePullRequestParams,
   CreateBranchParams,
   ListCommitsParams,
-  ListIssuesParams,
   UpdateIssueParams,
   AddIssueCommentParams,
   SearchUsersParams,
   PullRequestParams,
-  ListPullRequestsParams,
   CreatePullRequestReviewParams,
   MergePullRequestParams,
   UpdatePullRequestBranchParams,
   SearchCodeParams,
+  SearchIssuesOrPullRequestsParams,
   SearchIssuesGlobalParams
 } from './types';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { CodeSearchParams, CreateIssueParams } from './types/index';
+import { baseSearchIssuesOrPullRequestsSchema } from './schema';
 
 const GITHUB_TOOL_SELECTION_PROMPT = `
 For GitHub-related queries, consider using GitHub tools when the user wants to:
@@ -51,10 +50,10 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
 
   const tools: DynamicStructuredTool<any>[] = [
     new DynamicStructuredTool({
-      name: 'search_repository_issues',
+      name: 'search_issues_or_pull_requests',
       description:
         'Search issues or PRs within a specific repository based on status, keywords, and reporter',
-      schema: z.object({
+      schema: baseSearchIssuesOrPullRequestsSchema.extend({
         repo: config.repo
           ? z
               .string()
@@ -80,29 +79,10 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
               .string()
               .describe(
                 'Username or organization that owns the repository. This is the first part of the repository URL (required)'
-              ),
-        type: z
-          .enum(['issue', 'pull-request'])
-          .describe(
-            'Specify whether to search for issues or pull requests. Both are tracked the same way in GitHub'
-          ),
-        keyword: z
-          .string()
-          .describe(
-            'Text to search for in issue titles and descriptions. Can include multiple words or phrases'
-          ),
-        reporter: z
-          .string()
-          .describe(
-            'GitHub username of the person who created the issue/PR. Filters results to show only their submissions'
-          )
-          .optional(),
-        status: z
-          .enum(['open', 'closed'])
-          .describe('Filter issues by their status (open or closed)')
-          .optional()
+              )
       }),
-      func: async (args: SearchIssuesParams) => service.searchIssues(args)
+      func: async (args: SearchIssuesOrPullRequestsParams) =>
+        service.searchIssuesOrPullRequests(args)
     }),
     new DynamicStructuredTool({
       name: 'get_github_issue',
@@ -437,55 +417,6 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
       func: async (params: ListCommitsParams) => service.listCommits(params)
     }),
     new DynamicStructuredTool({
-      name: 'list_issues',
-      description: 'List and filter issues in a GitHub repository',
-      schema: z.object({
-        owner: config.owner
-          ? z
-              .string()
-              .describe('Username or organization that owns the repository')
-              .optional()
-              .default(config.owner)
-          : z.string().describe('Username or organization that owns the repository'),
-        repo: config.repo
-          ? z
-              .string()
-              .describe('Name of the repository to list issues from')
-              .optional()
-              .default(config.repo)
-          : z.string().describe('Name of the repository to list issues from'),
-        state: z
-          .enum(['open', 'closed', 'all'])
-          .describe('Filter issues by their state: open, closed, or all')
-          .optional(),
-        sort: z
-          .enum(['created', 'updated', 'comments'])
-          .describe('How to sort issues: by creation date, last update, or number of comments')
-          .optional(),
-        direction: z
-          .enum(['asc', 'desc'])
-          .describe('Sort direction: ascending (oldest first) or descending (newest first)')
-          .optional(),
-        since: z
-          .string()
-          .describe('ISO 8601 timestamp to filter issues updated after this date')
-          .optional(),
-        page: z.number().describe('Page number for pagination, starting at 1').optional(),
-        per_page: z
-          .number()
-          .int('Page size must be an integer')
-          .min(1, 'Page size must be at least 1')
-          .max(100, 'GitHub API limits page size to maximum of 100')
-          .describe('Number of items per page (min: 1, max: 100)')
-          .optional(),
-        labels: z
-          .array(z.string())
-          .describe('Filter issues by label names (e.g., ["bug", "high-priority"])')
-          .optional()
-      }),
-      func: async (params: ListIssuesParams) => service.listIssues(params)
-    }),
-    new DynamicStructuredTool({
       name: 'update_issue',
       description: 'Update an existing issue in a GitHub repository',
       schema: z.object({
@@ -587,33 +518,6 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
         pull_number: z.number()
       }),
       func: async (params: PullRequestParams) => service.getPullRequest(params)
-    }),
-    new DynamicStructuredTool({
-      name: 'list_pull_requests',
-      description: 'List and filter repository pull requests',
-      schema: z.object({
-        owner: config.owner ? z.string().optional().default(config.owner) : z.string(),
-        repo: config.repo ? z.string().optional().default(config.repo) : z.string(),
-        state: z.enum(['open', 'closed', 'all']).optional(),
-        author: z.string().describe('Filter by author username').optional(),
-        sort: z.enum(['created', 'updated', 'comments', 'interactions', 'reactions']).optional(),
-        order: z.enum(['asc', 'desc']).optional(),
-        keyword: z
-          .string()
-          .describe(
-            'Text to search for in issue titles and descriptions. Can include multiple words or phrases'
-          )
-          .optional(),
-        per_page: z
-          .number()
-          .int('Page size must be an integer')
-          .min(1, 'Page size must be at least 1')
-          .max(100, 'GitHub API limits page size to maximum of 100')
-          .describe('Number of items per page (min: 1, max: 100)')
-          .default(100),
-        page: z.number().optional()
-      }),
-      func: async (params: ListPullRequestsParams) => service.listPullRequests(params)
     }),
     new DynamicStructuredTool({
       name: 'create_pull_request_review',
@@ -725,30 +629,7 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
     new DynamicStructuredTool({
       name: 'search_issues_global',
       description: 'Search for issues and pull requests across all GitHub repositories',
-      schema: z.object({
-        q: z
-          .string()
-          .describe(
-            'Search query using GitHub issues search syntax. Can include is:issue/pr, state:open/closed, label:name, etc.'
-          ),
-        sort: z
-          .enum(['comments', 'reactions', 'created', 'updated'])
-          .describe('Sort by: number of comments, reactions, creation date, or last update')
-          .optional(),
-        order: z
-          .enum(['asc', 'desc'])
-          .describe('Sort order: ascending (oldest/least first) or descending (newest/most first)')
-          .optional(),
-        page: z.number().describe('Page number for pagination, starting at 1').optional(),
-        per_page: z
-          .number()
-          .int('Page size must be an integer')
-          .min(1, 'Page size must be at least 1')
-          .max(100, 'GitHub API limits page size to maximum of 100')
-          .describe('Number of results per page (min: 1, max: 100)')
-          .default(100)
-          .optional()
-      }),
+      schema: baseSearchIssuesOrPullRequestsSchema,
       func: async (params: SearchIssuesGlobalParams) => service.searchIssuesGlobal(params)
     }),
     new DynamicStructuredTool({
