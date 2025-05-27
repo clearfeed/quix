@@ -1,21 +1,18 @@
 import {
   ChatPostMessageResponse,
-  ConversationsHistoryResponse,
-  ConversationsListResponse,
-  ConversationsRepliesResponse,
   ReactionsAddResponse,
-  UsersListResponse,
   UsersProfileGetResponse
 } from '@slack/web-api';
 import { TestCase } from '../common/types';
 import { createMockedTools } from '../common/utils';
-// @ts-ignore: If this import fails, restore slack-test-db.json in this directory
-import testDb from './slack-test-db.json';
 
 export type ToolResponseTypeMap = {
-  slack_list_channels: (overrides?: { limit?: number }) => {
+  slack_list_channels: (overrides?: {
+    channels?: { id: string; name: string }[];
+    limit?: number;
+  }) => {
     success: boolean;
-    data: ConversationsListResponse['channels'];
+    data: { id: string; name: string }[];
   };
   slack_post_message: (overrides?: { channel_id?: string; text?: string }) => {
     success: boolean;
@@ -31,19 +28,30 @@ export type ToolResponseTypeMap = {
     timestamp?: string;
     reaction?: string;
   }) => { success: boolean; data: ReactionsAddResponse };
-  slack_get_channel_history: (overrides?: { channel_id?: string; limit?: number }) => {
+  slack_get_channel_history: (overrides?: {
+    messages?: any[];
+    channel_id?: string;
+    limit?: number;
+  }) => {
     success: boolean;
-    data: ConversationsHistoryResponse['messages'];
+    data: any[];
   };
-  slack_get_thread_replies: (overrides?: { channel_id?: string; thread_ts?: string }) => {
+  slack_get_thread_replies: (overrides?: {
+    replies?: any[];
+    channel_id?: string;
+    thread_ts?: string;
+  }) => {
     success: boolean;
-    data: ConversationsRepliesResponse['messages'];
+    data: any[];
   };
-  slack_get_users: (overrides?: { limit?: number }) => {
+  slack_get_users: (overrides?: { users?: { id: string; name: string }[]; limit?: number }) => {
     success: boolean;
-    data: UsersListResponse['members'];
+    data: { id: string; name: string }[];
   };
-  slack_get_user_profile: (overrides?: { user_id?: string }) => {
+  slack_get_user_profile: (overrides?: {
+    profile?: UsersProfileGetResponse['profile'];
+    user_id?: string;
+  }) => {
     success: boolean;
     data: UsersProfileGetResponse['profile'];
   };
@@ -51,56 +59,149 @@ export type ToolResponseTypeMap = {
   slack_leave_channel: (overrides?: { channel_id?: string }) => { success: boolean };
 };
 
+// Default data for Slack mock
+const DEFAULT_CHANNELS = [
+  { id: 'C134DSD', name: 'general' },
+  { id: 'C874HKJ', name: 'project-x' },
+  { id: 'C239PLM', name: 'new-members' }
+];
+const DEFAULT_USERS = [
+  { id: 'U43SDADF', name: 'John' },
+  { id: 'U53KHJKL', name: 'Obreyn' },
+  { id: 'U12ROBBT', name: 'Robb' },
+  { id: 'U90JAMIW', name: 'Jamie' },
+  { id: 'U23HKDF', name: 'SystemBot' },
+  { id: 'U89KJHFD', name: 'Alice' }
+];
+const DEFAULT_USER_PROFILES: Record<string, UsersProfileGetResponse['profile']> = {
+  U43SDADF: {
+    real_name: 'John Snow',
+    email: 'john@snow.com',
+    first_name: 'John',
+    last_name: 'Snow',
+    title: 'Software Engineer'
+  },
+  U53KHJKL: {
+    real_name: 'Obreyn Martell',
+    email: 'obreyn@sun.com',
+    first_name: 'Obreyn',
+    last_name: 'Martell',
+    title: 'Product Manager'
+  },
+  U12ROBBT: {
+    real_name: 'Robb Stark',
+    email: 'robb@north.com',
+    first_name: 'Robb',
+    last_name: 'Stark',
+    title: 'Frontend Developer'
+  },
+  U90JAMIW: {
+    real_name: 'Jamie Lannister',
+    email: 'jamie@casterly.com',
+    first_name: 'Jamie',
+    last_name: 'Lannister',
+    title: 'Backend Developer'
+  },
+  U23HKDF: {
+    real_name: 'Slack Bot',
+    email: 'bot@slack.com',
+    first_name: 'System',
+    last_name: 'Bot',
+    title: 'Automation'
+  },
+  U89KJHFD: {
+    real_name: 'Alice Hightower',
+    email: 'alice@company.com',
+    first_name: 'Alice',
+    last_name: 'Hightower',
+    title: 'QA Engineer'
+  }
+};
+const DEFAULT_MESSAGES = [
+  {
+    text: "Welcome everyone! Let's have a great week.",
+    user: 'U43SDADF',
+    ts: '1716282000.000001',
+    replies: [
+      {
+        text: "Absolutely! Let's crush it 🚀",
+        user: 'U53KHJKL',
+        ts: '1716282050.000002'
+      },
+      {
+        text: 'Excited to work with everyone.',
+        user: 'U89KJHFD',
+        ts: '1716282100.000003'
+      }
+    ]
+  },
+  {
+    text: 'Reminder: Stand-up at 10 AM every day.',
+    user: 'U23HKDF',
+    ts: '1716282150.000004',
+    replies: []
+  }
+];
+const DEFAULT_THREAD_REPLIES = [
+  {
+    text: 'On it. Will update by EOD.',
+    user: 'U23HKDF',
+    ts: '1716282250.000006'
+  }
+];
+
+function merge<T>(defaults: T, overrides: Partial<T> = {}): T {
+  return { ...defaults, ...overrides };
+}
+
 const toolResponseMap: ToolResponseTypeMap = {
   slack_list_channels: (overrides = {}) => ({
     success: true,
-    data: testDb.channels.slice(0, overrides.limit || 100)
+    data: overrides.channels ?? DEFAULT_CHANNELS
   }),
   slack_post_message: (overrides = {}) => ({
     success: true,
-    data: {
-      ok: true,
-      channel: overrides.channel_id || '',
-      ts: Date.now().toString(),
-      message: { text: overrides.text || '' }
-    } as ChatPostMessageResponse
+    data: merge(
+      {
+        ok: true,
+        channel: overrides.channel_id || '',
+        ts: Date.now().toString(),
+        message: { text: overrides.text || '' }
+      },
+      overrides as any
+    ) as ChatPostMessageResponse
   }),
   slack_reply_to_thread: (overrides = {}) => ({
     success: true,
-    data: {
-      ok: true,
-      channel: overrides.channel_id || '',
-      ts: Date.now().toString(),
-      message: { text: overrides.text || '' }
-    } as ChatPostMessageResponse
+    data: merge(
+      {
+        ok: true,
+        channel: overrides.channel_id || '',
+        ts: Date.now().toString(),
+        message: { text: overrides.text || '' }
+      },
+      overrides as any
+    ) as ChatPostMessageResponse
   }),
   slack_add_reaction: (_overrides = {}) => ({
     success: true,
     data: { ok: true } as ReactionsAddResponse
   }),
-  slack_get_channel_history: (overrides = {}) => {
-    const messages = testDb.messages[overrides.channel_id] || [];
-    const result = overrides.limit ? messages.slice(-overrides.limit) : messages;
-    return {
-      success: true,
-      data: result
-    };
-  },
-  slack_get_thread_replies: (overrides = {}) => {
-    const messages = testDb.messages[overrides.channel_id] || [];
-    const thread = messages.find((m: any) => m.ts === overrides.thread_ts);
-    return {
-      success: true,
-      data: thread && thread.replies ? thread.replies : []
-    };
-  },
+  slack_get_channel_history: (overrides = {}) => ({
+    success: true,
+    data: overrides.messages ?? DEFAULT_MESSAGES
+  }),
+  slack_get_thread_replies: (overrides = {}) => ({
+    success: true,
+    data: overrides.replies ?? DEFAULT_THREAD_REPLIES
+  }),
   slack_get_users: (overrides = {}) => ({
     success: true,
-    data: testDb.users.slice(0, overrides.limit || 100)
+    data: overrides.users ?? DEFAULT_USERS
   }),
   slack_get_user_profile: (overrides = {}) => ({
     success: true,
-    data: testDb.user_details[overrides.user_id] || {}
+    data: overrides.profile ?? DEFAULT_USER_PROFILES[overrides.user_id ?? ''] ?? {}
   }),
   slack_join_channel: (_overrides = {}) => ({
     success: true

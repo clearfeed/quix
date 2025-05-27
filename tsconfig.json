@@ -17,7 +17,6 @@
     "noImplicitAny": true,
     "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true,
-    "resolveJsonModule": true,
     "paths": {
       "@quix/*": ["./src/*"]
     }

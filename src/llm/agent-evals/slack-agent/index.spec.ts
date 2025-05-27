@@ -12,8 +12,6 @@ import { TestRunDetail } from '../common/types';
 import { AIMessage } from '@langchain/core/messages';
 import { getTestOpenAIProvider } from '../common/utils';
 
-// Align with jira-agent's test runner
-
 describe('QuixAgent Slack – real LLM + mocked tools', () => {
   let agent: QuixAgent;
   let slackToolsDef: ReturnType<typeof createSlackToolsExport>;
