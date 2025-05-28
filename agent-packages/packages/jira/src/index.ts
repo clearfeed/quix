@@ -31,14 +31,16 @@ export class JiraService implements BaseService<JiraConfig> {
     this.client = new JiraClient(jiraOpts);
   }
 
-  async searchIssues(
-    jql_query: string
-  ): Promise<
+  async searchIssues(args: {
+    jql_query: string;
+    maxResults: number;
+  }): Promise<
     BaseResponse<{ issues: (SearchIssuesResponse['issues'][number] & { url: string })[] }>
   > {
     try {
+      const { jql_query, maxResults } = args;
       await this.client.validateJql(jql_query);
-      const response = await this.client.searchIssues(jql_query, { maxResults: 10 });
+      const response = await this.client.searchIssues(jql_query, { maxResults });
 
       return {
         success: true,

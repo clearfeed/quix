@@ -48,16 +48,21 @@ This tool helps retrieve relevant issues by allowing complex filtering based on 
       schema: z.object({
         jql_query: z.string().describe(`
           A valid Jira Query Language (JQL) query used to filter issues.
-          - When user asks about open issues or tasks, use the query: "status != Done"
           - When a user is mentioned in the query, first fetch users using the "search_jira_users" tool and then use the account ID of the mentioned user.
           ${config.defaultConfig?.projectKey ? '- If no project is provided, use the default project as ' + config.defaultConfig.projectKey : ''}
-          `)
+          `),
+        maxResults: z
+          .number()
+          .int()
+          .min(1)
+          .max(20)
+          .default(10)
+          .describe('The maximum number of items to return per page.')
       }),
-      func: async ({
-        jql_query
-      }: {
+      func: async (args: {
         jql_query: string;
-      }): Promise<BaseResponse<SearchIssuesResponse>> => service.searchIssues(jql_query)
+        maxResults: number;
+      }): Promise<BaseResponse<SearchIssuesResponse>> => service.searchIssues(args)
     }),
     new DynamicStructuredTool<ZodObject<{ issueId: z.ZodString }>>({
       name: 'get_jira_issue',
