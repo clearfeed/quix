@@ -400,6 +400,7 @@ export const getIntegrationInfo = (
     connection instanceof SalesforceConfig ||
     connection instanceof HubspotConfig ||
     connection instanceof LinearConfig ||
+    connection instanceof OktaConfig ||
     connection instanceof ZendeskConfig
   ) {
     overflowMenuOptions.unshift(
