@@ -107,10 +107,7 @@ export class QuixAgent {
     const agent = createReactAgent({
       llm,
       tools: availableFunctions.flatMap((func) => func.availableTools),
-      prompt:
-        toolSelectionOutput.selectedTools.length > 1
-          ? QuixPrompts.multiStepBasePrompt(formattedPlan, queryingUserName, customInstructions)
-          : QuixPrompts.basePrompt(queryingUserName)
+      prompt: QuixPrompts.multiStepBasePrompt(formattedPlan, queryingUserName, customInstructions)
     });
 
     // Create a callback to track tool calls

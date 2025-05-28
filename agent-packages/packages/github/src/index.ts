@@ -1,8 +1,6 @@
 import { BaseResponse, BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   GitHubConfig,
-  SearchIssuesParams,
-  SearchIssuesResponse,
   CreateOrUpdateFileParams,
   SearchRepositoriesParams,
   CreateRepositoryParams,
@@ -10,19 +8,18 @@ import {
   CreatePullRequestParams,
   CreateBranchParams,
   ListCommitsParams,
-  ListIssuesParams,
   UpdateIssueParams,
   AddIssueCommentParams,
   SearchUsersParams,
   PullRequestParams,
-  ListPullRequestsParams,
   CreatePullRequestReviewParams,
   MergePullRequestParams,
   UpdatePullRequestBranchParams,
   SearchCodeParams,
   SearchCodeResponse,
   SearchIssuesGlobalParams,
-  SearchPullRequestsResponse
+  SearchIssuesOrPullRequestsParams,
+  SearchIssuesOrPullRequestsResponse
 } from './types';
 import { CodeSearchParams, CreateIssueParams } from './types/index';
 import type { OctokitType, RestEndpointMethodTypes } from './types/oktokit';
@@ -93,28 +90,33 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  async searchIssues(
-    params: SearchIssuesParams
-  ): Promise<BaseResponse<SearchIssuesResponse['data']>> {
+  async searchIssuesOrPullRequests(
+    params: SearchIssuesOrPullRequestsParams
+  ): Promise<BaseResponse<SearchIssuesOrPullRequestsResponse['data']>> {
     try {
-      const { repo, owner, keyword, type, reporter, status } = params;
+      const { repo, owner, keyword, type, reporter, status, sort, order, label, page, assignee } =
+        params;
       let query = `repo:${owner}/${repo} is:${type}`;
 
       if (keyword) query += ` in:title,body ${keyword}`;
       if (reporter) query += ` author:${reporter}`;
       if (status) query += ` state:${status}`;
+      if (label) query += ` label:${label}`;
+      if (assignee) query += ` assignee:${assignee}`;
 
-      const response = await this.client.search.issuesAndPullRequests({
+      const response = await this.client.request('GET /search/issues', {
         q: query,
-        per_page: 10,
-        sort: 'updated',
-        order: 'desc'
+        per_page: 5,
+        sort,
+        order,
+        page
       });
 
       return {
         success: true,
         data: {
-          issues: response.data.items
+          pagination: `Showing ${response.data.items.length} of ${response.data.total_count} results of page ${page}. Ask the user if they want to see more results.`,
+          issuesOrPullRequests: response.data.items
         }
       };
     } catch (error) {
@@ -460,32 +462,6 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  async listIssues(
-    params: ListIssuesParams
-  ): Promise<BaseResponse<RestEndpointMethodTypes['issues']['listForRepo']['response']['data']>> {
-    try {
-      const { owner, repo, state, sort, direction, since, page, per_page, labels } = params;
-      const response = await this.client.issues.listForRepo({
-        owner,
-        repo,
-        state,
-        sort,
-        direction,
-        since,
-        page,
-        per_page,
-        labels: labels?.join(',')
-      });
-      return { success: true, data: response.data };
-    } catch (error) {
-      console.error('Error listing GitHub issues:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to list GitHub issues'
-      };
-    }
-  }
-
   async updateIssue(
     params: UpdateIssueParams
   ): Promise<BaseResponse<RestEndpointMethodTypes['issues']['update']['response']['data']>> {
@@ -572,38 +548,6 @@ export class GitHubService implements BaseService<GitHubConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to get GitHub pull request'
-      };
-    }
-  }
-
-  async listPullRequests(
-    params: ListPullRequestsParams
-  ): Promise<BaseResponse<SearchPullRequestsResponse['data']>> {
-    try {
-      const { owner, repo, state, author, keyword, sort, order, per_page, page } = params;
-      let query = `repo:${owner}/${repo} is:pr`;
-
-      if (keyword) query += ` in:title,body ${keyword}`;
-      if (author) query += ` author:${author}`;
-      if (state) query += ` state:${state}`;
-      const response = await this.client.search.issuesAndPullRequests({
-        q: query,
-        sort,
-        order,
-        per_page,
-        page
-      });
-      return {
-        success: true,
-        data: {
-          pullRequests: response.data.items
-        }
-      };
-    } catch (error) {
-      console.error('Error listing GitHub pull requests:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to list GitHub pull requests'
       };
     }
   }
@@ -787,19 +731,29 @@ export class GitHubService implements BaseService<GitHubConfig> {
 
   async searchIssuesGlobal(
     params: SearchIssuesGlobalParams
-  ): Promise<BaseResponse<SearchIssuesResponse['data']>> {
+  ): Promise<BaseResponse<SearchIssuesOrPullRequestsResponse['data']>> {
     try {
-      const response = await this.client.rest.search.issuesAndPullRequests({
-        q: params.q,
-        sort: params.sort,
-        order: params.order,
-        per_page: params.per_page,
-        page: params.page
+      const { type, keyword, status, sort, order, label, page, assignee, reporter } = params;
+
+      let query = `is:${type}`;
+      if (keyword) query += ` in:title,body ${keyword}`;
+      if (status) query += ` state:${status}`;
+      if (label) query += ` label:${label}`;
+      if (assignee) query += ` assignee:${assignee}`;
+      if (reporter) query += ` author:${reporter}`;
+
+      const response = await this.client.request('GET /search/issues', {
+        q: query,
+        per_page: 5,
+        sort,
+        order,
+        page
       });
       return {
         success: true,
         data: {
-          issues: response.data.items
+          pagination: `Showing ${response.data.items.length} of ${response.data.total_count} results of page ${page}. Ask the user if they want to see more results.`,
+          issuesOrPullRequests: response.data.items
         }
       };
     } catch (error) {
