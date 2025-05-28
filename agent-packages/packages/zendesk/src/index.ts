@@ -25,11 +25,19 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
   private client;
 
   constructor(private config: ZendeskConfig) {
-    this.client = createClient({
-      subdomain: config.subdomain,
-      username: config.email,
-      token: config.token
-    });
+    if ('oauthToken' in config.auth) {
+      this.client = createClient({
+        subdomain: config.subdomain,
+        oauth: true,
+        token: config.auth.oauthToken
+      });
+    } else {
+      this.client = createClient({
+        subdomain: config.subdomain,
+        token: config.auth.token,
+        username: config.auth.email
+      });
+    }
   }
 
   async searchTickets(params: SearchTicketsParams): Promise<BaseResponse<Ticket[]>> {

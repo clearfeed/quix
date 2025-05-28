@@ -131,8 +131,10 @@ const getAvailableFns = async (selectedTool: SUPPORTED_INTEGRATIONS) => {
   if (selectedTool === SUPPORTED_INTEGRATIONS.ZENDESK) {
     const tools = createZendeskToolsExport({
       subdomain: '',
-      email: '',
-      token: ''
+      auth: {
+        email: '',
+        token: ''
+      }
     }).tools;
 
     return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);

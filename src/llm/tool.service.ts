@@ -145,9 +145,11 @@ export class ToolService {
     if (zendeskConfig) {
       tools.zendesk = {
         toolConfig: createZendeskToolsExport({
-          token: decrypt(zendeskConfig.access_token),
-          email: zendeskConfig.email,
-          subdomain: zendeskConfig.subdomain
+          subdomain: zendeskConfig.subdomain,
+          auth: {
+            token: decrypt(zendeskConfig.access_token),
+            email: zendeskConfig.email
+          }
         }),
         config: zendeskConfig
       };
