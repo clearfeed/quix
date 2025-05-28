@@ -27,7 +27,8 @@ import {
   publishOpenaiKeyModal,
   publishOktaConnectionModal,
   publishHubspotConfigModal,
-  publishDisconnectConfirmationModal
+  publishDisconnectConfirmationModal,
+  publishZendeskConnectionModal
 } from './views/modals';
 import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
@@ -228,6 +229,20 @@ export class AppHomeService {
         teamId,
         initialValues
       });
+    } else if (selectedTool === SUPPORTED_INTEGRATIONS.ZENDESK) {
+      const initialValues = slackWorkspace.zendeskConfig
+        ? {
+            apiToken: slackWorkspace.zendeskConfig.access_token,
+            email: slackWorkspace.zendeskConfig.email,
+            subdomain: slackWorkspace.zendeskConfig.subdomain,
+            defaultPrompt: slackWorkspace.zendeskConfig.default_prompt
+          }
+        : undefined;
+      await publishZendeskConnectionModal(webClient, {
+        triggerId,
+        teamId,
+        initialValues
+      });
     }
   }
 
@@ -300,6 +315,20 @@ export class AppHomeService {
                 initialValues: {
                   apiToken: notionConfig.access_token,
                   defaultPrompt: notionConfig.default_prompt
+                }
+              });
+              break;
+            case SUPPORTED_INTEGRATIONS.ZENDESK:
+              const { zendeskConfig } = slackWorkspace;
+              if (!zendeskConfig) return;
+              await publishZendeskConnectionModal(webClient, {
+                triggerId,
+                teamId,
+                initialValues: {
+                  apiToken: zendeskConfig.access_token,
+                  subdomain: zendeskConfig.subdomain,
+                  email: zendeskConfig.email,
+                  defaultPrompt: zendeskConfig.default_prompt
                 }
               });
               break;
