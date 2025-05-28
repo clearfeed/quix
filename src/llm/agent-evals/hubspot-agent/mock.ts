@@ -25,6 +25,24 @@ import { BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import { TestCase } from '../common/types';
 import { createMockedTools } from '../common/utils';
 
+export interface HubspotDealResponse {
+  id: string;
+  properties: {
+    dealname: string;
+    dealstage?: string;
+    amount?: string;
+    closedate?: string;
+    description?: string;
+    pipeline?: string;
+    hubspot_owner_id?: string;
+    createdate?: string;
+    hs_lastmodifieddate?: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+  archived?: boolean;
+}
+
 export type ToolResponseTypeMap = {
   search_hubspot_deals: (overrides?: {
     deals?: Deal[];
@@ -62,7 +80,7 @@ export type ToolResponseTypeMap = {
     companies?: HubspotCompany[];
     success?: boolean;
     error?: string;
-  }) => BaseResponse<{ deal: any; dealUrl: string }>;
+  }) => BaseResponse<{ deal: HubspotDealResponse; dealUrl: string }>;
   add_note_to_hubspot_deal: (overrides?: {
     noteId?: string;
     success?: boolean;
@@ -163,7 +181,7 @@ export type ToolResponseTypeMap = {
     companies?: HubspotCompany[];
     success?: boolean;
     error?: string;
-  }) => BaseResponse<{ deal: any; dealUrl: string }>;
+  }) => BaseResponse<{ deal: HubspotDealResponse; dealUrl: string }>;
 };
 
 const toolResponseMap: ToolResponseTypeMap = {
@@ -256,7 +274,9 @@ const toolResponseMap: ToolResponseTypeMap = {
     error: overrides.error
   }),
 
-  create_hubspot_deal: (overrides = {}): BaseResponse<{ deal: any; dealUrl: string }> => ({
+  create_hubspot_deal: (
+    overrides = {}
+  ): BaseResponse<{ deal: HubspotDealResponse; dealUrl: string }> => ({
     success: overrides.success ?? true,
     data: {
       deal: {
@@ -449,7 +469,9 @@ const toolResponseMap: ToolResponseTypeMap = {
     error: overrides.error
   }),
 
-  update_hubspot_deal: (overrides = {}): BaseResponse<{ deal: any; dealUrl: string }> => ({
+  update_hubspot_deal: (
+    overrides = {}
+  ): BaseResponse<{ deal: HubspotDealResponse; dealUrl: string }> => ({
     success: overrides.success ?? true,
     data: {
       deal: {

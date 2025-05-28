@@ -18,8 +18,8 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         name: 'search_hubspot_deals',
         arguments: {
           keyword: 'Acme',
-          ownerId: '',
-          stage: ''
+          ownerId: undefined,
+          stage: undefined
         }
       }
     ],
@@ -114,8 +114,8 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
           firstName: 'Lara',
           lastName: 'Palmer',
           email: 'lara.palmer@contoso.com',
-          phone: '',
-          company: ''
+          phone: undefined,
+          company: undefined
         }
       }
     ],
