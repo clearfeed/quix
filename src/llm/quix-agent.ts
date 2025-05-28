@@ -223,28 +223,23 @@ export class QuixAgent {
       HumanMessagePromptTemplate.fromTemplate('{input}')
     ]);
 
-    const stepSchema = z.discriminatedUnion('type', [
-      z.object({
-        type: z.literal('tool'),
-        tool: z.string(),
-        args: z.object({}).default({}),
-        input: z.string().default('')
-      }),
-      z.object({
-        type: z.literal('reason'),
-        input: z.string()
-      })
-    ]);
-
-    const schema = z.object({
-      steps: z.array(stepSchema)
-    });
-
     const planChain = RunnableSequence.from([
       planPrompt,
-      llm.withStructuredOutput(schema, {
-        method: 'functionCalling'
-      })
+      llm.withStructuredOutput(
+        z.object({
+          steps: z.array(
+            z.object({
+              type: z.enum(['tool', 'reason']),
+              tool: z.string().optional(),
+              args: z.object({}).optional(),
+              input: z.string().optional()
+            })
+          )
+        }),
+        {
+          method: 'functionCalling'
+        }
+      )
     ]);
 
     const result = await planChain.invoke(
