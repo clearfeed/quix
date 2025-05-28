@@ -35,7 +35,7 @@ export class ZendeskService implements BaseService<ZendeskConfig> {
       this.client = createClient({
         subdomain: config.subdomain,
         token: config.auth.token,
-        username: config.auth.username
+        username: config.auth.email
       });
     }
   }

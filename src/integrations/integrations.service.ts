@@ -8,7 +8,8 @@ import {
   NotionConfig,
   LinearConfig,
   McpConnection,
-  OktaConfig
+  OktaConfig,
+  ZendeskConfig
 } from '../database/models';
 import { TimeInMilliSeconds } from '@quix/lib/constants';
 import { HttpService } from '@nestjs/axios';
@@ -39,7 +40,9 @@ export class IntegrationsService {
     @InjectModel(McpConnection)
     private readonly mcpConnectionModel: typeof McpConnection,
     @InjectModel(OktaConfig)
-    private readonly oktaConfigModel: typeof OktaConfig
+    private readonly oktaConfigModel: typeof OktaConfig,
+    @InjectModel(ZendeskConfig)
+    private readonly zendeskConfigModel: typeof ZendeskConfig
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
@@ -168,6 +171,10 @@ export class IntegrationsService {
 
   async removeNotionConfig(teamId: string) {
     await this.notionConfigModel.destroy({ where: { team_id: teamId }, force: true });
+  }
+
+  async removeZendeskConfig(teamId: string) {
+    await this.zendeskConfigModel.destroy({ where: { team_id: teamId }, force: true });
   }
 
   async removeLinearConfig(teamId: string): Promise<void> {

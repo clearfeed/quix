@@ -7,7 +7,8 @@ import {
   NotionConfig,
   OktaConfig,
   PostgresConfig,
-  SalesforceConfig
+  SalesforceConfig,
+  ZendeskConfig
 } from '../database/models';
 
 export const TOOL_CONNECTION_MODELS = [
@@ -19,5 +20,6 @@ export const TOOL_CONNECTION_MODELS = [
   NotionConfig,
   PostgresConfig,
   SalesforceConfig,
-  OktaConfig
+  OktaConfig,
+  ZendeskConfig
 ];
