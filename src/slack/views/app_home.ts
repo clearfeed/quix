@@ -12,7 +12,8 @@ import {
   NotionConfig,
   LinearConfig,
   McpConnection,
-  OktaConfig
+  OktaConfig,
+  ZendeskConfig
 } from '@quix/database/models';
 import {
   Elements,
@@ -21,8 +22,7 @@ import {
   Md,
   BlockBuilder,
   OptionBuilder,
-  OptionGroupBuilder,
-  ConfirmationDialog
+  OptionGroupBuilder
 } from 'slack-block-builder';
 import { createHubspotToolsExport } from '@clearfeed-ai/quix-hubspot-agent';
 import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
@@ -31,7 +31,9 @@ import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
 import { Tool } from '@clearfeed-ai/quix-common-agent';
 import { partition, isEmpty } from 'lodash';
-
+import { createNotionToolsExport } from '@clearfeed-ai/quix-notion-agent';
+import { createZendeskToolsExport } from '@clearfeed-ai/quix-zendesk-agent';
+import { createOktaToolsExport } from '@clearfeed-ai/quix-okta-agent';
 export const getToolData = async (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined
 ) => {
@@ -107,6 +109,35 @@ const getAvailableFns = async (selectedTool: SUPPORTED_INTEGRATIONS) => {
     return tools.map(
       (tool: Tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description
     );
+  }
+
+  if (selectedTool === SUPPORTED_INTEGRATIONS.OKTA) {
+    const tools = createOktaToolsExport({
+      orgUrl: 'test-org-url',
+      token: 'test-access-token'
+    }).tools;
+
+    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
+  }
+
+  if (selectedTool === SUPPORTED_INTEGRATIONS.NOTION) {
+    const tools = createNotionToolsExport({
+      token: ''
+    }).tools;
+
+    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
+  }
+
+  if (selectedTool === SUPPORTED_INTEGRATIONS.ZENDESK) {
+    const tools = createZendeskToolsExport({
+      subdomain: '',
+      auth: {
+        email: '',
+        token: ''
+      }
+    }).tools;
+
+    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
   }
 
   return [];
@@ -294,6 +325,8 @@ export const getConnectionInfo = (connection: HomeViewArgs['connection']): strin
       return `Connected to ${connection.workspace_name}`;
     case connection instanceof OktaConfig:
       return `Connected to ${connection.org_url}`;
+    case connection instanceof ZendeskConfig:
+      return `Connected to ${connection.subdomain}.zendesk.com`;
     default:
       return '';
   }
@@ -366,7 +399,9 @@ export const getIntegrationInfo = (
     connection instanceof GithubConfig ||
     connection instanceof SalesforceConfig ||
     connection instanceof HubspotConfig ||
-    connection instanceof LinearConfig
+    connection instanceof LinearConfig ||
+    connection instanceof OktaConfig ||
+    connection instanceof ZendeskConfig
   ) {
     overflowMenuOptions.unshift(
       Bits.Option({

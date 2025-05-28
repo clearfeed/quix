@@ -351,7 +351,7 @@
   resolved "https://registry.yarnpkg.com/@cfworker/json-schema/-/json-schema-4.1.1.tgz#4a2a3947ee9fa7b7c24be981422831b8674c3be6"
   integrity sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==
 
-"@clearfeed-ai/quix-common-agent@^1.1.0", "@clearfeed-ai/quix-common-agent@^1.1.4":
+"@clearfeed-ai/quix-common-agent@^1.1.0":
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.1.4.tgz#7d6aac4cf2214b1a86658033e796b8f4dd17b63e"
   integrity sha512-8uYN+tRRJiejWpxfaZvVR0MKFCsMIT/myizmZKiVZIM//RSU+9oJN8E4T01ZbvpItk62wV6rpGs+50d+pod6fA==
@@ -426,12 +426,11 @@
     "@slack/web-api" "^6.9.0"
     slackify-markdown "^4.4.0"
 
-"@clearfeed-ai/quix-zendesk-agent@^1.1.4":
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-zendesk-agent/-/quix-zendesk-agent-1.1.4.tgz#cc5840a6fa9f797b36eaafa9289a6bde9efb979e"
-  integrity sha512-D/OhUBLH44tZQ2TQ2cgsL9u78gaaBxs1SXCO5ax7WpcYHfZt10TXQy5iaMKYJe54RraulWqh5/j59hxReQ0gCQ==
+"@clearfeed-ai/quix-zendesk-agent@^1.1.5":
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-zendesk-agent/-/quix-zendesk-agent-1.1.5.tgz#5c01d3306e051a571a259ec61643b9c7e6aedefc"
+  integrity sha512-HckWrClImwfX28W6EoP9Wp8SyHyo71/mtv6u5fb6ZY7w+RU6K1p3n6tw/9pOtNxKr11VbQ4X3vtrjhQa4qC5vA==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "^1.1.4"
     node-zendesk "^6.0.1"
 
 "@colors/colors@1.5.0":

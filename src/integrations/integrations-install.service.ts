@@ -29,7 +29,8 @@ import {
   NotionConfig,
   LinearConfig,
   McpConnection,
-  OktaConfig
+  OktaConfig,
+  ZendeskConfig
 } from '../database/models';
 import { ToolInstallState } from '@quix/lib/types/common';
 import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
@@ -39,6 +40,7 @@ import { KnownBlock } from '@slack/web-api';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { Sequelize } from 'sequelize-typescript';
 import { McpService } from './mcp.service';
+import { encryptForLogs } from '@quix/lib/utils/encryption';
 @Injectable()
 export class IntegrationsInstallService {
   private readonly logger = new Logger(IntegrationsInstallService.name);
@@ -65,6 +67,8 @@ export class IntegrationsInstallService {
     private readonly postgresConfigModel: typeof PostgresConfig,
     @InjectModel(OktaConfig)
     private readonly oktaConfigModel: typeof OktaConfig,
+    @InjectModel(ZendeskConfig)
+    private readonly zendeskConfigModel: typeof ZendeskConfig,
     private readonly eventEmitter: EventEmitter2,
     private readonly sequelize: Sequelize,
     private readonly mcpService: McpService
@@ -691,6 +695,63 @@ export class IntegrationsInstallService {
     } catch (error) {
       this.logger.error('Failed to connect to Okta:', error);
       throw new BadRequestException('Failed to connect to Okta');
+    }
+  }
+
+  async zendesk(payload: ViewSubmitAction): Promise<ZendeskConfig> {
+    try {
+      const parsed = parseInputBlocksSubmission(
+        payload.view.blocks as KnownBlock[],
+        payload.view.state.values
+      );
+
+      let apiToken = parsed[SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.API_TOKEN]
+        ?.selectedValue as string;
+      const subdomain = parsed[SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.SUBDOMAIN]
+        ?.selectedValue as string;
+      const defaultPrompt = parsed[SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.DEFAULT_PROMPT]
+        ?.selectedValue as string;
+      const email = parsed[SLACK_ACTIONS.ZENDESK_CONNECTION_ACTIONS.EMAIL]?.selectedValue as string;
+
+      if (!apiToken) {
+        const existingZendeskConfig = await this.zendeskConfigModel.findOne({
+          where: { team_id: payload.view.team_id }
+        });
+        apiToken = existingZendeskConfig!.access_token;
+      }
+
+      const authHeader = Buffer.from(`${email}/token:${apiToken}`).toString('base64');
+      const response = await this.httpService.axiosRef.get(
+        `https://${subdomain}.zendesk.com/api/v2/users/me.json`,
+        {
+          headers: {
+            Authorization: `Basic ${authHeader}`
+          }
+        }
+      );
+      if (!response.data.user?.id) {
+        throw new BadRequestException('Invalid Zendesk API token or email');
+      }
+
+      const [zendeskConfig] = await this.zendeskConfigModel.upsert({
+        access_token: apiToken,
+        team_id: payload.view.team_id,
+        subdomain,
+        default_prompt: defaultPrompt,
+        email
+      });
+
+      this.eventEmitter.emit(EVENT_NAMES.ZENDESK_CONNECTED, {
+        teamId: payload.view.team_id,
+        appId: payload.view.app_id!,
+        type: SUPPORTED_INTEGRATIONS.ZENDESK,
+        userId: payload.user.id
+      });
+
+      return zendeskConfig;
+    } catch (error) {
+      this.logger.error('Zendesk connection failed:', encryptForLogs(JSON.stringify(error)));
+      throw new BadRequestException('Invalid Zendesk API token or subdomain or email');
     }
   }
 }
