@@ -45,7 +45,8 @@ export class ZendeskConfig extends Model<
   })
   get access_token(): string {
     const value = this.getDataValue('access_token') as string;
-    return value;
+    if (!value) return value;
+    return decrypt(value);
   }
   set access_token(value: string) {
     if (!value) {

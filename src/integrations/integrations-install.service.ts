@@ -40,7 +40,7 @@ import { KnownBlock } from '@slack/web-api';
 import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { Sequelize } from 'sequelize-typescript';
 import { McpService } from './mcp.service';
-import { decrypt, encryptForLogs } from '@quix/lib/utils/encryption';
+import { encryptForLogs } from '@quix/lib/utils/encryption';
 @Injectable()
 export class IntegrationsInstallService {
   private readonly logger = new Logger(IntegrationsInstallService.name);
@@ -717,7 +717,7 @@ export class IntegrationsInstallService {
         const existingZendeskConfig = await this.zendeskConfigModel.findOne({
           where: { team_id: payload.view.team_id }
         });
-        apiToken = decrypt(existingZendeskConfig!.access_token);
+        apiToken = existingZendeskConfig!.access_token;
       }
 
       const authHeader = Buffer.from(`${email}/token:${apiToken}`).toString('base64');

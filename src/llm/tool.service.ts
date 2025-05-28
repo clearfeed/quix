@@ -16,7 +16,6 @@ import { createSlackToolsExport } from '@clearfeed-ai/quix-slack-agent';
 import { createOktaToolsExport } from '@clearfeed-ai/quix-okta-agent';
 import { createNotionToolsExport } from '@clearfeed-ai/quix-notion-agent';
 import { createZendeskToolsExport } from '@clearfeed-ai/quix-zendesk-agent';
-import { decrypt } from '@quix/lib/utils/encryption';
 
 @Injectable()
 export class ToolService {
@@ -147,7 +146,7 @@ export class ToolService {
         toolConfig: createZendeskToolsExport({
           subdomain: zendeskConfig.subdomain,
           auth: {
-            token: decrypt(zendeskConfig.access_token),
+            token: zendeskConfig.access_token,
             email: zendeskConfig.email
           }
         }),
