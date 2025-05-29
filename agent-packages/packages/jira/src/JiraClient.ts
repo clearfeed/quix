@@ -260,6 +260,21 @@ export class JiraClient {
     const response = await this.makeApiCall('GET', `/user?accountId=${accountId}`);
     return response;
   }
+
+  async validateJql(jql_query: string): Promise<void> {
+    try {
+      const response = await this.makeApiCall('POST', `/jql/parse?validation=strict`, {
+        data: {
+          queries: [jql_query]
+        }
+      });
+      if (response.queries.length > 0 && response.queries[0].errors?.length > 0) {
+        throw new Error('Invalid JQL query: ' + response.queries[0].errors?.join(', '));
+      }
+    } catch (error) {
+      throw new Error('Invalid JQL query: ' + error);
+    }
+  }
 }
 
 export default JiraClient;

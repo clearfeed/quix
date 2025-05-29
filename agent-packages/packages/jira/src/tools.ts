@@ -42,16 +42,27 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
   const tools: DynamicStructuredTool<any>[] = [
     new DynamicStructuredTool({
       name: 'find_jira_ticket',
-      description: `Search Jira issues by keyword or phrase in the summary or description. Use this when the user provides a general phrase to look up related issues. If an exact issue key is known, use get_jira_issue instead.`,
+      description: `Search for Jira issues using a valid JQL (Jira Query Language) query. 
+This tool helps retrieve relevant issues by allowing complex filtering based on project, issue type, assignee, status, priority, labels, sprint, and more.`,
+
       schema: z.object({
-        keyword: z
-          .string()
-          .describe(
-            'A keyword or phrase describing the issue to search for, such as an error message or feature name.'
-          )
+        jql_query: z.string().describe(`
+          A valid Jira Query Language (JQL) query used to filter issues.
+          - When a user is mentioned in the query, first fetch users using the "search_jira_users" tool and then use the account ID of the mentioned user.
+          ${config.defaultConfig?.projectKey ? '- If no project is provided, use the default project as ' + config.defaultConfig.projectKey : ''}
+          `),
+        maxResults: z
+          .number()
+          .int()
+          .min(1)
+          .max(20)
+          .default(10)
+          .describe('The maximum number of items to return per page.')
       }),
-      func: async ({ keyword }: { keyword: string }): Promise<BaseResponse<SearchIssuesResponse>> =>
-        service.searchIssues(keyword)
+      func: async (args: {
+        jql_query: string;
+        maxResults: number;
+      }): Promise<BaseResponse<SearchIssuesResponse>> => service.searchIssues(args)
     }),
     new DynamicStructuredTool<ZodObject<{ issueId: z.ZodString }>>({
       name: 'get_jira_issue',

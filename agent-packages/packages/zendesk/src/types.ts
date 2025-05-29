@@ -4,7 +4,7 @@ import { Ticket, TicketComment } from 'node-zendesk/dist/types/clients/core/tick
 export type ZendeskAuth =
   | {
       token: string;
-      username: string;
+      email: string;
     }
   | {
       oauthToken: string;
