@@ -231,11 +231,14 @@ export class QuixAgent {
             z.object({
               type: z.enum(['tool', 'reason']),
               tool: z.string().optional(),
-              args: z.object({}).strict().optional(),
+              args: z.object({}).optional(),
               input: z.string().optional()
             })
           )
-        })
+        }),
+        {
+          method: 'functionCalling'
+        }
       )
     ]);
 
