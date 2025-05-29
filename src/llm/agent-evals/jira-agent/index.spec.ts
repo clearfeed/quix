@@ -13,6 +13,9 @@ import { TestRunDetail } from '../common/types';
 import { AIMessage } from '@langchain/core/messages';
 import { getTestOpenAIProvider } from '../common/utils';
 
+const normalize = (str: string) =>
+  str.replace(/\\"/g, '"').replace(/'/g, '').replace(/\s+/g, ' ').trim();
+
 describe('QuixAgent Jira – real LLM + mocked tools', () => {
   let agent: QuixAgent;
   let jiraToolsDef: ReturnType<typeof createJiraToolsExport>;
@@ -34,7 +37,11 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
     evaluator = createTrajectoryMatchEvaluator({
       trajectoryMatchMode: 'superset',
       toolArgsMatchMode: 'superset',
-      toolArgsMatchOverrides: {}
+      toolArgsMatchOverrides: {
+        find_jira_ticket: (a, b) => {
+          return normalize(a.jql_query as string) === normalize(b.jql_query as string);
+        }
+      }
     });
 
     agent = new QuixAgent();

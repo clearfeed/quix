@@ -42,7 +42,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          keyword: 'login'
+          jql_query: "summary ~ 'login' OR description ~ 'login'"
         }
       }
     ],
@@ -352,7 +352,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          keyword: "project = FEAT AND priority = High AND assignee = 'user-alice'"
+          jql_query: "project = FEAT AND priority = High AND assignee = 'user-alice'"
         }
       }
     ],
@@ -398,7 +398,8 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          keyword: 'changes to the login functionality'
+          jql_query:
+            "summary ~ 'changes to the login functionality' OR description ~ 'changes to the login functionality'"
         }
       }
     ],
@@ -539,7 +540,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          keyword: 'project = SUPP AND priority = Highest AND type = Bug'
+          jql_query: 'project = SUPP AND priority = Highest AND type = Bug'
         }
       }
     ],
@@ -633,7 +634,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          keyword: 'project = FEAT AND labels = authentication'
+          jql_query: 'project = FEAT AND labels = authentication'
         }
       }
     ],
@@ -665,7 +666,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          keyword: "project = SUPP AND status = 'In Progress'"
+          jql_query: "project = SUPP AND status = 'In Progress'"
         }
       }
     ],
