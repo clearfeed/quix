@@ -65,9 +65,9 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         arguments: {
           dealname: 'TechNova – Annual License',
           amount: 50000,
-          dealstage: 'Qualification',
+          dealstage: '5001',
           closedate: '2024-09-30',
-          pipeline: 'Sales Pipeline',
+          pipeline: '4001',
           description: undefined,
           companyId: undefined,
           contactId: undefined,
@@ -438,7 +438,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'search_hubspot_tickets',
         arguments: {
-          keyword: undefined,
+          keyword: 'Sarah Johnson',
           ownerId: '1001',
           stage: undefined,
           priority: TicketPriorityEnum.URGENT
@@ -449,7 +449,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       search_hubspot_tickets: {
         tickets: [
           {
-            id: 'ticket-2001',
+            id: '2001',
             subject: 'API failures for Acme Corp',
             content: 'Intermittent API timeouts',
             priority: 'URGENT',
@@ -626,7 +626,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
           priority: TaskPriorityEnum.MEDIUM,
           taskType: TaskTypeEnum.TODO,
           dueDate: '2024-05-20',
-          ownerId: '1001'
+          ownerId: '3001'
         }
       }
     ],
@@ -704,7 +704,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'update_hubspot_ticket',
         arguments: {
-          ticketId: 'ticket-2001',
+          ticketId: '2001',
           priority: TicketPriorityEnum.URGENT,
           subject: undefined,
           content: undefined,
@@ -714,7 +714,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       }
     ],
     tool_mock_response_overrides: {
-      update_hubspot_ticket: { ticketId: 'ticket-2001', priority: 'URGENT' }
+      update_hubspot_ticket: { ticketId: '2001', priority: 'URGENT' }
     },
     expected_response: 'Ticket ticket-2001 priority set to URGENT.'
   },
@@ -751,7 +751,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'update_hubspot_ticket',
         arguments: {
-          ticketId: 'ticket-9999',
+          ticketId: '9999',
           stage: 'Closed',
           subject: undefined,
           content: undefined,
@@ -794,7 +794,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'associate_ticket_with_entity',
         arguments: {
-          ticketId: 'ticket-2001',
+          ticketId: '2001',
           associatedObjectType: HubspotEntityType.DEAL,
           associatedObjectId: '6001'
         }
@@ -802,7 +802,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     ],
     tool_mock_response_overrides: {
       associate_ticket_with_entity: {
-        ticketId: 'ticket-2001',
+        ticketId: '2001',
         associatedObjectType: HubspotEntityType.DEAL,
         associatedObjectId: '6001'
       }

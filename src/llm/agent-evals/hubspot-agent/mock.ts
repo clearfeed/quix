@@ -182,9 +182,25 @@ export type ToolResponseTypeMap = {
     success?: boolean;
     error?: string;
   }) => BaseResponse<{ deal: HubspotDealResponse; dealUrl: string }>;
+  get_hubspot_owners: (overrides?: {
+    owners?: HubspotOwner[];
+    success?: boolean;
+    error?: string;
+  }) => BaseResponse<{ owners: HubspotOwner[] }>;
 };
 
 const toolResponseMap: ToolResponseTypeMap = {
+  get_hubspot_owners: (overrides = {}): BaseResponse<{ owners: HubspotOwner[] }> => ({
+    success: overrides.success ?? true,
+    data: {
+      owners: overrides.owners ?? [
+        { id: '1001', firstName: 'Sarah', lastName: 'Johnson', email: 'sjohnson@example.com' },
+        { id: '1002', firstName: 'Michael', lastName: 'Chen', email: 'mchen@example.com' },
+        { id: '1003', firstName: 'Priya', lastName: 'Patel', email: 'ppatel@example.com' }
+      ]
+    },
+    error: overrides.error
+  }),
   search_hubspot_deals: (overrides = {}): SearchDealsResponse => ({
     success: overrides.success ?? true,
     data: {
