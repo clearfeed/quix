@@ -4,10 +4,15 @@ import { TestCase } from './types';
 import { ChatOpenAI } from '@langchain/openai';
 import { LLMContext } from '../../types';
 
-export function createMockedTools<T extends Record<string, any>>(
+export function createMockedTools<
+  T extends Record<string, (overrides?: unknown) => unknown> = Record<
+    string,
+    (overrides?: unknown) => unknown
+  >
+>(
   testCase: TestCase<T>,
   toolResponseMap: T,
-  originalTools: any[]
+  originalTools: DynamicStructuredTool[]
 ): ToolConfig['tools'] {
   return originalTools.map(
     (tool) =>

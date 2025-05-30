@@ -5,6 +5,7 @@ import {
 } from '@slack/web-api';
 import { TestCase } from '../common/types';
 import { createMockedTools } from '../common/utils';
+import { DynamicStructuredTool } from '@langchain/core/tools';
 
 export type ToolResponseTypeMap = {
   slack_list_channels: (overrides?: {
@@ -225,7 +226,7 @@ const toolResponseMap: ToolResponseTypeMap = {
 
 export function createSlackMockedTools(
   testCase: TestCase<ToolResponseTypeMap>,
-  originalTools: any[]
+  originalTools: DynamicStructuredTool[]
 ) {
   return createMockedTools(testCase, toolResponseMap, originalTools);
 }
