@@ -2,12 +2,17 @@ import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { TestCase } from './types';
 import { ChatOpenAI } from '@langchain/openai';
+import { LLMContext } from '../../types';
 
-export function createMockedTools<T extends Record<string, any>>(
-  config: unknown,
+export function createMockedTools<
+  T extends Record<string, (overrides?: unknown) => unknown> = Record<
+    string,
+    (overrides?: unknown) => unknown
+  >
+>(
   testCase: TestCase<T>,
   toolResponseMap: T,
-  originalTools: any[]
+  originalTools: DynamicStructuredTool[]
 ): ToolConfig['tools'] {
   return originalTools.map(
     (tool) =>
@@ -30,3 +35,13 @@ export function getTestOpenAIProvider(apiKey = process.env.OPENAI_API_KEY) {
     apiKey
   });
 }
+
+export const getLLMContextFromChatHistory = (
+  chatHistory: TestCase['chat_history']
+): LLMContext[] => {
+  return chatHistory.map((m) => ({
+    role: m.is_bot ? 'assistant' : 'user',
+    content: m.message,
+    name: m.is_bot ? 'Quix' : m.author
+  }));
+};
