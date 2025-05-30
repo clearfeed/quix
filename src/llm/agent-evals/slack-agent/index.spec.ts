@@ -33,13 +33,19 @@ describe('QuixAgent Slack – real LLM + mocked tools', () => {
       trajectoryMatchMode: 'superset',
       toolArgsMatchMode: 'superset',
       toolArgsMatchOverrides: {
-        slack_post_message: (a, b) => {
-          // a - Actual - AI generated
-          // b - Expected
-          return isString(a.text) && !isEmpty(a.text) && a.channel_id === b.channel_id;
+        slack_post_message: (actualToolCalArguments, referenceToolCallArguments) => {
+          return (
+            isString(actualToolCalArguments.text) &&
+            !isEmpty(actualToolCalArguments.text) &&
+            actualToolCalArguments.channel_id === referenceToolCallArguments.channel_id
+          );
         },
-        slack_get_channel_history: (a, b) => {
-          return isNumber(a.limit) && a.limit > 0 && a.channel_id === b.channel_id;
+        slack_get_channel_history: (actualToolCalArguments, referenceToolCallArguments) => {
+          return (
+            isNumber(actualToolCalArguments.limit) &&
+            actualToolCalArguments.limit > 0 &&
+            actualToolCalArguments.channel_id === referenceToolCallArguments.channel_id
+          );
         }
       }
     });
