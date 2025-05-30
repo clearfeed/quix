@@ -368,9 +368,8 @@ const toolResponseMap: ToolResponseTypeMap = {
 };
 
 export function createJiraMockedTools(
-  config: unknown,
   testCase: TestCase<ToolResponseTypeMap>,
   originalTools: any[]
 ) {
-  return createMockedTools(config, testCase, toolResponseMap, originalTools);
+  return createMockedTools(testCase, toolResponseMap, originalTools);
 }

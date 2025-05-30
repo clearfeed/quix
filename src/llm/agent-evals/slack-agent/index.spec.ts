@@ -10,7 +10,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { TestRunDetail } from '../common/types';
 import { AIMessage } from '@langchain/core/messages';
-import { getTestOpenAIProvider } from '../common/utils';
+import { getLLMContextFromChatHistory, getTestOpenAIProvider } from '../common/utils';
 import { isEmpty, isNumber, isString } from 'lodash';
 
 describe('QuixAgent Slack – real LLM + mocked tools', () => {
@@ -56,7 +56,7 @@ describe('QuixAgent Slack – real LLM + mocked tools', () => {
     it(
       testCase.description,
       async () => {
-        const mockedSlackTools = createSlackMockedTools(slackConfig, testCase, slackToolsDef.tools);
+        const mockedSlackTools = createSlackMockedTools(testCase, slackToolsDef.tools);
 
         const toolsConfig: AvailableToolsWithConfig = {
           slack: {
@@ -67,11 +67,7 @@ describe('QuixAgent Slack – real LLM + mocked tools', () => {
           }
         };
 
-        const previousMessages: LLMContext[] = testCase.chat_history.map((m) => ({
-          role: m.is_bot ? 'assistant' : 'user',
-          content: m.message,
-          name: m.is_bot ? 'Quix' : m.author
-        }));
+        const previousMessages: LLMContext[] = getLLMContextFromChatHistory(testCase.chat_history);
 
         const result = await agent.processWithTools(
           testCase.invocation.message,

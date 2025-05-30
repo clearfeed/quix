@@ -11,7 +11,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { TestRunDetail } from '../common/types';
 import { AIMessage } from '@langchain/core/messages';
-import { getTestOpenAIProvider } from '../common/utils';
+import { getLLMContextFromChatHistory, getTestOpenAIProvider } from '../common/utils';
 
 const normalize = (str: string) =>
   str.replace(/\\"/g, '"').replace(/'/g, '').replace(/\s+/g, ' ').trim();
@@ -57,7 +57,7 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
     it(
       testCase.description,
       async () => {
-        const mockedJiraTools = createJiraMockedTools(jiraConfig, testCase, jiraToolsDef.tools);
+        const mockedJiraTools = createJiraMockedTools(testCase, jiraToolsDef.tools);
 
         const toolsConfig: AvailableToolsWithConfig = {
           jira: {
@@ -68,11 +68,7 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
           }
         };
 
-        const previousMessages: LLMContext[] = testCase.chat_history.map((m) => ({
-          role: m.is_bot ? 'assistant' : 'user',
-          content: m.message,
-          name: m.is_bot ? 'Quix' : m.author
-        }));
+        const previousMessages: LLMContext[] = getLLMContextFromChatHistory(testCase.chat_history);
 
         const result = await agent.processWithTools(
           testCase.invocation.message,
