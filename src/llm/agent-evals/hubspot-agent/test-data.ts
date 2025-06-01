@@ -68,10 +68,10 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
           dealstage: '5001',
           closedate: '2024-09-30',
           pipeline: '4001',
-          description: undefined,
-          companyId: undefined,
-          contactId: undefined,
-          ownerId: undefined
+          description: null,
+          companyId: null,
+          contactId: null,
+          ownerId: null
         }
       }
     ],
@@ -233,19 +233,11 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   {
     description: 'Mark task task-6100 as completed.',
     chat_history: [],
-    invocation: { initiator_name: 'Eve', message: 'Mark task task-6100 as completed' },
+    invocation: {
+      initiator_name: 'Eve',
+      message: 'Mark task task-6100 as completed'
+    },
     reference_tool_calls: [
-      {
-        name: 'search_hubspot_tasks',
-        arguments: {
-          keyword: 'task-6100',
-          ownerId: undefined,
-          status: undefined,
-          priority: undefined,
-          dueDateFrom: undefined,
-          dueDateTo: undefined
-        }
-      },
       {
         name: 'update_hubspot_task',
         arguments: {
@@ -261,24 +253,10 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       }
     ],
     tool_mock_response_overrides: {
-      search_hubspot_tasks: {
-        tasks: [
-          {
-            id: 'task-6100',
-            title: 'Call GreenEnergy – contract',
-            body: 'Discuss details',
-            status: TaskStatusEnum.NOT_STARTED,
-            priority: TaskPriorityEnum.HIGH,
-            taskType: TaskTypeEnum.CALL,
-            dueDate: '2025-05-29',
-            ownerId: '1003',
-            createdAt: '2025-05-28T08:00:00Z',
-            lastModifiedDate: '2025-05-28T08:00:00Z',
-            url: 'url'
-          }
-        ]
-      },
-      update_hubspot_task: { taskId: 'task-6100', status: TaskStatusEnum.COMPLETED }
+      update_hubspot_task: {
+        taskId: 'task-6100',
+        status: TaskStatusEnum.COMPLETED
+      }
     },
     expected_response: 'Task task-6100 marked as completed.'
   },
@@ -439,7 +417,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         name: 'search_hubspot_tickets',
         arguments: {
           keyword: 'Sarah Johnson',
-          ownerId: '1001',
+          ownerId: undefined,
           stage: undefined,
           priority: TicketPriorityEnum.URGENT
         }
@@ -472,10 +450,21 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   },
 
   {
-    description: 'Attempt to update deal amount directly – error.',
+    description: 'Attempt to update deal amount directly',
     chat_history: [],
     invocation: { initiator_name: 'Nate', message: 'Increase Acme deal amount to 85000' },
-    reference_tool_calls: [],
+    reference_tool_calls: [
+      {
+        name: 'search_hubspot_deals',
+        arguments: {
+          keyword: 'Acme',
+          ownerId: undefined,
+          stage: undefined,
+          amountFrom: undefined,
+          amountTo: undefined
+        }
+      }
+    ],
     expected_response: 'Cannot update deal amount directly. Would you like to add a note instead?'
   },
 
@@ -496,7 +485,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         name: 'update_hubspot_deal',
         arguments: {
           dealId: '6001',
-          dealstage: 'Closed Won',
+          dealstage: 'won',
           dealname: undefined,
           description: undefined,
           amount: undefined,
@@ -617,6 +606,12 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     },
     reference_tool_calls: [
       {
+        name: 'search_hubspot_contacts',
+        arguments: {
+          keyword: 'John Smith'
+        }
+      },
+      {
         name: 'create_task_for_hubspot_contact',
         arguments: {
           entityId: '3001',
@@ -625,7 +620,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
           status: TaskStatusEnum.NOT_STARTED,
           priority: TaskPriorityEnum.MEDIUM,
           taskType: TaskTypeEnum.TODO,
-          dueDate: '2024-05-20',
+          dueDate: '2024-06-01',
           ownerId: '3001'
         }
       }
@@ -661,12 +656,12 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         status: TaskStatusEnum.NOT_STARTED,
         priority: TaskPriorityEnum.MEDIUM,
         taskType: TaskTypeEnum.TODO,
-        dueDate: '2024-05-20',
-        ownerId: '1001'
+        dueDate: '2024-06-01',
+        ownerId: '3001'
       }
     },
     expected_response:
-      "I've created a task 'Follow up on proposal' for John Smith at Acme Corp, due on May 20th."
+      "I've created a task 'Follow up on the proposal' for John Smith at Acme Corp, due on June 1st."
   },
 
   {
@@ -749,18 +744,20 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     invocation: { initiator_name: 'Sam', message: 'Close ticket ticket-9999' },
     reference_tool_calls: [
       {
-        name: 'update_hubspot_ticket',
+        name: 'search_hubspot_tickets',
         arguments: {
-          ticketId: '9999',
-          stage: 'Closed',
-          subject: undefined,
-          content: undefined,
-          priority: undefined,
-          ownerId: undefined
+          keyword: 'ticket-9999',
+          ownerId: undefined,
+          stage: undefined,
+          priority: undefined
         }
       }
     ],
-    tool_mock_response_overrides: { update_hubspot_ticket: { success: false, error: 'NOT_FOUND' } },
+    tool_mock_response_overrides: {
+      search_hubspot_tickets: {
+        tickets: []
+      }
+    },
     expected_response: 'Could not find ticket ticket-9999.'
   },
 

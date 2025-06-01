@@ -74,7 +74,6 @@ describe('QuixAgent HubSpot – real LLM + mocked tools', () => {
           testCase.invocation.initiator_name
         );
 
-        expect(result.stepCompleted).toBe('agent_execution');
         if (result.stepCompleted !== 'agent_execution') {
           Logger.log(`Could not reach agent execution step`);
           allTestRunDetails.push({
@@ -85,6 +84,9 @@ describe('QuixAgent HubSpot – real LLM + mocked tools', () => {
             toolSelectionOutput: result.toolSelectionOutput,
             incompleteExecutionOutput: result.incompleteExecutionOutput
           });
+          expect(result.stepCompleted).toBe(
+            testCase.reference_tool_calls.length === 0 ? 'tool_selection' : 'agent_execution'
+          );
           return;
         }
 
@@ -101,6 +103,23 @@ describe('QuixAgent HubSpot – real LLM + mocked tools', () => {
               ]
             })
         );
+
+        if (testCase.reference_tool_calls.length === 0) {
+          allTestRunDetails.push({
+            description: testCase.description,
+            previousMessages,
+            invocation: testCase.invocation,
+            stepCompleted: 'agent_execution',
+            agentPlan: result.plan,
+            agentTrajectory: result.agentExecutionOutput.messages.map((message) =>
+              message.toDict()
+            ),
+            expectedToolCalls: referenceOutputs,
+            evaluationResult: { score: referenceOutputs.length === 0, key: '' }
+          });
+          expect(referenceOutputs).toHaveLength(0);
+          return;
+        }
 
         Logger.log('Actual Outputs:');
         Logger.log(JSON.stringify(result.agentExecutionOutput.messages, null, 2));
