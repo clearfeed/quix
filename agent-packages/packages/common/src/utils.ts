@@ -4,9 +4,9 @@ function removeNulls(obj: unknown): unknown {
   if (Array.isArray(obj)) {
     return obj.map(removeNulls);
   } else if (obj && typeof obj === 'object') {
-    const newObj: any = {};
+    const newObj: Record<string, unknown> = {};
     for (const key in obj) {
-      const value = (obj as any)[key];
+      const value = (obj as Record<string, unknown>)[key];
       if (value !== null) {
         newObj[key] = removeNulls(value);
       }
