@@ -140,7 +140,6 @@ This tool helps retrieve relevant issues by allowing complex filtering based on 
       description: 'Update an existing Jira issue.',
       schema: withNullPreprocessing(updateJiraTicketSchema),
       func: async (args: UpdateIssueParams): Promise<UpdateIssueResponse> => {
-        console.log('Arguments', args);
         return service.updateIssue(args);
       }
     }),
