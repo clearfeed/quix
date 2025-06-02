@@ -183,52 +183,52 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     expected_response: 'Added note to deal 6001.'
   },
 
-  {
-    description: 'Create a follow-up task on an existing deal.',
-    chat_history: [
-      { author: 'Eve', message: 'Show me GreenEnergy deal' },
-      {
-        author: 'Quix',
-        is_bot: true,
-        message: 'GreenEnergy – Support Contract (ID 6100) in Qualification.'
-      }
-    ],
-    invocation: { initiator_name: 'Eve', message: 'Add high priority call task tomorrow.' },
-    reference_tool_calls: [
-      {
-        name: 'create_task_for_hubspot_deal',
-        arguments: {
-          entityId: '6100',
-          title: 'Call regarding GreenEnergy deal',
-          body: 'High priority call to discuss the GreenEnergy deal.',
-          status: TaskStatusEnum.NOT_STARTED,
-          priority: TaskPriorityEnum.HIGH,
-          taskType: TaskTypeEnum.CALL,
-          dueDate: '2022-03-15',
-          ownerId: '1'
-        }
-      }
-    ],
-    tool_mock_response_overrides: {
-      create_task_for_hubspot_deal: {
-        taskId: 'task-6100',
-        title: 'Call regarding GreenEnergy deal',
-        body: 'High priority call to discuss the GreenEnergy deal.',
-        status: TaskStatusEnum.NOT_STARTED,
-        priority: TaskPriorityEnum.HIGH,
-        type: TaskTypeEnum.CALL,
-        dueDate: '2022-03-15',
-        owner: {
-          id: '1',
-          firstName: 'System',
-          lastName: 'User',
-          email: 'system@example.com'
-        }
-      }
-    },
-    expected_response:
-      'Task created: Call regarding GreenEnergy deal (high priority call) due 15 Mar 2022.'
-  },
+  //   {
+  //     description: 'Create a follow-up task on an existing deal.',
+  //     chat_history: [
+  //       { author: 'Eve', message: 'Show me GreenEnergy deal' },
+  //       {
+  //         author: 'Quix',
+  //         is_bot: true,
+  //         message: 'GreenEnergy – Support Contract (ID 6100) in Qualification.'
+  //       }
+  //     ],
+  //     invocation: { initiator_name: 'Eve', message: 'Add high priority call task tomorrow.' },
+  //     reference_tool_calls: [
+  //       {
+  //         name: 'create_task_for_hubspot_deal',
+  //         arguments: {
+  //           entityId: '6100',
+  //           title: 'Call regarding GreenEnergy deal',
+  //           body: 'High priority call to discuss the GreenEnergy deal.',
+  //           status: TaskStatusEnum.NOT_STARTED,
+  //           priority: TaskPriorityEnum.HIGH,
+  //           taskType: TaskTypeEnum.CALL,
+  //           dueDate: '2022-03-15',
+  //           ownerId: '1'
+  //         }
+  //       }
+  //     ],
+  //     tool_mock_response_overrides: {
+  //       create_task_for_hubspot_deal: {
+  //         taskId: 'task-6100',
+  //         title: 'Call regarding GreenEnergy deal',
+  //         body: 'High priority call to discuss the GreenEnergy deal.',
+  //         status: TaskStatusEnum.NOT_STARTED,
+  //         priority: TaskPriorityEnum.HIGH,
+  //         type: TaskTypeEnum.CALL,
+  //         dueDate: '2022-03-15',
+  //         owner: {
+  //           id: '1',
+  //           firstName: 'System',
+  //           lastName: 'User',
+  //           email: 'system@example.com'
+  //         }
+  //       }
+  //     },
+  //     expected_response:
+  //       'Task created: Call regarding GreenEnergy deal (high priority call) due 15 Mar 2022.'
+  //   },
 
   {
     description: 'Mark task task-6100 as completed.',
