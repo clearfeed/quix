@@ -294,6 +294,12 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     },
     reference_tool_calls: [
       {
+        name: 'get_hubspot_pipelines',
+        arguments: {
+          entityType: 'ticket'
+        }
+      },
+      {
         name: 'search_hubspot_companies',
         arguments: {
           keyword: 'Acme Corp'
@@ -302,8 +308,6 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'create_hubspot_ticket',
         arguments: {
-          subject: 'API failures for Acme Corp',
-          content: 'Intermittent API timeouts',
           priority: TicketPriorityEnum.URGENT,
           pipeline: '4002',
           stage: undefined,
@@ -344,6 +348,22 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         ticketId: 'ticket-2001',
         associatedObjectType: HubspotEntityType.COMPANY,
         associatedObjectId: '2001'
+      },
+      get_hubspot_pipelines: {
+        pipelines: [
+          {
+            id: '4002',
+            label: 'Support Pipeline',
+            archived: false,
+            displayOrder: 1,
+            stages: [
+              { id: '1', label: 'New', archived: false, displayOrder: 1 },
+              { id: '2', label: 'Waiting on contact', archived: false, displayOrder: 2 },
+              { id: '3', label: 'Waiting on us', archived: false, displayOrder: 3 },
+              { id: '4', label: 'Closed', archived: false, displayOrder: 4 }
+            ]
+          }
+        ]
       }
     },
     expected_response: "Created urgent ticket 'API failures for Acme Corp' (ID ticket-2001)."
@@ -741,12 +761,15 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   {
     description: 'Attempt to update a ticket that does not exist.',
     chat_history: [],
-    invocation: { initiator_name: 'Sam', message: 'Close ticket ticket-9999' },
+    invocation: {
+      initiator_name: 'Sam',
+      message: 'Close ticket about authentication issues in the website'
+    },
     reference_tool_calls: [
       {
         name: 'search_hubspot_tickets',
         arguments: {
-          keyword: 'ticket-9999',
+          keyword: 'authentication issues',
           ownerId: undefined,
           stage: undefined,
           priority: undefined
@@ -758,7 +781,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         tickets: []
       }
     },
-    expected_response: 'Could not find ticket ticket-9999.'
+    expected_response: 'Could not find ticket about authentication issues in the website.'
   },
 
   {
