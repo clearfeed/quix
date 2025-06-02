@@ -7,11 +7,11 @@ import {
   JiraUserResponse,
   JiraCommentResponse,
   JiraIssueComments,
-  UpdateIssueFields,
   UpdateIssueResponse,
   JiraIssueTypeResponse,
   JiraCreateIssueMetadata,
-  JiraUpdateIssueMetadata
+  JiraUpdateIssueMetadata,
+  UpdateIssueParams
 } from './types';
 import axios, { AxiosInstance } from 'axios';
 import * as jwt from 'atlassian-jwt';
@@ -205,7 +205,10 @@ export class JiraClient {
     return response;
   }
 
-  async updateIssue(issueId: string, fields: UpdateIssueFields): Promise<UpdateIssueResponse> {
+  async updateIssue(
+    issueId: string,
+    fields: UpdateIssueParams['fields']
+  ): Promise<UpdateIssueResponse> {
     const { assigneeId, summary, priority, labels, description } = fields;
     const response = await this.makeApiCall('PUT', `/issue/${issueId}`, {
       data: {
