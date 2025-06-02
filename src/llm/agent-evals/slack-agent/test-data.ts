@@ -202,6 +202,47 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     }
   },
   {
+    description:
+      'Summarize a conversation from a shared Slack thread link and post the summary in a channel',
+    chat_history: [],
+    invocation: {
+      initiator_name: 'John Snow',
+      message:
+        '@Quix Can you summarize the conversation from slack thread: https://slack.com/archives/C134DSD/p1716282000000001 and post it in <#C874HKJ|>?'
+    },
+    reference_tool_calls: [
+      {
+        name: 'slack_get_thread_replies',
+        arguments: {
+          channel_id: 'C134DSD',
+          thread_ts: '1716282000.000001',
+          limit: 100
+        }
+      },
+      {
+        name: 'slack_post_message',
+        arguments: {
+          channel_id: 'C874HKJ',
+          text: 'Summary of the feature discussion thread:\n\n1. Initial proposal for the new feature\n2. Team discussed implementation approach\n3. Agreed on using React for the frontend\n4. Set timeline for development to 2 weeks\n5. Assigned tasks to team members'
+        }
+      }
+    ],
+    expected_response:
+      'Posted the thread summary to <#C874HKJ|>. The summary includes the key points discussed about the new feature, including the implementation approach, timeline, and task assignments.',
+    tool_mock_response_overrides: {
+      slack_get_thread_replies: {
+        replies: [
+          { user: 'U123ALICE', text: 'I propose we build a new feature for automated reporting' },
+          { user: 'U456JOHN', text: 'Great idea! Should we use React for the frontend?' },
+          { user: 'U789ROBB', text: 'Yes, React would be perfect for this' },
+          { user: 'U123ALICE', text: 'How long do we think this will take?' },
+          { user: 'U456JOHN', text: 'I estimate 2 weeks for the full implementation' },
+          { user: 'U789ROBB', text: 'I can take the frontend tasks, Alice can handle the backend' }
+        ]
+      }
+    }
+  },
+  {
     description: 'Leave <#C874HKJ|> channel',
     chat_history: [
       {
