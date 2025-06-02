@@ -508,9 +508,8 @@ const toolResponseMap: ToolResponseTypeMap = {
 };
 
 export function createHubspotMockedTools(
-  config: unknown,
   testCase: TestCase<ToolResponseTypeMap>,
   originalTools: any[]
 ) {
-  return createMockedTools(config, testCase, toolResponseMap, originalTools);
+  return createMockedTools(testCase, toolResponseMap, originalTools);
 }
