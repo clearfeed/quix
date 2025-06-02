@@ -7,7 +7,10 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       'List all public channels in the Slack workspace after a discussion about onboarding.',
     chat_history: [
       { author: 'Alice Hightower', message: 'We need to onboard new members soon.' },
-      { author: 'John snow', message: "Let's make sure they know all the channels." }
+      {
+        author: 'John snow',
+        message: "Let's make sure they know all the channels that Quix is part of."
+      }
     ],
     invocation: {
       initiator_name: 'Alice Hightower',
@@ -33,7 +36,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     ],
     invocation: {
       initiator_name: 'Obreyn Martell',
-      message: '@Quix Post the summary of the above conversation in <#C134DSD|>'
+      message: '@Quix Post the summary of ^^ in <#C134DSD|>'
     },
     reference_tool_calls: [
       {
