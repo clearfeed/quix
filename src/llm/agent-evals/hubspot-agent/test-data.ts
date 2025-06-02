@@ -714,7 +714,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   {
     description: 'Raise priority of a ticket.',
     chat_history: [],
-    invocation: { initiator_name: 'Quinn', message: 'Make ticket-2001 urgent' },
+    invocation: { initiator_name: 'Quinn', message: 'Mark ticket with id 2001 urgent' },
     reference_tool_calls: [
       {
         name: 'update_hubspot_ticket',
