@@ -1,7 +1,6 @@
 import { z, ZodObject } from 'zod';
 import { JiraService } from './index';
 import {
-  CreateIssueParams,
   GetIssueResponse,
   SearchIssuesResponse,
   AssignIssueResponse,
@@ -10,12 +9,23 @@ import {
   AddCommentResponse,
   GetCommentsResponse,
   UpdateIssueResponse,
-  UpdateIssueFields,
   SearchUsersResponse,
-  GetIssueTypesResponse
+  GetIssueTypesResponse,
+  CreateIssueParams,
+  UpdateIssueParams
 } from './types';
-import { BaseResponse, ToolConfig } from '@clearfeed-ai/quix-common-agent';
+import { BaseResponse, ToolConfig, withNullPreprocessing } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
+import {
+  addJiraCommentSchema,
+  assignJiraIssueSchema,
+  createJiraIssueSchema,
+  findJiraTicketSchema,
+  getJiraCommentsSchema,
+  getJiraIssueSchema,
+  searchJiraUsersSchema,
+  updateJiraTicketSchema
+} from './schema';
 
 const JIRA_TOOL_SELECTION_PROMPT = `
 For Jira-related queries, ask for extra information only if it is required. Consider using Jira tools when the user wants to:
@@ -45,20 +55,15 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
       description: `Search for Jira issues using a valid JQL (Jira Query Language) query. 
 This tool helps retrieve relevant issues by allowing complex filtering based on project, issue type, assignee, status, priority, labels, sprint, and more.`,
 
-      schema: z.object({
-        jql_query: z.string().describe(`
+      schema: withNullPreprocessing(
+        findJiraTicketSchema.extend({
+          jql_query: z.string().describe(`
           A valid Jira Query Language (JQL) query used to filter issues.
           - When a user is mentioned in the query, first fetch users using the "search_jira_users" tool and then use the account ID of the mentioned user.
           ${config.defaultConfig?.projectKey ? '- If no project is provided, use the default project as ' + config.defaultConfig.projectKey : ''}
-          `),
-        maxResults: z
-          .number()
-          .int()
-          .min(1)
-          .max(20)
-          .default(10)
-          .describe('The maximum number of items to return per page.')
-      }),
+          `)
+        })
+      ),
       func: async (args: {
         jql_query: string;
         maxResults: number;
@@ -68,9 +73,7 @@ This tool helps retrieve relevant issues by allowing complex filtering based on 
       name: 'get_jira_issue',
       description:
         'Retrieve detailed information about a specific Jira issue using its key or ID. Use this when the user provides an exact issue key or ID.',
-      schema: z.object({
-        issueId: z.string().describe('The key or ID of the Jira issue (e.g., "PROJ-123").')
-      }),
+      schema: getJiraIssueSchema,
       func: async ({ issueId }: { issueId: string }): Promise<GetIssueResponse> =>
         service.getIssue(issueId)
     }),
@@ -82,7 +85,6 @@ This tool helps retrieve relevant issues by allowing complex filtering based on 
           ? z
               .string()
               .describe('The key of the project for which to fetch issue types')
-              .optional()
               .default(config.defaultConfig.projectKey)
           : z.string().describe('The key of the project for which to fetch issue types')
       }),
@@ -93,42 +95,24 @@ This tool helps retrieve relevant issues by allowing complex filtering based on 
     new DynamicStructuredTool({
       name: 'create_jira_issue',
       description: 'Create a new Jira issue.',
-      schema: z.object({
-        projectKey: config.defaultConfig?.projectKey
-          ? z
-              .string()
-              .describe('The key of the project where the issue will be created')
-              .optional()
-              .default(config.defaultConfig.projectKey)
-          : z
-              .string()
-              .describe('The key of the project where the issue will be created (required)'),
-        summary: z.string().describe('A brief summary or title for the issue'),
-        description: z.string().describe('A detailed description of the issue').optional(),
-        issueTypeId: z
-          .string()
-          .describe(
-            `The ID of the issue type. Use the 'get_jira_issue_types' tool to find the appropriate ID based on the user's request and issue type details.`
-          ),
-        priority: z.string().describe('The name of the priority (e.g., High, Medium)').optional(),
-        assigneeId: z
-          .string()
-          .describe(
-            'The account ID of the user to assign the issue to. Use the "search_jira_users" tool to find account ID of a user by name or email.'
-          )
-          .optional(),
-        labels: z.array(z.string()).optional().describe('Labels to attach to the issue')
-      }),
-      func: async (params: CreateIssueParams): Promise<GetIssueResponse> =>
-        service.createIssue(params)
+      schema: withNullPreprocessing(
+        createJiraIssueSchema.extend({
+          projectKey: config.defaultConfig?.projectKey
+            ? z
+                .string()
+                .describe('The key of the project where the issue will be created')
+                .default(config.defaultConfig.projectKey)
+            : z
+                .string()
+                .describe('The key of the project where the issue will be created (required)')
+        })
+      ),
+      func: async (args: CreateIssueParams): Promise<GetIssueResponse> => service.createIssue(args)
     }),
     new DynamicStructuredTool({
       name: 'assign_jira_issue',
       description: 'Assign a Jira issue to a user',
-      schema: z.object({
-        issueId: z.string().describe('The Jira issue ID (e.g., PROJ-123)'),
-        accountId: z.string().describe('The ID of the person to assign the issue to')
-      }),
+      schema: assignJiraIssueSchema,
       func: async ({
         issueId,
         accountId
@@ -140,59 +124,34 @@ This tool helps retrieve relevant issues by allowing complex filtering based on 
     new DynamicStructuredTool({
       name: 'add_jira_comment',
       description: 'Add a comment to a Jira issue',
-      schema: z.object({
-        issueId: z.string().describe('The Jira issue ID (e.g., PROJ-123)'),
-        comment: z.string().describe('The comment text to add to the issue')
-      }),
+      schema: addJiraCommentSchema,
       func: async (params: AddCommentParams): Promise<AddCommentResponse> =>
         service.addComment(params)
     }),
     new DynamicStructuredTool({
       name: 'get_jira_comments',
       description: 'Get comments for a specific Jira issue',
-      schema: z.object({
-        issueId: z.string().describe('The Jira issue ID (e.g., PROJ-123)')
-      }),
+      schema: getJiraCommentsSchema,
       func: async ({ issueId }: { issueId: string }): Promise<GetCommentsResponse> =>
         service.getComments(issueId)
     }),
     new DynamicStructuredTool({
       name: 'update_jira_issue',
       description: 'Update an existing Jira issue.',
-      schema: z.object({
-        issueId: z.string().describe('The key or ID of the Jira issue (e.g., PROJ-123 or 10083)'),
-        fields: z.object({
-          summary: z.string().describe('The updated summary or title of the issue').optional(),
-          description: z.string().describe('The updated description of the issue').optional(),
-          priority: z.string().describe('The updated priority of the issue').optional(),
-          labels: z
-            .array(z.string())
-            .describe('The updated list of labels for the issue')
-            .optional(),
-          assigneeId: z
-            .string()
-            .describe(
-              'The updated assignee account ID. Use the "search_jira_users" tool to find the account ID of a user by name or email.'
-            )
-            .optional()
-        })
-      }),
-      func: async (params: {
-        issueId: string;
-        fields: UpdateIssueFields;
-      }): Promise<UpdateIssueResponse> => service.updateIssue(params)
+      schema: withNullPreprocessing(updateJiraTicketSchema),
+      func: async (args: UpdateIssueParams): Promise<UpdateIssueResponse> => {
+        console.log('Arguments', args);
+        return service.updateIssue(args);
+      }
     }),
     new DynamicStructuredTool({
       name: 'search_jira_users',
       description: 'Search for Jira users by name or email',
-      schema: z.object({
-        query: z.string().describe('The query to search for in Jira users')
-      }),
+      schema: searchJiraUsersSchema,
       func: async ({ query }: { query: string }): Promise<SearchUsersResponse> =>
         service.searchUsers(query)
     })
   ];
-
   return tools;
 }
 

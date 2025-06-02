@@ -1,4 +1,6 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
+import { addJiraCommentSchema, createJiraIssueSchema, updateJiraTicketSchema } from '../schema';
+import { z } from 'zod';
 
 export type JiraAuth =
   | {
@@ -82,15 +84,7 @@ export interface JiraResponse<T> {
   error?: string;
 }
 
-export interface CreateIssueParams {
-  projectKey: string;
-  summary: string;
-  description?: string;
-  issueTypeId: string;
-  priority?: string;
-  assigneeId?: string;
-  labels?: string[];
-}
+export type CreateIssueParams = z.infer<typeof createJiraIssueSchema>;
 
 export type SearchIssuesResponse = {
   issues: {
@@ -182,10 +176,7 @@ export interface JiraIssueComments {
   startAt: number;
 }
 
-export type AddCommentParams = {
-  issueId: string;
-  comment: string;
-};
+export type AddCommentParams = z.infer<typeof addJiraCommentSchema>;
 
 export type AddCommentResponse = BaseResponse<{
   comment: JiraCommentResponse & { url: string };
@@ -195,18 +186,12 @@ export type GetCommentsResponse = BaseResponse<{
   comments: (JiraIssueComments['comments'][number] & { url: string })[];
 }>;
 
-export interface UpdateIssueFields {
-  summary?: string;
-  description?: string;
-  priority?: string;
-  assigneeId?: string;
-  labels?: string[];
-}
+export type UpdateIssueParams = z.infer<typeof updateJiraTicketSchema>;
 
 export type UpdateIssueResponse = BaseResponse<{
   issueId: string;
   url: string;
-  fields: UpdateIssueFields;
+  fields: UpdateIssueParams['fields'];
 }>;
 
 export type SearchUsersResponse = BaseResponse<{
