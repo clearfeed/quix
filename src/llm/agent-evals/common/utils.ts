@@ -3,6 +3,7 @@ import { DynamicStructuredTool } from '@langchain/core/tools';
 import { TestCase } from './types';
 import { ChatOpenAI } from '@langchain/openai';
 import { LLMContext } from '../../types';
+import { sanitizeName } from '../../../lib/utils/slack';
 
 export function createMockedTools<
   T extends Record<string, (overrides?: unknown) => unknown> = Record<
@@ -42,6 +43,6 @@ export const getLLMContextFromChatHistory = (
   return chatHistory.map((m) => ({
     role: m.is_bot ? 'assistant' : 'user',
     content: m.message,
-    name: m.is_bot ? 'Quix' : m.author
+    name: m.is_bot ? 'Quix' : sanitizeName(m.author)
   }));
 };

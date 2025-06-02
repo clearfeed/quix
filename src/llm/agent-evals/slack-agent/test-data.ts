@@ -6,8 +6,8 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     description:
       'List all public channels in the Slack workspace after a discussion about onboarding.',
     chat_history: [
-      { author: 'Alice_Hightower', message: 'We need to onboard new members soon.' },
-      { author: 'John_snow', message: "Let's make sure they know all the channels." }
+      { author: 'Alice Hightower', message: 'We need to onboard new members soon.' },
+      { author: 'John snow', message: "Let's make sure they know all the channels." }
     ],
     invocation: {
       initiator_name: 'Alice Hightower',
@@ -28,8 +28,8 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   {
     description: 'Post a summary of a conversation in <#C134DSD|> after a discussion.',
     chat_history: [
-      { author: 'Obreyn_Martell', message: 'The deployment went smoothly.' },
-      { author: 'Alice_Hightower', message: 'No errors in the logs either.' }
+      { author: 'Obreyn Martell', message: 'The deployment went smoothly.' },
+      { author: 'Alice Hightower', message: 'No errors in the logs either.' }
     ],
     invocation: {
       initiator_name: 'Obreyn Martell',
@@ -52,7 +52,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     description: 'Get all users in the Slack workspace.',
     chat_history: [],
     invocation: {
-      initiator_name: 'John_Snow',
+      initiator_name: 'John Snow',
       message: '@Quix Who are all the users in this workspace?'
     },
     reference_tool_calls: [
@@ -70,11 +70,11 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     description:
       'Add a :thumbsup: reaction to the latest message in <#C134DSD|>, requiring channel history fetch first.',
     chat_history: [
-      { author: 'John_Snow', message: 'Great job on the release!' },
-      { author: 'Alice_Hightower', message: 'Thanks everyone!' }
+      { author: 'John Snow', message: 'Great job on the release!' },
+      { author: 'Alice Hightower', message: 'Thanks everyone!' }
     ],
     invocation: {
-      initiator_name: 'John_Snow',
+      initiator_name: 'John Snow',
       message: '@Quix Add a thumbs up reaction to the latest message in <#C134DSD|>'
     },
     reference_tool_calls: [
@@ -101,13 +101,13 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     description: 'Join <#C874HKJ|> and post a message after joining.',
     chat_history: [
       {
-        author: 'Jamie_Lannister',
+        author: 'Jamie Lannister',
         message:
           'We should have a project kickoff meeting at 3pm to discuss the new project in <#C874HKJ|>.'
       }
     ],
     invocation: {
-      initiator_name: 'Jamie_Lannister',
+      initiator_name: 'Jamie Lannister',
       message: '@Quix Join <#C874HKJ|> and post about the project kickoff meeting'
     },
     reference_tool_calls: [
@@ -132,11 +132,11 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   {
     description: 'Reply to a thread in <#C874HKJ|> channel in the discussion about login issues.',
     chat_history: [
-      { author: 'John_Snow', message: 'Can someone help with the login issue?' },
-      { author: 'Jamie_Lannister', message: 'Check the error logs in <#C874HKJ|>.' }
+      { author: 'John Snow', message: 'Can someone help with the login issue?' },
+      { author: 'Jamie Lannister', message: 'Check the error logs in <#C874HKJ|>.' }
     ],
     invocation: {
-      initiator_name: 'John_Snow',
+      initiator_name: 'John Snow',
       message:
         "@Quix Reply 'Please provide more details' to the thread related to login issues in <#C874HKJ|> channel"
     },
@@ -165,7 +165,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     description: 'Post about our new member Jamie in <#C134DSD|> channel',
     chat_history: [],
     invocation: {
-      initiator_name: 'Jamie_Lannister',
+      initiator_name: 'Jamie Lannister',
       message:
         '@Quix Post about our new member Jamie getting all details from the user profile in <#C134DSD|> channel'
     },
@@ -202,17 +202,17 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     description: 'Leave <#C874HKJ|> channel',
     chat_history: [
       {
-        author: 'Jamie_Lannister',
+        author: 'Jamie Lannister',
         message: '@Quix Leave <#C874HKJ|> channel'
       },
       {
-        author: 'Quix_Bot',
+        author: 'Quix (Bot)',
         message:
           'Are you sure you want to leave the <#C874HKJ|> channel? Please confirm by saying "Yes".'
       }
     ],
     invocation: {
-      initiator_name: 'Jamie_Lannister',
+      initiator_name: 'Jamie Lannister',
       message: 'Yes'
     },
     reference_tool_calls: [
