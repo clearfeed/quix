@@ -22,27 +22,20 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         }
       }
     ],
-    expected_response: 'Here are the public channels: #general, #project-x, #new-members.',
+    expected_response: 'Here are the public channels: <#C134DSD|>, <#C874HKJ|>, <#C239PLM|>.',
     tool_mock_response_overrides: {}
   },
   {
-    description: 'Post a summary of a conversation in #general after a discussion.',
+    description: 'Post a summary of a conversation in <#C134DSD|> after a discussion.',
     chat_history: [
       { author: 'Obreyn_Martell', message: 'The deployment went smoothly.' },
       { author: 'Alice_Hightower', message: 'No errors in the logs either.' }
     ],
     invocation: {
       initiator_name: 'Obreyn Martell',
-      message: '@Quix Post the summary of the above conversation in #general'
+      message: '@Quix Post the summary of the above conversation in <#C134DSD|>'
     },
     reference_tool_calls: [
-      {
-        name: 'slack_list_channels',
-        arguments: {
-          limit: 100,
-          cursor: ''
-        }
-      },
       {
         name: 'slack_post_message',
         arguments: {
@@ -52,7 +45,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       }
     ],
     expected_response:
-      "Posted the summary to #general: 'Summary: The deployment went smoothly and we had no errors in the logs.'",
+      "Posted the summary to <#C134DSD|>: 'Summary: The deployment went smoothly and we had no errors in the logs.'",
     tool_mock_response_overrides: {}
   },
   {
@@ -75,23 +68,16 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   },
   {
     description:
-      'Add a :thumbsup: reaction to the latest message in #general, requiring channel history fetch first.',
+      'Add a :thumbsup: reaction to the latest message in <#C134DSD|>, requiring channel history fetch first.',
     chat_history: [
       { author: 'John_Snow', message: 'Great job on the release!' },
       { author: 'Alice_Hightower', message: 'Thanks everyone!' }
     ],
     invocation: {
       initiator_name: 'John_Snow',
-      message: '@Quix Add a thumbs up reaction to the latest message in #general'
+      message: '@Quix Add a thumbs up reaction to the latest message in <#C134DSD|>'
     },
     reference_tool_calls: [
-      {
-        name: 'slack_list_channels',
-        arguments: {
-          limit: 100,
-          cursor: ''
-        }
-      },
       {
         name: 'slack_get_channel_history',
         arguments: {
@@ -108,30 +94,23 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         }
       }
     ],
-    expected_response: 'Added :thumbsup: reaction to the latest message in #general.',
+    expected_response: 'Added :thumbsup: reaction to the latest message in <#C134DSD|>.',
     tool_mock_response_overrides: {}
   },
   {
-    description: 'Join #project-x and post a message after joining.',
+    description: 'Join <#C874HKJ|> and post a message after joining.',
     chat_history: [
       {
         author: 'Jamie_Lannister',
         message:
-          'We should have a project kickoff meeting at 3pm to discuss the new project in #project-x.'
+          'We should have a project kickoff meeting at 3pm to discuss the new project in <#C874HKJ|>.'
       }
     ],
     invocation: {
       initiator_name: 'Jamie_Lannister',
-      message: '@Quix Join #project-x and post about the project kickoff meeting'
+      message: '@Quix Join <#C874HKJ|> and post about the project kickoff meeting'
     },
     reference_tool_calls: [
-      {
-        name: 'slack_list_channels',
-        arguments: {
-          limit: 100,
-          cursor: ''
-        }
-      },
       {
         name: 'slack_join_channel',
         arguments: {
@@ -147,28 +126,21 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       }
     ],
     expected_response:
-      "Joined #project-x and posted: 'We have a project kickoff meeting at 3pm. Please join if you can.'",
+      "Joined <#C874HKJ|> and posted: 'We have a project kickoff meeting at 3pm. Please join if you can.'",
     tool_mock_response_overrides: {}
   },
   {
-    description: 'Reply to a thread in #project-x channel in the discussion about login issues.',
+    description: 'Reply to a thread in <#C874HKJ|> channel in the discussion about login issues.',
     chat_history: [
       { author: 'John_Snow', message: 'Can someone help with the login issue?' },
-      { author: 'Jamie_Lannister', message: 'Check the error logs in #project-x.' }
+      { author: 'Jamie_Lannister', message: 'Check the error logs in <#C874HKJ|>.' }
     ],
     invocation: {
       initiator_name: 'John_Snow',
       message:
-        "@Quix Reply 'Please provide more details' to the thread related to login issues in #project-x channel"
+        "@Quix Reply 'Please provide more details' to the thread related to login issues in <#C874HKJ|> channel"
     },
     reference_tool_calls: [
-      {
-        name: 'slack_list_channels',
-        arguments: {
-          limit: 100,
-          cursor: ''
-        }
-      },
       {
         name: 'slack_get_channel_history',
         arguments: {
@@ -185,16 +157,17 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         }
       }
     ],
-    expected_response: "Replied in the thread in #project-x channel: 'Please provide more details'",
+    expected_response:
+      "Replied in the thread in <#C874HKJ|> channel: 'Please provide more details'",
     tool_mock_response_overrides: {}
   },
   {
-    description: 'Post about our new member Jamie in #general channel',
+    description: 'Post about our new member Jamie in <#C134DSD|> channel',
     chat_history: [],
     invocation: {
       initiator_name: 'Jamie_Lannister',
       message:
-        '@Quix Post about our new member Jamie getting all details from the user profile in #general channel'
+        '@Quix Post about our new member Jamie getting all details from the user profile in <#C134DSD|> channel'
     },
     reference_tool_calls: [
       {
@@ -210,13 +183,6 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         }
       },
       {
-        name: 'slack_list_channels',
-        arguments: {
-          limit: 100,
-          cursor: ''
-        }
-      },
-      {
         name: 'slack_post_message',
         arguments: {
           channel_id: 'C134DSD',
@@ -225,7 +191,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       }
     ],
     expected_response:
-      "Posted in #general channel: 'Jamie is our new member. Welcome to the team!'",
+      "Posted in <#C134DSD|> channel: 'Jamie is our new member. Welcome to the team!'",
     tool_mock_response_overrides: {
       slack_get_user_profile: {
         user_id: 'U90JAMIW'
@@ -233,16 +199,16 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     }
   },
   {
-    description: 'Leave #project-x channel',
+    description: 'Leave <#C874HKJ|> channel',
     chat_history: [
       {
         author: 'Jamie_Lannister',
-        message: '@Quix Leave #project-x channel'
+        message: '@Quix Leave <#C874HKJ|> channel'
       },
       {
         author: 'Quix_Bot',
         message:
-          'Are you sure you want to leave the #project-x channel? Please confirm by saying "Yes".'
+          'Are you sure you want to leave the <#C874HKJ|> channel? Please confirm by saying "Yes".'
       }
     ],
     invocation: {
@@ -251,20 +217,13 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     },
     reference_tool_calls: [
       {
-        name: 'slack_list_channels',
-        arguments: {
-          limit: 100,
-          cursor: ''
-        }
-      },
-      {
         name: 'slack_leave_channel',
         arguments: {
           channel_id: 'C874HKJ'
         }
       }
     ],
-    expected_response: 'Left #project-x channel',
+    expected_response: 'Left <#C874HKJ|> channel',
     tool_mock_response_overrides: {}
   }
 ];
