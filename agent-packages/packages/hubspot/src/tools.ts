@@ -13,14 +13,13 @@ import {
   UpdateTicketParams,
   TicketSearchParams,
   SearchDealsParams,
-  UpdateDealParams
+  UpdateDealParams,
+  CreateTaskParams,
+  AssociateTaskWithEntityParams
 } from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import {
-  dealTaskSchema,
-  contactTaskSchema,
-  companyTaskSchema,
   taskUpdateSchema,
   taskSearchSchema,
   baseTicketSchema,
@@ -30,7 +29,9 @@ import {
   ticketSearchSchema,
   createDealSchema,
   searchDealsSchema,
-  updateDealSchema
+  updateDealSchema,
+  baseTaskSchema,
+  associateTaskWithEntitySchema
 } from './schema';
 
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
@@ -170,63 +171,16 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
         keyword: z.string().describe('The keyword to search for in company names')
       })
     }),
-    tool(
-      async (args: z.infer<typeof dealTaskSchema>) =>
-        service.createTask({
-          title: args.title,
-          body: args.body,
-          status: args.status,
-          priority: args.priority,
-          dueDate: args.dueDate,
-          ownerId: args.ownerId,
-          taskType: args.taskType,
-          associatedObjectType: HubspotEntityType.DEAL,
-          associatedObjectId: args.entityId
-        }),
-      {
-        name: 'create_task_for_hubspot_deal',
-        description: 'Create a new task and associate it with a HubSpot deal.',
-        schema: dealTaskSchema
-      }
-    ),
-    tool(
-      async (args: z.infer<typeof contactTaskSchema>) =>
-        service.createTask({
-          title: args.title,
-          body: args.body,
-          status: args.status,
-          priority: args.priority,
-          dueDate: args.dueDate,
-          ownerId: args.ownerId,
-          taskType: args.taskType,
-          associatedObjectType: HubspotEntityType.CONTACT,
-          associatedObjectId: args.entityId
-        }),
-      {
-        name: 'create_task_for_hubspot_contact',
-        description: 'Create a new task and associate it with a HubSpot contact.',
-        schema: contactTaskSchema
-      }
-    ),
-    tool(
-      async (args: z.infer<typeof companyTaskSchema>) =>
-        service.createTask({
-          title: args.title,
-          body: args.body,
-          status: args.status,
-          priority: args.priority,
-          dueDate: args.dueDate,
-          ownerId: args.ownerId,
-          taskType: args.taskType,
-          associatedObjectType: HubspotEntityType.COMPANY,
-          associatedObjectId: args.entityId
-        }),
-      {
-        name: 'create_task_for_hubspot_company',
-        description: 'Create a new task and associate it with a HubSpot company.',
-        schema: companyTaskSchema
-      }
-    ),
+    tool(async (args: CreateTaskParams) => service.createTask(args), {
+      name: 'create_hubspot_task',
+      description: 'Create a new HubSpot task.',
+      schema: baseTaskSchema
+    }),
+    tool(async (args: AssociateTaskWithEntityParams) => service.associateTaskWithEntity(args), {
+      name: 'associate_task_with_entity',
+      description: 'Associate an existing task with a HubSpot contact, company, or deal.',
+      schema: associateTaskWithEntitySchema
+    }),
     tool(async (args: UpdateTaskParams) => service.updateTask(args), {
       name: 'update_hubspot_task',
       description: 'Update the details of an existing task in HubSpot.',
@@ -240,8 +194,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
     }),
     tool(async (args: CreateTicketParams) => service.createTicket(args), {
       name: 'create_hubspot_ticket',
-      description:
-        'Create a new HubSpot ticket. Optionally associate it with a contact, company, or deal by providing both `associatedObjectType` and `associatedObjectId`.',
+      description: 'Create a new HubSpot ticket.',
       schema: baseTicketSchema
     }),
     tool(async (args: AssociateTicketWithEntityParams) => service.associateTicketWithEntity(args), {
