@@ -10,11 +10,6 @@ import type {
   GetPRResponse
 } from '@clearfeed-ai/quix-github-agent';
 
-//
-// Locally define any response‐shapes that are not directly exported by `packages/github/src/types`
-//
-
-// --- Get a single GitHub issue or PR (issues and PRs share almost the same shape) ---
 export interface GetIssueResponse
   extends BaseResponse<{
     issue: {
@@ -30,21 +25,18 @@ export interface GetIssueResponse
     };
   }> {}
 
-// --- Add an assignee to an issue/PR ---
 export interface AddAssigneeResponse
   extends BaseResponse<{
     issueNumber: number;
     assignees: string[];
   }> {}
 
-// --- Remove an assignee from an issue/PR ---
 export interface RemoveAssigneeResponse
   extends BaseResponse<{
     issueNumber: number;
     assignees: string[];
   }> {}
 
-// --- Get all users in a GitHub organization ---
 export interface GetOrganizationUsersResponse
   extends BaseResponse<{
     users: Array<{
@@ -55,7 +47,6 @@ export interface GetOrganizationUsersResponse
     }>;
   }> {}
 
-// --- Create a new GitHub issue ---
 export interface CreateIssueResponse
   extends BaseResponse<{
     number: number;
@@ -67,7 +58,6 @@ export interface CreateIssueResponse
     labels: Array<{ name: string }>;
   }> {}
 
-// --- Create or update a file in a GitHub repo ---
 export interface CreateOrUpdateFileResponse
   extends BaseResponse<{
     path: string;
@@ -77,7 +67,6 @@ export interface CreateOrUpdateFileResponse
     branch: string;
   }> {}
 
-// --- Search for GitHub repositories ---
 export interface SearchRepositoriesResponse
   extends BaseResponse<{
     total_count: number;
@@ -92,7 +81,6 @@ export interface SearchRepositoriesResponse
     }>;
   }> {}
 
-// --- Create a new GitHub repository ---
 export interface CreateRepositoryResponse
   extends BaseResponse<{
     name: string;
@@ -103,7 +91,6 @@ export interface CreateRepositoryResponse
     default_branch: string;
   }> {}
 
-// --- Get contents of a file or directory ---
 export interface GetFileContentsResponse
   extends BaseResponse<{
     path: string;
@@ -113,7 +100,6 @@ export interface GetFileContentsResponse
     html_url: string;
   }> {}
 
-// --- Create a new pull request ---
 export interface CreatePullRequestResponse
   extends BaseResponse<{
     number: number;
@@ -128,7 +114,6 @@ export interface CreatePullRequestResponse
     updated_at: string;
   }> {}
 
-// --- Create a new branch ---
 export interface CreateBranchResponse
   extends BaseResponse<{
     ref: string;
@@ -136,7 +121,6 @@ export interface CreateBranchResponse
     repository_url: string;
   }> {}
 
-// --- List commits on a branch ---
 export interface ListCommitsResponse
   extends BaseResponse<{
     commits: Array<{
@@ -149,7 +133,6 @@ export interface ListCommitsResponse
     }>;
   }> {}
 
-// --- Update an existing issue ---
 export interface UpdateIssueResponse
   extends BaseResponse<{
     issueNumber: number;
@@ -162,7 +145,6 @@ export interface UpdateIssueResponse
     htmlUrl: string;
   }> {}
 
-// --- Add a comment to an issue/PR ---
 export interface AddIssueCommentResponse
   extends BaseResponse<{
     id: number;
@@ -173,7 +155,6 @@ export interface AddIssueCommentResponse
     html_url: string;
   }> {}
 
-// --- Search for GitHub users by criteria ---
 export interface GitHubSearchUsersResponse
   extends BaseResponse<{
     total_count: number;
@@ -186,7 +167,6 @@ export interface GitHubSearchUsersResponse
     }>;
   }> {}
 
-// --- Create a review on a pull request ---
 export interface CreatePullRequestReviewResponse
   extends BaseResponse<{
     id: number;
@@ -202,7 +182,6 @@ export interface CreatePullRequestReviewResponse
     }>;
   }> {}
 
-// --- Merge a pull request ---
 export interface MergePullRequestResponse
   extends BaseResponse<{
     merged: boolean;
@@ -210,11 +189,8 @@ export interface MergePullRequestResponse
     message: string;
   }> {}
 
-// --- Search issues/PRs globally (across all repos) ---
-//     We reuse the same shape as SearchIssuesOrPullRequestsResponse.
 export type SearchIssuesGlobalResponse = SearchIssuesOrPullRequestsResponse;
 
-// --- Get combined status checks for a pull request ---
 export interface GetPullRequestStatusResponse
   extends BaseResponse<{
     state: string;
@@ -226,7 +202,6 @@ export interface GetPullRequestStatusResponse
     }>;
   }> {}
 
-// --- Get list of files changed in a pull request ---
 export interface GetPullRequestFilesResponse
   extends BaseResponse<{
     files: Array<{
@@ -241,7 +216,6 @@ export interface GetPullRequestFilesResponse
     }>;
   }> {}
 
-// --- Get review comments on a pull request ---
 export interface GetPullRequestCommentsResponse
   extends BaseResponse<{
     comments: Array<{
@@ -254,7 +228,6 @@ export interface GetPullRequestCommentsResponse
     }>;
   }> {}
 
-// --- Get reviews on a pull request ---
 export interface GetPullRequestReviewsResponse
   extends BaseResponse<{
     reviews: Array<{
@@ -266,7 +239,6 @@ export interface GetPullRequestReviewsResponse
     }>;
   }> {}
 
-// --- Update a pull request branch with upstream changes ---
 export interface UpdatePullRequestBranchResponse
   extends BaseResponse<{
     merged: boolean;
@@ -274,9 +246,6 @@ export interface UpdatePullRequestBranchResponse
     sha: string;
   }> {}
 
-//
-// Map each tool name to its mock‐response generator
-//
 export type ToolResponseTypeMap = {
   search_issues_or_pull_requests: (overrides?: {
     success?: boolean;
