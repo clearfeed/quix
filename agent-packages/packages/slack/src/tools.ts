@@ -62,7 +62,21 @@ export function createSlackToolsExport(config: SlackConfig): ToolConfig {
 
     tool(async (args: PostMessageParams) => service.postMessage(args), {
       name: 'slack_post_message',
-      description: 'Post a new message to a Slack channel',
+      description: `
+Post a new message to a Slack channel.
+
+**Important:** If you want to mention (tag) a user in the message, do NOT use "@username" format. Instead:
+1. Use the \`slack_get_users\` tool to search for the user's Slack ID.
+2. Then mention them using the correct Slack format: \`<@USER_ID>\`.
+
+This ensures the user is properly tagged and receives a notification.
+
+**Examples:**
+- ❌ Incorrect: "@John please check this."
+- ✅ Correct: "<@U02PKBD0RSB> please check this." (U02PKBD0RSB is John's user ID)
+
+Always fetch the user ID first before tagging someone.
+`,
       schema: postMessageParamsSchema
     }),
 
