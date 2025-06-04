@@ -19,7 +19,9 @@ import {
   ContactWithCompanies,
   HubspotTask,
   HubspotTicket,
-  HubspotPipeline
+  HubspotPipeline,
+  AssociateTaskWithEntityResponse,
+  AssociateTicketWithEntityResponse
 } from '@clearfeed-ai/quix-hubspot-agent';
 import { BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import { TestCase } from '../common/types';
@@ -86,7 +88,7 @@ export type ToolResponseTypeMap = {
     success?: boolean;
     error?: string;
   }) => AddNoteResponse;
-  create_task_for_hubspot_deal: (overrides?: {
+  create_hubspot_task: (overrides?: {
     taskId?: string;
     title?: string;
     body?: string;
@@ -98,18 +100,13 @@ export type ToolResponseTypeMap = {
     success?: boolean;
     error?: string;
   }) => CreateTaskResponse;
-  create_task_for_hubspot_contact: (overrides?: {
+  associate_task_with_entity: (overrides?: {
     taskId?: string;
-    title?: string;
-    body?: string;
-    status?: TaskStatusEnum;
-    priority?: TaskPriorityEnum;
-    taskType?: TaskTypeEnum;
-    dueDate?: string;
-    ownerId?: string;
+    associatedObjectType?: HubspotEntityType;
+    associatedObjectId?: string;
     success?: boolean;
     error?: string;
-  }) => CreateTaskResponse;
+  }) => AssociateTaskWithEntityResponse;
   update_hubspot_task: (overrides?: {
     taskId?: string;
     title?: string;
@@ -165,11 +162,7 @@ export type ToolResponseTypeMap = {
     associatedObjectId?: string;
     success?: boolean;
     error?: string;
-  }) => BaseResponse<{
-    ticketId: string;
-    associatedObjectType: HubspotEntityType;
-    associatedObjectId: string;
-  }>;
+  }) => AssociateTicketWithEntityResponse;
   update_hubspot_deal: (overrides?: {
     dealId?: string;
     name?: string;
@@ -319,7 +312,7 @@ const toolResponseMap: ToolResponseTypeMap = {
     error: overrides.error
   }),
 
-  create_task_for_hubspot_deal: (overrides = {}): CreateTaskResponse => ({
+  create_hubspot_task: (overrides = {}): CreateTaskResponse => ({
     success: overrides.success ?? true,
     data: {
       task: {
@@ -336,19 +329,12 @@ const toolResponseMap: ToolResponseTypeMap = {
     error: overrides.error
   }),
 
-  create_task_for_hubspot_contact: (overrides = {}): CreateTaskResponse => ({
+  associate_task_with_entity: (overrides = {}): AssociateTaskWithEntityResponse => ({
     success: overrides.success ?? true,
     data: {
-      task: {
-        id: overrides.taskId || 'new-task-id-1',
-        subject: overrides.title || 'New Task',
-        status: overrides.status || TaskStatusEnum.NOT_STARTED,
-        priority: overrides.priority || TaskPriorityEnum.MEDIUM,
-        type: overrides.taskType || TaskTypeEnum.TODO,
-        timestamp: overrides.dueDate || new Date().toISOString(),
-        body: overrides.body || 'Task description',
-        url: `https://app.hubspot.com/tasks/${overrides.taskId || 'new-task-id-1'}`
-      }
+      taskId: overrides.taskId || '9002',
+      associatedObjectType: overrides.associatedObjectType || HubspotEntityType.COMPANY,
+      associatedObjectId: overrides.associatedObjectId || '2002'
     },
     error: overrides.error
   }),
@@ -469,13 +455,7 @@ const toolResponseMap: ToolResponseTypeMap = {
     error: overrides.error
   }),
 
-  associate_ticket_with_entity: (
-    overrides = {}
-  ): BaseResponse<{
-    ticketId: string;
-    associatedObjectType: HubspotEntityType;
-    associatedObjectId: string;
-  }> => ({
+  associate_ticket_with_entity: (overrides = {}): AssociateTicketWithEntityResponse => ({
     success: overrides.success ?? true,
     data: {
       ticketId: overrides.ticketId || '9001',

@@ -35,9 +35,9 @@ export const baseTaskSchema = z.object({
   dueDate: z.string().describe('Deadline for the task in YYYY-MM-DD format.'),
   ownerId: z
     .string()
-    .optional()
+    .nullish()
     .describe(
-      "Id of the HubSpot user to assign the task to. Referred to as the task's **owner** or **assignee**—both terms are interchangeable."
+      "Id of the HubSpot user to assign the task to. Referred to as the task's **owner** or **assignee**—both terms are interchangeable. Do not assign this task to anyone unless the user has clearly instructed to assign it. In the absence of explicit mention, leave this field empty."
     )
 });
 
