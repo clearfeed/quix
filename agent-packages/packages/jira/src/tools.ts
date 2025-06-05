@@ -55,15 +55,13 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
       description: `Search for Jira issues using a valid JQL (Jira Query Language) query. 
 This tool helps retrieve relevant issues by allowing complex filtering based on project, issue type, assignee, status, priority, labels, sprint, and more.`,
 
-      schema: withNullPreprocessing(
-        findJiraTicketSchema.extend({
-          jql_query: z.string().describe(`
+      schema: findJiraTicketSchema.extend({
+        jql_query: z.string().describe(`
           A valid Jira Query Language (JQL) query used to filter issues.
           - When a user is mentioned in the query, first fetch users using the "search_jira_users" tool and then use the account ID of the mentioned user.
           ${config.defaultConfig?.projectKey ? '- If no project is provided, use the default project as ' + config.defaultConfig.projectKey : ''}
           `)
-        })
-      ),
+      }),
       func: async (args: {
         jql_query: string;
         maxResults: number;
