@@ -1,58 +1,67 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
+import {
+  Application,
+  ApplicationGroupAssignment,
+  AppUser,
+  Group,
+  User,
+  UserActivationToken
+} from '@okta/okta-sdk-nodejs';
 
 export interface OktaConfig extends BaseConfig {
   orgUrl: string;
   token: string;
 }
 
-export interface ListUsersResponse extends BaseResponse {
-  data?: any;
-}
+export interface ListUsersResponse extends BaseResponse<User[]> {}
 
-export interface CreateUserResponse extends BaseResponse {
-  data?: any;
-}
+export interface CreateUserResponse extends BaseResponse<User> {}
 
-export interface GetUserResponse extends BaseResponse {
-  data?: any;
-}
+export interface GetUserResponse extends BaseResponse<User> {}
 
-export interface UpdateUserResponse extends BaseResponse {
-  data?: any;
-}
+export interface UpdateUserResponse extends BaseResponse<User> {}
 
-export interface DeleteUserResponse extends BaseResponse {
-  data?: string;
-}
+export interface SuspendUserResponse extends BaseResponse<string> {}
 
-export interface ListGroupsResponse extends BaseResponse {
-  data?: any;
-}
+export interface UnsuspendUserResponse extends BaseResponse<string> {}
 
-export interface CreateGroupResponse extends BaseResponse {
-  data?: any;
-}
+export interface ActivateUserResponse extends BaseResponse<UserActivationToken> {}
 
-export interface AssignUserToGroupResponse extends BaseResponse {
-  data?: string;
-}
+export interface DeactivateUserResponse extends BaseResponse<string> {}
 
-export interface ListApplicationsResponse extends BaseResponse {
-  data?: any;
-}
+export interface UnlockUserResponse extends BaseResponse<string> {}
 
-export interface AssignUserToApplicationResponse extends BaseResponse {
-  data?: any;
-}
+export interface ResetUserPasswordResponse extends BaseResponse<string> {}
 
-export interface AssignGroupToApplicationResponse extends BaseResponse {
-  data?: any;
-}
+export interface ExpireUserPasswordResponse extends BaseResponse<string> {}
 
-export interface DeleteApplicationResponse extends BaseResponse {
-  data?: string;
-}
+export interface ResetUserFactorsResponse extends BaseResponse<string> {}
 
-export interface DeactivateApplicationResponse extends BaseResponse {
-  data?: string;
-}
+export interface DeleteUserResponse extends BaseResponse<string> {}
+
+export interface ListGroupsResponse extends BaseResponse<Group[]> {}
+
+export interface CreateGroupResponse extends BaseResponse<Group> {}
+
+export interface AssignUserToGroupResponse extends BaseResponse<string> {}
+
+export interface UnassignUserFromGroupResponse extends BaseResponse<string> {}
+
+export interface ListGroupUsersResponse extends BaseResponse<User[]> {}
+
+export interface DeleteGroupResponse extends BaseResponse<string> {}
+
+export interface ListApplicationsResponse extends BaseResponse<Application[]> {}
+
+export interface AssignUserToApplicationResponse extends BaseResponse<AppUser> {}
+
+export interface UnassignUserFromApplicationResponse extends BaseResponse<string> {}
+
+export interface AssignGroupToApplicationResponse
+  extends BaseResponse<ApplicationGroupAssignment> {}
+
+export interface UnassignGroupFromApplicationResponse extends BaseResponse<string> {}
+
+export interface DeleteApplicationResponse extends BaseResponse<string> {}
+
+export interface DeactivateApplicationResponse extends BaseResponse<string> {}
