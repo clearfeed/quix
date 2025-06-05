@@ -608,7 +608,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     chat_history: [
       {
         author: 'Alice',
-        message: 'Create a task to follow up on the proposal. Also associate it with John Smith.'
+        message: 'Create a task for the contact John Smith to follow up on the proposal'
       },
       {
         author: 'Quix',
@@ -622,8 +622,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     ],
     invocation: {
       initiator_name: 'Alice',
-      message:
-        'Create a task to follow up on the proposal. Associate it with my contact John Smith at Acme Corp'
+      message: 'Create a task for the contact John Smith at Acme Corp to follow up on the proposal'
     },
     reference_tool_calls: [
       {
