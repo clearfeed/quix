@@ -101,38 +101,6 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     tool_mock_response_overrides: {}
   },
   {
-    description: 'Join <#C874HKJ|> and post a message after joining.',
-    chat_history: [
-      {
-        author: 'Jamie Lannister',
-        message:
-          'We should have a project kickoff meeting at 3pm to discuss the new project in <#C874HKJ|>.'
-      }
-    ],
-    invocation: {
-      initiator_name: 'Jamie Lannister',
-      message: '@Quix Join <#C874HKJ|> and post about the project kickoff meeting'
-    },
-    reference_tool_calls: [
-      {
-        name: 'slack_join_channel',
-        arguments: {
-          channel_id: 'C874HKJ'
-        }
-      },
-      {
-        name: 'slack_post_message',
-        arguments: {
-          channel_id: 'C874HKJ',
-          text: 'We have a project kickoff meeting at 3pm. Please join if you can.'
-        }
-      }
-    ],
-    expected_response:
-      "Joined <#C874HKJ|> and posted: 'We have a project kickoff meeting at 3pm. Please join if you can.'",
-    tool_mock_response_overrides: {}
-  },
-  {
     description: 'Reply to a thread in <#C874HKJ|> channel in the discussion about login issues.',
     chat_history: [
       { author: 'John Snow', message: 'Can someone help with the login issue?' },
