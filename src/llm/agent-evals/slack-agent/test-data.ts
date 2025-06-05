@@ -215,8 +215,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         name: 'slack_get_thread_replies',
         arguments: {
           channel_id: 'C134DSD',
-          thread_ts: '1716282000.000001',
-          limit: 100
+          thread_ts: '1716282000.000001'
         }
       },
       {

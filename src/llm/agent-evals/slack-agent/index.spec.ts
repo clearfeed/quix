@@ -11,7 +11,7 @@ import * as path from 'path';
 import { TestRunDetail } from '../common/types';
 import { AIMessage } from '@langchain/core/messages';
 import { getLLMContextFromChatHistory, getTestOpenAIProvider } from '../common/utils';
-import { isEmpty, isNumber, isString } from 'lodash';
+import { isEmpty, isString } from 'lodash';
 
 describe('QuixAgent Slack – real LLM + mocked tools', () => {
   let agent: QuixAgent;
@@ -37,13 +37,6 @@ describe('QuixAgent Slack – real LLM + mocked tools', () => {
           return (
             isString(actualToolCalArguments.text) &&
             !isEmpty(actualToolCalArguments.text) &&
-            actualToolCalArguments.channel_id === referenceToolCallArguments.channel_id
-          );
-        },
-        slack_get_channel_history: (actualToolCalArguments, referenceToolCallArguments) => {
-          return (
-            isNumber(actualToolCalArguments.limit) &&
-            actualToolCalArguments.limit > 0 &&
             actualToolCalArguments.channel_id === referenceToolCallArguments.channel_id
           );
         }
