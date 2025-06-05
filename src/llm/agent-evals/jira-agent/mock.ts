@@ -10,6 +10,7 @@ import {
 } from '@clearfeed-ai/quix-jira-agent';
 import { TestCase } from '../common/types';
 import { createMockedTools } from '../common/utils';
+import { DynamicStructuredTool } from '@langchain/core/tools';
 
 const createAdfContent = (text: string) => ({
   type: 'doc',
@@ -368,9 +369,8 @@ const toolResponseMap: ToolResponseTypeMap = {
 };
 
 export function createJiraMockedTools(
-  config: unknown,
   testCase: TestCase<ToolResponseTypeMap>,
-  originalTools: any[]
+  originalTools: DynamicStructuredTool[]
 ) {
-  return createMockedTools(config, testCase, toolResponseMap, originalTools);
+  return createMockedTools(testCase, toolResponseMap, originalTools);
 }
