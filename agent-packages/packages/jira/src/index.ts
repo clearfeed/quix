@@ -9,10 +9,10 @@ import {
   AddCommentParams,
   AddCommentResponse,
   GetCommentsResponse,
-  UpdateIssueFields,
   UpdateIssueResponse,
   SearchUsersResponse,
-  GetIssueTypesResponse
+  GetIssueTypesResponse,
+  UpdateIssueParams
 } from './types';
 import JiraClient from './JiraClient';
 
@@ -235,14 +235,11 @@ export class JiraService implements BaseService<JiraConfig> {
     }
   }
 
-  async updateIssue(params: {
-    issueId: string;
-    fields: UpdateIssueFields;
-  }): Promise<UpdateIssueResponse> {
+  async updateIssue(params: UpdateIssueParams): Promise<UpdateIssueResponse> {
     try {
       const updateIssueMetadata = await this.client.getUpdateIssueMetadata(params.issueId);
 
-      const fields: UpdateIssueFields = {};
+      const fields: UpdateIssueParams['fields'] = {};
       const fieldParams = params.fields;
 
       if (fieldParams.assigneeId && updateIssueMetadata.fields.assignee) {
