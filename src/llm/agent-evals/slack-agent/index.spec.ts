@@ -1,10 +1,9 @@
 import { describe, it, beforeAll, afterAll } from '@jest/globals';
 import { createTrajectoryMatchEvaluator } from 'agentevals';
 import { QuixAgent } from '../../quix-agent';
-import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
-import { createJiraMockedTools } from './mock';
+import { createSlackToolsExport } from '@clearfeed-ai/quix-slack-agent';
+import { createSlackMockedTools, ToolResponseTypeMap } from './mock';
 import type { AvailableToolsWithConfig, LLMContext } from '@quix/llm/types';
-import type { ToolResponseTypeMap } from './mock';
 import { Logger } from '@nestjs/common';
 import { testCases } from './test-data';
 import * as fs from 'fs';
@@ -12,25 +11,21 @@ import * as path from 'path';
 import { TestRunDetail } from '../common/types';
 import { AIMessage } from '@langchain/core/messages';
 import { getLLMContextFromChatHistory, getTestOpenAIProvider } from '../common/utils';
+import { isEmpty, isString } from 'lodash';
 
-const normalize = (str: string) =>
-  str.replace(/\\"/g, '"').replace(/'/g, '').replace(/\s+/g, ' ').trim();
-
-describe('QuixAgent Jira – real LLM + mocked tools', () => {
+describe('QuixAgent Slack – real LLM + mocked tools', () => {
   let agent: QuixAgent;
-  let jiraToolsDef: ReturnType<typeof createJiraToolsExport>;
+  let slackToolsDef: ReturnType<typeof createSlackToolsExport>;
   let llm: ReturnType<typeof getTestOpenAIProvider>;
   let evaluator: ReturnType<typeof createTrajectoryMatchEvaluator>;
   const allTestRunDetails: TestRunDetail[] = [];
-  const jiraConfig = {
-    host: 'https://example.atlassian.net',
-    apiHost: 'https://api.atlassian.com/ex/jira/FAKE',
-    auth: { bearerToken: 'dummy-token' },
-    defaultConfig: { projectKey: 'UPLOAD' }
+  const slackConfig = {
+    token: 'dummy-token',
+    teamId: 'T123'
   };
 
   beforeAll(() => {
-    jiraToolsDef = createJiraToolsExport(jiraConfig);
+    slackToolsDef = createSlackToolsExport(slackConfig);
 
     llm = getTestOpenAIProvider(process.env.OPENAI_API_KEY);
 
@@ -38,12 +33,15 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
       trajectoryMatchMode: 'superset',
       toolArgsMatchMode: 'superset',
       toolArgsMatchOverrides: {
-        find_jira_ticket: (a, b) => {
-          return normalize(a.jql_query as string) === normalize(b.jql_query as string);
+        slack_post_message: (actualToolCalArguments, referenceToolCallArguments) => {
+          return (
+            isString(actualToolCalArguments.text) &&
+            !isEmpty(actualToolCalArguments.text) &&
+            actualToolCalArguments.channel_id === referenceToolCallArguments.channel_id
+          );
         }
       }
     });
-
     agent = new QuixAgent();
   });
 
@@ -57,13 +55,13 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
     it(
       testCase.description,
       async () => {
-        const mockedJiraTools = createJiraMockedTools(testCase, jiraToolsDef.tools);
+        const mockedSlackTools = createSlackMockedTools(testCase, slackToolsDef.tools);
 
         const toolsConfig: AvailableToolsWithConfig = {
-          jira: {
+          slack: {
             toolConfig: {
-              tools: mockedJiraTools,
-              prompts: jiraToolsDef.prompts
+              tools: mockedSlackTools,
+              prompts: slackToolsDef.prompts
             }
           }
         };

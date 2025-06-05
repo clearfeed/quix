@@ -26,6 +26,7 @@ import {
 import { BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import { TestCase } from '../common/types';
 import { createMockedTools } from '../common/utils';
+import { DynamicStructuredTool } from '@langchain/core/tools';
 
 export interface HubspotDealResponse {
   id: string;
@@ -488,9 +489,8 @@ const toolResponseMap: ToolResponseTypeMap = {
 };
 
 export function createHubspotMockedTools(
-  config: unknown,
   testCase: TestCase<ToolResponseTypeMap>,
-  originalTools: any[]
+  originalTools: DynamicStructuredTool[]
 ) {
-  return createMockedTools(config, testCase, toolResponseMap, originalTools);
+  return createMockedTools(testCase, toolResponseMap, originalTools);
 }
