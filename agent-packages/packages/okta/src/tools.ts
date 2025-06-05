@@ -67,6 +67,32 @@ export const SCHEMAS = {
   deleteUserSchema: z.object({
     userId: z.string().describe('ID of the user to delete')
   }),
+  suspendUserSchema: z.object({
+    userId: z.string().describe('ID of the user to suspend')
+  }),
+  unsuspendUserSchema: z.object({
+    userId: z.string().describe('ID of the user to unsuspend')
+  }),
+  activateUserSchema: z.object({
+    userId: z.string().describe('ID of the user to activate'),
+    sendEmail: z.boolean().optional().default(true).describe('Whether to send activation email')
+  }),
+  deactivateUserSchema: z.object({
+    userId: z.string().describe('ID of the user to deactivate')
+  }),
+  unlockUserSchema: z.object({
+    userId: z.string().describe('ID of the user to unlock')
+  }),
+  resetUserPasswordSchema: z.object({
+    userId: z.string().describe('ID of the user to reset password for'),
+    sendEmail: z.boolean().optional().default(true).describe('Whether to send password reset email')
+  }),
+  expireUserPasswordSchema: z.object({
+    userId: z.string().describe('ID of the user to expire password for')
+  }),
+  resetUserFactorsSchema: z.object({
+    userId: z.string().describe('ID of the user to reset factors for')
+  }),
   listGroupsSchema: z.object({
     limit: z.number().optional().describe('Number of results to return (default 20)'),
     search: z.string().optional().describe('Search expression for groups')
@@ -81,6 +107,16 @@ export const SCHEMAS = {
     groupId: z.string().describe('ID of the group'),
     userId: z.string().describe('ID of the user to assign')
   }),
+  unassignUserFromGroupSchema: z.object({
+    groupId: z.string().describe('ID of the group'),
+    userId: z.string().describe('ID of the user to unassign')
+  }),
+  listGroupUsersSchema: z.object({
+    groupId: z.string().describe('ID of the group to list users for')
+  }),
+  deleteGroupSchema: z.object({
+    groupId: z.string().describe('ID of the group to delete')
+  }),
   listApplicationsSchema: z.object({
     limit: z.number().optional().describe('Number of results to return (default 20)'),
     query: z.string().optional().describe('Searches for apps with name or label properties')
@@ -90,9 +126,17 @@ export const SCHEMAS = {
     userId: z.string().describe('ID of the user to assign'),
     profile: z.record(z.any()).optional().describe('Application-specific profile information')
   }),
+  unassignUserFromApplicationSchema: z.object({
+    appId: z.string().describe('ID of the application'),
+    userId: z.string().describe('ID of the user to unassign')
+  }),
   assignGroupToApplicationSchema: z.object({
     appId: z.string().describe('ID of the application'),
     groupId: z.string().describe('ID of the group to assign')
+  }),
+  unassignGroupFromApplicationSchema: z.object({
+    appId: z.string().describe('ID of the application'),
+    groupId: z.string().describe('ID of the group to unassign')
   }),
   deleteApplicationSchema: z.object({
     appId: z.string().describe('ID of the application to delete')
@@ -126,9 +170,64 @@ export function createOktaToolsExport(config: OktaConfig): ToolConfig {
       description: 'Update an existing user in Okta',
       schema: SCHEMAS.updateUserSchema
     }),
+    tool(async (args: z.infer<typeof SCHEMAS.suspendUserSchema>) => service.suspendUser(args), {
+      name: 'suspend_okta_user',
+      description: 'Suspend a user in Okta',
+      schema: SCHEMAS.suspendUserSchema
+    }),
+    tool(async (args: z.infer<typeof SCHEMAS.unsuspendUserSchema>) => service.unsuspendUser(args), {
+      name: 'unsuspend_okta_user',
+      description: 'Reactivate a suspended user in Okta',
+      schema: SCHEMAS.unsuspendUserSchema
+    }),
+    tool(async (args: z.infer<typeof SCHEMAS.activateUserSchema>) => service.activateUser(args), {
+      name: 'activate_okta_user',
+      description: 'Activate a user in Okta, optionally activate without sending an email',
+      schema: SCHEMAS.activateUserSchema
+    }),
+    tool(
+      async (args: z.infer<typeof SCHEMAS.deactivateUserSchema>) => service.deactivateUser(args),
+      {
+        name: 'deactivate_okta_user',
+        description: 'Deactivate a user in Okta',
+        schema: SCHEMAS.deactivateUserSchema
+      }
+    ),
+    tool(async (args: z.infer<typeof SCHEMAS.unlockUserSchema>) => service.unlockUser(args), {
+      name: 'unlock_okta_user',
+      description: 'Unlock a locked-out user in Okta',
+      schema: SCHEMAS.unlockUserSchema
+    }),
+    tool(
+      async (args: z.infer<typeof SCHEMAS.resetUserPasswordSchema>) =>
+        service.resetUserPassword(args),
+      {
+        name: 'reset_okta_user_password',
+        description: 'Send password reset email with one-time token to a user in Okta',
+        schema: SCHEMAS.resetUserPasswordSchema
+      }
+    ),
+    tool(
+      async (args: z.infer<typeof SCHEMAS.expireUserPasswordSchema>) =>
+        service.expireUserPassword(args),
+      {
+        name: 'expire_okta_user_password',
+        description: "Expire a user's password in Okta, requiring them to reset it on next login",
+        schema: SCHEMAS.expireUserPasswordSchema
+      }
+    ),
+    tool(
+      async (args: z.infer<typeof SCHEMAS.resetUserFactorsSchema>) =>
+        service.resetUserFactors(args),
+      {
+        name: 'reset_okta_user_factors',
+        description: 'Reset enrolled MFA factors for a user in Okta',
+        schema: SCHEMAS.resetUserFactorsSchema
+      }
+    ),
     tool(async (args: z.infer<typeof SCHEMAS.deleteUserSchema>) => service.deleteUser(args), {
       name: 'delete_okta_user',
-      description: 'Deactivate and delete a user in Okta',
+      description: 'Delete a deactivated user in Okta',
       schema: SCHEMAS.deleteUserSchema
     }),
     tool(async (args: z.infer<typeof SCHEMAS.listGroupsSchema>) => service.listGroups(args), {
@@ -151,6 +250,28 @@ export function createOktaToolsExport(config: OktaConfig): ToolConfig {
       }
     ),
     tool(
+      async (args: z.infer<typeof SCHEMAS.unassignUserFromGroupSchema>) =>
+        service.unassignUserFromGroup(args),
+      {
+        name: 'unassign_user_from_okta_group',
+        description: 'Unassign a user from a group in Okta',
+        schema: SCHEMAS.unassignUserFromGroupSchema
+      }
+    ),
+    tool(
+      async (args: z.infer<typeof SCHEMAS.listGroupUsersSchema>) => service.listGroupUsers(args),
+      {
+        name: 'list_okta_group_users',
+        description: 'List users in a specific Okta group',
+        schema: SCHEMAS.listGroupUsersSchema
+      }
+    ),
+    tool(async (args: z.infer<typeof SCHEMAS.deleteGroupSchema>) => service.deleteGroup(args), {
+      name: 'delete_okta_group',
+      description: 'Delete a group in Okta',
+      schema: SCHEMAS.deleteGroupSchema
+    }),
+    tool(
       async (args: z.infer<typeof SCHEMAS.listApplicationsSchema>) =>
         service.listApplications(args),
       {
@@ -169,12 +290,30 @@ export function createOktaToolsExport(config: OktaConfig): ToolConfig {
       }
     ),
     tool(
+      async (args: z.infer<typeof SCHEMAS.unassignUserFromApplicationSchema>) =>
+        service.unassignUserFromApplication(args),
+      {
+        name: 'unassign_user_from_okta_application',
+        description: 'Unassign a user from an application in Okta',
+        schema: SCHEMAS.unassignUserFromApplicationSchema
+      }
+    ),
+    tool(
       async (args: z.infer<typeof SCHEMAS.assignGroupToApplicationSchema>) =>
         service.assignGroupToApplication(args),
       {
         name: 'assign_group_to_okta_application',
         description: 'Assign a group to an application in Okta',
         schema: SCHEMAS.assignGroupToApplicationSchema
+      }
+    ),
+    tool(
+      async (args: z.infer<typeof SCHEMAS.unassignGroupFromApplicationSchema>) =>
+        service.unassignGroupFromApplication(args),
+      {
+        name: 'unassign_group_from_okta_application',
+        description: 'Unassign a group from an application in Okta',
+        schema: SCHEMAS.unassignGroupFromApplicationSchema
       }
     ),
     tool(
