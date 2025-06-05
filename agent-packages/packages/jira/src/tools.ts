@@ -14,7 +14,7 @@ import {
   CreateIssueParams,
   UpdateIssueParams
 } from './types';
-import { BaseResponse, ToolConfig, withNullPreprocessing } from '@clearfeed-ai/quix-common-agent';
+import { BaseResponse, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import {
   addJiraCommentSchema,
@@ -93,18 +93,14 @@ This tool helps retrieve relevant issues by allowing complex filtering based on 
     new DynamicStructuredTool({
       name: 'create_jira_issue',
       description: 'Create a new Jira issue.',
-      schema: withNullPreprocessing(
-        createJiraIssueSchema.extend({
-          projectKey: config.defaultConfig?.projectKey
-            ? z
-                .string()
-                .describe('The key of the project where the issue will be created')
-                .default(config.defaultConfig.projectKey)
-            : z
-                .string()
-                .describe('The key of the project where the issue will be created (required)')
-        })
-      ),
+      schema: createJiraIssueSchema.extend({
+        projectKey: config.defaultConfig?.projectKey
+          ? z
+              .string()
+              .describe('The key of the project where the issue will be created')
+              .default(config.defaultConfig.projectKey)
+          : z.string().describe('The key of the project where the issue will be created (required)')
+      }),
       func: async (args: CreateIssueParams): Promise<GetIssueResponse> => service.createIssue(args)
     }),
     new DynamicStructuredTool({
@@ -136,7 +132,7 @@ This tool helps retrieve relevant issues by allowing complex filtering based on 
     new DynamicStructuredTool({
       name: 'update_jira_issue',
       description: 'Update an existing Jira issue.',
-      schema: withNullPreprocessing(updateJiraTicketSchema),
+      schema: updateJiraTicketSchema,
       func: async (args: UpdateIssueParams): Promise<UpdateIssueResponse> => {
         return service.updateIssue(args);
       }
