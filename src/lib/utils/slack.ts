@@ -22,7 +22,7 @@ import { Nullable } from '../types/common';
  * Sanitizes a name to match OpenAI's requirements (alphanumeric, underscore, hyphen only)
  * Takes only the first name if the name contains spaces.
  */
-const sanitizeName = (name: string): string => {
+export const sanitizeName = (name: string): string => {
   // First trim any whitespace and get first name
   const firstName = name.trim().split(' ')[0];
   // Remove any invalid characters
