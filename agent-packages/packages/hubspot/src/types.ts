@@ -10,7 +10,8 @@ import {
   associateTicketWithEntitySchema,
   createDealSchema,
   searchDealsSchema,
-  updateDealSchema
+  updateDealSchema,
+  associateTaskWithEntitySchema
 } from './schema';
 import { z } from 'zod';
 
@@ -113,10 +114,8 @@ export enum TaskTypeEnum {
 export type Task = z.infer<typeof baseTaskSchema>;
 export type TaskSearchParams = z.infer<typeof taskSearchSchema>;
 export type UpdateTaskParams = z.infer<typeof taskUpdateSchema>;
-export type CreateTaskParams = z.infer<typeof baseTaskSchema> & {
-  associatedObjectType: HubspotEntityType;
-  associatedObjectId: string;
-};
+export type CreateTaskParams = z.infer<typeof baseTaskSchema>;
+export type AssociateTaskWithEntityParams = z.infer<typeof associateTaskWithEntitySchema>;
 
 export type CreateTaskResponse = BaseResponse<{
   task: {
@@ -129,6 +128,12 @@ export type CreateTaskResponse = BaseResponse<{
     body: string;
     url: string;
   };
+}>;
+
+export type AssociateTaskWithEntityResponse = BaseResponse<{
+  taskId: string;
+  associatedObjectType: HubspotEntityType;
+  associatedObjectId: string;
 }>;
 
 export type UpdateTaskResponse = BaseResponse<{
