@@ -474,7 +474,12 @@ export const retrieveBlockSchema = z.object({
 
 export const retrieveBlockChildrenSchema = z.object({
   block_id: z.string().describe('The ID of the block.' + commonIdDescription),
-  start_cursor: z.string().min(1).describe('Pagination cursor for next page of results').optional(),
+  start_cursor: z
+    .string()
+    .describe(
+      'A string token used for pagination. Set this to the `next_cursor` value from the previous response to continue fetching the next page of results. Omit this to fetch the first page.'
+    )
+    .optional(),
   page_size: z.number().int().min(1).max(100).describe('Number of results per page.').default(100)
 });
 
@@ -510,7 +515,12 @@ export const deleteOrArchivePageSchema = z.object({
 });
 
 export const listAllUsersSchema = z.object({
-  start_cursor: z.string().min(1).describe('Pagination start cursor for listing users').optional(),
+  start_cursor: z
+    .string()
+    .describe(
+      'A string token used for pagination. Set this to the `next_cursor` value from the previous response to continue fetching the next page of results. Omit this to fetch the first page.'
+    )
+    .optional(),
   page_size: z.number().int().min(1).max(100).describe('Number of users to retrieve.').default(100)
 });
 
@@ -533,7 +543,12 @@ export const queryDatabaseSchema = z.object({
     )
     .describe('Sort conditions')
     .optional(),
-  start_cursor: z.string().min(1).describe('Pagination cursor for next page of results').optional(),
+  start_cursor: z
+    .string()
+    .describe(
+      'A string token used for pagination. Set this to the `next_cursor` value from the previous response to continue fetching the next page of results. Omit this to fetch the first page.'
+    )
+    .optional(),
   page_size: z.number().int().min(1).max(100).describe('Number of results per page.').default(100)
 });
 
@@ -542,9 +557,24 @@ export const retrieveDatabaseSchema = z.object({
 });
 
 export const createDatabaseItemSchema = z.object({
-  database_id: z
-    .string()
-    .describe('The ID of the database to add the item to.' + commonIdDescription),
+  parent: z
+    .discriminatedUnion('type', [
+      z.object({
+        type: z.literal('database_id'),
+        database_id: z
+          .string()
+          .describe('The ID of the database to add the new page to.' + commonIdDescription)
+      }),
+      z.object({
+        type: z.literal('page_id'),
+        page_id: z
+          .string()
+          .describe('The ID of the page to add the new page to.' + commonIdDescription)
+      })
+    ])
+    .describe(
+      'Parent object that specifies either the database or page to add the new page to. Exactly one of database_id or page_id must be provided.'
+    ),
   properties: z
     .record(z.any())
     .describe('Properties of the new database item. These should match the database schema.')
@@ -577,8 +607,9 @@ export const retrieveCommentsSchema = z.object({
     ),
   start_cursor: z
     .string()
-    .describe('If supplied, returns a page of results starting after the cursor.')
-    .min(1)
+    .describe(
+      'A string token used for pagination. Set this to the `next_cursor` value from the previous response to continue fetching the next page of results. Omit this to fetch the first page.'
+    )
     .optional(),
   page_size: z
     .number()
@@ -605,7 +636,12 @@ export const searchSchema = z.object({
     })
     .describe('Sort order of results')
     .optional(),
-  start_cursor: z.string().min(1).describe('Pagination start cursor').optional(),
+  start_cursor: z
+    .string()
+    .describe(
+      'A string token used for pagination. Set this to the `next_cursor` value from the previous response to continue fetching the next page of results. Omit this to fetch the first page.'
+    )
+    .optional(),
   page_size: z.number().int().min(1).max(100).describe('Number of results to return.').default(100)
 });
 
