@@ -331,7 +331,6 @@ export class NotionService implements BaseService<NotionConfig> {
       const response = await this.client.databases.query({
         database_id,
         sorts: sorts as QueryDatabaseParameters['sorts'],
-        start_cursor,
         page_size,
         filter: filter as QueryDatabaseParameters['filter'],
         ...(isEmpty(start_cursor) ? {} : { start_cursor })
