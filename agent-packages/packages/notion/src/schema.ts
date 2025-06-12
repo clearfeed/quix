@@ -454,7 +454,10 @@ export const blockObjectSchema = z
   .describe('A Notion block object.');
 
 export const appendBlockChildrenSchema = z.object({
-  block_id: z.string().describe('The ID of the parent block. ' + commonIdDescription),
+  block_id: z.string().describe(
+    'The ID of the parent block or page where the new content will be added. This can be a block \
+ID or a page ID. ' + commonIdDescription
+  ),
   children: z
     .array(blockObjectSchema)
     .describe('Array of block objects to append. Each block must follow the Notion block schema.'),
@@ -462,7 +465,8 @@ export const appendBlockChildrenSchema = z.object({
     .string()
     .min(1)
     .describe(
-      'The ID of the existing block that the new block should be appended after. ' +
+      'The ID of an existing child block inside the parent block/page. The new blocks will be \
+inserted immediately after this block. It is optional but if provided it must be a block ID.' +
         commonIdDescription
     )
     .optional()
@@ -477,7 +481,8 @@ export const retrieveBlockChildrenSchema = z.object({
   start_cursor: z
     .string()
     .describe(
-      'A string token used for pagination. Set this to the `next_cursor` value from the previous response to continue fetching the next page of results. Omit this to fetch the first page.'
+      'A string token used for pagination. Set this to the `next_cursor` value from the previous \
+response to continue fetching the next page of results. Omit this to fetch the first page.'
     )
     .optional(),
   page_size: z.number().int().min(1).max(100).describe('Number of results per page.').default(100)
@@ -518,7 +523,8 @@ export const listAllUsersSchema = z.object({
   start_cursor: z
     .string()
     .describe(
-      'A string token used for pagination. Set this to the `next_cursor` value from the previous response to continue fetching the next page of results. Omit this to fetch the first page.'
+      'A string token used for pagination. Set this to the `next_cursor` value from the previous \
+response to continue fetching the next page of results. Omit this to fetch the first page.'
     )
     .optional(),
   page_size: z.number().int().min(1).max(100).describe('Number of users to retrieve.').default(100)
@@ -546,7 +552,8 @@ export const queryDatabaseSchema = z.object({
   start_cursor: z
     .string()
     .describe(
-      'A string token used for pagination. Set this to the `next_cursor` value from the previous response to continue fetching the next page of results. Omit this to fetch the first page.'
+      'A string token used for pagination. Set this to the `next_cursor` value from the previous \
+response to continue fetching the next page of results. Omit this to fetch the first page.'
     )
     .optional(),
   page_size: z.number().int().min(1).max(100).describe('Number of results per page.').default(100)
@@ -573,7 +580,8 @@ export const createDatabaseItemSchema = z.object({
       })
     ])
     .describe(
-      'Parent object that specifies either the database or page to add the new page to. Exactly one of database_id or page_id must be provided.'
+      'Parent object that specifies either the database or page to add the new page to. Exactly one \
+of database_id or page_id must be provided.'
     ),
   properties: z
     .record(z.any())
@@ -608,7 +616,8 @@ export const retrieveCommentsSchema = z.object({
   start_cursor: z
     .string()
     .describe(
-      'A string token used for pagination. Set this to the `next_cursor` value from the previous response to continue fetching the next page of results. Omit this to fetch the first page.'
+      'A string token used for pagination. Set this to the `next_cursor` value from the previous \
+response to continue fetching the next page of results. Omit this to fetch the first page.'
     )
     .optional(),
   page_size: z
@@ -639,7 +648,8 @@ export const searchSchema = z.object({
   start_cursor: z
     .string()
     .describe(
-      'A string token used for pagination. Set this to the `next_cursor` value from the previous response to continue fetching the next page of results. Omit this to fetch the first page.'
+      'A string token used for pagination. Set this to the `next_cursor` value from the previous \
+response to continue fetching the next page of results. Omit this to fetch the first page.'
     )
     .optional(),
   page_size: z.number().int().min(1).max(100).describe('Number of results to return.').default(100)
