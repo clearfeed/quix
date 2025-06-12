@@ -466,18 +466,18 @@ ID or a page ID. ' + commonIdDescription
     .min(1)
     .describe(
       'The ID of an existing child block inside the parent block/page. The new blocks will be \
-inserted immediately after this block. It is optional but if provided it must be a block ID.' +
+inserted immediately after this block. It is optional but if provided it must be a block ID. ' +
         commonIdDescription
     )
     .optional()
 });
 
 export const retrieveBlockSchema = z.object({
-  block_id: z.string().describe('The ID of the block to retrieve.' + commonIdDescription)
+  block_id: z.string().describe('The ID of the block to retrieve. ' + commonIdDescription)
 });
 
 export const retrieveBlockChildrenSchema = z.object({
-  block_id: z.string().describe('The ID of the block.' + commonIdDescription),
+  block_id: z.string().describe('The ID of the block. ' + commonIdDescription),
   start_cursor: z
     .string()
     .describe(
@@ -489,11 +489,11 @@ response to continue fetching the next page of results. Omit this to fetch the f
 });
 
 export const deleteBlockSchema = z.object({
-  block_id: z.string().describe('The ID of the block to delete.' + commonIdDescription)
+  block_id: z.string().describe('The ID of the block to delete. ' + commonIdDescription)
 });
 
 export const updateBlockSchema = z.object({
-  block_id: z.string().describe('The ID of the block to update.' + commonIdDescription),
+  block_id: z.string().describe('The ID of the block to update. ' + commonIdDescription),
   type: z
     .enum(['paragraph', 'heading_1', 'heading_2', 'heading_3'])
     .describe('The type of block to update'),
@@ -503,20 +503,20 @@ export const updateBlockSchema = z.object({
 });
 
 export const retrievePageSchema = z.object({
-  page_id: z.string().describe('The ID of the page to retrieve.' + commonIdDescription)
+  page_id: z.string().describe('The ID of the page to retrieve. ' + commonIdDescription)
 });
 
 export const updatePagePropertiesSchema = z.object({
   page_id: z
     .string()
-    .describe('The ID of the page or database item to update.' + commonIdDescription),
+    .describe('The ID of the page or database item to update. ' + commonIdDescription),
   properties: z
     .record(z.any())
     .describe('Properties to update. These correspond to the columns or fields in the database.')
 });
 
 export const deleteOrArchivePageSchema = z.object({
-  page_id: z.string().describe('The ID of the page to delete or archive.' + commonIdDescription)
+  page_id: z.string().describe('The ID of the page to delete or archive. ' + commonIdDescription)
 });
 
 export const listAllUsersSchema = z.object({
@@ -531,13 +531,13 @@ response to continue fetching the next page of results. Omit this to fetch the f
 });
 
 export const retrieveUserSchema = z.object({
-  user_id: z.string().describe('The ID of the user to retrieve.' + commonIdDescription)
+  user_id: z.string().describe('The ID of the user to retrieve. ' + commonIdDescription)
 });
 
 export const retrieveBotUserSchema = z.object({});
 
 export const queryDatabaseSchema = z.object({
-  database_id: z.string().describe('The ID of the database to query.' + commonIdDescription),
+  database_id: z.string().describe('The ID of the database to query. ' + commonIdDescription),
   filter: z.record(z.any()).describe('Filter conditions').optional(),
   sorts: z
     .array(
@@ -560,14 +560,14 @@ response to continue fetching the next page of results. Omit this to fetch the f
 });
 
 export const retrieveDatabaseSchema = z.object({
-  database_id: z.string().describe('The ID of the database to retrieve.' + commonIdDescription)
+  database_id: z.string().describe('The ID of the database to retrieve. ' + commonIdDescription)
 });
 
 export const createDatabaseItemSchema = z.object({
   entity_id: z
     .string()
     .describe(
-      'The ID of the entity to add the item to. The entity can be a page or database.' +
+      'The ID of the entity to add the item to. The entity can be a page or database. ' +
         commonIdDescription
     ),
   properties: z
@@ -579,7 +579,7 @@ export const createCommentSchema = z.object({
   parent: z
     .object({
       type: z.literal('page_id'),
-      page_id: z.string().describe('The ID of the page to comment on.' + commonIdDescription)
+      page_id: z.string().describe('The ID of the page to comment on. ' + commonIdDescription)
     })
     .describe(
       'Parent object that specifies the page to comment on. Must include a page_id if used.'
@@ -587,7 +587,7 @@ export const createCommentSchema = z.object({
     .optional(),
   discussion_id: z
     .string()
-    .describe('The ID of an existing discussion thread to add a comment to.' + commonIdDescription)
+    .describe('The ID of an existing discussion thread to add a comment to. ' + commonIdDescription)
     .optional(),
   rich_text: z
     .array(richTextObjectSchema)
@@ -598,7 +598,7 @@ export const retrieveCommentsSchema = z.object({
   block_id: z
     .string()
     .describe(
-      'The ID of the block or page whose comments you want to retrieve.' + commonIdDescription
+      'The ID of the block or page whose comments you want to retrieve. ' + commonIdDescription
     ),
   start_cursor: z
     .string()
@@ -648,7 +648,7 @@ export const createDatabaseSchema = z.object({
       type: z.literal('page_id'),
       page_id: z
         .string()
-        .describe('The ID of the page to create the database in.' + commonIdDescription)
+        .describe('The ID of the page to create the database in. ' + commonIdDescription)
     })
     .describe('Parent object of the database'),
   title: z
