@@ -564,24 +564,11 @@ export const retrieveDatabaseSchema = z.object({
 });
 
 export const createDatabaseItemSchema = z.object({
-  parent: z
-    .discriminatedUnion('type', [
-      z.object({
-        type: z.literal('database_id'),
-        database_id: z
-          .string()
-          .describe('The ID of the database to add the new page to.' + commonIdDescription)
-      }),
-      z.object({
-        type: z.literal('page_id'),
-        page_id: z
-          .string()
-          .describe('The ID of the page to add the new page to.' + commonIdDescription)
-      })
-    ])
+  entity_id: z
+    .string()
     .describe(
-      'Parent object that specifies either the database or page to add the new page to. Exactly one \
-of database_id or page_id must be provided.'
+      'The ID of the entity to add the item to. The entity can be a page or database.' +
+        commonIdDescription
     ),
   properties: z
     .record(z.any())

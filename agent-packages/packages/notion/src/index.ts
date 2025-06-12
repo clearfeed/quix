@@ -366,9 +366,11 @@ export class NotionService implements BaseService<NotionConfig> {
     args: CreateDatabaseItemArgs
   ): Promise<BaseResponse<{ page: CreatePageResponse }>> {
     try {
-      const { parent, properties } = args;
+      const { entity_id, properties } = args;
       const response = await this.client.pages.create({
-        parent,
+        parent: {
+          database_id: entity_id
+        },
         properties
       });
       return {
