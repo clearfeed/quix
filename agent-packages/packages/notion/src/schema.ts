@@ -573,6 +573,7 @@ export const createDatabaseItemSchema = z.object({
   properties: z
     .record(z.any())
     .describe('Properties of the new database item. These should match the database schema.')
+    .optional()
 });
 
 export const createCommentSchema = z.object({

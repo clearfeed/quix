@@ -371,7 +371,7 @@ export class NotionService implements BaseService<NotionConfig> {
         parent: {
           database_id: entity_id
         },
-        properties
+        properties: properties ? properties : {}
       });
       return {
         success: true,
