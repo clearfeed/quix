@@ -349,7 +349,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          jql_query: 'project = FEAT AND assignee = user-alice AND priority = High '
+          jql_query: 'project = FEAT AND assignee = "user-alice" AND priority = High'
         }
       }
     ],
@@ -759,7 +759,6 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         name: 'create_jira_issue',
         arguments: {
           projectKey: 'MOBILE',
-          summary: 'Login page slow on mobile Safari',
           issueTypeId: '10001',
           priority: 'Critical',
           assigneeId: 'user-frank'
@@ -857,6 +856,13 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         priority: 'High',
         assignee: 'Bob Johnson',
         assigneeId: 'user-bob'
+      },
+      get_jira_issue: {
+        issueKey: 'FEAT-102',
+        summary: 'Add password reset feature',
+        priority: 'High',
+        assignee: 'Bob Johnson',
+        assigneeId: 'user-bob'
       }
     }
   },
@@ -880,7 +886,6 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         name: 'create_jira_issue',
         arguments: {
           projectKey: 'DOCS',
-          summary: 'Add examples to new API endpoint documentation',
           issueTypeId: '10002'
         }
       }
