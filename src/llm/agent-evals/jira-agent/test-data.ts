@@ -42,7 +42,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          jql_query: "summary ~ 'login' OR description ~ 'login'"
+          jql_query: 'summary ~"login" OR description ~"login"'
         }
       }
     ],
@@ -154,8 +154,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         arguments: {
           projectKey: 'FEAT',
           summary: 'Login button not working',
-          issueTypeId: '10001',
-          description: 'The login button on the main page is unresponsive when clicked.'
+          issueTypeId: '10001'
         }
       }
     ],
@@ -200,7 +199,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
           projectKey: 'FEAT',
           summary: 'Update dependencies',
           description: 'Update all npm packages to latest versions',
-          issueTypeId: '10003',
+          issueTypeId: '10002',
           priority: 'High',
           assigneeId: 'user-alice'
         }
@@ -289,10 +288,8 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         name: 'update_jira_issue',
         arguments: {
           issueId: 'FEAT-101',
-          fields: {
-            summary: 'Implement OAuth login',
-            priority: 'Highest'
-          }
+          summary: 'Implement OAuth login',
+          priority: 'Highest'
         }
       }
     ],
@@ -352,7 +349,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          jql_query: "project = FEAT AND priority = High AND assignee = 'user-alice'"
+          jql_query: 'project = FEAT AND assignee = user-alice AND priority = High '
         }
       }
     ],
@@ -398,8 +395,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          jql_query:
-            "summary ~ 'changes to the login functionality' OR description ~ 'changes to the login functionality'"
+          jql_query: `summary ~ "changes to the login functionality" OR description ~ "changes to the login functionality"`
         }
       }
     ],
@@ -540,7 +536,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          jql_query: 'project = SUPP AND priority = Highest AND type = Bug'
+          jql_query: 'project = SUPP AND issuetype = Bug AND priority = Critical'
         }
       }
     ],
@@ -694,7 +690,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     invocation: {
       initiator_name: 'Bob',
       message:
-        "@Quix create a bug in 'UPLOAD' titled 'Investigate S3 permission errors during file uploads' ."
+        "@Quix create a bug in 'UPLOAD' titled 'Investigate S3 permission errors during file uploads' and assign to Charlie."
     },
     reference_tool_calls: [
       {
@@ -812,7 +808,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         name: 'update_jira_issue',
         arguments: {
           issueId: 'FEAT-101',
-          fields: { labels: ['login', 'authentication', 'release-v2'] }
+          labels: ['login', 'authentication', 'release-v2']
         }
       }
     ],
@@ -854,7 +850,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         name: 'update_jira_issue',
         arguments: {
           issueId: 'FEAT-102',
-          fields: { priority: 'High' }
+          priority: 'High'
         }
       }
     ],
@@ -893,7 +889,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
           summary: 'Add examples to new API endpoint documentation',
           description:
             'The documentation for the new API endpoint is missing examples. This needs to be addressed.',
-          issueTypeId: '10003',
+          issueTypeId: '10002',
           labels: ['documentation', 'api']
         }
       }

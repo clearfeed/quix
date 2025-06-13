@@ -187,11 +187,11 @@ export type GetCommentsResponse = BaseResponse<{
 }>;
 
 export type UpdateIssueParams = z.infer<typeof updateJiraTicketSchema>;
-
+export type UpdateIssueFields = Omit<UpdateIssueParams, 'issueId'>;
 export type UpdateIssueResponse = BaseResponse<{
   issueId: string;
   url: string;
-  fields: UpdateIssueParams['fields'];
+  fields: UpdateIssueFields;
 }>;
 
 export type SearchUsersResponse = BaseResponse<{

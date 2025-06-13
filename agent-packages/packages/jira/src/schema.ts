@@ -13,18 +13,16 @@ export const findJiraTicketSchema = z.object({
 
 export const updateJiraTicketSchema = z.object({
   issueId: z.string().describe('The key or ID of the Jira issue (e.g., PROJ-123 or 10083)'),
-  fields: z.object({
-    summary: z.string().describe('The updated summary or title of the issue').nullish(),
-    description: z.string().describe('The updated description of the issue').nullish(),
-    priority: z.string().describe('The updated priority of the issue').nullish(),
-    labels: z.array(z.string()).describe('The updated list of labels for the issue').nullish(),
-    assigneeId: z
-      .string()
-      .describe(
-        'The updated assignee account ID. Use the "search_jira_users" tool to find the account ID of a user by name or email.'
-      )
-      .nullish()
-  })
+  summary: z.string().describe('The updated summary or title of the issue').nullish(),
+  description: z.string().describe('The updated description of the issue').nullish(),
+  priority: z.string().describe('The updated priority of the issue').nullish(),
+  labels: z.array(z.string()).describe('The updated list of labels for the issue').nullish(),
+  assigneeId: z
+    .string()
+    .describe(
+      'The updated assignee account ID. Use the "search_jira_users" tool to find the account ID of a user by name or email.'
+    )
+    .nullish()
 });
 
 export const getJiraIssueSchema = z.object({
