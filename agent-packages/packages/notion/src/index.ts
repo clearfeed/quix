@@ -142,8 +142,11 @@ export class NotionService implements BaseService<NotionConfig> {
         block_id,
         children: validChildren as unknown as BlockObjectRequest[]
       };
-
-      if (after && after !== block_id) {
+      /**
+       * Sometimes the LLM provides the `block_id` and `after` as same string, which throws error.
+       * Added this check to prevent that.
+       */
+      if (!isEmpty(after) && after !== block_id) {
         body.after = after;
       }
       const response = await this.client.blocks.children.append(body);
@@ -366,11 +369,9 @@ export class NotionService implements BaseService<NotionConfig> {
     args: CreateDatabaseItemArgs
   ): Promise<BaseResponse<{ page: CreatePageResponse }>> {
     try {
-      const { entity_id, properties } = args;
+      const { parent, properties } = args;
       const response = await this.client.pages.create({
-        parent: {
-          database_id: entity_id
-        },
+        parent,
         properties: properties ? properties : {}
       });
       return {

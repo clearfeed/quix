@@ -463,11 +463,10 @@ ID or a page ID. ' + commonIdDescription
     .describe('Array of block objects to append. Each block must follow the Notion block schema.'),
   after: z
     .string()
-    .min(1)
     .describe(
       'The ID of an existing child block inside the parent block/page. The new blocks will be \
-inserted immediately after this block. It is optional but if provided it must be a block ID. ' +
-        commonIdDescription
+inserted immediately after this block. It is optional but if provided it must be the ID of the \
+block after which the new block should be appended. ' + commonIdDescription
     )
     .optional()
 });
@@ -564,11 +563,24 @@ export const retrieveDatabaseSchema = z.object({
 });
 
 export const createDatabaseItemSchema = z.object({
-  entity_id: z
-    .string()
+  parent: z
+    .discriminatedUnion('type', [
+      z.object({
+        type: z.literal('database_id'),
+        database_id: z
+          .string()
+          .describe('The ID of the database to add the new page to.' + commonIdDescription)
+      }),
+      z.object({
+        type: z.literal('page_id'),
+        page_id: z
+          .string()
+          .describe('The ID of the page to add the new page to.' + commonIdDescription)
+      })
+    ])
     .describe(
-      'The ID of the entity to add the item to. The entity can be a page or database. ' +
-        commonIdDescription
+      'Parent object that specifies either the database or page to add the new page to. Exactly \
+one of database_id or page_id must be provided.'
     ),
   properties: z
     .record(z.any())
