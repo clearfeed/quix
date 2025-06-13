@@ -463,6 +463,19 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
             pipeline: '4002'
           }
         ]
+      },
+      search_hubspot_contacts: {
+        contacts: [
+          {
+            id: '1001',
+            firstName: 'Sarah',
+            lastName: 'Johnson',
+            email: 'sjohnson@example.com',
+            createdAt: '2024-04-01T09:00:00Z',
+            lastModifiedDate: '2024-05-15T14:30:00Z',
+            companies: []
+          }
+        ]
       }
     },
     expected_response:
@@ -608,7 +621,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     chat_history: [
       {
         author: 'Alice',
-        message: 'Create a task for John Smith to follow up on the proposal'
+        message: 'Create a task for the contact John Smith to follow up on the proposal'
       },
       {
         author: 'Quix',
@@ -622,26 +635,32 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     ],
     invocation: {
       initiator_name: 'Alice',
-      message: 'Create a task for John Smith at Acme Corp to follow up on the proposal'
+      message: 'Create a task for the contact John Smith at Acme Corp to follow up on the proposal'
     },
     reference_tool_calls: [
       {
         name: 'search_hubspot_contacts',
         arguments: {
-          keyword: 'John Smith'
+          keyword: 'john.smith@acmecorp.com'
         }
       },
       {
-        name: 'create_task_for_hubspot_contact',
+        name: 'create_hubspot_task',
         arguments: {
           entityId: '3001',
-          title: 'Follow up on proposal',
-          body: 'Follow up with John Smith regarding the proposal',
+          title: 'Follow up on the proposal',
           status: TaskStatusEnum.NOT_STARTED,
           priority: TaskPriorityEnum.MEDIUM,
           taskType: TaskTypeEnum.TODO,
-          dueDate: '2024-06-01',
-          ownerId: '3001'
+          ownerId: null
+        }
+      },
+      {
+        name: 'associate_task_with_entity',
+        arguments: {
+          taskId: 'new-task-id-1',
+          associatedObjectType: 'contact',
+          associatedObjectId: '3001'
         }
       }
     ],
@@ -669,15 +688,19 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
           }
         ]
       },
-      create_task_for_hubspot_contact: {
+      create_hubspot_task: {
         taskId: 'new-task-id-1',
         title: 'Follow up on proposal',
         body: 'Follow up with John Smith regarding the proposal',
         status: TaskStatusEnum.NOT_STARTED,
         priority: TaskPriorityEnum.MEDIUM,
-        taskType: TaskTypeEnum.TODO,
-        dueDate: '2024-06-01',
-        ownerId: '3001'
+        type: TaskTypeEnum.TODO,
+        dueDate: '2024-06-01'
+      },
+      associate_task_with_entity: {
+        taskId: 'new-task-id-1',
+        associatedObjectId: '3001',
+        associatedObjectType: HubspotEntityType.CONTACT
       }
     },
     expected_response:
