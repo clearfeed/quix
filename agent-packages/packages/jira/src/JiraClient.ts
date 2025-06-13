@@ -7,11 +7,11 @@ import {
   JiraUserResponse,
   JiraCommentResponse,
   JiraIssueComments,
-  UpdateIssueFields,
   UpdateIssueResponse,
   JiraIssueTypeResponse,
   JiraCreateIssueMetadata,
-  JiraUpdateIssueMetadata
+  JiraUpdateIssueMetadata,
+  UpdateIssueFields
 } from './types';
 import axios, { AxiosInstance } from 'axios';
 import * as jwt from 'atlassian-jwt';
