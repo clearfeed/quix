@@ -12,7 +12,8 @@ import {
   UpdateIssueResponse,
   SearchUsersResponse,
   GetIssueTypesResponse,
-  UpdateIssueParams
+  UpdateIssueParams,
+  UpdateIssueFields
 } from './types';
 import JiraClient from './JiraClient';
 
@@ -239,8 +240,8 @@ export class JiraService implements BaseService<JiraConfig> {
     try {
       const updateIssueMetadata = await this.client.getUpdateIssueMetadata(params.issueId);
 
-      const fields: UpdateIssueParams['fields'] = {};
-      const fieldParams = params.fields;
+      const fields: UpdateIssueFields = {};
+      const fieldParams = params;
 
       if (fieldParams.assigneeId && updateIssueMetadata.fields.assignee) {
         fields.assigneeId = fieldParams.assigneeId;
@@ -269,7 +270,7 @@ export class JiraService implements BaseService<JiraConfig> {
         data: {
           issueId: params.issueId,
           url: this.getIssueUrl({ key: params.issueId }),
-          fields: params.fields
+          fields: fields
         }
       };
     } catch (error) {

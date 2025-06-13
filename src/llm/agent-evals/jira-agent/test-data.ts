@@ -42,7 +42,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          jql_query: "summary ~ 'login' OR description ~ 'login'"
+          jql_query: 'summary ~"login" OR description ~"login"'
         }
       }
     ],
@@ -154,8 +154,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         arguments: {
           projectKey: 'FEAT',
           summary: 'Login button not working',
-          issueTypeId: '10001',
-          description: 'The login button on the main page is unresponsive when clicked.'
+          issueTypeId: '10001'
         }
       }
     ],
@@ -200,7 +199,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
           projectKey: 'FEAT',
           summary: 'Update dependencies',
           description: 'Update all npm packages to latest versions',
-          issueTypeId: '10003',
+          issueTypeId: '10002',
           priority: 'High',
           assigneeId: 'user-alice'
         }
@@ -893,7 +892,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
           summary: 'Add examples to new API endpoint documentation',
           description:
             'The documentation for the new API endpoint is missing examples. This needs to be addressed.',
-          issueTypeId: '10003',
+          issueTypeId: '10002',
           labels: ['documentation', 'api']
         }
       }
