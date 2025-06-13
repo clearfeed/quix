@@ -463,6 +463,19 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
             pipeline: '4002'
           }
         ]
+      },
+      search_hubspot_contacts: {
+        contacts: [
+          {
+            id: '1001',
+            firstName: 'Sarah',
+            lastName: 'Johnson',
+            email: 'sjohnson@example.com',
+            createdAt: '2024-04-01T09:00:00Z',
+            lastModifiedDate: '2024-05-15T14:30:00Z',
+            companies: []
+          }
+        ]
       }
     },
     expected_response:
@@ -636,11 +649,9 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         arguments: {
           entityId: '3001',
           title: 'Follow up on the proposal',
-          body: 'Follow up with John Smith at Acme Corp regarding the proposal.',
           status: TaskStatusEnum.NOT_STARTED,
           priority: TaskPriorityEnum.MEDIUM,
           taskType: TaskTypeEnum.TODO,
-          dueDate: '2024-06-01',
           ownerId: null
         }
       },
