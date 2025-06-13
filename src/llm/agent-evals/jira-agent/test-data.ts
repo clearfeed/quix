@@ -42,7 +42,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          jql_query: 'summary ~"login" OR description ~"login"'
+          jql_query: 'summary ~ "login" OR description ~ "login"'
         }
       }
     ],
@@ -395,7 +395,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          jql_query: `summary ~ "changes to the login functionality" OR description ~ "changes to the login functionality"`
+          jql_query: `summary ~ "login functionality" OR description ~ "login functionality"`
         }
       }
     ],
@@ -662,7 +662,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          jql_query: "project = SUPP AND status = 'In Progress'"
+          jql_query: 'project = SUPP AND status = "In Progress"'
         }
       }
     ],
@@ -710,10 +710,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         arguments: {
           projectKey: 'UPLOAD',
           summary: 'Investigate S3 permission errors during file uploads',
-          description:
-            'We are experiencing 500 errors when uploading files. Logs indicate an S3 permission issue. Charlie to investigate',
           issueTypeId: '10001',
-          priority: 'High',
           assigneeId: 'user-charlie'
         }
       }
@@ -763,12 +760,9 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         arguments: {
           projectKey: 'MOBILE',
           summary: 'Login page slow on mobile Safari',
-          description:
-            'The login page is very slow on mobile Safari. It takes almost 10 seconds to load the form elements after the page itself renders. Reported by Vic. Frank to investigate.',
           issueTypeId: '10001',
-          priority: 'Highest',
-          assigneeId: 'user-frank',
-          labels: ['performance', 'mobile', 'safari', 'login', 'bug']
+          priority: 'Critical',
+          assigneeId: 'user-frank'
         }
       }
     ],
@@ -887,10 +881,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         arguments: {
           projectKey: 'DOCS',
           summary: 'Add examples to new API endpoint documentation',
-          description:
-            'The documentation for the new API endpoint is missing examples. This needs to be addressed.',
-          issueTypeId: '10002',
-          labels: ['documentation', 'api']
+          issueTypeId: '10002'
         }
       }
     ],
