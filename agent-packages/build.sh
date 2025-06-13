@@ -56,4 +56,10 @@ yarn install
 yarn link "@clearfeed-ai/quix-common-agent"
 yarn build
 
+# Link and build okta package
+cd ../okta
+yarn install
+yarn link "@clearfeed-ai/quix-common-agent"
+yarn build
+
 echo "All packages built successfully!"
