@@ -42,7 +42,7 @@ Consider using Slack tools when the user wants to:
 - Add a reaction (emoji) to an existing message
 - Look up users or view detailed user profiles
 
-If a Slack thread link is provided and the user is requesting an action based on it, use the channel ID and thread timestamp from the link directly without calling other tools.
+If a Slack thread link is provided for an action on that thread, directly use the channel ID and thread timestamp from the link. Avoid using tools like 'slack_list_channels' or 'slack_get_channel_history' if the link already provides this information.
 `;
 
 const SLACK_RESPONSE_GENERATION_PROMPT = `
