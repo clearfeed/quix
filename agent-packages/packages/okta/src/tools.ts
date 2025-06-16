@@ -91,7 +91,7 @@ export const SCHEMAS = {
     userId: z.string().describe('ID of the user to expire password for')
   }),
   resetUserFactorsSchema: z.object({
-    userId: z.string().describe('ID of the user to reset factors for')
+    userId: z.string().describe('ID of the user to reset MFA for')
   }),
   listGroupsSchema: z.object({
     limit: z.number().optional().describe('Number of results to return (default 20)'),

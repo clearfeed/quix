@@ -1,4 +1,4 @@
-import { Client } from '@okta/okta-sdk-nodejs';
+import { Client, User } from '@okta/okta-sdk-nodejs';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   OktaConfig,
@@ -398,7 +398,8 @@ export class OktaService implements BaseService<OktaConfig> {
     try {
       const users = await this.client.groupApi.listGroupUsers({ groupId });
 
-      const data = [];
+      const data: User[] = [];
+
       for await (const user of users) {
         const simplified = extractPrimitives(user);
         if (simplified) {
