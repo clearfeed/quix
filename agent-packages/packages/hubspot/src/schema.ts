@@ -35,25 +35,22 @@ export const baseTaskSchema = z.object({
   dueDate: z.string().describe('Deadline for the task in YYYY-MM-DD format.'),
   ownerId: z
     .string()
-    .optional()
+    .nullish()
     .describe(
-      "Id of the HubSpot user to assign the task to. Referred to as the task's **owner** or **assignee**—both terms are interchangeable."
+      "Id of the HubSpot user to assign the task to. Referred to as the task's **owner** or **assignee**—both terms are interchangeable. Do not assign this task to anyone unless the user has clearly instructed to assign it. In the absence of explicit mention, leave this field empty."
     )
 });
 
-// Deal Task Schema
-export const dealTaskSchema = baseTaskSchema.extend({
-  entityId: z.string().describe('HubSpot Deal ID that this task is linked to.')
-});
-
-// Contact Task Schema
-export const contactTaskSchema = baseTaskSchema.extend({
-  entityId: z.string().describe('HubSpot Contact ID that this task is linked to.')
-});
-
-// Company Task Schema
-export const companyTaskSchema = baseTaskSchema.extend({
-  entityId: z.string().describe('HubSpot Company ID that this task is linked to.')
+export const associateTaskWithEntitySchema = z.object({
+  taskId: z.string().describe('ID of the existing task to associate with an entity.'),
+  associatedObjectType: z
+    .nativeEnum(HubspotEntityType)
+    .describe('Type of HubSpot object to associate with the task.'),
+  associatedObjectId: z
+    .string()
+    .describe(
+      'ID of the contact, company, or deal in HubSpot to associate with the task. If the ID is not available, use one of the search tools: "search_hubspot_contacts", "search_hubspot_companies", or "search_hubspot_deals" to find it.'
+    )
 });
 
 // Full Task Search Schema for the tool

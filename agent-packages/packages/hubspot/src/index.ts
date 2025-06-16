@@ -31,7 +31,9 @@ import {
   AssociateTicketWithEntityParams,
   AssociateTicketWithEntityResponse,
   SearchDealsParams,
-  UpdateDealParams
+  UpdateDealParams,
+  AssociateTaskWithEntityParams,
+  AssociateTaskWithEntityResponse
 } from './types';
 import { FilterOperatorEnum as CompanyFilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/companies';
 import { FilterOperatorEnum as ContactFilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/contacts';
@@ -588,27 +590,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async createTask(params: CreateTaskParams): Promise<CreateTaskResponse> {
     try {
-      const {
-        title,
-        status,
-        priority,
-        taskType,
-        body,
-        dueDate,
-        ownerId,
-        associatedObjectType,
-        associatedObjectId
-      } = params;
-
-      /**
-       * @see https://developers.hubspot.com/docs/guides/api/crm/associations/associations-v4#task-to-object
-       */
-      const associationTypeIds = {
-        [HubspotEntityType.DEAL]: ASSOCIATION_TYPE_IDS.TASK_TO_ENTITY.DEAL,
-        [HubspotEntityType.COMPANY]: ASSOCIATION_TYPE_IDS.TASK_TO_ENTITY.COMPANY,
-        [HubspotEntityType.CONTACT]: ASSOCIATION_TYPE_IDS.TASK_TO_ENTITY.CONTACT
-      };
-
+      const { title, status, priority, taskType, body, dueDate, ownerId } = params;
       const taskInput: TaskParametersWithAssociations = {
         properties: {
           hs_task_subject: title,
@@ -627,16 +609,6 @@ export class HubspotService implements BaseService<HubspotConfig> {
       if (ownerId) {
         taskInput.properties.hubspot_owner_id = ownerId;
       }
-
-      taskInput.associations.push({
-        to: { id: associatedObjectId },
-        types: [
-          {
-            associationCategory: TaskAssociationSpecAssociationCategoryEnum.HubspotDefined,
-            associationTypeId: associationTypeIds[associatedObjectType as HubspotEntityType]
-          }
-        ]
-      });
 
       const response = await this.client.crm.objects.tasks.basicApi.create(taskInput);
 
@@ -660,6 +632,49 @@ export class HubspotService implements BaseService<HubspotConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to create HubSpot task'
+      };
+    }
+  }
+
+  async associateTaskWithEntity(
+    params: AssociateTaskWithEntityParams
+  ): Promise<AssociateTaskWithEntityResponse> {
+    try {
+      const { taskId, associatedObjectType, associatedObjectId } = params;
+      const associationTypeIds = {
+        [HubspotEntityType.DEAL]: ASSOCIATION_TYPE_IDS.TASK_TO_ENTITY.DEAL,
+        [HubspotEntityType.COMPANY]: ASSOCIATION_TYPE_IDS.TASK_TO_ENTITY.COMPANY,
+        [HubspotEntityType.CONTACT]: ASSOCIATION_TYPE_IDS.TASK_TO_ENTITY.CONTACT
+      };
+
+      const typeId = associationTypeIds[associatedObjectType];
+
+      await this.client.crm.associations.v4.basicApi.create(
+        'task',
+        taskId,
+        associatedObjectType,
+        associatedObjectId,
+        [
+          {
+            associationCategory: TaskAssociationSpecAssociationCategoryEnum.HubspotDefined,
+            associationTypeId: typeId
+          }
+        ]
+      );
+
+      return {
+        success: true,
+        data: {
+          taskId,
+          associatedObjectType,
+          associatedObjectId
+        }
+      };
+    } catch (error) {
+      console.error('Error associating task with entity:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to associate task with entity'
       };
     }
   }
