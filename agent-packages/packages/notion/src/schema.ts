@@ -454,36 +454,45 @@ export const blockObjectSchema = z
   .describe('A Notion block object.');
 
 export const appendBlockChildrenSchema = z.object({
-  block_id: z.string().describe('The ID of the parent block. ' + commonIdDescription),
+  block_id: z.string().describe(
+    'The ID of the parent block or page where the new content will be added. This can be a block \
+ID or a page ID. ' + commonIdDescription
+  ),
   children: z
     .array(blockObjectSchema)
     .describe('Array of block objects to append. Each block must follow the Notion block schema.'),
   after: z
     .string()
-    .min(1)
     .describe(
-      'The ID of the existing block that the new block should be appended after. ' +
-        commonIdDescription
+      'The ID of an existing child block inside the parent block/page. The new blocks will be \
+inserted immediately after this block. It is optional but if provided it must be the ID of the \
+block after which the new block should be appended. ' + commonIdDescription
     )
     .optional()
 });
 
 export const retrieveBlockSchema = z.object({
-  block_id: z.string().describe('The ID of the block to retrieve.' + commonIdDescription)
+  block_id: z.string().describe('The ID of the block to retrieve. ' + commonIdDescription)
 });
 
 export const retrieveBlockChildrenSchema = z.object({
-  block_id: z.string().describe('The ID of the block.' + commonIdDescription),
-  start_cursor: z.string().min(1).describe('Pagination cursor for next page of results').optional(),
+  block_id: z.string().describe('The ID of the block. ' + commonIdDescription),
+  start_cursor: z
+    .string()
+    .describe(
+      'A string token used for pagination. Set this to the `next_cursor` value from the previous \
+response to continue fetching the next page of results. Omit this to fetch the first page.'
+    )
+    .optional(),
   page_size: z.number().int().min(1).max(100).describe('Number of results per page.').default(100)
 });
 
 export const deleteBlockSchema = z.object({
-  block_id: z.string().describe('The ID of the block to delete.' + commonIdDescription)
+  block_id: z.string().describe('The ID of the block to delete. ' + commonIdDescription)
 });
 
 export const updateBlockSchema = z.object({
-  block_id: z.string().describe('The ID of the block to update.' + commonIdDescription),
+  block_id: z.string().describe('The ID of the block to update. ' + commonIdDescription),
   type: z
     .enum(['paragraph', 'heading_1', 'heading_2', 'heading_3'])
     .describe('The type of block to update'),
@@ -493,35 +502,41 @@ export const updateBlockSchema = z.object({
 });
 
 export const retrievePageSchema = z.object({
-  page_id: z.string().describe('The ID of the page to retrieve.' + commonIdDescription)
+  page_id: z.string().describe('The ID of the page to retrieve. ' + commonIdDescription)
 });
 
 export const updatePagePropertiesSchema = z.object({
   page_id: z
     .string()
-    .describe('The ID of the page or database item to update.' + commonIdDescription),
+    .describe('The ID of the page or database item to update. ' + commonIdDescription),
   properties: z
     .record(z.any())
     .describe('Properties to update. These correspond to the columns or fields in the database.')
 });
 
 export const deleteOrArchivePageSchema = z.object({
-  page_id: z.string().describe('The ID of the page to delete or archive.' + commonIdDescription)
+  page_id: z.string().describe('The ID of the page to delete or archive. ' + commonIdDescription)
 });
 
 export const listAllUsersSchema = z.object({
-  start_cursor: z.string().min(1).describe('Pagination start cursor for listing users').optional(),
+  start_cursor: z
+    .string()
+    .describe(
+      'A string token used for pagination. Set this to the `next_cursor` value from the previous \
+response to continue fetching the next page of results. Omit this to fetch the first page.'
+    )
+    .optional(),
   page_size: z.number().int().min(1).max(100).describe('Number of users to retrieve.').default(100)
 });
 
 export const retrieveUserSchema = z.object({
-  user_id: z.string().describe('The ID of the user to retrieve.' + commonIdDescription)
+  user_id: z.string().describe('The ID of the user to retrieve. ' + commonIdDescription)
 });
 
 export const retrieveBotUserSchema = z.object({});
 
 export const queryDatabaseSchema = z.object({
-  database_id: z.string().describe('The ID of the database to query.' + commonIdDescription),
+  database_id: z.string().describe('The ID of the database to query. ' + commonIdDescription),
   filter: z.record(z.any()).describe('Filter conditions').optional(),
   sorts: z
     .array(
@@ -533,28 +548,51 @@ export const queryDatabaseSchema = z.object({
     )
     .describe('Sort conditions')
     .optional(),
-  start_cursor: z.string().min(1).describe('Pagination cursor for next page of results').optional(),
+  start_cursor: z
+    .string()
+    .describe(
+      'A string token used for pagination. Set this to the `next_cursor` value from the previous \
+response to continue fetching the next page of results. Omit this to fetch the first page.'
+    )
+    .optional(),
   page_size: z.number().int().min(1).max(100).describe('Number of results per page.').default(100)
 });
 
 export const retrieveDatabaseSchema = z.object({
-  database_id: z.string().describe('The ID of the database to retrieve.' + commonIdDescription)
+  database_id: z.string().describe('The ID of the database to retrieve. ' + commonIdDescription)
 });
 
 export const createDatabaseItemSchema = z.object({
-  database_id: z
-    .string()
-    .describe('The ID of the database to add the item to.' + commonIdDescription),
+  parent: z
+    .discriminatedUnion('type', [
+      z.object({
+        type: z.literal('database_id'),
+        database_id: z
+          .string()
+          .describe('The ID of the database to add the new page to.' + commonIdDescription)
+      }),
+      z.object({
+        type: z.literal('page_id'),
+        page_id: z
+          .string()
+          .describe('The ID of the page to add the new page to.' + commonIdDescription)
+      })
+    ])
+    .describe(
+      'Parent object that specifies either the database or page to add the new page to. Exactly \
+one of database_id or page_id must be provided.'
+    ),
   properties: z
     .record(z.any())
     .describe('Properties of the new database item. These should match the database schema.')
+    .optional()
 });
 
 export const createCommentSchema = z.object({
   parent: z
     .object({
       type: z.literal('page_id'),
-      page_id: z.string().describe('The ID of the page to comment on.' + commonIdDescription)
+      page_id: z.string().describe('The ID of the page to comment on. ' + commonIdDescription)
     })
     .describe(
       'Parent object that specifies the page to comment on. Must include a page_id if used.'
@@ -562,7 +600,7 @@ export const createCommentSchema = z.object({
     .optional(),
   discussion_id: z
     .string()
-    .describe('The ID of an existing discussion thread to add a comment to.' + commonIdDescription)
+    .describe('The ID of an existing discussion thread to add a comment to. ' + commonIdDescription)
     .optional(),
   rich_text: z
     .array(richTextObjectSchema)
@@ -573,12 +611,14 @@ export const retrieveCommentsSchema = z.object({
   block_id: z
     .string()
     .describe(
-      'The ID of the block or page whose comments you want to retrieve.' + commonIdDescription
+      'The ID of the block or page whose comments you want to retrieve. ' + commonIdDescription
     ),
   start_cursor: z
     .string()
-    .describe('If supplied, returns a page of results starting after the cursor.')
-    .min(1)
+    .describe(
+      'A string token used for pagination. Set this to the `next_cursor` value from the previous \
+response to continue fetching the next page of results. Omit this to fetch the first page.'
+    )
     .optional(),
   page_size: z
     .number()
@@ -605,7 +645,13 @@ export const searchSchema = z.object({
     })
     .describe('Sort order of results')
     .optional(),
-  start_cursor: z.string().min(1).describe('Pagination start cursor').optional(),
+  start_cursor: z
+    .string()
+    .describe(
+      'A string token used for pagination. Set this to the `next_cursor` value from the previous \
+response to continue fetching the next page of results. Omit this to fetch the first page.'
+    )
+    .optional(),
   page_size: z.number().int().min(1).max(100).describe('Number of results to return.').default(100)
 });
 
@@ -615,7 +661,7 @@ export const createDatabaseSchema = z.object({
       type: z.literal('page_id'),
       page_id: z
         .string()
-        .describe('The ID of the page to create the database in.' + commonIdDescription)
+        .describe('The ID of the page to create the database in. ' + commonIdDescription)
     })
     .describe('Parent object of the database'),
   title: z
