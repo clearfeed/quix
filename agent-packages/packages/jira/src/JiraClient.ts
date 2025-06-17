@@ -237,7 +237,7 @@ export class JiraClient {
   }
 
   async getIssueTypes(projectKey: string): Promise<JiraIssueTypeResponse[]> {
-    const response = await this.makeApiCall('GET', `issue/createmeta/${projectKey}/issuetypes`);
+    const response = await this.makeApiCall('GET', `/issue/createmeta/${projectKey}/issuetypes`);
     return response;
   }
 
@@ -247,7 +247,7 @@ export class JiraClient {
   ): Promise<JiraCreateIssueMetadata> {
     const response = await this.makeApiCall(
       'GET',
-      `issue/createmeta/${projectKey}/issuetypes/${issueTypeId}`
+      `/issue/createmeta/${projectKey}/issuetypes/${issueTypeId}`
     );
     return response;
   }
