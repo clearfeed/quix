@@ -441,7 +441,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         properties.dealstage = validStage.id;
       }
 
-      if (amount !== undefined) {
+      if (amount) {
         properties.amount = amount.toString();
       }
 
