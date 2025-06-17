@@ -258,13 +258,20 @@ export class JiraClient {
   }
 
   async searchUser(accountId: string): Promise<JiraUserResponse> {
-    const response = await this.makeApiCall('GET', `/user?accountId=${accountId}`);
+    const response = await this.makeApiCall('GET', `/user`, {
+      params: {
+        accountId
+      }
+    });
     return response;
   }
 
   async validateJql(jql_query: string): Promise<void> {
     try {
-      const response = await this.makeApiCall('POST', `/jql/parse?validation=strict`, {
+      const response = await this.makeApiCall('POST', `/jql/parse`, {
+        params: {
+          validation: 'strict'
+        },
         data: {
           queries: [jql_query]
         }
