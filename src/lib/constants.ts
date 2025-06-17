@@ -241,7 +241,7 @@ Respond in clear markdown.
   `,
   baseToolSelection: `
   Select the tool categories to use for the query.
-  If no specific tool is needed, respond with "none" and provide a direct answer.
+  If no specific tool is needed, respond directly and include an answer based on the provided reason using your own knowledge.
   `,
   PLANNER_PROMPT: (allFunctions: string[], allCustomPrompts: string[]) => {
     const basePrompt = `
