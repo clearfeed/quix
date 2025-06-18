@@ -189,7 +189,8 @@ export function createOktaToolsExport(config: OktaConfig): ToolConfig {
       async (args: z.infer<typeof SCHEMAS.deactivateUserSchema>) => service.deactivateUser(args),
       {
         name: 'deactivate_okta_user',
-        description: 'Deactivate a user in Okta',
+        description:
+          'Deactivate a user in Okta. Only run this tool if specifically requested to deactivate by the user.',
         schema: SCHEMAS.deactivateUserSchema
       }
     ),
@@ -225,20 +226,11 @@ export function createOktaToolsExport(config: OktaConfig): ToolConfig {
         schema: SCHEMAS.resetUserFactorsSchema
       }
     ),
-    tool(
-      async (args: z.infer<typeof SCHEMAS.deleteUserSchema>) => {
-        const user = await service.getUser(args);
-        if (user.data?.status !== 'DEPROVISIONED') {
-          throw new Error('User must be deactivated before deletion');
-        }
-        return service.deleteUser(args);
-      },
-      {
-        name: 'delete_okta_user',
-        description: 'Delete a deactivated user in Okta',
-        schema: SCHEMAS.deleteUserSchema
-      }
-    ),
+    tool(async (args: z.infer<typeof SCHEMAS.deleteUserSchema>) => service.deleteUser(args), {
+      name: 'delete_okta_user',
+      description: 'Delete a user in Okta. This will fail if user is not deactivated.',
+      schema: SCHEMAS.deleteUserSchema
+    }),
     tool(async (args: z.infer<typeof SCHEMAS.listGroupsSchema>) => service.listGroups(args), {
       name: 'list_okta_groups',
       description: 'List groups in Okta, optionally filtered by a search expression',

@@ -287,6 +287,14 @@ export class OktaService implements BaseService<OktaConfig> {
     userId
   }: z.infer<typeof SCHEMAS.deleteUserSchema>): Promise<DeleteUserResponse> {
     try {
+      const user = await this.getUser({ userId });
+
+      if (user.data?.status !== 'DEPROVISIONED') {
+        return {
+          success: false,
+          data: `User is currently '${user.data?.status?.toLowerCase()}'.`
+        };
+      }
       await this.client.userApi.deleteUser({ userId });
       return {
         success: true,
