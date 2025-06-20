@@ -31,7 +31,10 @@ import {
   searchDealsSchema,
   updateDealSchema,
   baseTaskSchema,
-  associateTaskWithEntitySchema
+  associateTaskWithEntitySchema,
+  searchContactsSchema,
+  createContactSchema,
+  searchCompaniesSchema
 } from './schema';
 
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
@@ -78,11 +81,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
     tool(async (args: { keyword: string }) => service.searchContacts(args.keyword), {
       name: 'search_hubspot_contacts',
       description: 'Search for contacts in HubSpot based on name or email',
-      schema: z.object({
-        keyword: z
-          .string()
-          .describe('The keyword to search for in contact names or email addresses')
-      })
+      schema: searchContactsSchema
     }),
     tool(
       async (args: { entityId: string; note: string }) =>
@@ -139,19 +138,14 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
     }),
     tool(async (args: UpdateDealParams) => service.updateDeal(args), {
       name: 'update_hubspot_deal',
-      description: 'Update the details of an existing HubSpot deal.',
+      description:
+        'Update the details of an existing HubSpot deal. Only the fields explicitly provided should be updated; leave all other fields unchanged.',
       schema: updateDealSchema
     }),
     tool(async (args: CreateContactParams) => service.createContact(args), {
       name: 'create_hubspot_contact',
       description: 'Create a new contact in HubSpot',
-      schema: z.object({
-        firstName: z.string().describe('The first name of the contact'),
-        lastName: z.string().describe('The last name of the contact'),
-        email: z.string().describe('The email address of the contact'),
-        phone: z.string().optional().describe('The phone number of the contact'),
-        company: z.string().optional().describe('The company associated with the contact')
-      })
+      schema: createContactSchema
     }),
     tool(async (args: GetPipelinesParams) => service.getPipelines(args.entityType), {
       name: 'get_hubspot_pipelines',
@@ -167,13 +161,12 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
     tool(async (args: { keyword: string }) => service.searchCompanies(args.keyword), {
       name: 'search_hubspot_companies',
       description: 'Search companies in HubSpot based on a keyword (e.g., company name)',
-      schema: z.object({
-        keyword: z.string().describe('The keyword to search for in company names')
-      })
+      schema: searchCompaniesSchema
     }),
     tool(async (args: CreateTaskParams) => service.createTask(args), {
       name: 'create_hubspot_task',
-      description: 'Create a new HubSpot task.',
+      description:
+        'Create a new HubSpot task using only the information provided. Do not populate any additional fields unless they are required.',
       schema: baseTaskSchema
     }),
     tool(async (args: AssociateTaskWithEntityParams) => service.associateTaskWithEntity(args), {

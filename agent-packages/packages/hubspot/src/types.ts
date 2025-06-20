@@ -11,7 +11,8 @@ import {
   createDealSchema,
   searchDealsSchema,
   updateDealSchema,
-  associateTaskWithEntitySchema
+  associateTaskWithEntitySchema,
+  createContactSchema
 } from './schema';
 import { z } from 'zod';
 
@@ -75,13 +76,7 @@ export type SearchContactsResponse = BaseResponse<{
   contacts: ContactWithCompanies[];
 }>;
 
-export interface CreateContactParams {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string;
-  company?: string;
-}
+export type CreateContactParams = z.infer<typeof createContactSchema>;
 
 export type CreateContactResponse = BaseResponse<{
   contactId: string;
