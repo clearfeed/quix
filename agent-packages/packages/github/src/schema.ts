@@ -174,8 +174,16 @@ export const createGithubIssueSchema = (config: GitHubConfig) =>
         config.owner ? 'The owner of the repository' : 'The owner of the repository (required)'
       ),
     title: z.string().describe('The title of the issue'),
-    description: z.string().nullish().describe('The description of the issue'),
-    assignee: z.string().min(1).describe('The GitHub username of the assignee')
+    description: z
+      .string()
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('The description of the issue'),
+    assignee: z
+      .string()
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('The GitHub username of the assignee (optional)')
   });
 
 export const searchRepositoryCodeSchema = (config: GitHubConfig) =>

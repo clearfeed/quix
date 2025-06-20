@@ -43,13 +43,6 @@ export interface FileContent {
   content: string;
 }
 
-export interface SearchCodeParams {
-  q: string;
-  order?: 'asc' | 'desc';
-  page?: number;
-  per_page?: number;
-}
-
 export type SearchIssuesOrPullRequestsParams = z.infer<
   ReturnType<typeof searchIssuesOrPullRequestsSchema>
 >;

@@ -15,13 +15,13 @@ import {
   CreatePullRequestReviewParams,
   MergePullRequestParams,
   UpdatePullRequestBranchParams,
-  SearchCodeParams,
   SearchCodeResponse,
   SearchIssuesGlobalParams,
   SearchIssuesOrPullRequestsParams,
   SearchIssuesOrPullRequestsResponse,
   CreateGithubIssueParams,
-  SearchRepositoryCodeParams
+  SearchRepositoryCodeParams,
+  SearchCodeGlobalParams
 } from './types';
 import type { OctokitType, RestEndpointMethodTypes } from './types/oktokit';
 export * from './types';
@@ -712,7 +712,9 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  async searchCodeGlobal(params: SearchCodeParams): Promise<BaseResponse<SearchCodeResponse>> {
+  async searchCodeGlobal(
+    params: SearchCodeGlobalParams
+  ): Promise<BaseResponse<SearchCodeResponse>> {
     try {
       const response = await this.client.rest.search.code({
         q: params.q,
