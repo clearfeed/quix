@@ -11,7 +11,9 @@ import {
   WebAPIPlatformError,
   WebAPIRequestError,
   WebAPIHTTPError,
-  WebAPIRateLimitedError
+  WebAPIRateLimitedError,
+  ConversationsListArguments,
+  UsersListArguments
 } from '@slack/web-api';
 import {
   AddReactionParams,
@@ -64,13 +66,16 @@ export class SlackService implements BaseService<SlackConfig> {
     params: ListChannelsParams
   ): Promise<BaseResponse<ConversationsListResponse['channels']>> {
     try {
-      const result = await this.client.conversations.list({
+      const body: ConversationsListArguments = {
         types: 'public_channel',
         exclude_archived: true,
         team_id: this.config.teamId,
-        limit: params.limit || 100,
-        cursor: params.cursor
-      });
+        limit: params.limit
+      };
+      if (params.cursor) {
+        body.cursor = params.cursor;
+      }
+      const result = await this.client.conversations.list(body);
 
       return {
         success: true,
@@ -173,7 +178,7 @@ export class SlackService implements BaseService<SlackConfig> {
     try {
       const result = await this.client.conversations.history({
         channel: params.channel_id,
-        limit: params.limit || 10
+        limit: params.limit
       });
 
       return {
@@ -211,11 +216,14 @@ export class SlackService implements BaseService<SlackConfig> {
 
   async getUsers(params: GetUsersParams): Promise<BaseResponse<UsersListResponse['members']>> {
     try {
-      const result = await this.client.users.list({
+      const body: UsersListArguments = {
         team_id: this.config.teamId,
-        limit: params.limit || 100,
-        cursor: params.cursor
-      });
+        limit: params.limit
+      };
+      if (params.cursor) {
+        body.cursor = params.cursor;
+      }
+      const result = await this.client.users.list(body);
 
       return {
         success: true,
