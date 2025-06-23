@@ -32,8 +32,16 @@ When formatting Okta responses:
 
 export const SCHEMAS = {
   listUsers: z.object({
-    limit: z.number().optional().default(20).describe('Number of results to return (default 20)'),
-    query: z.string().optional().describe('Search a user by firstName, lastName, or email')
+    limit: z
+      .number()
+      .nullish()
+      .transform((val) => val ?? 20)
+      .describe('Number of results to return (default 20)'),
+    query: z
+      .string()
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('Search a user by firstName, lastName, or email')
   }),
   createUserSchema: z.object({
     profile: z.object({
@@ -48,9 +56,11 @@ export const SCHEMAS = {
           .object({
             value: z.string().describe('Password for the user')
           })
-          .optional()
+          .nullish()
+          .transform((val) => val ?? undefined)
       })
-      .optional()
+      .nullish()
+      .transform((val) => val ?? undefined)
   }),
   getUserSchema: z.object({
     userId: z.string().describe('User ID or login to retrieve')
@@ -58,10 +68,28 @@ export const SCHEMAS = {
   updateUserSchema: z.object({
     userId: z.string().describe('ID of the user to update'),
     profile: z.object({
-      firstName: z.string().optional().describe('Updated first name'),
-      lastName: z.string().optional().describe('Updated last name'),
-      email: z.string().email().optional().describe('Updated email address'),
-      login: z.string().email().optional().describe('Updated login (usually email)')
+      firstName: z
+        .string()
+        .nullish()
+        .transform((val) => val ?? undefined)
+        .describe('Updated first name'),
+      lastName: z
+        .string()
+        .nullish()
+        .transform((val) => val ?? undefined)
+        .describe('Updated last name'),
+      email: z
+        .string()
+        .email()
+        .nullish()
+        .transform((val) => val ?? undefined)
+        .describe('Updated email address'),
+      login: z
+        .string()
+        .email()
+        .nullish()
+        .transform((val) => val ?? undefined)
+        .describe('Updated login (usually email)')
     })
   }),
   deleteUserSchema: z.object({
@@ -75,7 +103,11 @@ export const SCHEMAS = {
   }),
   activateUserSchema: z.object({
     userId: z.string().describe('ID of the user to activate'),
-    sendEmail: z.boolean().optional().default(true).describe('Whether to send activation email')
+    sendEmail: z
+      .boolean()
+      .nullish()
+      .transform((val) => val ?? true)
+      .describe('Whether to send activation email')
   }),
   deactivateUserSchema: z.object({
     userId: z.string().describe('ID of the user to deactivate')
@@ -85,7 +117,11 @@ export const SCHEMAS = {
   }),
   resetUserPasswordSchema: z.object({
     userId: z.string().describe('ID of the user to reset password for'),
-    sendEmail: z.boolean().optional().default(true).describe('Whether to send password reset email')
+    sendEmail: z
+      .boolean()
+      .nullish()
+      .transform((val) => val ?? true)
+      .describe('Whether to send password reset email')
   }),
   expireUserPasswordSchema: z.object({
     userId: z.string().describe('ID of the user to expire password for')
@@ -94,13 +130,25 @@ export const SCHEMAS = {
     userId: z.string().describe('ID of the user to reset MFA for')
   }),
   listGroupsSchema: z.object({
-    limit: z.number().optional().describe('Number of results to return (default 20)'),
-    search: z.string().optional().describe('Search expression for groups')
+    limit: z
+      .number()
+      .nullish()
+      .transform((val) => val ?? 20)
+      .describe('Number of results to return (default 20)'),
+    search: z
+      .string()
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('Search expression for groups')
   }),
   createGroupSchema: z.object({
     profile: z.object({
       name: z.string().describe('Name of the group'),
-      description: z.string().optional().describe('Description of the group')
+      description: z
+        .string()
+        .nullish()
+        .transform((val) => val ?? undefined)
+        .describe('Description of the group')
     })
   }),
   assignUserToGroupSchema: z.object({
@@ -118,13 +166,25 @@ export const SCHEMAS = {
     groupId: z.string().describe('ID of the group to delete')
   }),
   listApplicationsSchema: z.object({
-    limit: z.number().optional().describe('Number of results to return (default 20)'),
-    query: z.string().optional().describe('Searches for apps with name or label properties')
+    limit: z
+      .number()
+      .nullish()
+      .transform((val) => val ?? 20)
+      .describe('Number of results to return (default 20)'),
+    query: z
+      .string()
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('Searches for apps with name or label properties')
   }),
   assignUserToApplicationSchema: z.object({
     appId: z.string().describe('ID of the application'),
     userId: z.string().describe('ID of the user to assign'),
-    profile: z.record(z.any()).optional().describe('Application-specific profile information')
+    profile: z
+      .record(z.any())
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('Application-specific profile information')
   }),
   unassignUserFromApplicationSchema: z.object({
     appId: z.string().describe('ID of the application'),
