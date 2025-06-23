@@ -181,7 +181,7 @@ export const SCHEMAS = {
     appId: z.string().describe('ID of the application'),
     userId: z.string().describe('ID of the user to assign'),
     profile: z
-      .record(z.any())
+      .record(z.unknown())
       .nullish()
       .transform((val) => val ?? undefined)
       .describe('Application-specific profile information')
