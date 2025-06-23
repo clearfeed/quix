@@ -52,18 +52,14 @@ export const baseSearchIssuesOrPullRequestsSchema = z.object({
 export const searchIssuesOrPullRequestsSchema = (config: GitHubConfig) =>
   baseSearchIssuesOrPullRequestsSchema.extend({
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository to search in. This identifies which project to look for issues/PRs'
           : 'Name of the repository to search in. This identifies which project to look for issues/PRs (required)'
       ),
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository. This is the first part of the repository URL'
@@ -83,9 +79,7 @@ export const getGithubIssueSchema = (config: GitHubConfig) =>
           : 'Repository name from which the issue or PR should be retrieved (required)'
       ),
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Owner of the repository containing the issue or PR'
@@ -110,9 +104,7 @@ export const addGithubAssigneeSchema = (config: GitHubConfig) =>
           : 'Repository where the issue or PR exists for assigning a user (required)'
       ),
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Owner of the repository where the issue or PR exists'
@@ -134,9 +126,7 @@ export const removeGithubAssigneeSchema = (config: GitHubConfig) =>
           : 'Repository where the issue or PR exists for removing an assignee (required)'
       ),
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Owner of the repository where the issue or PR exists'
@@ -149,9 +139,7 @@ export const removeGithubAssigneeSchema = (config: GitHubConfig) =>
 export const getOrganizationUsersSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(config.owner ? 'Github Organization name' : 'Github Organization name (required)')
   });
 
@@ -167,9 +155,7 @@ export const createGithubIssueSchema = (config: GitHubConfig) =>
           : 'The GitHub repository name where issue will be created (required)'
       ),
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner ? 'The owner of the repository' : 'The owner of the repository (required)'
       ),
@@ -189,18 +175,14 @@ export const createGithubIssueSchema = (config: GitHubConfig) =>
 export const searchRepositoryCodeSchema = (config: GitHubConfig) =>
   z.object({
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'The name of the GitHub repository to search in'
           : 'The name of the GitHub repository to search in (required)'
       ),
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'The owner of the GitHub repository'
@@ -220,18 +202,14 @@ export const searchRepositoryCodeSchema = (config: GitHubConfig) =>
 export const createOrUpdateFileSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository'
           : 'Username or organization that owns the repository (required)'
       ),
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository where the file will be created/updated'
@@ -303,18 +281,14 @@ export const createRepositorySchema = z.object({
 export const getFileContentsSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository'
           : 'Username or organization that owns the repository (required)'
       ),
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository containing the file or directory'
@@ -331,18 +305,14 @@ export const getFileContentsSchema = (config: GitHubConfig) =>
 export const createPullRequestSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository'
           : 'Username or organization that owns the repository (required)'
       ),
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository where the PR will be created'
@@ -381,18 +351,14 @@ export const createPullRequestSchema = (config: GitHubConfig) =>
 export const createBranchSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository'
           : 'Username or organization that owns the repository (required)'
       ),
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository where the branch will be created'
@@ -409,18 +375,14 @@ export const createBranchSchema = (config: GitHubConfig) =>
 export const listCommitsSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository'
           : 'Username or organization that owns the repository (required)'
       ),
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository to list commits from'
@@ -449,18 +411,14 @@ export const listCommitsSchema = (config: GitHubConfig) =>
 export const updateIssueSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository'
           : 'Username or organization that owns the repository (required)'
       ),
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository containing the issue'
@@ -502,18 +460,14 @@ export const updateIssueSchema = (config: GitHubConfig) =>
 export const addIssueCommentSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository'
           : 'Username or organization that owns the repository (required)'
       ),
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository containing the issue'
@@ -558,18 +512,14 @@ export const searchGithubUsersSchema = (_config: GitHubConfig) =>
 export const getPullRequestSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository'
           : 'Username or organization that owns the repository (required)'
       ),
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository containing the PR'
@@ -581,18 +531,14 @@ export const getPullRequestSchema = (config: GitHubConfig) =>
 export const createPullRequestReviewSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository'
           : 'Username or organization that owns the repository (required)'
       ),
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository containing the PR'
@@ -626,18 +572,14 @@ export const createPullRequestReviewSchema = (config: GitHubConfig) =>
 export const mergePullRequestSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository'
           : 'Username or organization that owns the repository (required)'
       ),
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository containing the PR'
@@ -692,18 +634,14 @@ export const searchCodeGlobalSchema = z.object({
 export const getPullRequestStatusSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository'
           : 'Username or organization that owns the repository (required)'
       ),
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository containing the PR'
@@ -715,18 +653,14 @@ export const getPullRequestStatusSchema = (config: GitHubConfig) =>
 export const getPullRequestFilesSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository'
           : 'Username or organization that owns the repository (required)'
       ),
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository containing the PR'
@@ -738,18 +672,14 @@ export const getPullRequestFilesSchema = (config: GitHubConfig) =>
 export const getPullRequestCommentsSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository'
           : 'Username or organization that owns the repository (required)'
       ),
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository containing the PR'
@@ -761,18 +691,14 @@ export const getPullRequestCommentsSchema = (config: GitHubConfig) =>
 export const getPullRequestReviewsSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository'
           : 'Username or organization that owns the repository (required)'
       ),
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository containing the PR'
@@ -784,18 +710,14 @@ export const getPullRequestReviewsSchema = (config: GitHubConfig) =>
 export const updatePullRequestBranchSchema = (config: GitHubConfig) =>
   z.object({
     owner: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.owner))
+      .preprocess((val) => val ?? config.owner, z.string())
       .describe(
         config.owner
           ? 'Username or organization that owns the repository'
           : 'Username or organization that owns the repository (required)'
       ),
     repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
+      .preprocess((val) => val ?? config.repo, z.string())
       .describe(
         config.repo
           ? 'Name of the repository containing the PR'
