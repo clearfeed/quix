@@ -1,3 +1,4 @@
+import { withNullPreprocessing } from '@clearfeed-ai/quix-common-agent';
 import { z } from 'zod';
 
 export const commonIdDescription =
@@ -39,36 +40,36 @@ export const richTextObjectSchema = z
               .object({
                 url: z.string().describe('The URL to link the text to when clicked.')
               })
-              .optional()
+              .nullish()
               .nullable()
               .describe('Link information for the text, if it should be clickable.')
           })
           .describe('The text element content and its optional link properties.'),
         type: z
           .literal('text')
-          .optional()
+          .nullish()
           .describe('Indicates this is a text-type rich text element.'),
         annotations: z
           .object({
-            bold: z.boolean().optional().describe('Whether the text should be displayed in bold.'),
+            bold: z.boolean().nullish().describe('Whether the text should be displayed in bold.'),
             italic: z
               .boolean()
-              .optional()
+              .nullish()
               .describe('Whether the text should be displayed in italic.'),
             strikethrough: z
               .boolean()
-              .optional()
+              .nullish()
               .describe('Whether the text should have a strikethrough.'),
-            underline: z.boolean().optional().describe('Whether the text should be underlined.'),
+            underline: z.boolean().nullish().describe('Whether the text should be underlined.'),
             code: z
               .boolean()
-              .optional()
+              .nullish()
               .describe('Whether the text should be displayed as inline code.'),
             color: richTextColorSchema
-              .optional()
+              .nullish()
               .describe('The color formatting to apply to the text.')
           })
-          .optional()
+          .nullish()
           .describe('Formatting annotations to apply to the text element.')
       })
       .describe('Schema for a plain text element in rich text content.'),
@@ -97,7 +98,7 @@ export const richTextObjectSchema = z
                           .object({
                             email: z
                               .string()
-                              .optional()
+                              .nullish()
                               .describe('The email address of the person being mentioned.')
                           })
                           .describe('Information about the person being mentioned.'),
@@ -106,21 +107,21 @@ export const richTextObjectSchema = z
                           .describe('The unique identifier of the user. ' + commonIdDescription),
                         type: z
                           .literal('person')
-                          .optional()
+                          .nullish()
                           .describe('Indicates this is a person-type user.'),
                         name: z
                           .string()
-                          .optional()
+                          .nullish()
                           .nullable()
                           .describe('The display name of the user, if available.'),
                         avatar_url: z
                           .string()
-                          .optional()
+                          .nullish()
                           .nullable()
                           .describe("URL to the user's avatar image, if available."),
                         object: z
                           .literal('user')
-                          .optional()
+                          .nullish()
                           .describe('Object type identifier, always "user".')
                       })
                       .describe('A detailed person user mention with additional user information.'),
@@ -235,21 +236,21 @@ export const richTextObjectSchema = z
                           ),
                         type: z
                           .literal('bot')
-                          .optional()
+                          .nullish()
                           .describe('Indicates this is a bot-type user.'),
                         name: z
                           .string()
-                          .optional()
+                          .nullish()
                           .nullable()
                           .describe('The display name of the bot, if available.'),
                         avatar_url: z
                           .string()
-                          .optional()
+                          .nullish()
                           .nullable()
                           .describe("URL to the bot's avatar image, if available."),
                         object: z
                           .literal('user')
-                          .optional()
+                          .nullish()
                           .describe('Object type identifier, always "user".')
                       })
                       .describe('A bot user mention with bot-specific details.')
@@ -266,7 +267,7 @@ export const richTextObjectSchema = z
                       .describe('The start date/time of the date range being mentioned.'),
                     end: z
                       .string()
-                      .optional()
+                      .nullish()
                       .nullable()
                       .describe('The optional end date/time of the date range being mentioned.')
                   })
@@ -314,7 +315,7 @@ export const richTextObjectSchema = z
                           .describe('A template mention representing a date value.'),
                         type: z
                           .literal('template_mention_date')
-                          .optional()
+                          .nullish()
                           .describe('The type identifier for the template mention date.')
                       })
                       .describe('Schema for date-related template mentions.'),
@@ -325,7 +326,7 @@ export const richTextObjectSchema = z
                           .describe('The user to mention, references the current user.'),
                         type: z
                           .literal('template_mention_user')
-                          .optional()
+                          .nullish()
                           .describe('The type identifier for the template mention user.')
                       })
                       .describe('Schema for user-related template mentions.')
@@ -342,8 +343,8 @@ export const richTextObjectSchema = z
                       .describe(
                         'The unique identifier of the custom emoji. ' + commonIdDescription
                       ),
-                    name: z.string().optional().describe('The name of the custom emoji.'),
-                    url: z.string().optional().describe('The URL to the custom emoji image.')
+                    name: z.string().nullish().describe('The name of the custom emoji.'),
+                    url: z.string().nullish().describe('The URL to the custom emoji image.')
                   })
                   .describe('Information about the custom emoji being used.')
               })
@@ -352,32 +353,32 @@ export const richTextObjectSchema = z
           .describe('Different types of mentions that can be embedded in rich text.'),
         type: z
           .literal('mention')
-          .optional()
+          .nullish()
           .describe('Indicates this is a mention-type rich text element.'),
         annotations: z
           .object({
             bold: z
               .boolean()
-              .optional()
+              .nullish()
               .describe('Whether the mention should be displayed in bold.'),
             italic: z
               .boolean()
-              .optional()
+              .nullish()
               .describe('Whether the mention should be displayed in italic.'),
             strikethrough: z
               .boolean()
-              .optional()
+              .nullish()
               .describe('Whether the mention should have a strikethrough.'),
-            underline: z.boolean().optional().describe('Whether the mention should be underlined.'),
+            underline: z.boolean().nullish().describe('Whether the mention should be underlined.'),
             code: z
               .boolean()
-              .optional()
+              .nullish()
               .describe('Whether the mention should be displayed as inline code.'),
             color: richTextColorSchema
-              .optional()
+              .nullish()
               .describe('The color formatting to apply to the mention.')
           })
-          .optional()
+          .nullish()
           .describe('Formatting annotations to apply to the mention element.')
       })
       .describe('Schema for a mention element in rich text content.'),
@@ -393,35 +394,32 @@ export const richTextObjectSchema = z
           .describe('Information about the equation to display.'),
         type: z
           .literal('equation')
-          .optional()
+          .nullish()
           .describe('Indicates this is an equation-type rich text element.'),
         annotations: z
           .object({
             bold: z
               .boolean()
-              .optional()
+              .nullish()
               .describe('Whether the equation should be displayed in bold.'),
             italic: z
               .boolean()
-              .optional()
+              .nullish()
               .describe('Whether the equation should be displayed in italic.'),
             strikethrough: z
               .boolean()
-              .optional()
+              .nullish()
               .describe('Whether the equation should have a strikethrough.'),
-            underline: z
-              .boolean()
-              .optional()
-              .describe('Whether the equation should be underlined.'),
+            underline: z.boolean().nullish().describe('Whether the equation should be underlined.'),
             code: z
               .boolean()
-              .optional()
+              .nullish()
               .describe('Whether the equation should be displayed as inline code.'),
             color: richTextColorSchema
-              .optional()
+              .nullish()
               .describe('The color formatting to apply to the equation.')
           })
-          .optional()
+          .nullish()
           .describe('Formatting annotations to apply to the equation element.')
       })
       .describe('Schema for an equation element in rich text content.')
@@ -449,7 +447,7 @@ export const blockObjectSchema = z
     children: z
       .array(z.record(z.any()).describe('A nested block object.'))
       .describe('Nested child blocks.')
-      .optional()
+      .nullish()
   })
   .describe('A Notion block object.');
 
@@ -468,7 +466,7 @@ ID or a page ID. ' + commonIdDescription
 inserted immediately after this block. It is optional but if provided it must be the ID of the \
 block after which the new block should be appended. ' + commonIdDescription
     )
-    .optional()
+    .nullish()
 });
 
 export const retrieveBlockSchema = z.object({
@@ -483,7 +481,7 @@ export const retrieveBlockChildrenSchema = z.object({
       'A string token used for pagination. Set this to the `next_cursor` value from the previous \
 response to continue fetching the next page of results. Omit this to fetch the first page.'
     )
-    .optional(),
+    .nullish(),
   page_size: z.number().int().min(1).max(100).describe('Number of results per page.').default(100)
 });
 
@@ -525,7 +523,7 @@ export const listAllUsersSchema = z.object({
       'A string token used for pagination. Set this to the `next_cursor` value from the previous \
 response to continue fetching the next page of results. Omit this to fetch the first page.'
     )
-    .optional(),
+    .nullish(),
   page_size: z.number().int().min(1).max(100).describe('Number of users to retrieve.').default(100)
 });
 
@@ -537,24 +535,24 @@ export const retrieveBotUserSchema = z.object({});
 
 export const queryDatabaseSchema = z.object({
   database_id: z.string().describe('The ID of the database to query. ' + commonIdDescription),
-  filter: z.record(z.any()).describe('Filter conditions').optional(),
+  filter: z.record(z.any()).describe('Filter conditions').nullish(),
   sorts: z
     .array(
       z.object({
-        property: z.string().optional(),
-        timestamp: z.string().optional(),
+        property: z.string().nullish(),
+        timestamp: z.string().nullish(),
         direction: z.enum(['ascending', 'descending'])
       })
     )
     .describe('Sort conditions')
-    .optional(),
+    .nullish(),
   start_cursor: z
     .string()
     .describe(
       'A string token used for pagination. Set this to the `next_cursor` value from the previous \
 response to continue fetching the next page of results. Omit this to fetch the first page.'
     )
-    .optional(),
+    .nullish(),
   page_size: z.number().int().min(1).max(100).describe('Number of results per page.').default(100)
 });
 
@@ -585,92 +583,100 @@ one of database_id or page_id must be provided.'
   properties: z
     .record(z.any())
     .describe('Properties of the new database item. These should match the database schema.')
-    .optional()
+    .nullish()
 });
 
-export const createCommentSchema = z.object({
-  parent: z
-    .object({
-      type: z.literal('page_id'),
-      page_id: z.string().describe('The ID of the page to comment on. ' + commonIdDescription)
-    })
-    .describe(
-      'Parent object that specifies the page to comment on. Must include a page_id if used.'
-    )
-    .optional(),
-  discussion_id: z
-    .string()
-    .describe('The ID of an existing discussion thread to add a comment to. ' + commonIdDescription)
-    .optional(),
-  rich_text: z
-    .array(richTextObjectSchema)
-    .describe('Array of rich text objects representing the comment content.')
-});
+export const createCommentSchema = withNullPreprocessing(
+  z.object({
+    parent: z
+      .object({
+        type: z.literal('page_id'),
+        page_id: z.string().describe('The ID of the page to comment on. ' + commonIdDescription)
+      })
+      .describe(
+        'Parent object that specifies the page to comment on. Must include a page_id if used.'
+      )
+      .nullish(),
+    discussion_id: z
+      .string()
+      .describe(
+        'The ID of an existing discussion thread to add a comment to. ' + commonIdDescription
+      )
+      .nullish(),
+    rich_text: z
+      .array(richTextObjectSchema)
+      .describe('Array of rich text objects representing the comment content.')
+  })
+);
 
-export const retrieveCommentsSchema = z.object({
-  block_id: z
-    .string()
-    .describe(
-      'The ID of the block or page whose comments you want to retrieve. ' + commonIdDescription
-    ),
-  start_cursor: z
-    .string()
-    .describe(
-      'A string token used for pagination. Set this to the `next_cursor` value from the previous \
+export const retrieveCommentsSchema = withNullPreprocessing(
+  z.object({
+    block_id: z
+      .string()
+      .describe(
+        'The ID of the block or page whose comments you want to retrieve. ' + commonIdDescription
+      ),
+    start_cursor: z
+      .string()
+      .describe(
+        'A string token used for pagination. Set this to the `next_cursor` value from the previous \
 response to continue fetching the next page of results. Omit this to fetch the first page.'
-    )
-    .optional(),
-  page_size: z
-    .number()
-    .int()
-    .min(1)
-    .max(100)
-    .describe('Number of comments to retrieve.')
-    .default(100)
-});
+      )
+      .nullish(),
+    page_size: z
+      .number()
+      .int()
+      .min(1)
+      .max(100)
+      .describe('Number of comments to retrieve.')
+      .default(100)
+  })
+);
 
 export const searchSchema = z.object({
-  query: z.string().describe('Text to search for in page or database titles').optional(),
+  query: z.string().describe('Text to search for in page or database titles').nullish(),
   filter: z
     .object({
       property: z.literal('object').describe("Must be 'object'"),
       value: z.enum(['page', 'database']).describe("Either 'page' or 'database'")
     })
     .describe('Filter results by object type (page or database)')
-    .optional(),
+    .nullish(),
   sort: z
     .object({
       direction: z.enum(['ascending', 'descending']),
       timestamp: z.enum(['last_edited_time'])
     })
     .describe('Sort order of results')
-    .optional(),
+    .nullish(),
   start_cursor: z
     .string()
     .describe(
       'A string token used for pagination. Set this to the `next_cursor` value from the previous \
 response to continue fetching the next page of results. Omit this to fetch the first page.'
     )
-    .optional(),
+    .nullish(),
   page_size: z.number().int().min(1).max(100).describe('Number of results to return.').default(100)
 });
 
-export const createDatabaseSchema = z.object({
-  parent: z
-    .object({
-      type: z.literal('page_id'),
-      page_id: z
-        .string()
-        .describe('The ID of the page to create the database in. ' + commonIdDescription)
-    })
-    .describe('Parent object of the database'),
-  title: z
-    .array(richTextObjectSchema)
-    .describe('Title of database as it appears in Notion. An array of rich text objects.')
-    .optional(),
-  properties: z
-    .record(z.any())
-    .describe(
-      'Property schema of database. The keys are the names of properties as they appear in Notion and the values are property schema objects.'
-    )
-});
+export const createDatabaseSchema = withNullPreprocessing(
+  z.object({
+    parent: z
+      .object({
+        type: z.literal('page_id'),
+        page_id: z
+          .string()
+          .describe('The ID of the page to create the database in. ' + commonIdDescription)
+      })
+      .describe('Parent object of the database'),
+    title: z
+      .array(richTextObjectSchema)
+      .describe('Title of database as it appears in Notion. An array of rich text objects.')
+      .nullish(),
+    properties: z
+      .record(z.any())
+      .describe(
+        'Property schema of database. The keys are the names of properties as they appear in Notion and the values are property schema objects.'
+      )
+  })
+);
