@@ -51,8 +51,8 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
           .min(1)
           .max(100)
           .describe('Maximum number of tickets to return')
-          .optional()
-          .default(10)
+          .nullish()
+          .transform((val) => val ?? 10)
       }),
       func: async (args: SearchTicketsParams) => service.searchTickets(args)
     }),
@@ -131,19 +131,27 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
       schema: z.object({
         subject: z.string().min(5).describe('Subject or title of the support ticket'),
         description: z.string().min(10).describe('Detailed description of the issue or request'),
-        requesterEmail: z.string().email().optional().describe('Email address of the requester'),
+        requesterEmail: z
+          .string()
+          .email()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('Email address of the requester'),
         priority: z
           .enum(['low', 'normal', 'high', 'urgent'])
-          .optional()
+          .nullish()
+          .transform((val) => val ?? undefined)
           .describe('Priority level of the ticket'),
         assigneeId: z
           .number()
           .int()
-          .optional()
+          .nullish()
+          .transform((val) => val ?? undefined)
           .describe('Zendesk agent ID to assign the ticket to'),
         tags: z
           .array(z.string())
-          .optional()
+          .nullish()
+          .transform((val) => val ?? undefined)
           .describe('List of tags to categorize or label the ticket')
       }),
       func: async (args: CreateTicketParams) => service.createTicket(args)
@@ -159,7 +167,8 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
           .describe('The name of the Zendesk user to search for. Partial names are supported.'),
         role: z
           .enum(['end-user', 'agent', 'admin'])
-          .optional()
+          .nullish()
+          .transform((val) => val ?? undefined)
           .describe(
             'Filter users by role. Use "agent" or "admin" when looking for assignees. Use "end-user" for requesters.'
           )
