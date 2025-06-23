@@ -73,13 +73,15 @@ export class JiraClient {
       headers = { ...metadata.headers };
     }
 
+    const queryParams = metadata?.params
+      ? `?${new URLSearchParams(metadata.params).toString()}`
+      : '';
+    path = `${path}${queryParams}`;
+
     if ('sharedSecret' in this.config.auth) {
-      const queryParams = metadata?.params
-        ? `?${new URLSearchParams(metadata.params).toString()}`
-        : '';
       const token = await this.getToken({
         method,
-        path: `${path}${queryParams}`,
+        path,
         sharedSecret: this.config.auth.sharedSecret,
         atlassianConnectAppKey: this.config.auth.atlassianConnectAppKey
       });
@@ -90,7 +92,6 @@ export class JiraClient {
       method,
       url: path,
       data: metadata?.data,
-      params: metadata?.params,
       headers
     });
     return response.data;
@@ -236,7 +237,7 @@ export class JiraClient {
   }
 
   async getIssueTypes(projectKey: string): Promise<JiraIssueTypeResponse[]> {
-    const response = await this.makeApiCall('GET', `issue/createmeta/${projectKey}/issuetypes`);
+    const response = await this.makeApiCall('GET', `/issue/createmeta/${projectKey}/issuetypes`);
     return response;
   }
 
@@ -246,7 +247,7 @@ export class JiraClient {
   ): Promise<JiraCreateIssueMetadata> {
     const response = await this.makeApiCall(
       'GET',
-      `issue/createmeta/${projectKey}/issuetypes/${issueTypeId}`
+      `/issue/createmeta/${projectKey}/issuetypes/${issueTypeId}`
     );
     return response;
   }
@@ -257,13 +258,20 @@ export class JiraClient {
   }
 
   async searchUser(accountId: string): Promise<JiraUserResponse> {
-    const response = await this.makeApiCall('GET', `/user?accountId=${accountId}`);
+    const response = await this.makeApiCall('GET', `/user`, {
+      params: {
+        accountId
+      }
+    });
     return response;
   }
 
   async validateJql(jql_query: string): Promise<void> {
     try {
-      const response = await this.makeApiCall('POST', `/jql/parse?validation=strict`, {
+      const response = await this.makeApiCall('POST', `/jql/parse`, {
+        params: {
+          validation: 'strict'
+        },
         data: {
           queries: [jql_query]
         }
