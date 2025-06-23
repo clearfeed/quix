@@ -22,24 +22,38 @@ export const taskTools = (config: SalesforceConfig): DynamicStructuredTool<any>[
       description: 'Create a task in Salesforce',
       schema: z.object({
         subject: z.string().describe('The subject of the task'),
-        description: z.string().optional().describe('The description of the task'),
-        status: z.string().optional().describe('The status of the task'),
-        priority: z.string().optional().describe('The priority of the task'),
+        description: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('The description of the task'),
+        status: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('The status of the task'),
+        priority: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('The priority of the task'),
         ownerId: z
           .string()
-          .optional()
+          .nullish()
+          .transform((val) => val ?? undefined)
           .describe(
             'The ID of the person who will own the task, also referred to as Assignee. If you have a name or email, use the find_user tool to get the user ID first.'
           ),
         whatId: z.string().describe('The ID of the object to create the task for'),
         type: z
           .string()
-          .optional()
-          .describe('The type of the task also referred to as the source of the task.')
-          .default('Task'),
+          .nullish()
+          .transform((val) => val ?? 'Task')
+          .describe('The type of the task also referred to as the source of the task.'),
         dueDate: z
           .string()
-          .optional()
+          .nullish()
+          .transform((val) => val ?? undefined)
           .describe('The due date of the task, also referred to as ActivityDate')
           .transform(dueDateTransformer)
       })
@@ -49,25 +63,44 @@ export const taskTools = (config: SalesforceConfig): DynamicStructuredTool<any>[
       description: 'Update a task in Salesforce',
       schema: z.object({
         taskId: z.string().describe('The ID of the task to update'),
-        subject: z.string().optional().describe('The subject of the task'),
-        description: z.string().optional().describe('The description of the task'),
-        status: z.string().optional().describe('The status of the task'),
-        priority: z.string().optional().describe('The priority of the task'),
+        subject: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('The subject of the task'),
+        description: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('The description of the task'),
+        status: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('The status of the task'),
+        priority: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('The priority of the task'),
         ownerId: z
           .string()
-          .optional()
+          .nullish()
+          .transform((val) => val ?? undefined)
           .describe(
             'The ID of the person who will own the task, also referred to as Assignee. If you have a name or email, use the find_user tool to get the user ID first.'
           ),
         type: z
           .string()
-          .optional()
+          .nullish()
+          .transform((val) => val ?? undefined)
           .describe(
             'The type of the task. Possible values can be obtained from the describe_object tool'
           ),
         dueDate: z
           .string()
-          .optional()
+          .nullish()
+          .transform((val) => val ?? undefined)
           .describe('The due date of the task, also referred to as ActivityDate')
           .transform(dueDateTransformer)
       })
@@ -83,18 +116,47 @@ export const taskTools = (config: SalesforceConfig): DynamicStructuredTool<any>[
       name: 'salesforce_get_tasks',
       description: 'Get tasks in Salesforce',
       schema: z.object({
-        ownerId: z.string().optional().describe('The ID of the person who will own the task'),
-        subject: z.string().optional().describe('The subject of the task'),
-        status: z.string().optional().describe('The status of the task'),
-        priority: z.string().optional().describe('The priority of the task'),
-        type: z.string().optional().describe('The type of the task'),
+        ownerId: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('The ID of the person who will own the task'),
+        subject: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('The subject of the task'),
+        status: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('The status of the task'),
+        priority: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('The priority of the task'),
+        type: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('The type of the task'),
         dueDate: z
           .string()
-          .optional()
+          .nullish()
+          .transform((val) => val ?? undefined)
           .describe('The due date of the task')
           .transform(dueDateTransformer),
-        orderBy: z.string().optional().describe('The order by of the task').default('CreatedDate'),
-        limit: z.number().optional().describe('The limit of the task').default(10)
+        orderBy: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? 'CreatedDate')
+          .describe('The order by of the task'),
+        limit: z
+          .number()
+          .nullish()
+          .transform((val) => val ?? 10)
+          .describe('The limit of the task')
       })
     })
   ];

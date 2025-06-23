@@ -14,13 +14,19 @@ export const opportunityTools = (config: SalesforceConfig): DynamicStructuredToo
       schema: z.object({
         keyword: z
           .string()
-          .optional()
+          .nullish()
+          .transform((val) => val ?? undefined)
           .describe('The keyword to search for in Salesforce opportunities'),
         stage: z
           .string()
-          .optional()
+          .nullish()
+          .transform((val) => val ?? undefined)
           .describe('The stage to filter opportunities by (e.g., "Closed Won", "Negotiation")'),
-        ownerId: z.string().optional().describe('The ID of the opportunity owner to filter by')
+        ownerId: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('The ID of the opportunity owner to filter by')
       })
     }),
     tool(
@@ -32,7 +38,11 @@ export const opportunityTools = (config: SalesforceConfig): DynamicStructuredToo
         schema: z.object({
           opportunityId: z.string().describe('The ID of the opportunity to add a note to'),
           note: z.string().describe('The content of the note to add'),
-          title: z.string().optional().describe('Optional title for the note')
+          title: z
+            .string()
+            .nullish()
+            .transform((val) => val ?? undefined)
+            .describe('Optional title for the note')
         })
       }
     ),
@@ -54,13 +64,19 @@ export const opportunityTools = (config: SalesforceConfig): DynamicStructuredToo
       schema: z.object({
         keyword: z
           .string()
-          .optional()
+          .nullish()
+          .transform((val) => val ?? undefined)
           .describe('The keyword to search for in Salesforce opportunities'),
         stage: z
           .string()
-          .optional()
+          .nullish()
+          .transform((val) => val ?? undefined)
           .describe('The stage to filter opportunities by (e.g., "Closed Won", "Negotiation")'),
-        ownerId: z.string().optional().describe('The ID of the opportunity owner to filter by')
+        ownerId: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('The ID of the opportunity owner to filter by')
       })
     })
   ];
