@@ -41,7 +41,6 @@ export const richTextObjectSchema = z
                 url: z.string().describe('The URL to link the text to when clicked.')
               })
               .nullish()
-              .nullable()
               .describe('Link information for the text, if it should be clickable.')
           })
           .describe('The text element content and its optional link properties.'),
@@ -112,12 +111,10 @@ export const richTextObjectSchema = z
                         name: z
                           .string()
                           .nullish()
-                          .nullable()
                           .describe('The display name of the user, if available.'),
                         avatar_url: z
                           .string()
                           .nullish()
-                          .nullable()
                           .describe("URL to the user's avatar image, if available."),
                         object: z
                           .literal('user')
@@ -241,12 +238,10 @@ export const richTextObjectSchema = z
                         name: z
                           .string()
                           .nullish()
-                          .nullable()
                           .describe('The display name of the bot, if available.'),
                         avatar_url: z
                           .string()
                           .nullish()
-                          .nullable()
                           .describe("URL to the bot's avatar image, if available."),
                         object: z
                           .literal('user')
@@ -268,7 +263,6 @@ export const richTextObjectSchema = z
                     end: z
                       .string()
                       .nullish()
-                      .nullable()
                       .describe('The optional end date/time of the date range being mentioned.')
                   })
                   .describe('Date or date range information for a date mention.')
