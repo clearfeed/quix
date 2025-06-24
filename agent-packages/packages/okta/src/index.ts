@@ -1,4 +1,4 @@
-import { Client, User } from '@okta/okta-sdk-nodejs';
+import { Client, User } from '@clearfeed-ai/okta-sdk-nodejs';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   OktaConfig,
