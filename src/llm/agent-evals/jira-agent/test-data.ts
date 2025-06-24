@@ -349,7 +349,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'find_jira_ticket',
         arguments: {
-          jql_query: 'project = FEAT AND assignee = "user-alice" AND priority = High'
+          jql_query: 'project = FEAT AND assignee = user-alice AND priority = High'
         }
       }
     ],
@@ -389,7 +389,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     chat_history: [],
     invocation: {
       initiator_name: 'Kevin',
-      message: '@Quix Is there a jira issue about changes to the login functionality?'
+      message: '@Quix Is there a jira issue related to "login functionality"?'
     },
     reference_tool_calls: [
       {
@@ -860,7 +860,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       get_jira_issue: {
         issueKey: 'FEAT-102',
         summary: 'Add password reset feature',
-        priority: 'High',
+        priority: 'Low',
         assignee: 'Bob Johnson',
         assigneeId: 'user-bob'
       }
