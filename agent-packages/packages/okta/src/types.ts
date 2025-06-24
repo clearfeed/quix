@@ -11,7 +11,7 @@ import {
 export interface OktaConfig extends BaseConfig {
   orgUrl: string;
   token: string;
-  authorizationMode?: string;
+  authorizationMode?: 'SSWS' | 'AccessToken';
 }
 
 export interface ListUsersResponse extends BaseResponse<User[]> {}
