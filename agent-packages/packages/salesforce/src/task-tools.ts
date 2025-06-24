@@ -53,9 +53,8 @@ export const taskTools = (config: SalesforceConfig): DynamicStructuredTool<any>[
         dueDate: z
           .string()
           .nullish()
-          .transform((val) => val ?? undefined)
+          .transform((val) => dueDateTransformer(val ?? undefined))
           .describe('The due date of the task, also referred to as ActivityDate')
-          .transform(dueDateTransformer)
       })
     }),
     tool(async (args: UpdateTaskParams) => service.updateTask(args), {
@@ -100,9 +99,8 @@ export const taskTools = (config: SalesforceConfig): DynamicStructuredTool<any>[
         dueDate: z
           .string()
           .nullish()
-          .transform((val) => val ?? undefined)
+          .transform((val) => dueDateTransformer(val ?? undefined))
           .describe('The due date of the task, also referred to as ActivityDate')
-          .transform(dueDateTransformer)
       })
     }),
     tool(async (args: { taskId: string }) => service.deleteTask(args.taskId), {
@@ -144,9 +142,8 @@ export const taskTools = (config: SalesforceConfig): DynamicStructuredTool<any>[
         dueDate: z
           .string()
           .nullish()
-          .transform((val) => val ?? undefined)
-          .describe('The due date of the task')
-          .transform(dueDateTransformer),
+          .transform((val) => dueDateTransformer(val ?? undefined))
+          .describe('The due date of the task'),
         orderBy: z
           .string()
           .nullish()

@@ -4,6 +4,24 @@ import { SearchOpportunitiesParams } from './types';
 import { SalesforceConfig } from './types';
 import { SalesforceOpportunityService } from './services/opportunity';
 
+const opportunitySearchSchema = z.object({
+  keyword: z
+    .string()
+    .nullish()
+    .transform((val) => val ?? undefined)
+    .describe('The keyword to search for in Salesforce opportunities'),
+  stage: z
+    .string()
+    .nullish()
+    .transform((val) => val ?? undefined)
+    .describe('The stage to filter opportunities by (e.g., "Closed Won", "Negotiation")'),
+  ownerId: z
+    .string()
+    .nullish()
+    .transform((val) => val ?? undefined)
+    .describe('The ID of the opportunity owner to filter by')
+});
+
 export const opportunityTools = (config: SalesforceConfig): DynamicStructuredTool<any>[] => {
   const service = new SalesforceOpportunityService(config);
   return [
@@ -11,23 +29,7 @@ export const opportunityTools = (config: SalesforceConfig): DynamicStructuredToo
       name: 'salesforce_search_opportunities',
       description:
         'Search for opportunities in Salesforce based on keyword, stage, and/or owner ID',
-      schema: z.object({
-        keyword: z
-          .string()
-          .nullish()
-          .transform((val) => val ?? undefined)
-          .describe('The keyword to search for in Salesforce opportunities'),
-        stage: z
-          .string()
-          .nullish()
-          .transform((val) => val ?? undefined)
-          .describe('The stage to filter opportunities by (e.g., "Closed Won", "Negotiation")'),
-        ownerId: z
-          .string()
-          .nullish()
-          .transform((val) => val ?? undefined)
-          .describe('The ID of the opportunity owner to filter by')
-      })
+      schema: opportunitySearchSchema
     }),
     tool(
       async (args: { opportunityId: string; note: string; title?: string }) =>
@@ -61,23 +63,7 @@ export const opportunityTools = (config: SalesforceConfig): DynamicStructuredToo
     tool(async (args: SearchOpportunitiesParams) => service.getOpportunityCount(args), {
       name: 'salesforce_get_opportunity_count',
       description: 'Get the count of opportunities matching the search criteria',
-      schema: z.object({
-        keyword: z
-          .string()
-          .nullish()
-          .transform((val) => val ?? undefined)
-          .describe('The keyword to search for in Salesforce opportunities'),
-        stage: z
-          .string()
-          .nullish()
-          .transform((val) => val ?? undefined)
-          .describe('The stage to filter opportunities by (e.g., "Closed Won", "Negotiation")'),
-        ownerId: z
-          .string()
-          .nullish()
-          .transform((val) => val ?? undefined)
-          .describe('The ID of the opportunity owner to filter by')
-      })
+      schema: opportunitySearchSchema
     })
   ];
 };
