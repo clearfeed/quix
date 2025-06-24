@@ -42,7 +42,7 @@ export class OktaService implements BaseService<OktaConfig> {
     this.client = new Client({
       orgUrl: config.orgUrl,
       token: config.token,
-      authorizationMode: 'AccessToken'
+      authorizationMode: config.authorizationMode
     });
   }
 
