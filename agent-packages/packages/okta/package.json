@@ -11,7 +11,7 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "@clearfeed-ai/okta-sdk-nodejs": "7.3.0"
+    "@clearfeed-ai/okta-sdk-nodejs": "^7.3.0"
   },
   "files": [
     "dist"
