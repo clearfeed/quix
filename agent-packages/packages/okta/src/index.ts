@@ -41,7 +41,8 @@ export class OktaService implements BaseService<OktaConfig> {
   constructor(private config: OktaConfig) {
     this.client = new Client({
       orgUrl: config.orgUrl,
-      token: config.token
+      token: config.token,
+      authorizationMode: 'AccessToken'
     });
   }
 
