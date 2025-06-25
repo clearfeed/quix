@@ -70,11 +70,9 @@ export class SlackService implements BaseService<SlackConfig> {
         types: 'public_channel',
         exclude_archived: true,
         team_id: this.config.teamId,
-        limit: params.limit
+        limit: params.limit,
+        ...(params.cursor ? { cursor: params.cursor } : {})
       };
-      if (params.cursor) {
-        body.cursor = params.cursor;
-      }
       const result = await this.client.conversations.list(body);
 
       return {
@@ -218,11 +216,9 @@ export class SlackService implements BaseService<SlackConfig> {
     try {
       const body: UsersListArguments = {
         team_id: this.config.teamId,
-        limit: params.limit
+        limit: params.limit,
+        ...(params.cursor ? { cursor: params.cursor } : {})
       };
-      if (params.cursor) {
-        body.cursor = params.cursor;
-      }
       const result = await this.client.users.list(body);
 
       return {
