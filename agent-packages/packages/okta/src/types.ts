@@ -6,7 +6,7 @@ import {
   Group,
   User,
   UserActivationToken
-} from '@okta/okta-sdk-nodejs';
+} from '@clearfeed-ai/okta-sdk-nodejs';
 
 export interface OktaConfig extends BaseConfig {
   orgUrl: string;
