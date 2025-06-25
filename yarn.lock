@@ -351,6 +351,25 @@
   resolved "https://registry.yarnpkg.com/@cfworker/json-schema/-/json-schema-4.1.1.tgz#4a2a3947ee9fa7b7c24be981422831b8674c3be6"
   integrity sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==
 
+"@clearfeed-ai/okta-sdk-nodejs@^7.3.0":
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/okta-sdk-nodejs/-/okta-sdk-nodejs-7.3.0.tgz#fa20924707528ab6c1424f665093ed4cb1e15e41"
+  integrity sha512-J1VFOhUAAiQ8BTeeBRs4/b5RpzumhW+ZaOnqiao6mM6jLGqYy2SD33t69DamMbdQLBbm4WOR0IurlhzYyB8ajw==
+  dependencies:
+    "@types/node-forge" "^1.3.1"
+    deep-copy "^1.4.2"
+    eckles "^1.4.1"
+    form-data "^4.0.0"
+    https-proxy-agent "^5.0.0"
+    js-yaml "^4.1.0"
+    lodash "^4.17.20"
+    njwt "^2.0.1"
+    node-fetch "^2.6.7"
+    parse-link-header "^2.0.0"
+    rasha "^1.2.5"
+    safe-flat "^2.0.2"
+    url-parse "^1.5.10"
+
 "@clearfeed-ai/quix-common-agent@^1.1.0":
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.1.4.tgz#7d6aac4cf2214b1a86658033e796b8f4dd17b63e"
@@ -379,10 +398,10 @@
   dependencies:
     "@hubspot/api-client" "^12.0.1"
 
-"@clearfeed-ai/quix-jira-agent@^1.2.17":
-  version "1.2.17"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.2.17.tgz#e6b30deab9121b87802a619de97c2f2d482c9848"
-  integrity sha512-tOW+cZOg8vGr7f1u8zsmyRVPr+zJOhq089VV+kuZDM0rYlHLtlEK2xNWHUwupoQojXtJQJ0UnVZ5X8OM5AKkaQ==
+"@clearfeed-ai/quix-jira-agent@^1.2.18":
+  version "1.2.18"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.2.18.tgz#53d8607ff150727cfd7e79bcc2777426d78ded12"
+  integrity sha512-Y06jeIavnnq7aogKXd+vK9Ng912aLF9TBukOmwq7f0WHYNoUfPNMSP3EkExhJvfpuRvPrcDJThl38oU+rn9hOQ==
   dependencies:
     atlassian-jwt "^2.0.3"
     axios "^1.8.2"
@@ -395,12 +414,12 @@
     "@notionhq/client" "^3.0.1"
     lodash "^4.17.21"
 
-"@clearfeed-ai/quix-okta-agent@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-okta-agent/-/quix-okta-agent-1.0.1.tgz#eb428e3da148eda633bc0e8eab1c460516e1c823"
-  integrity sha512-l8VCUr8zoGrrHwsWNOyWGcCl7hyDc5v1F0baBSHsasupsBh7a927Do+dVohte23JFkySQwMV9DS4OpKMJLhqlw==
+"@clearfeed-ai/quix-okta-agent@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-okta-agent/-/quix-okta-agent-1.0.3.tgz#a41b5af1ad001dbdbd484f6d369ad070b6939139"
+  integrity sha512-hHQ+C1mWRNtFa8sEUJQVOj5JjmuY8I0ANkBsQT0/e3qwXhVm8nblEYwJ8p6nHJK+ie9YYgT95hyNN5GhTEIB0g==
   dependencies:
-    "@okta/okta-sdk-nodejs" "^7.0.1"
+    "@clearfeed-ai/okta-sdk-nodejs" "^7.3.0"
 
 "@clearfeed-ai/quix-postgres-agent@^1.0.1":
   version "1.0.1"
@@ -1429,25 +1448,6 @@
   integrity sha512-ifLaO34EbbPj0Xgro4G5lP5asESjwHracYJvVaPIyXMuiuXLlhic3S47cBdTb+jfODkTE5YtGCLt3Ay3+J97sA==
   dependencies:
     "@octokit/openapi-types" "^24.2.0"
-
-"@okta/okta-sdk-nodejs@^7.0.1":
-  version "7.1.1"
-  resolved "https://registry.yarnpkg.com/@okta/okta-sdk-nodejs/-/okta-sdk-nodejs-7.1.1.tgz#4cedced99b276f81e17edde6eec0660cba455b9d"
-  integrity sha512-sY6y749Lo7NAchp+aV+0Px9Yj4Zsz7CJGfQEJBHAHjnNnRk3+XQkiJobal1w4xATsgHTZrNHFMqYp8yRiLWerA==
-  dependencies:
-    "@types/node-forge" "^1.3.1"
-    deep-copy "^1.4.2"
-    eckles "^1.4.1"
-    form-data "^4.0.0"
-    https-proxy-agent "^5.0.0"
-    js-yaml "^4.1.0"
-    lodash "^4.17.20"
-    njwt "^2.0.1"
-    node-fetch "^2.6.7"
-    parse-link-header "^2.0.0"
-    rasha "^1.2.5"
-    safe-flat "^2.0.2"
-    url-parse "^1.5.10"
 
 "@one-ini/wasm@0.1.1":
   version "0.1.1"

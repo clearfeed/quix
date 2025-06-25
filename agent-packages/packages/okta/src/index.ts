@@ -1,4 +1,4 @@
-import { Client } from '@okta/okta-sdk-nodejs';
+import { Client, User } from '@clearfeed-ai/okta-sdk-nodejs';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   OktaConfig,
@@ -14,7 +14,20 @@ import {
   AssignUserToApplicationResponse,
   AssignGroupToApplicationResponse,
   DeleteApplicationResponse,
-  DeactivateApplicationResponse
+  DeactivateApplicationResponse,
+  SuspendUserResponse,
+  UnsuspendUserResponse,
+  ActivateUserResponse,
+  DeactivateUserResponse,
+  UnlockUserResponse,
+  ResetUserPasswordResponse,
+  ExpireUserPasswordResponse,
+  ResetUserFactorsResponse,
+  UnassignUserFromGroupResponse,
+  DeleteGroupResponse,
+  ListGroupUsersResponse,
+  UnassignUserFromApplicationResponse,
+  UnassignGroupFromApplicationResponse
 } from './types';
 import { extractPrimitives } from './utils';
 import { SCHEMAS } from './tools';
@@ -28,7 +41,8 @@ export class OktaService implements BaseService<OktaConfig> {
   constructor(private config: OktaConfig) {
     this.client = new Client({
       orgUrl: config.orgUrl,
-      token: config.token
+      token: config.token,
+      authorizationMode: config.authorizationMode
     });
   }
 
@@ -122,17 +136,170 @@ export class OktaService implements BaseService<OktaConfig> {
     }
   }
 
+  async suspendUser({
+    userId
+  }: z.infer<typeof SCHEMAS.suspendUserSchema>): Promise<SuspendUserResponse> {
+    try {
+      await this.client.userApi.suspendUser({ userId });
+
+      return {
+        success: true,
+        data: `User ${userId} has been suspended`
+      };
+    } catch (error) {
+      console.error('Error suspending user:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to suspend user'
+      };
+    }
+  }
+
+  async unsuspendUser({
+    userId
+  }: z.infer<typeof SCHEMAS.unsuspendUserSchema>): Promise<UnsuspendUserResponse> {
+    try {
+      await this.client.userApi.unsuspendUser({ userId });
+
+      return {
+        success: true,
+        data: `User ${userId} has been unsuspended`
+      };
+    } catch (error) {
+      console.error('Error unsuspending user:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to unsuspend user'
+      };
+    }
+  }
+
+  async activateUser({
+    userId,
+    sendEmail
+  }: z.infer<typeof SCHEMAS.activateUserSchema>): Promise<ActivateUserResponse> {
+    try {
+      const user = await this.client.userApi.activateUser({ userId, sendEmail });
+      return {
+        success: true,
+        data: extractPrimitives(user)
+      };
+    } catch (error) {
+      console.error('Error activating user:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to activate user'
+      };
+    }
+  }
+
+  async deactivateUser({
+    userId
+  }: z.infer<typeof SCHEMAS.deactivateUserSchema>): Promise<DeactivateUserResponse> {
+    try {
+      await this.client.userApi.deactivateUser({ userId });
+      return {
+        success: true,
+        data: `User ${userId} has been deactivated`
+      };
+    } catch (error) {
+      console.error('Error deactivating user:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to deactivate user'
+      };
+    }
+  }
+
+  async unlockUser({
+    userId
+  }: z.infer<typeof SCHEMAS.unlockUserSchema>): Promise<UnlockUserResponse> {
+    try {
+      await this.client.userApi.unlockUser({ userId });
+      return {
+        success: true,
+        data: `User ${userId} has been unlocked`
+      };
+    } catch (error) {
+      console.error('Error unlocking user:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to unlock user'
+      };
+    }
+  }
+
+  async resetUserPassword({
+    userId,
+    sendEmail
+  }: z.infer<typeof SCHEMAS.resetUserPasswordSchema>): Promise<ResetUserPasswordResponse> {
+    try {
+      await this.client.userApi.generateResetPasswordToken({ userId, sendEmail });
+      return {
+        success: true,
+        data: `User ${userId} has had their password reset`
+      };
+    } catch (error) {
+      console.error('Error resetting user password:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to reset user password'
+      };
+    }
+  }
+
+  async expireUserPassword({
+    userId
+  }: z.infer<typeof SCHEMAS.expireUserPasswordSchema>): Promise<ExpireUserPasswordResponse> {
+    try {
+      await this.client.userApi.expirePassword({ userId });
+      return {
+        success: true,
+        data: `User ${userId} has had their password expired`
+      };
+    } catch (error) {
+      console.error('Error expiring user password:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to expire user password'
+      };
+    }
+  }
+
+  async resetUserFactors({
+    userId
+  }: z.infer<typeof SCHEMAS.resetUserFactorsSchema>): Promise<ResetUserFactorsResponse> {
+    try {
+      await this.client.userApi.resetFactors({ userId });
+      return {
+        success: true,
+        data: `User ${userId} has had their factors reset`
+      };
+    } catch (error) {
+      console.error('Error resetting user factors:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to reset user factors'
+      };
+    }
+  }
+
   async deleteUser({
     userId
   }: z.infer<typeof SCHEMAS.deleteUserSchema>): Promise<DeleteUserResponse> {
     try {
-      // First deactivate
-      await this.client.userApi.deactivateUser({ userId });
-      // Then delete
+      const user = await this.getUser({ userId });
+
+      if (user.data?.status !== 'DEPROVISIONED') {
+        return {
+          success: false,
+          data: `User is currently '${user.data?.status?.toLowerCase()}'.`
+        };
+      }
       await this.client.userApi.deleteUser({ userId });
       return {
         success: true,
-        data: `User ${userId} has been deactivated and deleted`
+        data: `User ${userId} has been deleted`
       };
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -215,6 +382,71 @@ export class OktaService implements BaseService<OktaConfig> {
     }
   }
 
+  async unassignUserFromGroup({
+    groupId,
+    userId
+  }: z.infer<typeof SCHEMAS.unassignUserFromGroupSchema>): Promise<UnassignUserFromGroupResponse> {
+    try {
+      await this.client.groupApi.unassignUserFromGroup({ groupId, userId });
+      return {
+        success: true,
+        data: `User ${userId} has been unassigned from group ${groupId}`
+      };
+    } catch (error) {
+      console.error('Error unassigning user from group:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to unassign user from group'
+      };
+    }
+  }
+
+  async listGroupUsers({
+    groupId
+  }: z.infer<typeof SCHEMAS.listGroupUsersSchema>): Promise<ListGroupUsersResponse> {
+    try {
+      const users = await this.client.groupApi.listGroupUsers({ groupId });
+
+      const data: User[] = [];
+
+      for await (const user of users) {
+        const simplified = extractPrimitives(user);
+        if (simplified) {
+          data.push(simplified);
+        }
+      }
+
+      return {
+        success: true,
+        data
+      };
+    } catch (error) {
+      console.error('Error listing group users:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to list group users'
+      };
+    }
+  }
+
+  async deleteGroup({
+    groupId
+  }: z.infer<typeof SCHEMAS.deleteGroupSchema>): Promise<DeleteGroupResponse> {
+    try {
+      await this.client.groupApi.deleteGroup({ groupId });
+      return {
+        success: true,
+        data: `Group ${groupId} has been deleted`
+      };
+    } catch (error) {
+      console.error('Error deleting group:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to delete group'
+      };
+    }
+  }
+
   // === APPLICATION METHODS ===
 
   async listApplications({
@@ -276,6 +508,27 @@ export class OktaService implements BaseService<OktaConfig> {
     }
   }
 
+  async unassignUserFromApplication({
+    appId,
+    userId
+  }: z.infer<
+    typeof SCHEMAS.unassignUserFromApplicationSchema
+  >): Promise<UnassignUserFromApplicationResponse> {
+    try {
+      await this.client.applicationApi.unassignUserFromApplication({ appId, userId });
+      return {
+        success: true,
+        data: `User ${userId} has been unassigned from application ${appId}`
+      };
+    } catch (error) {
+      console.error('Error unassigning user from application:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to unassign user from application'
+      };
+    }
+  }
+
   async assignGroupToApplication({
     appId,
     groupId
@@ -297,6 +550,27 @@ export class OktaService implements BaseService<OktaConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to assign group to application'
+      };
+    }
+  }
+
+  async unassignGroupFromApplication({
+    appId,
+    groupId
+  }: z.infer<
+    typeof SCHEMAS.unassignGroupFromApplicationSchema
+  >): Promise<UnassignGroupFromApplicationResponse> {
+    try {
+      await this.client.applicationApi.unassignApplicationFromGroup({ appId, groupId });
+      return {
+        success: true,
+        data: `Group ${groupId} has been unassigned from application ${appId}`
+      };
+    } catch (error) {
+      console.error('Error unassigning group from application:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to unassign group from application'
       };
     }
   }
