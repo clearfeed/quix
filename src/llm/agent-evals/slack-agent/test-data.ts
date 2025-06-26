@@ -20,8 +20,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'slack_list_channels',
         arguments: {
-          limit: 100,
-          cursor: ''
+          limit: 100
         }
       }
     ],
@@ -85,7 +84,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         name: 'slack_get_channel_history',
         arguments: {
           channel_id: 'C134DSD',
-          limit: 10
+          limit: 1
         }
       },
       {
