@@ -4,7 +4,7 @@
 
 - This is a Nest.js monorepo with a main application and integration packages for various services
 - Main Nest.js application is in the root `src/` directory
-- Integrations are either built as a separate public npm package or integratied via an mcp server in mcp.service.ts
+- Integrations are either built as a separate public npm package or integrated via an mcp server in mcp.service.ts
 - Integration packages are located in `agent-packages/packages/`
 - Each integration package follows a consistent structure with `src/`, `dist/`, and configuration files
 - Common utilities and shared types are in the `agent-packages/packages/common` package
