@@ -248,13 +248,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         name: 'update_hubspot_task',
         arguments: {
           taskId: '6100',
-          status: TaskStatusEnum.COMPLETED,
-          title: undefined,
-          body: undefined,
-          priority: undefined,
-          taskType: undefined,
-          dueDate: undefined,
-          ownerId: undefined
+          status: TaskStatusEnum.COMPLETED
         }
       }
     ],
