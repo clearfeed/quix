@@ -1,4 +1,4 @@
-import { Client, User } from '@okta/okta-sdk-nodejs';
+import { Client, User } from '@clearfeed-ai/okta-sdk-nodejs';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   OktaConfig,
@@ -41,7 +41,8 @@ export class OktaService implements BaseService<OktaConfig> {
   constructor(private config: OktaConfig) {
     this.client = new Client({
       orgUrl: config.orgUrl,
-      token: config.token
+      token: config.token,
+      authorizationMode: config.authorizationMode
     });
   }
 

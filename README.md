@@ -71,9 +71,6 @@ Quix is an AI-powered Slack agent that can interact with your business tools suc
    - `SLACK_BOT_TOKEN`: Slack bot token
    - `SLACK_SIGNING_SECRET`: Slack signing secret
 
-   - `SLACK_BOT_TOKEN`: Slack bot token
-   - `SLACK_SIGNING_SECRET`: Slack signing secret
-
    - `SELFSERVER_URL`: Your Domain (for development use your ngrok url)
 
    - `DB_HOST` : Database Hostname
