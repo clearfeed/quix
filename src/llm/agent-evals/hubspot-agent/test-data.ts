@@ -17,9 +17,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'search_hubspot_deals',
         arguments: {
-          keyword: 'Acme',
-          ownerId: undefined,
-          stage: undefined
+          keyword: 'Acme'
         }
       }
     ],
@@ -73,11 +71,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
           amount: 50000,
           dealstage: '5001',
           closedate: '2024-09-30',
-          pipeline: '4001',
-          description: null,
-          companyId: null,
-          contactId: null,
-          ownerId: null
+          pipeline: '4001'
         }
       }
     ],
@@ -119,9 +113,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         arguments: {
           firstName: 'Lara',
           lastName: 'Palmer',
-          email: 'lara.palmer@contoso.com',
-          phone: undefined,
-          company: undefined
+          email: 'lara.palmer@contoso.com'
         }
       }
     ],
@@ -154,9 +146,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'search_hubspot_deals',
         arguments: {
-          keyword: 'Acme',
-          ownerId: undefined,
-          stage: undefined
+          keyword: 'Acme'
         }
       },
       {
@@ -272,12 +262,8 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'search_hubspot_tasks',
         arguments: {
-          keyword: undefined,
           ownerId: '1002',
-          status: undefined,
-          priority: undefined,
-          dueDateFrom: '2025-06-01',
-          dueDateTo: undefined
+          dueDateFrom: '2025-06-01'
         }
       }
     ],
@@ -309,9 +295,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         name: 'create_hubspot_ticket',
         arguments: {
           priority: TicketPriorityEnum.URGENT,
-          pipeline: '4002',
-          stage: undefined,
-          ownerId: undefined
+          pipeline: '4002'
         }
       },
       {
@@ -437,9 +421,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'search_hubspot_tickets',
         arguments: {
-          keyword: null,
           ownerId: '1001',
-          stage: null,
           priority: TicketPriorityEnum.URGENT
         }
       }
@@ -491,11 +473,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'search_hubspot_deals',
         arguments: {
-          keyword: 'Acme',
-          ownerId: undefined,
-          stage: undefined,
-          amountFrom: undefined,
-          amountTo: undefined
+          keyword: 'Acme'
         }
       }
     ],
@@ -510,22 +488,14 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'search_hubspot_deals',
         arguments: {
-          keyword: 'Acme',
-          ownerId: null,
-          stage: null
+          keyword: 'Acme'
         }
       },
       {
         name: 'update_hubspot_deal',
         arguments: {
           dealId: '6001',
-          dealstage: 'Won',
-          dealname: null,
-          description: null,
-          amount: null,
-          closedate: null,
-          pipeline: null,
-          ownerId: null
+          dealstage: 'Won'
         }
       }
     ],
@@ -561,9 +531,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         arguments: {
           firstName: 'Jane',
           lastName: 'Doe',
-          email: 'jane@acme.com',
-          phone: undefined,
-          company: undefined
+          email: 'jane@acme.com'
         }
       }
     ],
@@ -637,8 +605,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
           title: 'Follow up on the proposal',
           status: TaskStatusEnum.NOT_STARTED,
           priority: TaskPriorityEnum.MEDIUM,
-          taskType: TaskTypeEnum.TODO,
-          ownerId: null
+          taskType: TaskTypeEnum.TODO
         }
       },
       {
@@ -728,10 +695,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'search_hubspot_tickets',
         arguments: {
-          keyword: 'login',
-          ownerId: undefined,
-          stage: undefined,
-          priority: undefined
+          keyword: 'login'
         }
       }
     ],
@@ -748,11 +712,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         name: 'update_hubspot_ticket',
         arguments: {
           ticketId: '2001',
-          priority: TicketPriorityEnum.URGENT,
-          subject: undefined,
-          content: undefined,
-          stage: undefined,
-          ownerId: undefined
+          priority: TicketPriorityEnum.URGENT
         }
       }
     ],
@@ -773,10 +733,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'search_hubspot_tasks',
         arguments: {
-          keyword: undefined,
           ownerId: '1003',
-          status: undefined,
-          priority: undefined,
           dueDateFrom: '2025-05-01',
           dueDateTo: '2025-05-31'
         }
