@@ -52,7 +52,7 @@ export const taskTools = (config: SalesforceConfig): DynamicStructuredTool<any>[
         dueDate: z
           .string()
           .nullish()
-          .transform((val) => dueDateTransformer(val ?? undefined))
+          .transform((val) => (val ? dueDateTransformer(val) : undefined))
           .describe('The due date of the task, also referred to as ActivityDate')
       })
     }),
@@ -98,7 +98,7 @@ export const taskTools = (config: SalesforceConfig): DynamicStructuredTool<any>[
         dueDate: z
           .string()
           .nullish()
-          .transform((val) => dueDateTransformer(val ?? undefined))
+          .transform((val) => (val ? dueDateTransformer(val) : undefined))
           .describe('The due date of the task, also referred to as ActivityDate')
       })
     }),
@@ -141,7 +141,7 @@ export const taskTools = (config: SalesforceConfig): DynamicStructuredTool<any>[
         dueDate: z
           .string()
           .nullish()
-          .transform((val) => dueDateTransformer(val ?? undefined))
+          .transform((val) => (val ? dueDateTransformer(val) : undefined))
           .describe('The due date of the task'),
         orderBy: z.string().default('CreatedDate').describe('The order by of the task'),
         limit: z.number().default(10).describe('The limit of the task')
