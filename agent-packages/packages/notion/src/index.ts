@@ -43,6 +43,7 @@ import {
   ListBlockChildrenParameters,
   ListBlockChildrenResponse,
   ListCommentsResponse,
+  ListUsersParameters,
   ListUsersResponse,
   QueryDatabaseParameters,
   QueryDatabaseResponse,
@@ -146,7 +147,7 @@ export class NotionService implements BaseService<NotionConfig> {
        * Sometimes the LLM provides the `block_id` and `after` as same string, which throws error.
        * Added this check to prevent that.
        */
-      if (!isEmpty(after) && after !== block_id) {
+      if (after && !isEmpty(after) && after !== block_id) {
         body.after = after;
       }
       const response = await this.client.blocks.children.append(body);
@@ -182,9 +183,11 @@ export class NotionService implements BaseService<NotionConfig> {
 
       const body: ListBlockChildrenParameters = {
         block_id,
-        page_size: page_size ?? 100,
-        ...(isEmpty(start_cursor) ? {} : { start_cursor })
+        page_size: page_size ?? 100
       };
+      if (start_cursor && !isEmpty(start_cursor)) {
+        body.start_cursor = start_cursor;
+      }
 
       const response = await this.client.blocks.children.list(body);
       return {
@@ -285,10 +288,12 @@ export class NotionService implements BaseService<NotionConfig> {
   async listAllUsers(args: ListAllUsersArgs): Promise<BaseResponse<{ users: ListUsersResponse }>> {
     try {
       const { start_cursor, page_size } = args;
-      const response = await this.client.users.list({
-        page_size,
-        ...(isEmpty(start_cursor) ? {} : { start_cursor })
-      });
+      const body: ListUsersParameters = { page_size };
+      if (start_cursor && !isEmpty(start_cursor)) {
+        body.start_cursor = start_cursor;
+      }
+
+      const response = await this.client.users.list(body);
       return {
         success: true,
         data: { users: response }
@@ -330,14 +335,17 @@ export class NotionService implements BaseService<NotionConfig> {
   ): Promise<BaseResponse<{ database: QueryDatabaseResponse }>> {
     try {
       const { database_id, sorts, start_cursor, page_size, filter } = args;
-
-      const response = await this.client.databases.query({
+      const body: QueryDatabaseParameters = {
         database_id,
         sorts: sorts as QueryDatabaseParameters['sorts'],
         page_size,
-        filter: filter as QueryDatabaseParameters['filter'],
-        ...(isEmpty(start_cursor) ? {} : { start_cursor })
-      });
+        filter: filter as QueryDatabaseParameters['filter']
+      };
+      if (start_cursor && !isEmpty(start_cursor)) {
+        body.start_cursor = start_cursor;
+      }
+
+      const response = await this.client.databases.query(body);
 
       return {
         success: true,
@@ -439,7 +447,7 @@ export class NotionService implements BaseService<NotionConfig> {
       if (query) searchParams.query = query;
       if (filter) searchParams.filter = filter;
       if (sort) searchParams.sort = sort;
-      if (!isEmpty(start_cursor)) searchParams.start_cursor = start_cursor;
+      if (start_cursor && !isEmpty(start_cursor)) searchParams.start_cursor = start_cursor;
       const response = await this.client.search(searchParams);
       return {
         success: true,
