@@ -391,10 +391,10 @@
   dependencies:
     "@octokit/rest" "^21.1.1"
 
-"@clearfeed-ai/quix-hubspot-agent@^1.1.10":
-  version "1.1.10"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-1.1.10.tgz#39d8d47f934dc9107c641c600a2fffe8a25fff3d"
-  integrity sha512-l4Z6VfZdVhZhjUAXMrGSdx3Y1uBS3PvxtLbRTfOBKe8PnuNOyH8M0WiOG5TXHK85beyd+Mx5tnyMSNSLJuVHxg==
+"@clearfeed-ai/quix-hubspot-agent@^1.1.11":
+  version "1.1.11"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-1.1.11.tgz#9d8ede4b12ed31701196efb2b83d698a9d3f9b3e"
+  integrity sha512-dTujxv7zSXrCED47A/uI56GqJU7jxpcfF5QQXRIbqDz1a8NK7uoqBFTS0QcUreFDON+X/9lUvua0lcifnJrNSA==
   dependencies:
     "@hubspot/api-client" "^12.0.1"
 
@@ -438,10 +438,10 @@
     date-fns "^4.1.0"
     jsforce "^3.5.0"
 
-"@clearfeed-ai/quix-slack-agent@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-slack-agent/-/quix-slack-agent-1.0.3.tgz#1c8d180a8214972b63fbd1e4b9377729a20113e3"
-  integrity sha512-2iuygVP1qA1UpKpMao4YduGQXZ71iqdRu8fSv0N6cIL6usOKozXLhgZIB2Sk989KW07ure9bNPlcO06DdonGjw==
+"@clearfeed-ai/quix-slack-agent@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-slack-agent/-/quix-slack-agent-1.0.4.tgz#78e82361f2d7ba88d9c51d257a1801d88db350dd"
+  integrity sha512-NbyFNfuS60yNhsbr17UhLCuJw6wqroHnQG7rzBb8TUadBrvo+AoQ4QJe/PFAqJxkBFzu2QlHlHzh2WUxk2Q/Xw==
   dependencies:
     "@slack/web-api" "^6.9.0"
     slackify-markdown "^4.4.0"
