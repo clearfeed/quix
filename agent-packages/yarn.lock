@@ -293,25 +293,6 @@
   resolved "https://registry.yarnpkg.com/@cfworker/json-schema/-/json-schema-4.1.1.tgz#4a2a3947ee9fa7b7c24be981422831b8674c3be6"
   integrity sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==
 
-"@clearfeed-ai/okta-sdk-nodejs@^7.3.0":
-  version "7.3.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/okta-sdk-nodejs/-/okta-sdk-nodejs-7.3.0.tgz#fa20924707528ab6c1424f665093ed4cb1e15e41"
-  integrity sha512-J1VFOhUAAiQ8BTeeBRs4/b5RpzumhW+ZaOnqiao6mM6jLGqYy2SD33t69DamMbdQLBbm4WOR0IurlhzYyB8ajw==
-  dependencies:
-    "@types/node-forge" "^1.3.1"
-    deep-copy "^1.4.2"
-    eckles "^1.4.1"
-    form-data "^4.0.0"
-    https-proxy-agent "^5.0.0"
-    js-yaml "^4.1.0"
-    lodash "^4.17.20"
-    njwt "^2.0.1"
-    node-fetch "^2.6.7"
-    parse-link-header "^2.0.0"
-    rasha "^1.2.5"
-    safe-flat "^2.0.2"
-    url-parse "^1.5.10"
-
 "@hubspot/api-client@^12.0.1":
   version "12.0.1"
   resolved "https://registry.yarnpkg.com/@hubspot/api-client/-/api-client-12.0.1.tgz#5fbb404610c8eaf5859504d68d8b7f4fc39db44e"
@@ -682,6 +663,25 @@
   integrity sha512-ifLaO34EbbPj0Xgro4G5lP5asESjwHracYJvVaPIyXMuiuXLlhic3S47cBdTb+jfODkTE5YtGCLt3Ay3+J97sA==
   dependencies:
     "@octokit/openapi-types" "^24.2.0"
+
+"@okta/okta-sdk-nodejs@^7.0.1":
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/@okta/okta-sdk-nodejs/-/okta-sdk-nodejs-7.1.1.tgz#4cedced99b276f81e17edde6eec0660cba455b9d"
+  integrity sha512-sY6y749Lo7NAchp+aV+0Px9Yj4Zsz7CJGfQEJBHAHjnNnRk3+XQkiJobal1w4xATsgHTZrNHFMqYp8yRiLWerA==
+  dependencies:
+    "@types/node-forge" "^1.3.1"
+    deep-copy "^1.4.2"
+    eckles "^1.4.1"
+    form-data "^4.0.0"
+    https-proxy-agent "^5.0.0"
+    js-yaml "^4.1.0"
+    lodash "^4.17.20"
+    njwt "^2.0.1"
+    node-fetch "^2.6.7"
+    parse-link-header "^2.0.0"
+    rasha "^1.2.5"
+    safe-flat "^2.0.2"
+    url-parse "^1.5.10"
 
 "@sinclair/typebox@^0.27.8":
   version "0.27.8"
