@@ -6,12 +6,11 @@ import {
   Group,
   User,
   UserActivationToken
-} from '@clearfeed-ai/okta-sdk-nodejs';
+} from '@okta/okta-sdk-nodejs';
 
 export interface OktaConfig extends BaseConfig {
   orgUrl: string;
   token: string;
-  authorizationMode?: 'SSWS' | 'AccessToken';
 }
 
 export interface ListUsersResponse extends BaseResponse<User[]> {}
