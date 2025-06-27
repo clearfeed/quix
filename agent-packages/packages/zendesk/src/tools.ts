@@ -51,8 +51,7 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
           .min(1)
           .max(100)
           .describe('Maximum number of tickets to return')
-          .nullish()
-          .transform((val) => val ?? 10)
+          .default(10)
       }),
       func: async (args: SearchTicketsParams) => service.searchTickets(args)
     }),
