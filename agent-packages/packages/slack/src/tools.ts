@@ -41,6 +41,8 @@ Consider using Slack tools when the user wants to:
 - Retrieve message history from a channel or thread
 - Add a reaction (emoji) to an existing message
 - Look up users or view detailed user profiles
+
+When the user provides a Slack thread or message link, extract the channel ID and timestamp from it and use them directly. Avoid calling other tools to retrieve the same information.
 `;
 
 const SLACK_RESPONSE_GENERATION_PROMPT = `
