@@ -17,9 +17,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'search_hubspot_deals',
         arguments: {
-          keyword: 'Acme',
-          ownerId: undefined,
-          stage: undefined
+          keyword: 'Acme'
         }
       }
     ],
@@ -61,17 +59,19 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     },
     reference_tool_calls: [
       {
+        name: 'get_hubspot_pipelines',
+        arguments: {
+          entityType: 'deal'
+        }
+      },
+      {
         name: 'create_hubspot_deal',
         arguments: {
           dealname: 'TechNova – Annual License',
           amount: 50000,
           dealstage: '5001',
           closedate: '2024-09-30',
-          pipeline: '4001',
-          description: null,
-          companyId: null,
-          contactId: null,
-          ownerId: null
+          pipeline: '4001'
         }
       }
     ],
@@ -113,9 +113,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         arguments: {
           firstName: 'Lara',
           lastName: 'Palmer',
-          email: 'lara.palmer@contoso.com',
-          phone: undefined,
-          company: undefined
+          email: 'lara.palmer@contoso.com'
         }
       }
     ],
@@ -148,9 +146,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'search_hubspot_deals',
         arguments: {
-          keyword: 'Acme',
-          ownerId: undefined,
-          stage: undefined
+          keyword: 'Acme'
         }
       },
       {
@@ -231,34 +227,28 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   //   },
 
   {
-    description: 'Mark task task-6100 as completed.',
+    description: 'Mark task 6100 as completed.',
     chat_history: [],
     invocation: {
       initiator_name: 'Eve',
-      message: 'Mark task task-6100 as completed'
+      message: 'Mark task 6100 as completed'
     },
     reference_tool_calls: [
       {
         name: 'update_hubspot_task',
         arguments: {
-          taskId: 'task-6100',
-          status: TaskStatusEnum.COMPLETED,
-          title: undefined,
-          body: undefined,
-          priority: undefined,
-          taskType: undefined,
-          dueDate: undefined,
-          ownerId: undefined
+          taskId: '6100',
+          status: TaskStatusEnum.COMPLETED
         }
       }
     ],
     tool_mock_response_overrides: {
       update_hubspot_task: {
-        taskId: 'task-6100',
+        taskId: '6100',
         status: TaskStatusEnum.COMPLETED
       }
     },
-    expected_response: 'Task task-6100 marked as completed.'
+    expected_response: 'Task 6100 marked as completed.'
   },
 
   {
@@ -272,12 +262,8 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'search_hubspot_tasks',
         arguments: {
-          keyword: undefined,
           ownerId: '1002',
-          status: undefined,
-          priority: undefined,
-          dueDateFrom: '2025-06-01',
-          dueDateTo: undefined
+          dueDateFrom: '2025-06-01'
         }
       }
     ],
@@ -309,9 +295,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         name: 'create_hubspot_ticket',
         arguments: {
           priority: TicketPriorityEnum.URGENT,
-          pipeline: '4002',
-          stage: undefined,
-          ownerId: undefined
+          pipeline: '4002'
         }
       },
       {
@@ -374,25 +358,22 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     chat_history: [],
     invocation: {
       initiator_name: 'Harvey',
-      message: 'Set ticket-2001 to In Progress and High priority'
+      message: 'Set hubspot ticekt 2001 to In Progress and High priority'
     },
     reference_tool_calls: [
       {
         name: 'update_hubspot_ticket',
         arguments: {
-          ticketId: 'ticket-2001',
+          ticketId: '2001',
           stage: 'In Progress',
-          priority: TicketPriorityEnum.HIGH,
-          subject: undefined,
-          content: undefined,
-          ownerId: undefined
+          priority: TicketPriorityEnum.HIGH
         }
       }
     ],
     tool_mock_response_overrides: {
-      update_hubspot_ticket: { ticketId: 'ticket-2001', stage: 'In Progress', priority: 'HIGH' }
+      update_hubspot_ticket: { ticketId: '2001', stage: 'In Progress', priority: 'HIGH' }
     },
-    expected_response: 'Ticket ticket-2001 is now In Progress with High priority.'
+    expected_response: 'Ticket 2001 is now In Progress with High priority.'
   },
 
   {
@@ -431,14 +412,16 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   {
     description: 'Find urgent tickets owned by Sarah Johnson.',
     chat_history: [],
-    invocation: { initiator_name: 'Jill', message: 'Show Sarah Johnson urgent tickets' },
+    invocation: { initiator_name: 'Jill', message: 'Show urgent tickets owned by Sarah Johnson.' },
     reference_tool_calls: [
+      {
+        name: 'get_hubspot_owners',
+        arguments: {}
+      },
       {
         name: 'search_hubspot_tickets',
         arguments: {
-          keyword: 'Sarah Johnson',
-          ownerId: undefined,
-          stage: undefined,
+          ownerId: '1001',
           priority: TicketPriorityEnum.URGENT
         }
       }
@@ -490,11 +473,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'search_hubspot_deals',
         arguments: {
-          keyword: 'Acme',
-          ownerId: undefined,
-          stage: undefined,
-          amountFrom: undefined,
-          amountTo: undefined
+          keyword: 'Acme'
         }
       }
     ],
@@ -504,27 +483,19 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
   {
     description: 'Move a deal to Closed Won.',
     chat_history: [],
-    invocation: { initiator_name: 'Olivia', message: 'Close the Acme deal as won' },
+    invocation: { initiator_name: 'Olivia', message: 'Close the Acme deal as "Won"' },
     reference_tool_calls: [
       {
         name: 'search_hubspot_deals',
         arguments: {
-          keyword: 'Acme',
-          ownerId: undefined,
-          stage: undefined
+          keyword: 'Acme'
         }
       },
       {
         name: 'update_hubspot_deal',
         arguments: {
           dealId: '6001',
-          dealstage: 'won',
-          dealname: undefined,
-          description: undefined,
-          amount: undefined,
-          closedate: undefined,
-          pipeline: undefined,
-          ownerId: undefined
+          dealstage: 'Won'
         }
       }
     ],
@@ -560,9 +531,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         arguments: {
           firstName: 'Jane',
           lastName: 'Doe',
-          email: 'jane@acme.com',
-          phone: undefined,
-          company: undefined
+          email: 'jane@acme.com'
         }
       }
     ],
@@ -618,41 +587,25 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
 
   {
     description: 'Create task for selected contact after disambiguation',
-    chat_history: [
-      {
-        author: 'Alice',
-        message: 'Create a task for the contact John Smith to follow up on the proposal'
-      },
-      {
-        author: 'Quix',
-        message:
-          'I found multiple contacts named John Smith. Which one would you like to create a task for?\n\n1. John Smith (john.smith@acmecorp.com) at Acme Corp\n2. John Smith (john.smith@techcorp.com) at Tech Corp'
-      },
-      {
-        author: 'Alice',
-        message: 'The first one, at Acme Corp'
-      }
-    ],
+    chat_history: [],
     invocation: {
       initiator_name: 'Alice',
-      message: 'Create a task for the contact John Smith at Acme Corp to follow up on the proposal'
+      message: 'Create a task for the contact John Smith to follow up on the proposal'
     },
     reference_tool_calls: [
       {
         name: 'search_hubspot_contacts',
         arguments: {
-          keyword: 'john.smith@acmecorp.com'
+          keyword: 'John Smith'
         }
       },
       {
         name: 'create_hubspot_task',
         arguments: {
-          entityId: '3001',
           title: 'Follow up on the proposal',
           status: TaskStatusEnum.NOT_STARTED,
           priority: TaskPriorityEnum.MEDIUM,
-          taskType: TaskTypeEnum.TODO,
-          ownerId: null
+          taskType: TaskTypeEnum.TODO
         }
       },
       {
@@ -683,6 +636,25 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
                 industry: 'Manufacturing',
                 website: 'https://acmecorp.com',
                 description: 'Leading manufacturer of innovative widgets'
+              }
+            ]
+          },
+          {
+            id: '3002',
+            firstName: 'John',
+            lastName: 'Smith',
+            email: 'john.smith@cf.com',
+            phone: '666-123-4567',
+            company: 'ClearFeed',
+            createdAt: '2025-04-01T09:00:00Z',
+            lastModifiedDate: '2025-05-15T14:30:00Z',
+            companies: [
+              {
+                name: 'ClearFeed',
+                domain: 'clearfeed.ai',
+                industry: 'AI SaaS support',
+                website: 'https://clearfeed.ai',
+                description: 'Leading support platform'
               }
             ]
           }
@@ -723,10 +695,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'search_hubspot_tickets',
         arguments: {
-          keyword: 'login',
-          ownerId: undefined,
-          stage: undefined,
-          priority: undefined
+          keyword: 'login'
         }
       }
     ],
@@ -743,11 +712,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         name: 'update_hubspot_ticket',
         arguments: {
           ticketId: '2001',
-          priority: TicketPriorityEnum.URGENT,
-          subject: undefined,
-          content: undefined,
-          stage: undefined,
-          ownerId: undefined
+          priority: TicketPriorityEnum.URGENT
         }
       }
     ],
@@ -768,10 +733,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
       {
         name: 'search_hubspot_tasks',
         arguments: {
-          keyword: undefined,
           ownerId: '1003',
-          status: undefined,
-          priority: undefined,
           dueDateFrom: '2025-05-01',
           dueDateTo: '2025-05-31'
         }
@@ -786,16 +748,13 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     chat_history: [],
     invocation: {
       initiator_name: 'Sam',
-      message: 'Close ticket about authentication issues in the website'
+      message: 'Close ticket about "authentication issues" in the website'
     },
     reference_tool_calls: [
       {
         name: 'search_hubspot_tickets',
         arguments: {
-          keyword: 'authentication issues',
-          ownerId: undefined,
-          stage: undefined,
-          priority: undefined
+          keyword: 'authentication issues'
         }
       }
     ],
