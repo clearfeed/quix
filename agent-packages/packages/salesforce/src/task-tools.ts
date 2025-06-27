@@ -47,8 +47,7 @@ export const taskTools = (config: SalesforceConfig): DynamicStructuredTool<any>[
         whatId: z.string().describe('The ID of the object to create the task for'),
         type: z
           .string()
-          .nullish()
-          .transform((val) => val ?? 'Task')
+          .default('Task')
           .describe('The type of the task also referred to as the source of the task.'),
         dueDate: z
           .string()
@@ -144,16 +143,8 @@ export const taskTools = (config: SalesforceConfig): DynamicStructuredTool<any>[
           .nullish()
           .transform((val) => dueDateTransformer(val ?? undefined))
           .describe('The due date of the task'),
-        orderBy: z
-          .string()
-          .nullish()
-          .transform((val) => val ?? 'CreatedDate')
-          .describe('The order by of the task'),
-        limit: z
-          .number()
-          .nullish()
-          .transform((val) => val ?? 10)
-          .describe('The limit of the task')
+        orderBy: z.string().default('CreatedDate').describe('The order by of the task'),
+        limit: z.number().default(10).describe('The limit of the task')
       })
     })
   ];
