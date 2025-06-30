@@ -16,32 +16,71 @@ const JC_RESPONSE_PROMPT = `When formatting JumpCloud responses be sure to menti
 
 export const SCHEMAS = {
   listUsers: z.object({
-    limit: z.number().optional().default(20).describe('Number of users to return'),
-    query: z.string().optional().describe('Search query for users')
+    limit: z.number().nullish().default(20).describe('Number of users to return'),
+    query: z
+      .string()
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('Search query for users')
   }),
   createUserSchema: z.object({
     username: z.string().describe('Username for the user'),
     email: z.string().email().describe('Email address'),
-    firstname: z.string().optional().describe('First name'),
-    lastname: z.string().optional().describe('Last name')
+    firstname: z
+      .string()
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('First name'),
+    lastname: z
+      .string()
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('Last name')
   }),
   getUserSchema: z.object({
     userId: z.string().describe('ID of the user to fetch')
   }),
   updateUserSchema: z.object({
     userId: z.string().describe('ID of the user to update'),
-    payload: z.record(z.any()).describe('User fields to update')
+    payload: z
+      .object({
+        email: z
+          .string()
+          .email()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('Email address'),
+        firstname: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('First name'),
+        lastname: z
+          .string()
+          .nullish()
+          .transform((val) => val ?? undefined)
+          .describe('Last name')
+      })
+      .describe('User fields to update - only firstname, lastname, and email are allowed')
   }),
   deleteUserSchema: z.object({
     userId: z.string().describe('ID of the user to delete')
   }),
   listGroupsSchema: z.object({
-    limit: z.number().optional().default(20).describe('Number of groups to return'),
-    query: z.string().optional().describe('Search query for groups')
+    limit: z.number().nullish().default(20).describe('Number of groups to return'),
+    query: z
+      .string()
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('Search query for groups')
   }),
   createGroupSchema: z.object({
     name: z.string().describe('Name of the group'),
-    description: z.string().optional().describe('Group description')
+    description: z
+      .string()
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('Group description')
   }),
   assignUserToGroupSchema: z.object({
     groupId: z.string().describe('Group ID'),
@@ -98,21 +137,32 @@ export function createJumpCloudToolsExport(config: JumpCloudConfig): ToolConfig 
       description: 'Create a group in JumpCloud',
       schema: SCHEMAS.createGroupSchema
     }),
-    tool(async (args: z.infer<typeof SCHEMAS.assignUserToGroupSchema>) => service.assignUserToGroup(args), {
-      name: 'assign_user_to_jumpcloud_group',
-      description: 'Assign a user to a JumpCloud group',
-      schema: SCHEMAS.assignUserToGroupSchema
-    }),
-    tool(async (args: z.infer<typeof SCHEMAS.unassignUserFromGroupSchema>) => service.unassignUserFromGroup(args), {
-      name: 'unassign_user_from_jumpcloud_group',
-      description: 'Remove a user from a JumpCloud group',
-      schema: SCHEMAS.unassignUserFromGroupSchema
-    }),
-    tool(async (args: z.infer<typeof SCHEMAS.listGroupUsersSchema>) => service.listGroupUsers(args), {
-      name: 'list_jumpcloud_group_users',
-      description: 'List users in a JumpCloud group',
-      schema: SCHEMAS.listGroupUsersSchema
-    }),
+    tool(
+      async (args: z.infer<typeof SCHEMAS.assignUserToGroupSchema>) =>
+        service.assignUserToGroup(args),
+      {
+        name: 'assign_user_to_jumpcloud_group',
+        description: 'Assign a user to a JumpCloud group',
+        schema: SCHEMAS.assignUserToGroupSchema
+      }
+    ),
+    tool(
+      async (args: z.infer<typeof SCHEMAS.unassignUserFromGroupSchema>) =>
+        service.unassignUserFromGroup(args),
+      {
+        name: 'unassign_user_from_jumpcloud_group',
+        description: 'Remove a user from a JumpCloud group',
+        schema: SCHEMAS.unassignUserFromGroupSchema
+      }
+    ),
+    tool(
+      async (args: z.infer<typeof SCHEMAS.listGroupUsersSchema>) => service.listGroupUsers(args),
+      {
+        name: 'list_jumpcloud_group_users',
+        description: 'List users in a JumpCloud group',
+        schema: SCHEMAS.listGroupUsersSchema
+      }
+    ),
     tool(async (args: z.infer<typeof SCHEMAS.deleteGroupSchema>) => service.deleteGroup(args), {
       name: 'delete_jumpcloud_group',
       description: 'Delete a JumpCloud group',

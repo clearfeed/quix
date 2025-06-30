@@ -48,6 +48,10 @@ describe('JumpCloud Integration Tests', () => {
   });
 
   describe('User Management', () => {
+    // Generate test username and email at the describe block level for reuse
+    const testUsername = `${TEST_USER_PREFIX}${timestamp}`;
+    const testEmail = `${testUsername}@example.com`;
+
     it('should list users successfully', async () => {
       const result = await service.listUsers({ limit: 20 });
 
@@ -80,9 +84,6 @@ describe('JumpCloud Integration Tests', () => {
     });
 
     it('should create a new user', async () => {
-      const testUsername = `${TEST_USER_PREFIX}${timestamp}`;
-      const testEmail = `${testUsername}@example.com`;
-
       const result = await service.createUser({
         username: testUsername,
         email: testEmail,
@@ -119,11 +120,13 @@ describe('JumpCloud Integration Tests', () => {
         throw new Error('Test user was not created');
       }
 
+      const updatedEmail = `updated-${testUsername}@example.com`;
       const result = await service.updateUser({
         userId: testUserId,
         payload: {
           firstname: 'Updated',
-          lastname: 'TestUser'
+          lastname: 'TestUser',
+          email: updatedEmail
         }
       });
 
@@ -131,8 +134,9 @@ describe('JumpCloud Integration Tests', () => {
       expect(result.data).toBeDefined();
       expect(result.data?.firstname).toBe('Updated');
       expect(result.data?.lastname).toBe('TestUser');
+      expect(result.data?.email).toBe(updatedEmail);
 
-      console.log(`Updated user: ${result.data?.username}`);
+      console.log(`Updated user: ${result.data?.username} with email: ${result.data?.email}`);
     });
 
     it('should handle get user with invalid ID', async () => {
