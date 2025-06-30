@@ -7,25 +7,22 @@ import {
   User,
   UserActivationToken
 } from '@okta/okta-sdk-nodejs';
-import { z } from 'zod';
 
-export const OktaTokenConfigSchema = z.object({
-  orgUrl: z.string(),
-  token: z.string()
-});
+export type OktaTokenAuthConfig = {
+  orgUrl: string;
+  token: string;
+};
 
-export const OktaPrivateKeyConfigSchema = z.object({
-  orgUrl: z.string(),
-  authorizationMode: z.literal('PrivateKey'),
-  clientId: z.string(),
-  scopes: z.array(z.string()),
-  privateKey: z.string(),
-  privateKeyId: z.string()
-});
+export type OktaPrivateKeyAuthConfig = {
+  orgUrl: string;
+  authorizationMode: 'PrivateKey';
+  clientId: string;
+  scopes: string[];
+  privateKey: string;
+  privateKeyId: string;
+};
 
-export type OktaTokenConfig = z.infer<typeof OktaTokenConfigSchema> & BaseConfig;
-export type OktaPrivateKeyConfig = z.infer<typeof OktaPrivateKeyConfigSchema> & BaseConfig;
-export type OktaAuthConfig = OktaTokenConfig | OktaPrivateKeyConfig;
+export type OktaAuthConfig = BaseConfig & (OktaTokenAuthConfig | OktaPrivateKeyAuthConfig);
 
 export interface ListUsersResponse extends BaseResponse<User[]> {}
 
