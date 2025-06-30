@@ -1,0 +1,23 @@
+{
+  "name": "@clearfeed-ai/quix-jumpcloud-agent",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rm -rf ./dist && find . -type f \( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \) ! -path \"*/node_modules/*\" -delete",
+    "build": "yarn clean && tsc",
+    "test": "jest",
+    "prepublishOnly": "yarn build"
+  },
+  "dependencies": {
+    "axios": "^1.8.2",
+    "@clearfeed-ai/quix-common-agent": "^1.1.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  },
+  "license": "Apache-2.0"
+}
