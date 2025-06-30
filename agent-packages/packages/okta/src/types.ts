@@ -10,8 +10,21 @@ import {
 
 export interface OktaConfig extends BaseConfig {
   orgUrl: string;
+}
+
+export interface OktaTokenConfig extends OktaConfig {
   token: string;
 }
+
+export interface OktaPrivateKeyConfig extends OktaConfig {
+  authorizationMode: 'PrivateKey';
+  clientId: string;
+  scopes: string[];
+  privateKey: string;
+  privateKeyId: string;
+}
+
+export type OktaAuthConfig = OktaTokenConfig | OktaPrivateKeyConfig;
 
 export interface ListUsersResponse extends BaseResponse<User[]> {}
 
