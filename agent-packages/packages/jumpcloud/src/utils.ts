@@ -16,7 +16,10 @@ export function extractPrimitives(obj: any): any {
       result[key] = value;
     } else if (typeof value !== 'object') {
       result[key] = value;
-    } else if (Array.isArray(value) && value.every((item) => typeof item !== 'object' || item === null)) {
+    } else if (
+      Array.isArray(value) &&
+      value.every((item) => typeof item !== 'object' || item === null)
+    ) {
       result[key] = value;
     } else {
       const extracted = extractPrimitives(value);
@@ -28,29 +31,54 @@ export function extractPrimitives(obj: any): any {
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
-export function validateRequiredFields({
-  params,
-  requiredFields
-}: {
-  params: Record<string, any>;
-  requiredFields: string[];
-}) {
-  const missingFields = requiredFields.filter((field) => {
-    if (field.includes('.')) {
-      const parts = field.split('.');
-      let current = params;
-      for (const part of parts) {
-        if (!current || current[part] === undefined) {
-          return true;
-        }
-        current = current[part];
-      }
-      return false;
-    }
-    return params[field] === undefined;
-  });
+export function extractErrorMessage(error: unknown): string {
+  // Handle Axios errors specifically
+  if (error && typeof error === 'object' && 'isAxiosError' in error) {
+    const axiosError = error as any;
 
-  if (missingFields.length > 0) {
-    throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+    // Try to extract error message from response data
+    if (axiosError.response?.data) {
+      const responseData = axiosError.response.data;
+
+      // Handle different API error response formats
+      if (typeof responseData === 'string') {
+        return responseData;
+      }
+
+      if (typeof responseData === 'object') {
+        // Try common error message fields
+        const errorMessage =
+          responseData.error?.message ||
+          responseData.error ||
+          responseData.message ||
+          responseData.detail ||
+          responseData.details ||
+          JSON.stringify(responseData);
+
+        if (errorMessage && typeof errorMessage === 'string') {
+          return errorMessage;
+        }
+      }
+    }
+
+    // If no response data, include status code and status text
+    if (axiosError.response?.status) {
+      const statusInfo =
+        `${axiosError.response.status} ${axiosError.response.statusText || ''}`.trim();
+      return `Request failed with status code ${statusInfo}`;
+    }
+
+    // Network or request setup errors
+    if (axiosError.code) {
+      return `Network error: ${axiosError.code} - ${axiosError.message}`;
+    }
   }
+
+  // Handle standard Error objects
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  // Fallback for unknown error types
+  return 'An unknown error occurred';
 }

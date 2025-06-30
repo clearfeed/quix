@@ -1,4 +1,4 @@
-import { extractPrimitives, validateRequiredFields } from './utils';
+import { extractPrimitives, extractErrorMessage } from './utils';
 
 describe('JumpCloud Utils Unit Tests', () => {
   describe('extractPrimitives', () => {
@@ -98,118 +98,198 @@ describe('JumpCloud Utils Unit Tests', () => {
     });
   });
 
-  describe('validateRequiredFields', () => {
-    it('should not throw for valid params with all required fields', () => {
-      const params = { name: 'John', email: 'john@example.com' };
-      const requiredFields = ['name', 'email'];
-
-      expect(() => validateRequiredFields({ params, requiredFields })).not.toThrow();
-    });
-
-    it('should throw error for missing required fields', () => {
-      const params = { name: 'John' };
-      const requiredFields = ['name', 'email'];
-
-      expect(() => validateRequiredFields({ params, requiredFields })).toThrow(
-        'Missing required fields: email'
-      );
-    });
-
-    it('should throw error for multiple missing required fields', () => {
-      const params = { name: 'John' };
-      const requiredFields = ['name', 'email', 'age'];
-
-      expect(() => validateRequiredFields({ params, requiredFields })).toThrow(
-        'Missing required fields: email, age'
-      );
-    });
-
-    it('should handle nested field validation', () => {
-      const params = { user: { name: 'John', profile: { email: 'john@example.com' } } };
-      const requiredFields = ['user.name', 'user.profile.email'];
-
-      expect(() => validateRequiredFields({ params, requiredFields })).not.toThrow();
-    });
-
-    it('should throw for missing nested fields', () => {
-      const params = { user: { name: 'John' } };
-      const requiredFields = ['user.name', 'user.profile.email'];
-
-      expect(() => validateRequiredFields({ params, requiredFields })).toThrow(
-        'Missing required fields: user.profile.email'
-      );
-    });
-
-    it('should handle mixed nested and flat fields', () => {
-      const params = { name: 'John', user: { profile: { email: 'john@example.com' } } };
-      const requiredFields = ['name', 'user.profile.email', 'age'];
-
-      expect(() => validateRequiredFields({ params, requiredFields })).toThrow(
-        'Missing required fields: age'
-      );
-    });
-
-    it('should handle empty required fields array', () => {
-      const params = { name: 'John' };
-      const requiredFields: string[] = [];
-
-      expect(() => validateRequiredFields({ params, requiredFields })).not.toThrow();
-    });
-
-    it('should handle undefined values as missing', () => {
-      const params = { name: 'John', email: undefined };
-      const requiredFields = ['name', 'email'];
-
-      expect(() => validateRequiredFields({ params, requiredFields })).toThrow(
-        'Missing required fields: email'
-      );
-    });
-
-    it('should handle null values as valid (not missing)', () => {
-      const params = { name: 'John', email: null };
-      const requiredFields = ['name', 'email'];
-
-      // null values should be considered valid, only undefined is missing
-      expect(() => validateRequiredFields({ params, requiredFields })).not.toThrow();
-    });
-
-    it('should handle deeply nested missing fields', () => {
-      const params = {
-        user: {
-          profile: {
-            personal: { name: 'John' }
-          }
+  describe('extractErrorMessage', () => {
+    it('should extract string error message from Axios response data', () => {
+      const axiosError = {
+        isAxiosError: true,
+        response: {
+          data: 'Path `username` is required.',
+          status: 400,
+          statusText: 'Bad Request'
         }
       };
-      const requiredFields = ['user.profile.personal.name', 'user.profile.contact.email'];
 
-      expect(() => validateRequiredFields({ params, requiredFields })).toThrow(
-        'Missing required fields: user.profile.contact.email'
+      expect(extractErrorMessage(axiosError)).toBe('Path `username` is required.');
+    });
+
+    it('should extract error message from object response data with error.message field', () => {
+      const axiosError = {
+        isAxiosError: true,
+        response: {
+          data: {
+            error: {
+              message: 'Invalid username format'
+            }
+          },
+          status: 400
+        }
+      };
+
+      expect(extractErrorMessage(axiosError)).toBe('Invalid username format');
+    });
+
+    it('should extract error message from object response data with error field', () => {
+      const axiosError = {
+        isAxiosError: true,
+        response: {
+          data: {
+            error: 'User not found'
+          },
+          status: 404
+        }
+      };
+
+      expect(extractErrorMessage(axiosError)).toBe('User not found');
+    });
+
+    it('should extract error message from object response data with message field', () => {
+      const axiosError = {
+        isAxiosError: true,
+        response: {
+          data: {
+            message: 'Authentication failed'
+          },
+          status: 401
+        }
+      };
+
+      expect(extractErrorMessage(axiosError)).toBe('Authentication failed');
+    });
+
+    it('should extract error message from object response data with detail field', () => {
+      const axiosError = {
+        isAxiosError: true,
+        response: {
+          data: {
+            detail: 'Rate limit exceeded'
+          },
+          status: 429
+        }
+      };
+
+      expect(extractErrorMessage(axiosError)).toBe('Rate limit exceeded');
+    });
+
+    it('should extract error message from object response data with details field', () => {
+      const axiosError = {
+        isAxiosError: true,
+        response: {
+          data: {
+            details: 'Invalid API key provided'
+          },
+          status: 403
+        }
+      };
+
+      expect(extractErrorMessage(axiosError)).toBe('Invalid API key provided');
+    });
+
+    it('should JSON stringify complex response data when no standard fields are found', () => {
+      const axiosError = {
+        isAxiosError: true,
+        response: {
+          data: {
+            code: 'VALIDATION_ERROR',
+            fields: ['username', 'email']
+          },
+          status: 400
+        }
+      };
+
+      expect(extractErrorMessage(axiosError)).toBe(
+        '{"code":"VALIDATION_ERROR","fields":["username","email"]}'
       );
     });
 
-    it('should handle empty string values as valid', () => {
-      const params = { name: 'John', email: '' };
-      const requiredFields = ['name', 'email'];
+    it('should handle Axios error with status code but no response data', () => {
+      const axiosError = {
+        isAxiosError: true,
+        response: {
+          status: 500,
+          statusText: 'Internal Server Error'
+        }
+      };
 
-      // Empty strings should be considered valid values, not missing
-      expect(() => validateRequiredFields({ params, requiredFields })).not.toThrow();
+      expect(extractErrorMessage(axiosError)).toBe(
+        'Request failed with status code 500 Internal Server Error'
+      );
     });
 
-    it('should handle zero values as valid', () => {
-      const params = { name: 'John', age: 0 };
-      const requiredFields = ['name', 'age'];
+    it('should handle Axios error with status code but no statusText', () => {
+      const axiosError = {
+        isAxiosError: true,
+        response: {
+          status: 404
+        }
+      };
 
-      // Zero should be considered a valid value, not missing
-      expect(() => validateRequiredFields({ params, requiredFields })).not.toThrow();
+      expect(extractErrorMessage(axiosError)).toBe('Request failed with status code 404');
     });
 
-    it('should handle false values as valid', () => {
-      const params = { name: 'John', active: false };
-      const requiredFields = ['name', 'active'];
+    it('should handle Axios network errors with error code', () => {
+      const axiosError = {
+        isAxiosError: true,
+        code: 'ECONNREFUSED',
+        message: 'Connection refused'
+      };
 
-      // False should be considered a valid value, not missing
-      expect(() => validateRequiredFields({ params, requiredFields })).not.toThrow();
+      expect(extractErrorMessage(axiosError)).toBe(
+        'Network error: ECONNREFUSED - Connection refused'
+      );
+    });
+
+    it('should handle standard Error objects', () => {
+      const standardError = new Error('Something went wrong');
+
+      expect(extractErrorMessage(standardError)).toBe('Something went wrong');
+    });
+
+    it('should handle unknown error types', () => {
+      const unknownError = { someProperty: 'value' };
+
+      expect(extractErrorMessage(unknownError)).toBe('An unknown error occurred');
+    });
+
+    it('should handle null or undefined errors', () => {
+      expect(extractErrorMessage(null)).toBe('An unknown error occurred');
+      expect(extractErrorMessage(undefined)).toBe('An unknown error occurred');
+    });
+
+    it('should handle string errors', () => {
+      expect(extractErrorMessage('Simple string error')).toBe('An unknown error occurred');
+    });
+
+    it('should prioritize error.message over other fields', () => {
+      const axiosError = {
+        isAxiosError: true,
+        response: {
+          data: {
+            error: {
+              message: 'Specific error message'
+            },
+            message: 'General message',
+            detail: 'Some detail'
+          },
+          status: 400
+        }
+      };
+
+      expect(extractErrorMessage(axiosError)).toBe('Specific error message');
+    });
+
+    it('should fallback through error field hierarchy', () => {
+      const axiosError = {
+        isAxiosError: true,
+        response: {
+          data: {
+            message: 'Fallback message',
+            detail: 'Some detail'
+          },
+          status: 400
+        }
+      };
+
+      expect(extractErrorMessage(axiosError)).toBe('Fallback message');
     });
   });
 });

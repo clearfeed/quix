@@ -14,7 +14,7 @@ import {
   ListGroupUsersResponse,
   DeleteGroupResponse
 } from './types';
-import { extractPrimitives } from './utils';
+import { extractPrimitives, extractErrorMessage } from './utils';
 import { SCHEMAS } from './tools';
 import { z } from 'zod';
 export * from './types';
@@ -62,7 +62,7 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
       console.error('Error listing JumpCloud users:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to list users'
+        error: extractErrorMessage(error)
       };
     }
   }
@@ -75,7 +75,7 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
       console.error('Error creating JumpCloud user:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create user'
+        error: extractErrorMessage(error)
       };
     }
   }
@@ -88,7 +88,7 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
       console.error('Error getting JumpCloud user:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get user'
+        error: extractErrorMessage(error)
       };
     }
   }
@@ -101,7 +101,7 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
       console.error('Error updating JumpCloud user:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to update user'
+        error: extractErrorMessage(error)
       };
     }
   }
@@ -114,7 +114,7 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
       console.error('Error deleting JumpCloud user:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to delete user'
+        error: extractErrorMessage(error)
       };
     }
   }
@@ -127,7 +127,7 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
       console.error('Error listing JumpCloud groups:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to list groups'
+        error: extractErrorMessage(error)
       };
     }
   }
@@ -140,7 +140,7 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
       console.error('Error creating JumpCloud group:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create group'
+        error: extractErrorMessage(error)
       };
     }
   }
@@ -159,7 +159,7 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
       console.error('Error assigning user to JumpCloud group:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to assign user to group'
+        error: extractErrorMessage(error)
       };
     }
   }
@@ -178,7 +178,7 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
       console.error('Error removing user from JumpCloud group:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to unassign user from group'
+        error: extractErrorMessage(error)
       };
     }
   }
@@ -193,7 +193,7 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
       console.error('Error listing JumpCloud group users:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to list group users'
+        error: extractErrorMessage(error)
       };
     }
   }
@@ -206,7 +206,7 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
       console.error('Error deleting JumpCloud group:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to delete group'
+        error: extractErrorMessage(error)
       };
     }
   }
