@@ -1,7 +1,7 @@
 import { Client, User } from '@okta/okta-sdk-nodejs';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
-  OktaConfig,
+  OktaAuthConfig,
   ListUsersResponse,
   CreateUserResponse,
   GetUserResponse,
@@ -35,14 +35,25 @@ import { z } from 'zod';
 export * from './types';
 export * from './tools';
 
-export class OktaService implements BaseService<OktaConfig> {
+export class OktaService implements BaseService<OktaAuthConfig> {
   private client: Client;
 
-  constructor(private config: OktaConfig) {
-    this.client = new Client({
-      orgUrl: config.orgUrl,
-      token: config.token
-    });
+  constructor(private config: OktaAuthConfig) {
+    if ('privateKey' in config) {
+      this.client = new Client({
+        orgUrl: config.orgUrl,
+        authorizationMode: 'PrivateKey',
+        clientId: config.clientId,
+        scopes: config.scopes,
+        privateKey: config.privateKey,
+        keyId: config.privateKeyId
+      });
+    } else {
+      this.client = new Client({
+        orgUrl: config.orgUrl,
+        token: config.token
+      });
+    }
   }
 
   // === USER METHODS ===

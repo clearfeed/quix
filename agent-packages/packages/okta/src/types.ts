@@ -8,10 +8,21 @@ import {
   UserActivationToken
 } from '@okta/okta-sdk-nodejs';
 
-export interface OktaConfig extends BaseConfig {
+export type OktaTokenAuthConfig = {
   orgUrl: string;
   token: string;
-}
+};
+
+export type OktaPrivateKeyAuthConfig = {
+  orgUrl: string;
+  authorizationMode: 'PrivateKey';
+  clientId: string;
+  scopes: string[];
+  privateKey: string;
+  privateKeyId: string;
+};
+
+export type OktaAuthConfig = BaseConfig & (OktaTokenAuthConfig | OktaPrivateKeyAuthConfig);
 
 export interface ListUsersResponse extends BaseResponse<User[]> {}
 
