@@ -395,10 +395,10 @@
     "@notionhq/client" "^3.0.1"
     lodash "^4.17.21"
 
-"@clearfeed-ai/quix-okta-agent@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-okta-agent/-/quix-okta-agent-1.0.2.tgz#cedf343399a1ca2c52f2b3a01049c0b26c74e5d6"
-  integrity sha512-Cos0TgQj+m0mGBqY/iqkhsXgGpy3icwuG8aTII9420Xwve1kabQhx7QVfq392680+XyO9CS5qahpuyIluDof5g==
+"@clearfeed-ai/quix-okta-agent@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-okta-agent/-/quix-okta-agent-1.0.4.tgz#68d0e8429d17636421a7ea869a8ab70dc29b848e"
+  integrity sha512-U2gjTnvnkRdE3yZHRleGUeHkIVyGHhTbMe4GFiwd0kDw9t1FQkIJ3gcovPXKdACLxIJiq5EXTwtm1IcvRJLzKA==
   dependencies:
     "@okta/okta-sdk-nodejs" "^7.0.1"
 
