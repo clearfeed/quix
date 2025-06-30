@@ -39,12 +39,7 @@ export class OktaService implements BaseService<OktaAuthConfig> {
   private client: Client;
 
   constructor(private config: OktaAuthConfig) {
-    if ('token' in config) {
-      this.client = new Client({
-        orgUrl: config.orgUrl,
-        token: config.token
-      });
-    } else {
+    if ('privateKey' in config) {
       this.client = new Client({
         orgUrl: config.orgUrl,
         authorizationMode: 'PrivateKey',
@@ -52,6 +47,11 @@ export class OktaService implements BaseService<OktaAuthConfig> {
         scopes: config.scopes,
         privateKey: config.privateKey,
         keyId: config.privateKeyId
+      });
+    } else {
+      this.client = new Client({
+        orgUrl: config.orgUrl,
+        token: config.token
       });
     }
   }
