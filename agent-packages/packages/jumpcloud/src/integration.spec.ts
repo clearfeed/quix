@@ -92,10 +92,10 @@ describe('JumpCloud Integration Tests', () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.data.username).toBe(testUsername);
-      expect(result.data.email).toBe(testEmail);
+      expect(result.data?.username).toBe(testUsername);
+      expect(result.data?.email).toBe(testEmail);
 
-      testUserId = result.data._id || result.data.id;
+      testUserId = result.data?.id || '';
       console.log(`Created test user with ID: ${testUserId}`);
     });
 
@@ -108,10 +108,10 @@ describe('JumpCloud Integration Tests', () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.data._id || result.data.id).toBe(testUserId);
-      expect(result.data.username).toContain(TEST_USER_PREFIX);
+      expect(result.data?.id).toBe(testUserId);
+      expect(result.data?.username).toContain(TEST_USER_PREFIX);
 
-      console.log(`Retrieved user: ${result.data.username}`);
+      console.log(`Retrieved user: ${result.data?.username}`);
     });
 
     it('should update the created user', async () => {
@@ -129,10 +129,10 @@ describe('JumpCloud Integration Tests', () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.data.firstname).toBe('Updated');
-      expect(result.data.lastname).toBe('TestUser');
+      expect(result.data?.firstname).toBe('Updated');
+      expect(result.data?.lastname).toBe('TestUser');
 
-      console.log(`Updated user: ${result.data.username}`);
+      console.log(`Updated user: ${result.data?.username}`);
     });
 
     it('should handle get user with invalid ID', async () => {
@@ -176,9 +176,9 @@ describe('JumpCloud Integration Tests', () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.data.name).toBe(testGroupName);
+      expect(result.data?.name).toBe(testGroupName);
 
-      testGroupId = result.data._id || result.data.id;
+      testGroupId = result.data?.id || '';
       console.log(`Created test group with ID: ${testGroupId}`);
     });
 
@@ -227,7 +227,7 @@ describe('JumpCloud Integration Tests', () => {
       expect(result.data?.length).toBe(1);
       if (result.data && result.data[0]) {
         // JumpCloud group members API may return user objects with different ID field structure
-        const userObj = result.data[0];
+        const userObj = result.data[0] as any;
         const userId = userObj.id || userObj._id || userObj.userId || userObj.to?.id;
         expect(userId).toBe(testUserId);
       }
