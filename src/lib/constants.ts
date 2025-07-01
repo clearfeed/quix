@@ -240,8 +240,9 @@ Do not ask the user for more details unless absolutely necessary to call the too
 Respond in clear markdown.
   `,
   baseToolSelection: `
-  Select the tool categories to use for the query.
-  If no specific tool is needed, respond directly and include an answer based on the provided reason using your own knowledge.
+  Evaluate the user's query and select the relevant tool categories required to fulfill it.
+  If no tools apply, return toolCategories: ["none"] and answer the query using your general knowledge in the 'reason' field. 
+  If tools are applicable, select all relevant categories and explain your reasoning in the 'reason' field.
   `,
   PLANNER_PROMPT: (allFunctions: string[], allCustomPrompts: string[]) => {
     const basePrompt = `
