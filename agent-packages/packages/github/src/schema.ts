@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { GitHubConfig } from './types';
 
+const createConditionalDefaultSchema = (configValue: string | undefined, description: string) => {
+  return configValue
+    ? z.string().describe(description).default(configValue)
+    : z.string().describe(`${description} (required)`);
+};
+
 export const baseSearchIssuesOrPullRequestsSchema = z.object({
   type: z
     .enum(['issue', 'pr'])
@@ -51,40 +57,26 @@ export const baseSearchIssuesOrPullRequestsSchema = z.object({
 
 export const searchIssuesOrPullRequestsSchema = (config: GitHubConfig) =>
   baseSearchIssuesOrPullRequestsSchema.extend({
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository to search in. This identifies which project to look for issues/PRs'
-          : 'Name of the repository to search in. This identifies which project to look for issues/PRs (required)'
-      ),
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository. This is the first part of the repository URL'
-          : 'Username or organization that owns the repository. This is the first part of the repository URL (required)'
-      )
+    repo: createConditionalDefaultSchema(
+      config.repo,
+      'Name of the repository to search in. This identifies which project to look for issues/PRs'
+    ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository. This is the first part of the repository URL'
+    )
   });
 
 export const getGithubIssueSchema = (config: GitHubConfig) =>
   z.object({
-    repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
-      .describe(
-        config.repo
-          ? 'Repository name from which the issue or PR should be retrieved'
-          : 'Repository name from which the issue or PR should be retrieved (required)'
-      ),
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Owner of the repository containing the issue or PR'
-          : 'Owner of the repository containing the issue or PR (required)'
-      ),
+    repo: createConditionalDefaultSchema(
+      config.repo,
+      'Repository name from which the issue or PR should be retrieved'
+    ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Owner of the repository containing the issue or PR'
+    ),
     issueNumber: z
       .number()
       .describe(
@@ -94,71 +86,44 @@ export const getGithubIssueSchema = (config: GitHubConfig) =>
 
 export const addGithubAssigneeSchema = (config: GitHubConfig) =>
   z.object({
-    repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
-      .describe(
-        config.repo
-          ? 'Repository where the issue or PR exists for assigning a user'
-          : 'Repository where the issue or PR exists for assigning a user (required)'
-      ),
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Owner of the repository where the issue or PR exists'
-          : 'Owner of the repository where the issue or PR exists (required)'
-      ),
+    repo: createConditionalDefaultSchema(
+      config.repo,
+      'Repository where the issue or PR exists for assigning a user'
+    ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Owner of the repository where the issue or PR exists'
+    ),
     issueNumber: z.number().describe('The number of the issue or PR to add the assignee to'),
     assignee: z.string().describe('The GitHub username of the assignee')
   });
 
 export const removeGithubAssigneeSchema = (config: GitHubConfig) =>
   z.object({
-    repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
-      .describe(
-        config.repo
-          ? 'Repository where the issue or PR exists for removing an assignee'
-          : 'Repository where the issue or PR exists for removing an assignee (required)'
-      ),
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Owner of the repository where the issue or PR exists'
-          : 'Owner of the repository where the issue or PR exists (required)'
-      ),
+    repo: createConditionalDefaultSchema(
+      config.repo,
+      'Repository where the issue or PR exists for removing an assignee'
+    ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Owner of the repository where the issue or PR exists'
+    ),
     issueNumber: z.number().describe('The number of the issue or PR to remove the assignee from'),
     assignee: z.string().describe('The GitHub username of the assignee to remove')
   });
 
 export const getOrganizationUsersSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(config.owner ? 'Github Organization name' : 'Github Organization name (required)')
+    owner: createConditionalDefaultSchema(config.owner, 'Github Organization name')
   });
 
 export const createGithubIssueSchema = (config: GitHubConfig) =>
   z.object({
-    repo: z
-      .string()
-      .nullish()
-      .transform((val) => String(val ?? config.repo))
-      .describe(
-        config.repo
-          ? 'The GitHub repository name where issue will be created'
-          : 'The GitHub repository name where issue will be created (required)'
-      ),
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner ? 'The owner of the repository' : 'The owner of the repository (required)'
-      ),
+    repo: createConditionalDefaultSchema(
+      config.repo,
+      'The GitHub repository name where issue will be created'
+    ),
+    owner: createConditionalDefaultSchema(config.owner, 'The owner of the repository'),
     title: z.string().describe('The title of the issue'),
     description: z
       .string()
@@ -174,20 +139,11 @@ export const createGithubIssueSchema = (config: GitHubConfig) =>
 
 export const searchRepositoryCodeSchema = (config: GitHubConfig) =>
   z.object({
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'The name of the GitHub repository to search in'
-          : 'The name of the GitHub repository to search in (required)'
-      ),
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'The owner of the GitHub repository'
-          : 'The owner of the GitHub repository (required)'
-      ),
+    repo: createConditionalDefaultSchema(
+      config.repo,
+      'The name of the GitHub repository to search in'
+    ),
+    owner: createConditionalDefaultSchema(config.owner, 'The owner of the GitHub repository'),
     query: z.string().describe('The keyword to search for in code files within the repository'),
     page: z.number().default(1).describe('The page number to search for'),
     per_page: z
@@ -201,20 +157,14 @@ export const searchRepositoryCodeSchema = (config: GitHubConfig) =>
 
 export const createOrUpdateFileSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository'
-          : 'Username or organization that owns the repository (required)'
-      ),
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository where the file will be created/updated'
-          : 'Name of the repository where the file will be created/updated (required)'
-      ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository'
+    ),
+    repo: createConditionalDefaultSchema(
+      config.repo,
+      'Name of the repository where the file will be created/updated'
+    ),
     path: z
       .string()
       .describe(
@@ -242,11 +192,7 @@ export const createOrUpdateFileSchema = (config: GitHubConfig) =>
 
 export const searchRepositoriesSchema = z.object({
   query: z.string().describe('Search query'),
-  page: z
-    .number()
-    .nullish()
-    .transform((val) => val ?? 1)
-    .describe('Page number for pagination, starting at 1')
+  page: z.number().default(1).describe('Page number for pagination, starting at 1')
 });
 
 export const createRepositorySchema = z.object({
@@ -280,20 +226,14 @@ export const createRepositorySchema = z.object({
 
 export const getFileContentsSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository'
-          : 'Username or organization that owns the repository (required)'
-      ),
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository containing the file or directory'
-          : 'Name of the repository containing the file or directory (required)'
-      ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository'
+    ),
+    repo: createConditionalDefaultSchema(
+      config.repo,
+      'Name of the repository containing the file or directory'
+    ),
     path: z.string().describe('Path to file/directory'),
     branch: z
       .string()
@@ -304,20 +244,14 @@ export const getFileContentsSchema = (config: GitHubConfig) =>
 
 export const createPullRequestSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository'
-          : 'Username or organization that owns the repository (required)'
-      ),
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository where the PR will be created'
-          : 'Name of the repository where the PR will be created (required)'
-      ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository'
+    ),
+    repo: createConditionalDefaultSchema(
+      config.repo,
+      'Name of the repository where the PR will be created'
+    ),
     title: z
       .string()
       .describe('Clear, descriptive title for the pull request that summarizes the changes'),
@@ -341,8 +275,7 @@ export const createPullRequestSchema = (config: GitHubConfig) =>
       ),
     maintainer_can_modify: z
       .boolean()
-      .nullish()
-      .transform((val) => val ?? true)
+      .default(true)
       .describe(
         'Allow repository maintainers to modify your PR branch. Recommended true for collaboration'
       )
@@ -350,20 +283,14 @@ export const createPullRequestSchema = (config: GitHubConfig) =>
 
 export const createBranchSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository'
-          : 'Username or organization that owns the repository (required)'
-      ),
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository where the branch will be created'
-          : 'Name of the repository where the branch will be created (required)'
-      ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository'
+    ),
+    repo: createConditionalDefaultSchema(
+      config.repo,
+      'Name of the repository where the branch will be created'
+    ),
     branch: z.string().describe('Name for the new branch'),
     from_branch: z
       .string()
@@ -374,20 +301,14 @@ export const createBranchSchema = (config: GitHubConfig) =>
 
 export const listCommitsSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository'
-          : 'Username or organization that owns the repository (required)'
-      ),
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository to list commits from'
-          : 'Name of the repository to list commits from (required)'
-      ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository'
+    ),
+    repo: createConditionalDefaultSchema(
+      config.repo,
+      'Name of the repository to list commits from'
+    ),
     sha: z
       .string()
       .nullish()
@@ -410,20 +331,14 @@ export const listCommitsSchema = (config: GitHubConfig) =>
 
 export const updateIssueSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository'
-          : 'Username or organization that owns the repository (required)'
-      ),
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository containing the issue'
-          : 'Name of the repository containing the issue (required)'
-      ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository'
+    ),
+    repo: createConditionalDefaultSchema(
+      config.repo,
+      'Name of the repository containing the issue'
+    ),
     issue_number: z.number().describe('The issue number to update (e.g., 123)'),
     title: z
       .string()
@@ -459,20 +374,14 @@ export const updateIssueSchema = (config: GitHubConfig) =>
 
 export const addIssueCommentSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository'
-          : 'Username or organization that owns the repository (required)'
-      ),
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository containing the issue'
-          : 'Name of the repository containing the issue (required)'
-      ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository'
+    ),
+    repo: createConditionalDefaultSchema(
+      config.repo,
+      'Name of the repository containing the issue'
+    ),
     issue_number: z.number().describe('The issue or PR number to comment on (e.g., 123)'),
     body: z.string().describe('The comment text to add. Can include markdown formatting')
   });
@@ -511,39 +420,21 @@ export const searchGithubUsersSchema = (_config: GitHubConfig) =>
 
 export const getPullRequestSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository'
-          : 'Username or organization that owns the repository (required)'
-      ),
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository containing the PR'
-          : 'Name of the repository containing the PR (required)'
-      ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository'
+    ),
+    repo: createConditionalDefaultSchema(config.repo, 'Name of the repository containing the PR'),
     pull_number: z.number().describe('The pull request number to fetch (e.g., 123)')
   });
 
 export const createPullRequestReviewSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository'
-          : 'Username or organization that owns the repository (required)'
-      ),
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository containing the PR'
-          : 'Name of the repository containing the PR (required)'
-      ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository'
+    ),
+    repo: createConditionalDefaultSchema(config.repo, 'Name of the repository containing the PR'),
     pull_number: z.number().describe('The pull request number to review (e.g., 123)'),
     body: z.string().describe('Overall review comment explaining your feedback or decision'),
     event: z
@@ -571,20 +462,11 @@ export const createPullRequestReviewSchema = (config: GitHubConfig) =>
 
 export const mergePullRequestSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository'
-          : 'Username or organization that owns the repository (required)'
-      ),
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository containing the PR'
-          : 'Name of the repository containing the PR (required)'
-      ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository'
+    ),
+    repo: createConditionalDefaultSchema(config.repo, 'Name of the repository containing the PR'),
     pull_number: z.number().describe('The pull request number to merge (e.g., 123)'),
     commit_title: z
       .string()
@@ -633,96 +515,51 @@ export const searchCodeGlobalSchema = z.object({
 
 export const getPullRequestStatusSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository'
-          : 'Username or organization that owns the repository (required)'
-      ),
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository containing the PR'
-          : 'Name of the repository containing the PR (required)'
-      ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository'
+    ),
+    repo: createConditionalDefaultSchema(config.repo, 'Name of the repository containing the PR'),
     pull_number: z.number().describe('The pull request number to get status for (e.g., 123)')
   });
 
 export const getPullRequestFilesSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository'
-          : 'Username or organization that owns the repository (required)'
-      ),
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository containing the PR'
-          : 'Name of the repository containing the PR (required)'
-      ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository'
+    ),
+    repo: createConditionalDefaultSchema(config.repo, 'Name of the repository containing the PR'),
     pull_number: z.number().describe('The pull request number to get changed files for (e.g., 123)')
   });
 
 export const getPullRequestCommentsSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository'
-          : 'Username or organization that owns the repository (required)'
-      ),
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository containing the PR'
-          : 'Name of the repository containing the PR (required)'
-      ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository'
+    ),
+    repo: createConditionalDefaultSchema(config.repo, 'Name of the repository containing the PR'),
     pull_number: z.number().describe('The pull request number to get comments for (e.g., 123)')
   });
 
 export const getPullRequestReviewsSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository'
-          : 'Username or organization that owns the repository (required)'
-      ),
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository containing the PR'
-          : 'Name of the repository containing the PR (required)'
-      ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository'
+    ),
+    repo: createConditionalDefaultSchema(config.repo, 'Name of the repository containing the PR'),
     pull_number: z.number().describe('The pull request number to get reviews for (e.g., 123)')
   });
 
 export const updatePullRequestBranchSchema = (config: GitHubConfig) =>
   z.object({
-    owner: z
-      .preprocess((val) => val ?? config.owner, z.string())
-      .describe(
-        config.owner
-          ? 'Username or organization that owns the repository'
-          : 'Username or organization that owns the repository (required)'
-      ),
-    repo: z
-      .preprocess((val) => val ?? config.repo, z.string())
-      .describe(
-        config.repo
-          ? 'Name of the repository containing the PR'
-          : 'Name of the repository containing the PR (required)'
-      ),
+    owner: createConditionalDefaultSchema(
+      config.owner,
+      'Username or organization that owns the repository'
+    ),
+    repo: createConditionalDefaultSchema(config.repo, 'Name of the repository containing the PR'),
     pull_number: z.number().describe('The pull request number to update (e.g., 123)'),
     expected_head_sha: z
       .string()
