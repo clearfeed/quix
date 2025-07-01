@@ -1,6 +1,6 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { OktaService } from './index';
-import { OktaConfig } from './types';
+import { OktaAuthConfig } from './types';
 import { DynamicStructuredTool, tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
@@ -206,7 +206,7 @@ export const SCHEMAS = {
   })
 };
 
-export function createOktaToolsExport(config: OktaConfig): ToolConfig {
+export function createOktaToolsExport(config: OktaAuthConfig): ToolConfig {
   const service = new OktaService(config);
 
   const tools: DynamicStructuredTool<any>[] = [
