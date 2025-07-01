@@ -32,11 +32,7 @@ When formatting Okta responses:
 
 export const SCHEMAS = {
   listUsers: z.object({
-    limit: z
-      .number()
-      .nullish()
-      .transform((val) => val ?? 20)
-      .describe('Number of results to return (default 20)'),
+    limit: z.number().default(20).describe('Number of results to return (default 20)'),
     query: z
       .string()
       .nullish()
@@ -103,11 +99,7 @@ export const SCHEMAS = {
   }),
   activateUserSchema: z.object({
     userId: z.string().describe('ID of the user to activate'),
-    sendEmail: z
-      .boolean()
-      .nullish()
-      .transform((val) => val ?? true)
-      .describe('Whether to send activation email')
+    sendEmail: z.boolean().default(true).describe('Whether to send activation email')
   }),
   deactivateUserSchema: z.object({
     userId: z.string().describe('ID of the user to deactivate')
@@ -117,11 +109,7 @@ export const SCHEMAS = {
   }),
   resetUserPasswordSchema: z.object({
     userId: z.string().describe('ID of the user to reset password for'),
-    sendEmail: z
-      .boolean()
-      .nullish()
-      .transform((val) => val ?? true)
-      .describe('Whether to send password reset email')
+    sendEmail: z.boolean().default(true).describe('Whether to send password reset email')
   }),
   expireUserPasswordSchema: z.object({
     userId: z.string().describe('ID of the user to expire password for')
@@ -130,11 +118,7 @@ export const SCHEMAS = {
     userId: z.string().describe('ID of the user to reset MFA for')
   }),
   listGroupsSchema: z.object({
-    limit: z
-      .number()
-      .nullish()
-      .transform((val) => val ?? 20)
-      .describe('Number of results to return (default 20)'),
+    limit: z.number().default(20).describe('Number of results to return (default 20)'),
     search: z
       .string()
       .nullish()
@@ -166,11 +150,7 @@ export const SCHEMAS = {
     groupId: z.string().describe('ID of the group to delete')
   }),
   listApplicationsSchema: z.object({
-    limit: z
-      .number()
-      .nullish()
-      .transform((val) => val ?? 20)
-      .describe('Number of results to return (default 20)'),
+    limit: z.number().default(20).describe('Number of results to return (default 20)'),
     query: z
       .string()
       .nullish()
