@@ -2,14 +2,8 @@ import { z } from 'zod';
 
 // Params schemas for API operations
 export const listChannelsParamsSchema = z.object({
-  limit: z
-    .number()
-    .int()
-    .max(200)
-    .default(100)
-    .optional()
-    .describe('Maximum number of channels to return'),
-  cursor: z.string().optional().describe('Pagination cursor for next page of results')
+  limit: z.number().int().max(200).default(100).describe('Maximum number of channels to return'),
+  cursor: z.string().nullish().describe('Pagination cursor for next page of results')
 });
 
 export const postMessageParamsSchema = z.object({
@@ -35,7 +29,7 @@ export const addReactionParamsSchema = z.object({
 
 export const getChannelHistoryParamsSchema = z.object({
   channel_id: z.string().describe('The ID of the channel'),
-  limit: z.number().int().optional().default(10).describe('Number of messages to retrieve')
+  limit: z.number().int().default(10).describe('Number of messages to retrieve')
 });
 
 export const getThreadRepliesParamsSchema = z.object({
@@ -48,14 +42,8 @@ export const getThreadRepliesParamsSchema = z.object({
 });
 
 export const getUsersParamsSchema = z.object({
-  cursor: z.string().optional().describe('Pagination cursor for next page of results'),
-  limit: z
-    .number()
-    .int()
-    .max(200)
-    .optional()
-    .default(100)
-    .describe('Maximum number of users to return')
+  cursor: z.string().nullish().describe('Pagination cursor for next page of results'),
+  limit: z.number().int().max(200).default(100).describe('Maximum number of users to return')
 });
 
 export const getUserProfileParamsSchema = z.object({
