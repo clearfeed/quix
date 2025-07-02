@@ -38,7 +38,7 @@
     "@clearfeed-ai/quix-notion-agent": "^1.0.3",
     "@clearfeed-ai/quix-okta-agent": "^1.0.4",
     "@clearfeed-ai/quix-postgres-agent": "^1.0.1",
-    "@clearfeed-ai/quix-salesforce-agent": "^1.0.9",
+    "@clearfeed-ai/quix-salesforce-agent": "^1.0.10",
     "@clearfeed-ai/quix-slack-agent": "^1.0.4",
     "@clearfeed-ai/quix-zendesk-agent": "^1.1.5",
     "@google/generative-ai": "^0.21.0",
