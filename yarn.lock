@@ -365,10 +365,10 @@
   dependencies:
     zod "^3.24.2"
 
-"@clearfeed-ai/quix-github-agent@^1.2.11":
-  version "1.2.11"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.2.11.tgz#3b7a6ba1407b52fcd81138a9fad12cff396f0671"
-  integrity sha512-yYX03LgUH+Or64yeTmmiu0PItE0YNJNLEeJQXj8g/FTp6wRoG/aBOMfbMa5Nl/ZqTRyLZaZKvPUMxYjIYQid6g==
+"@clearfeed-ai/quix-github-agent@^1.2.12":
+  version "1.2.12"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.2.12.tgz#2ae6c78a3040d0a464ba09aa53eb5c1067e3d9f6"
+  integrity sha512-bOBgGtNZAb8KGo+ZtKtwYHbMJuziwu6EbPnmcMfHzGjCvYGDU/ocYZ3ypiZfD0LW3+JiqrgNnTKA1SqJYRODvg==
   dependencies:
     "@octokit/rest" "^21.1.1"
 
@@ -387,18 +387,18 @@
     atlassian-jwt "^2.0.3"
     axios "^1.8.2"
 
-"@clearfeed-ai/quix-notion-agent@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-notion-agent/-/quix-notion-agent-1.0.2.tgz#1c242a7325ef873537d5552a519209ff854d5a65"
-  integrity sha512-oGoOaiMNKDIj9KrLfBrLEXH52oe5KMSb0980PLL5pMTc8fpBhMtLah8eVl+8J+WY/mkrUzJYfgguaa7CG/36VA==
+"@clearfeed-ai/quix-notion-agent@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-notion-agent/-/quix-notion-agent-1.0.3.tgz#24cfcd1f0115a50a721611b04a9ccfa1c72b2eb1"
+  integrity sha512-aT+en/o/pGIDO6XKYn8R8/hv2kFTO7p1G7fzfbG+0I0jfARlN2XMSYaYSQACrGV0BGK5gg7XLgmbNlLQPQeV9A==
   dependencies:
     "@notionhq/client" "^3.0.1"
     lodash "^4.17.21"
 
-"@clearfeed-ai/quix-okta-agent@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-okta-agent/-/quix-okta-agent-1.0.4.tgz#68d0e8429d17636421a7ea869a8ab70dc29b848e"
-  integrity sha512-U2gjTnvnkRdE3yZHRleGUeHkIVyGHhTbMe4GFiwd0kDw9t1FQkIJ3gcovPXKdACLxIJiq5EXTwtm1IcvRJLzKA==
+"@clearfeed-ai/quix-okta-agent@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-okta-agent/-/quix-okta-agent-1.0.5.tgz#7e9a152e2b338ae520d0a52afdaf780bbaddea61"
+  integrity sha512-BR0rkxwTRipPqoSxnaDb5uX8slqqTkj2d4mQ6QTWFHOFZW3neH+Y0UODXb2yGp6Xx6tVP4qtzPYO+IZ5dBEL9A==
   dependencies:
     "@okta/okta-sdk-nodejs" "^7.0.1"
 
@@ -410,10 +410,10 @@
     "@clearfeed-ai/quix-common-agent" "^1.1.0"
     pg "^8.14.0"
 
-"@clearfeed-ai/quix-salesforce-agent@^1.0.9":
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-salesforce-agent/-/quix-salesforce-agent-1.0.9.tgz#12cfc677f8a1a0be6d76fa700c700aa05b39f92b"
-  integrity sha512-rW2c6mU5bbWiFA9nJg9GgtVBdmWIEeVeYf7ydV98GPiMtIdKV6PI2hlnGjpY/Mc7Q3PU8uIDKIfQJrCcmytkOw==
+"@clearfeed-ai/quix-salesforce-agent@^1.0.10":
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-salesforce-agent/-/quix-salesforce-agent-1.0.10.tgz#cc9e56a4362856f3ec8d5fb22c2746ad35605e0d"
+  integrity sha512-C9EX9p95x6LTdctZlrkc3mKKSWMAhTsNFF6KooROwf8AmZ+DmRIB8hgNQLp/UWUf81Sm0tVyxy9Vf8FAny5lpg==
   dependencies:
     "@clearfeed-ai/quix-common-agent" "^1.1.0"
     date-fns "^4.1.0"

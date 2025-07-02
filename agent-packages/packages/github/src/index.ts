@@ -15,13 +15,14 @@ import {
   CreatePullRequestReviewParams,
   MergePullRequestParams,
   UpdatePullRequestBranchParams,
-  SearchCodeParams,
   SearchCodeResponse,
   SearchIssuesGlobalParams,
   SearchIssuesOrPullRequestsParams,
-  SearchIssuesOrPullRequestsResponse
+  SearchIssuesOrPullRequestsResponse,
+  CreateGithubIssueParams,
+  SearchRepositoryCodeParams,
+  SearchCodeGlobalParams
 } from './types';
-import { CodeSearchParams, CreateIssueParams } from './types/index';
 import type { OctokitType, RestEndpointMethodTypes } from './types/oktokit';
 export * from './types';
 export * from './tools';
@@ -238,7 +239,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  async createIssue(params: CreateIssueParams): Promise<BaseResponse<{ issueUrl: string }>> {
+  async createIssue(params: CreateGithubIssueParams): Promise<BaseResponse<{ issueUrl: string }>> {
     try {
       const { owner, repo, title, description, assignee } = params;
       const body: RestEndpointMethodTypes['issues']['create']['parameters'] = {
@@ -279,7 +280,7 @@ export class GitHubService implements BaseService<GitHubConfig> {
   }
 
   async searchCode(
-    params: CodeSearchParams
+    params: SearchRepositoryCodeParams
   ): Promise<BaseResponse<RestEndpointMethodTypes['search']['code']['response']['data']['items']>> {
     try {
       const { owner, repo, query, page, per_page } = params;
@@ -711,7 +712,9 @@ export class GitHubService implements BaseService<GitHubConfig> {
     }
   }
 
-  async searchCodeGlobal(params: SearchCodeParams): Promise<BaseResponse<SearchCodeResponse>> {
+  async searchCodeGlobal(
+    params: SearchCodeGlobalParams
+  ): Promise<BaseResponse<SearchCodeResponse>> {
     try {
       const response = await this.client.rest.search.code({
         q: params.q,
