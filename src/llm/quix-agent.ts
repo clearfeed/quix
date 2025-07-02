@@ -158,7 +158,11 @@ export class QuixAgent {
       description: QuixPrompts.baseToolSelection,
       schema: z.object({
         toolCategories: z.array(z.enum(availableCategories as [string, ...string[]])),
-        reason: z.string().describe('The reason for selecting the tools')
+        reason: z
+          .string()
+          .describe(
+            "An explanation of why the selected tool categories were chosen. If no tools were selected, this must include a direct answer to the user's query using general knowledge."
+          )
       }),
       func: async ({ toolCategories, reason }) => {
         return { toolCategories, reason };
