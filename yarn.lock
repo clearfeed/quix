@@ -427,10 +427,10 @@
     "@slack/web-api" "^6.9.0"
     slackify-markdown "^4.4.0"
 
-"@clearfeed-ai/quix-zendesk-agent@^1.1.5":
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-zendesk-agent/-/quix-zendesk-agent-1.1.5.tgz#5c01d3306e051a571a259ec61643b9c7e6aedefc"
-  integrity sha512-HckWrClImwfX28W6EoP9Wp8SyHyo71/mtv6u5fb6ZY7w+RU6K1p3n6tw/9pOtNxKr11VbQ4X3vtrjhQa4qC5vA==
+"@clearfeed-ai/quix-zendesk-agent@^1.1.6":
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-zendesk-agent/-/quix-zendesk-agent-1.1.6.tgz#2b19f449b547cbe6c90a67588f0f79fabfa5a8a8"
+  integrity sha512-7+d4cN41QQFca7wSiA1SXtLItFOhAjaf03ycaa5+pxHi81F6nepo/Wr+3GIXTDWeB6faGSQ2A5lnMW919n20xA==
   dependencies:
     node-zendesk "^6.0.1"
 
