@@ -387,10 +387,10 @@
     atlassian-jwt "^2.0.3"
     axios "^1.8.2"
 
-"@clearfeed-ai/quix-notion-agent@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-notion-agent/-/quix-notion-agent-1.0.2.tgz#1c242a7325ef873537d5552a519209ff854d5a65"
-  integrity sha512-oGoOaiMNKDIj9KrLfBrLEXH52oe5KMSb0980PLL5pMTc8fpBhMtLah8eVl+8J+WY/mkrUzJYfgguaa7CG/36VA==
+"@clearfeed-ai/quix-notion-agent@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-notion-agent/-/quix-notion-agent-1.0.3.tgz#24cfcd1f0115a50a721611b04a9ccfa1c72b2eb1"
+  integrity sha512-aT+en/o/pGIDO6XKYn8R8/hv2kFTO7p1G7fzfbG+0I0jfARlN2XMSYaYSQACrGV0BGK5gg7XLgmbNlLQPQeV9A==
   dependencies:
     "@notionhq/client" "^3.0.1"
     lodash "^4.17.21"
