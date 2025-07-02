@@ -161,7 +161,7 @@ export class QuixAgent {
         reason: z
           .string()
           .describe(
-            "An explanation of why the selected tool categories were chosen. If no tools were selected, this should include a direct answer to the user's query using general knowledge."
+            "An explanation of why the selected tool categories were chosen. If no tools were selected, this must include a direct answer to the user's query using general knowledge."
           )
       }),
       func: async ({ toolCategories, reason }) => {
