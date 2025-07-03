@@ -16,7 +16,7 @@ import { createSlackToolsExport } from '@clearfeed-ai/quix-slack-agent';
 import { createOktaToolsExport } from '@clearfeed-ai/quix-okta-agent';
 import { createNotionToolsExport } from '@clearfeed-ai/quix-notion-agent';
 import { createZendeskToolsExport } from '@clearfeed-ai/quix-zendesk-agent';
-import { createJumpCloudToolsExport } from 'agent-packages/packages/jumpcloud/dist';
+import { createJumpCloudToolsExport } from '@clearfeed-ai/quix-jumpcloud-agent';
 
 @Injectable()
 export class ToolService {
