@@ -75,6 +75,16 @@ export type OktaConnectionModalArgs = {
   };
 };
 
+export type JumpCloudConnectionModalArgs = {
+  teamId: string;
+  userId: string;
+  triggerId: string;
+  initialValues?: {
+    id?: string;
+    apiKey?: string;
+  };
+};
+
 export type ZendeskConnectionModalArgs = {
   triggerId: string;
   teamId: string;

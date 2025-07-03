@@ -30,7 +30,7 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
     }
 
     this.client = axios.create({
-      baseURL: config.baseUrl || 'https://console.jumpcloud.com/api',
+      baseURL: 'https://console.jumpcloud.com/api',
       headers: {
         'x-api-key': config.apiKey,
         'Content-Type': 'application/json'
@@ -45,9 +45,6 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
 
     if (!cfg.apiKey) {
       return { isValid: false, error: 'JumpCloud API key is required' };
-    }
-    if (cfg.baseUrl && !cfg.baseUrl.startsWith('https://')) {
-      return { isValid: false, error: 'JumpCloud base URL must be a valid HTTPS URL' };
     }
 
     return { isValid: true };

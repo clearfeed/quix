@@ -19,8 +19,7 @@ describe('JumpCloud Integration Tests', () => {
     }
 
     config = {
-      apiKey,
-      baseUrl: process.env.JUMPCLOUD_BASE_URL || 'https://console.jumpcloud.com/api'
+      apiKey
     };
 
     service = new JumpCloudService(config);
@@ -284,8 +283,7 @@ describe('JumpCloud Integration Tests', () => {
   describe('Error Handling', () => {
     it('should handle invalid API key gracefully', async () => {
       const invalidService = new JumpCloudService({
-        apiKey: 'invalid-api-key',
-        baseUrl: config.baseUrl
+        apiKey: 'invalid-api-key'
       });
 
       const result = await invalidService.listUsers({ limit: 20 });
@@ -298,8 +296,7 @@ describe('JumpCloud Integration Tests', () => {
 
     it('should handle network errors gracefully', async () => {
       const networkErrorService = new JumpCloudService({
-        apiKey: config.apiKey,
-        baseUrl: 'https://invalid-domain-that-does-not-exist.com'
+        apiKey: config.apiKey
       });
 
       const result = await networkErrorService.listUsers({ limit: 20 });

@@ -13,7 +13,8 @@ import {
   LinearConfig,
   McpConnection,
   OktaConfig,
-  ZendeskConfig
+  ZendeskConfig,
+  JumpCloudConfig
 } from '@quix/database/models';
 import {
   Elements,
@@ -34,6 +35,8 @@ import { partition, isEmpty } from 'lodash';
 import { createNotionToolsExport } from '@clearfeed-ai/quix-notion-agent';
 import { createZendeskToolsExport } from '@clearfeed-ai/quix-zendesk-agent';
 import { createOktaToolsExport } from '@clearfeed-ai/quix-okta-agent';
+import { createJumpCloudToolsExport } from '@clearfeed-ai/quix-jumpcloud-agent';
+
 export const getToolData = async (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined
 ) => {
@@ -115,6 +118,14 @@ const getAvailableFns = async (selectedTool: SUPPORTED_INTEGRATIONS) => {
     const tools = createOktaToolsExport({
       orgUrl: 'test-org-url',
       token: 'test-access-token'
+    }).tools;
+
+    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
+  }
+
+  if (selectedTool === SUPPORTED_INTEGRATIONS.JUMPCLOUD) {
+    const tools = createJumpCloudToolsExport({
+      apiKey: 'test-api-key'
     }).tools;
 
     return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
@@ -325,6 +336,8 @@ export const getConnectionInfo = (connection: HomeViewArgs['connection']): strin
       return `Connected to ${connection.workspace_name}`;
     case connection instanceof OktaConfig:
       return `Connected to ${connection.org_url}`;
+    case connection instanceof JumpCloudConfig:
+      return `Connected to JumpCloud`;
     case connection instanceof ZendeskConfig:
       return `Connected to ${connection.subdomain}.zendesk.com`;
     default:
@@ -401,6 +414,7 @@ export const getIntegrationInfo = (
     connection instanceof HubspotConfig ||
     connection instanceof LinearConfig ||
     connection instanceof OktaConfig ||
+    connection instanceof JumpCloudConfig ||
     connection instanceof ZendeskConfig
   ) {
     overflowMenuOptions.unshift(

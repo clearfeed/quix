@@ -10,7 +10,8 @@ export enum SUPPORTED_INTEGRATIONS {
   SLACK = 'slack',
   NOTION = 'notion',
   LINEAR = 'linear',
-  OKTA = 'okta'
+  OKTA = 'okta',
+  JUMPCLOUD = 'jumpcloud'
 }
 
 export enum QuixUserAccessLevel {
@@ -169,6 +170,20 @@ export const INTEGRATIONS: {
       message: 'Find all Okta users in the Engineering department'
     },
     oneLineSummary: 'Look up users, groups, and apps in Okta'
+  },
+  {
+    name: 'JumpCloud',
+    value: SUPPORTED_INTEGRATIONS.JUMPCLOUD,
+    helpText: 'Connect JumpCloud to manage users and groups.',
+    connectedText:
+      'JumpCloud has been successfully connected! You can now query JumpCloud by chatting with me or mentioning me in any channel. Try asking me things like "List all users in JumpCloud", "Search for a user by email", or "Get details for a specific group".',
+    relation: 'jumpcloudConfig',
+    oauth: false,
+    suggestedPrompt: {
+      title: 'Search JumpCloud users',
+      message: 'Find all JumpCloud users in the Engineering department'
+    },
+    oneLineSummary: 'Look up users, and groups in JumpCloud'
   }
 ];
 

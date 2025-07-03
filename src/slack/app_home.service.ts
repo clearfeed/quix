@@ -28,7 +28,8 @@ import {
   publishOktaConnectionModal,
   publishHubspotConfigModal,
   publishDisconnectConfirmationModal,
-  publishZendeskConnectionModal
+  publishZendeskConnectionModal,
+  publishJumpCloudConnectionModal
 } from './views/modals';
 import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
@@ -243,6 +244,19 @@ export class AppHomeService {
         teamId,
         initialValues
       });
+    } else if (selectedTool === SUPPORTED_INTEGRATIONS.JUMPCLOUD) {
+      const initialValues = slackWorkspace.jumpcloudConfig
+        ? {
+            id: slackWorkspace.jumpcloudConfig.team_id,
+            apiKey: slackWorkspace.jumpcloudConfig.api_key
+          }
+        : undefined;
+      await publishJumpCloudConnectionModal(webClient, {
+        triggerId,
+        teamId,
+        userId,
+        initialValues
+      });
     }
   }
 
@@ -382,6 +396,19 @@ export class AppHomeService {
                   id: oktaConfig.org_id,
                   orgUrl: oktaConfig.org_url,
                   apiToken: oktaConfig.api_token
+                }
+              });
+              break;
+            case SUPPORTED_INTEGRATIONS.JUMPCLOUD:
+              const { jumpcloudConfig } = slackWorkspace;
+              if (!jumpcloudConfig) return;
+              await publishJumpCloudConnectionModal(webClient, {
+                triggerId,
+                teamId,
+                userId,
+                initialValues: {
+                  id: jumpcloudConfig.team_id,
+                  apiKey: jumpcloudConfig.api_key
                 }
               });
               break;
