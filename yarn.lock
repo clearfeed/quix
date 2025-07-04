@@ -387,6 +387,14 @@
     atlassian-jwt "^2.0.3"
     axios "^1.8.2"
 
+"@clearfeed-ai/quix-jumpcloud-agent@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jumpcloud-agent/-/quix-jumpcloud-agent-1.0.0.tgz#ebf6a40702e75b3d0383173f76e0ac9edca29a7a"
+  integrity sha512-kh+EYf2mlgWNWg/NzzpmozYySOoA6FTW3G8Zh01vHczJZ9nCB4wqyJfP2j43tTVprWOSrqYSlKKd4WTzUSueQQ==
+  dependencies:
+    "@clearfeed-ai/quix-common-agent" "^1.1.5"
+    axios "^1.8.2"
+
 "@clearfeed-ai/quix-notion-agent@^1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-notion-agent/-/quix-notion-agent-1.0.3.tgz#24cfcd1f0115a50a721611b04a9ccfa1c72b2eb1"
