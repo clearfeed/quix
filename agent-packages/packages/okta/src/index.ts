@@ -626,8 +626,6 @@ export class OktaService implements BaseService<OktaAuthConfig> {
     }
   }
 
-  // === NEW GROUP TOOL ===
-
   async listUserGroups({
     userId
   }: z.infer<typeof SCHEMAS.listUserGroupsSchema>): Promise<ListUserGroupsResponse> {
@@ -653,8 +651,6 @@ export class OktaService implements BaseService<OktaAuthConfig> {
       };
     }
   }
-
-  // === DEVICE METHODS ===
 
   async listDevices({
     limit,
