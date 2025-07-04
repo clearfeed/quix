@@ -30,7 +30,9 @@ import {
   LinearConfig,
   McpConnection,
   OktaConfig,
-  ZendeskConfig
+  ZendeskConfig,
+  JumpCloudConfig,
+  SlackWorkspace
 } from '../database/models';
 import { ToolInstallState } from '@quix/lib/types/common';
 import { EVENT_NAMES, IntegrationConnectedEvent } from '@quix/types/events';
@@ -69,6 +71,10 @@ export class IntegrationsInstallService {
     private readonly oktaConfigModel: typeof OktaConfig,
     @InjectModel(ZendeskConfig)
     private readonly zendeskConfigModel: typeof ZendeskConfig,
+    @InjectModel(JumpCloudConfig)
+    private readonly jumpCloudConfigModel: typeof JumpCloudConfig,
+    @InjectModel(SlackWorkspace)
+    private readonly slackWorkspaceModel: typeof SlackWorkspace,
     private readonly eventEmitter: EventEmitter2,
     private readonly sequelize: Sequelize,
     private readonly mcpService: McpService
@@ -752,6 +758,54 @@ export class IntegrationsInstallService {
     } catch (error) {
       this.logger.error('Zendesk connection failed:', encryptForLogs(JSON.stringify(error)));
       throw new BadRequestException('Invalid Zendesk API token or subdomain or email');
+    }
+  }
+
+  async jumpcloud(payload: ViewSubmitAction): Promise<JumpCloudConfig> {
+    try {
+      const parsedResponse = parseInputBlocksSubmission(
+        payload.view.blocks as KnownBlock[],
+        payload.view.state.values
+      );
+
+      if (!parsedResponse[SLACK_ACTIONS.JUMPCLOUD_CONNECTION_ACTIONS.API_KEY].selectedValue) {
+        throw new BadRequestException('Missing required fields');
+      }
+
+      const apiKey = parsedResponse[SLACK_ACTIONS.JUMPCLOUD_CONNECTION_ACTIONS.API_KEY]
+        .selectedValue as string;
+
+      try {
+        const response = await this.httpService.axiosRef.get(
+          'https://console.jumpcloud.com/api/systemusers',
+          {
+            headers: {
+              'x-api-key': apiKey,
+              'Content-Type': 'application/json'
+            },
+            params: { limit: 1 }
+          }
+        );
+
+        if (response.status !== 200) {
+          throw new BadRequestException('Failed to authenticate with JumpCloud');
+        }
+
+        const [jumpCloudConfig] = await this.jumpCloudConfigModel.upsert({
+          team_id: payload.view.team_id,
+          api_key: apiKey
+        });
+
+        return jumpCloudConfig;
+      } catch (error) {
+        this.logger.error('Failed to authenticate with JumpCloud API:', error);
+        throw new BadRequestException(
+          'Invalid JumpCloud API key or unable to connect to JumpCloud'
+        );
+      }
+    } catch (error) {
+      this.logger.error('Failed to connect to JumpCloud:', error);
+      throw new BadRequestException('Failed to connect to JumpCloud');
     }
   }
 }

@@ -29,6 +29,7 @@ import { McpConnection } from './mcp-connection.model';
 import { ConversationState } from './conversation-state.model';
 import { OktaConfig } from './okta-config.model';
 import { ZendeskConfig } from './zendesk-config.model';
+import { JumpCloudConfig } from './jumpcloud-config.model';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -263,6 +264,9 @@ export class SlackWorkspace extends Model<
     as: 'conversationStates'
   })
   declare conversationStates: NonAttribute<ConversationState[]>;
+
+  @HasOne(() => JumpCloudConfig, { foreignKey: 'team_id', as: 'jumpcloudConfig' })
+  declare jumpcloudConfig?: JumpCloudConfig;
 
   async postMessage(message: string, channel: string, thread_ts?: string) {
     const webClient = new WebClient(this.bot_access_token);

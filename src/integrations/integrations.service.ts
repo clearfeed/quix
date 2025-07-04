@@ -9,7 +9,8 @@ import {
   LinearConfig,
   McpConnection,
   OktaConfig,
-  ZendeskConfig
+  ZendeskConfig,
+  JumpCloudConfig
 } from '../database/models';
 import { TimeInMilliSeconds } from '@quix/lib/constants';
 import { HttpService } from '@nestjs/axios';
@@ -42,7 +43,9 @@ export class IntegrationsService {
     @InjectModel(OktaConfig)
     private readonly oktaConfigModel: typeof OktaConfig,
     @InjectModel(ZendeskConfig)
-    private readonly zendeskConfigModel: typeof ZendeskConfig
+    private readonly zendeskConfigModel: typeof ZendeskConfig,
+    @InjectModel(JumpCloudConfig)
+    private readonly jumpCloudConfigModel: typeof JumpCloudConfig
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
@@ -206,6 +209,19 @@ export class IntegrationsService {
       // Delete the configuration
       await config.destroy();
       this.logger.log(`Removed Okta config for team ${teamId}`);
+    }
+  }
+
+  async removeJumpCloudConfig(teamId: string) {
+    const config = await this.jumpCloudConfigModel.findOne({
+      where: {
+        team_id: teamId
+      }
+    });
+
+    if (config) {
+      await config.destroy();
+      this.logger.log(`Removed JumpCloud config for team ${teamId}`);
     }
   }
 }

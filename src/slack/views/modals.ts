@@ -16,7 +16,8 @@ import {
   HubspotConfigModalArgs,
   OktaConnectionModalArgs,
   ConnectionInfo,
-  ZendeskConnectionModalArgs
+  ZendeskConnectionModalArgs,
+  JumpCloudConnectionModalArgs
 } from './types';
 import { WebClient } from '@slack/web-api';
 import { Surfaces } from 'slack-block-builder';
@@ -962,6 +963,51 @@ export const publishZendeskConnectionModal = async (
     });
   } catch (error) {
     console.error('Error publishing Zendesk connection modal:', error);
+    throw error;
+  }
+};
+
+export const publishJumpCloudConnectionModal = async (
+  client: WebClient,
+  args: JumpCloudConnectionModalArgs
+): Promise<void> => {
+  try {
+    const blocks = [
+      Section({
+        text: 'Please provide your JumpCloud API key:'
+      }),
+      Input({
+        label: 'API Key',
+        blockId: 'jumpcloud_api_key',
+        hint: 'API key from your JumpCloud admin console'
+      }).element(
+        Elements.TextInput({
+          placeholder: 'jca_',
+          actionId: SLACK_ACTIONS.JUMPCLOUD_CONNECTION_ACTIONS.API_KEY,
+          initialValue: args.initialValues?.apiKey
+        })
+      ),
+      Section({
+        text: 'The API key must have read and write permissions for Users and Groups.'
+      })
+    ];
+    await client.views.open({
+      trigger_id: args.triggerId,
+      view: {
+        ...Surfaces.Modal({
+          title: 'JumpCloud Configuration',
+          submit: 'Submit',
+          close: 'Cancel',
+          callbackId: SLACK_ACTIONS.SUBMIT_JUMPCLOUD_CONNECTION
+        }).buildToObject(),
+        blocks: BlockCollection(blocks),
+        private_metadata: JSON.stringify({
+          id: args.initialValues?.id
+        })
+      }
+    });
+  } catch (error) {
+    console.error('Error publishing JumpCloud connection modal:', error);
     throw error;
   }
 };
