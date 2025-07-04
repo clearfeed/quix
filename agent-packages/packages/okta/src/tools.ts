@@ -9,6 +9,7 @@ Okta is an Identity and Access Management platform that manages:
 - Users: People with properties like firstName, lastName, email, etc.
 - Groups: Collections of users for role-based access control
 - Applications: Software services with identity configurations
+- Devices: Hardware and software devices used for authentication
 - Access Policies: Rules for authentication and authorization
 
 Consider using Okta tools when the user wants to:
@@ -19,6 +20,9 @@ Consider using Okta tools when the user wants to:
 - View application configurations and assignments
 - Manage user access to applications
 - Assign groups to applications
+- List user groups and group memberships
+- Manage devices and device assignments
+- View device information and associated users
 `;
 
 const OKTA_RESPONSE_GENERATION_PROMPT = `
@@ -183,6 +187,26 @@ export const SCHEMAS = {
   }),
   deactivateApplicationSchema: z.object({
     appId: z.string().describe('ID of the application to deactivate')
+  }),
+  listUserGroupsSchema: z.object({
+    userId: z.string().describe('ID of the user to list groups for')
+  }),
+  listDevicesSchema: z.object({
+    limit: z.number().default(20).describe('Number of results to return (default 20)'),
+    query: z
+      .string()
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('Search expression for devices')
+  }),
+  listUserDevicesSchema: z.object({
+    userId: z.string().describe('ID of the user to list devices for')
+  }),
+  getDeviceSchema: z.object({
+    deviceId: z.string().describe('ID of the device to retrieve')
+  }),
+  listDeviceUsersSchema: z.object({
+    deviceId: z.string().describe('ID of the device to list users for')
   })
 };
 
@@ -373,6 +397,40 @@ export function createOktaToolsExport(config: OktaAuthConfig): ToolConfig {
         name: 'deactivate_okta_application',
         description: 'Deactivate an application in Okta',
         schema: SCHEMAS.deactivateApplicationSchema
+      }
+    ),
+    tool(
+      async (args: z.infer<typeof SCHEMAS.listUserGroupsSchema>) => service.listUserGroups(args),
+      {
+        name: 'list_okta_user_groups',
+        description: 'List groups for a specific user in Okta',
+        schema: SCHEMAS.listUserGroupsSchema
+      }
+    ),
+    tool(async (args: z.infer<typeof SCHEMAS.listDevicesSchema>) => service.listDevices(args), {
+      name: 'list_okta_devices',
+      description: 'List devices in Okta, optionally filtered by a search query',
+      schema: SCHEMAS.listDevicesSchema
+    }),
+    tool(
+      async (args: z.infer<typeof SCHEMAS.listUserDevicesSchema>) => service.listUserDevices(args),
+      {
+        name: 'list_okta_user_devices',
+        description: 'List devices for a specific user in Okta',
+        schema: SCHEMAS.listUserDevicesSchema
+      }
+    ),
+    tool(async (args: z.infer<typeof SCHEMAS.getDeviceSchema>) => service.getDevice(args), {
+      name: 'get_okta_device',
+      description: 'Get details of a specific device in Okta',
+      schema: SCHEMAS.getDeviceSchema
+    }),
+    tool(
+      async (args: z.infer<typeof SCHEMAS.listDeviceUsersSchema>) => service.listDeviceUsers(args),
+      {
+        name: 'list_okta_device_users',
+        description: 'List users for a specific device in Okta',
+        schema: SCHEMAS.listDeviceUsersSchema
       }
     )
   ];
