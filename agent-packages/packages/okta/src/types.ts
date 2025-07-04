@@ -5,7 +5,8 @@ import {
   AppUser,
   Group,
   User,
-  UserActivationToken
+  UserActivationToken,
+  Device
 } from '@okta/okta-sdk-nodejs';
 
 export type OktaTokenAuthConfig = {
@@ -76,3 +77,13 @@ export interface UnassignGroupFromApplicationResponse extends BaseResponse<strin
 export interface DeleteApplicationResponse extends BaseResponse<string> {}
 
 export interface DeactivateApplicationResponse extends BaseResponse<string> {}
+
+export interface ListUserGroupsResponse extends BaseResponse<Group[]> {}
+
+export interface ListDevicesResponse extends BaseResponse<Device[]> {}
+
+export interface ListUserDevicesResponse extends BaseResponse<Device[]> {}
+
+export interface GetDeviceResponse extends BaseResponse<Device> {}
+
+export interface ListDeviceUsersResponse extends BaseResponse<User[]> {}

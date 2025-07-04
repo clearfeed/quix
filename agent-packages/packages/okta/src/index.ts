@@ -27,7 +27,12 @@ import {
   DeleteGroupResponse,
   ListGroupUsersResponse,
   UnassignUserFromApplicationResponse,
-  UnassignGroupFromApplicationResponse
+  UnassignGroupFromApplicationResponse,
+  ListUserGroupsResponse,
+  ListDevicesResponse,
+  ListUserDevicesResponse,
+  GetDeviceResponse,
+  ListDeviceUsersResponse
 } from './types';
 import { extractPrimitives } from './utils';
 import { SCHEMAS } from './tools';
@@ -617,6 +622,155 @@ export class OktaService implements BaseService<OktaAuthConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to deactivate application'
+      };
+    }
+  }
+
+  async listUserGroups({
+    userId
+  }: z.infer<typeof SCHEMAS.listUserGroupsSchema>): Promise<ListUserGroupsResponse> {
+    try {
+      const groups = await this.client.userApi.listUserGroups({ userId });
+      const data = [];
+      for await (const group of groups) {
+        const simplified = extractPrimitives(group);
+        if (simplified) {
+          data.push(simplified);
+        }
+      }
+
+      return {
+        success: true,
+        data
+      };
+    } catch (error) {
+      console.error('Error listing user groups:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to list user groups'
+      };
+    }
+  }
+
+  async listDevices({
+    limit,
+    query
+  }: z.infer<typeof SCHEMAS.listDevicesSchema>): Promise<ListDevicesResponse> {
+    try {
+      const queryParams: any = {};
+      if (limit) queryParams.limit = limit;
+      if (query) queryParams.q = query;
+
+      const devices = await this.client.deviceApi.listDevices(queryParams);
+      const data = [];
+      for await (const device of devices) {
+        const simplified = extractPrimitives(device);
+        if (simplified) {
+          data.push(simplified);
+        }
+      }
+
+      return {
+        success: true,
+        data
+      };
+    } catch (error) {
+      console.error('Error listing devices:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to list devices'
+      };
+    }
+  }
+
+  async listUserDevices({
+    userId
+  }: z.infer<typeof SCHEMAS.listUserDevicesSchema>): Promise<ListUserDevicesResponse> {
+    try {
+      const url = `${this.client.baseUrl}/api/v1/users/${userId}/devices`;
+      const request = {
+        method: 'get',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        }
+      };
+      const response = await this.client.http.http(url, request);
+      const devices = response.body ?? [];
+
+      const data = [];
+
+      for await (const device of devices) {
+        const simplified = extractPrimitives(device);
+        if (simplified) {
+          data.push(simplified);
+        }
+      }
+
+      return {
+        success: true,
+        data
+      };
+    } catch (error) {
+      console.error('Error listing user devices:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to list user devices'
+      };
+    }
+  }
+
+  async getDevice({
+    deviceId
+  }: z.infer<typeof SCHEMAS.getDeviceSchema>): Promise<GetDeviceResponse> {
+    try {
+      const device = await this.client.deviceApi.getDevice({ deviceId });
+      return {
+        success: true,
+        data: extractPrimitives(device)
+      };
+    } catch (error) {
+      console.error('Error getting device:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get device'
+      };
+    }
+  }
+
+  async listDeviceUsers({
+    deviceId
+  }: z.infer<typeof SCHEMAS.listDeviceUsersSchema>): Promise<ListDeviceUsersResponse> {
+    try {
+      const url = `${this.client.baseUrl}/api/v1/devices/${deviceId}/users`;
+      const request = {
+        method: 'get',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        }
+      };
+      const response = await this.client.http.http(url, request);
+      const users = response.body ?? [];
+
+      const data = [];
+
+      for await (const user of users) {
+        const simplified = extractPrimitives(user);
+        if (simplified) {
+          data.push(simplified);
+        }
+      }
+
+      return {
+        success: true,
+        data
+      };
+    } catch (error) {
+      console.error('Error listing device users:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to list device users'
       };
     }
   }
