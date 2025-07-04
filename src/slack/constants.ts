@@ -2,6 +2,7 @@ import {
   GithubConfig,
   HubspotConfig,
   JiraConfig,
+  JumpCloudConfig,
   LinearConfig,
   McpConnection,
   NotionConfig,
@@ -21,5 +22,6 @@ export const TOOL_CONNECTION_MODELS = [
   PostgresConfig,
   SalesforceConfig,
   OktaConfig,
-  ZendeskConfig
+  ZendeskConfig,
+  JumpCloudConfig
 ];

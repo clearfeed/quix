@@ -75,6 +75,10 @@ export const SLACK_ACTIONS = {
     DEFAULT_PROMPT: 'zendesk-default-prompt',
     SUBMIT: 'submit-zendesk-connection',
     EMAIL: 'zendesk-email'
+  },
+  SUBMIT_JUMPCLOUD_CONNECTION: 'submit-jumpcloud-connection',
+  JUMPCLOUD_CONNECTION_ACTIONS: {
+    API_KEY: 'jumpcloud-api-key'
   }
 } as const;
 

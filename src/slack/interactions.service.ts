@@ -15,7 +15,7 @@ import { displayErrorModal, displayLoadingModal, displaySuccessModal } from './v
 import { WebClient } from '@slack/web-api';
 import { SlackService } from './slack.service';
 import { getMCPConnectionDropDownValue } from './views/app_home';
-import { OktaConfig } from '@quix/database/models';
+import { JumpCloudConfig, OktaConfig } from '@quix/database/models';
 import { IntegrationsService } from '@quix/integrations/integrations.service';
 import { ConnectionInfo } from './views/types';
 @Injectable()
@@ -361,6 +361,41 @@ export class InteractionsService {
             web: new WebClient(slackWorkspace.bot_access_token)
           });
         }
+
+      case SLACK_ACTIONS.SUBMIT_JUMPCLOUD_CONNECTION:
+        try {
+          this.integrationsInstallService
+            .jumpcloud(payload)
+            .then(async (jumpCloudConfig: JumpCloudConfig) => {
+              await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
+                text: 'JumpCloud connected successfully',
+                viewId: payload.view.id
+              });
+              this.appHomeService.handleIntegrationConnected(
+                payload.user.id,
+                payload.view.team_id,
+                SUPPORTED_INTEGRATIONS.JUMPCLOUD,
+                jumpCloudConfig
+              );
+            })
+            .catch((error) => {
+              return displayErrorModal({
+                error,
+                backgroundCaller: true,
+                viewId: payload.view.id,
+                web: new WebClient(slackWorkspace.bot_access_token)
+              });
+            });
+          return displayLoadingModal('Please Wait');
+        } catch (error) {
+          console.error(error);
+          return displayErrorModal({
+            error,
+            backgroundCaller: true,
+            viewId: payload.view.id,
+            web: new WebClient(slackWorkspace.bot_access_token)
+          });
+        }
       case SLACK_ACTIONS.DISCONNECT_CONFIRM_MODAL.SUBMIT: {
         const connectionInfo: ConnectionInfo = JSON.parse(payload.view.private_metadata);
 
@@ -388,6 +423,9 @@ export class InteractionsService {
             break;
           case SUPPORTED_INTEGRATIONS.OKTA:
             await this.integrationsService.removeOktaConfig(payload.view.team_id);
+            break;
+          case SUPPORTED_INTEGRATIONS.JUMPCLOUD:
+            await this.integrationsService.removeJumpCloudConfig(payload.view.team_id);
             break;
           case SUPPORTED_INTEGRATIONS.ZENDESK:
             await this.integrationsService.removeZendeskConfig(payload.view.team_id);
