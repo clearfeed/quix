@@ -40,7 +40,19 @@ export interface FunctionDefinition {
 //   handler: (args: TArgs) => Promise<TResponse>;
 // }
 
-export type Tool = DynamicStructuredTool;
+/**
+ * Tool operation types for CRUD operations
+ */
+export enum ToolOperation {
+  CREATE = 'create',
+  READ = 'read',
+  UPDATE = 'update',
+  DELETE = 'delete'
+}
+
+export type Tooltype = DynamicStructuredTool & {
+  operation: ToolOperation[];
+};
 
 /**
  * Standard response format for all integration operations
@@ -57,7 +69,7 @@ export interface BaseResponse<T = any> {
 export interface BaseService<TConfig extends BaseConfig = BaseConfig> {}
 
 export interface ToolConfig {
-  tools: Tool[];
+  tools: Tooltype[];
   prompts?: {
     toolSelection?: string;
     responseGeneration?: string;
