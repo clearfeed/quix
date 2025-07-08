@@ -1,5 +1,5 @@
 import { DynamicStructuredTool } from '@langchain/core/tools';
-import { ToolConfig, ToolOperation, Tooltype } from '.';
+import { ToolConfig, ToolOperation, ToolType } from '.';
 import { z } from 'zod';
 
 /**
@@ -9,7 +9,7 @@ export function tool(
   config: ConstructorParameters<typeof DynamicStructuredTool>[0] & {
     operation: ToolOperation[];
   }
-): Tooltype {
+): ToolType {
   const { operation, ...toolConfig } = config;
   const baseTool = new DynamicStructuredTool(toolConfig);
   return Object.assign(baseTool, { operation });
@@ -21,7 +21,7 @@ Do not assume the current date — always call the tool to get it.
 `;
 
 export function createCommonToolsExport(): ToolConfig {
-  const tools: Tooltype[] = [
+  const tools: ToolType[] = [
     tool({
       name: 'get_current_date_time',
       description:

@@ -50,7 +50,7 @@ export enum ToolOperation {
   DELETE = 'delete'
 }
 
-export type Tooltype = DynamicStructuredTool & {
+export type ToolType = DynamicStructuredTool & {
   operation: ToolOperation[];
 };
 
@@ -69,7 +69,7 @@ export interface BaseResponse<T = any> {
 export interface BaseService<TConfig extends BaseConfig = BaseConfig> {}
 
 export interface ToolConfig {
-  tools: Tooltype[];
+  tools: ToolType[];
   prompts?: {
     toolSelection?: string;
     responseGeneration?: string;
