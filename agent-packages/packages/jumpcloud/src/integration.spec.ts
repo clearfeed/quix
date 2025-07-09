@@ -321,6 +321,7 @@ describe('JumpCloud Integration Tests', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
+      expect(result.error).toContain('Not Found');
 
       console.log(`Expected error for invalid user ID: ${result.error}`);
     });

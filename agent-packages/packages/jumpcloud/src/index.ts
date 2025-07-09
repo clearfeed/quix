@@ -231,7 +231,8 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
   ): Promise<ListDevicesResponse> {
     try {
       const response = await this.client.get('/systems', { params });
-      const data = (Array.isArray(response.data) ? response.data : (response.data?.results || [])) || [];
+      const data = response.data.results || [];
+      return { success: true, data: data.map(extractPrimitives) };
     } catch (error) {
       console.error('Error listing JumpCloud devices:', error);
       return {
