@@ -179,6 +179,19 @@ export function createJumpCloudToolsExport(config: JumpCloudConfig): ToolConfig 
       name: 'delete_jumpcloud_group',
       description: 'Delete a JumpCloud group',
       schema: SCHEMAS.deleteGroupSchema
+    }),
+    tool(
+      async (args: z.infer<typeof SCHEMAS.listUserDevicesSchema>) => service.listUserDevices(args),
+      {
+        name: 'list_jumpcloud_user_devices',
+        description: 'List devices assigned to a specific user in JumpCloud',
+        schema: SCHEMAS.listUserDevicesSchema
+      }
+    ),
+    tool(async (args: z.infer<typeof SCHEMAS.listDevicesSchema>) => service.listDevices(args), {
+      name: 'list_jumpcloud_devices',
+      description: 'List all devices in JumpCloud with optional search and limit',
+      schema: SCHEMAS.listDevicesSchema
     })
   ];
 
