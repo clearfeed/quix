@@ -35,7 +35,7 @@ When formatting Zendesk responses:
 export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
   const service = new ZendeskService(config);
 
-  const tools: DynamicStructuredTool<any>[] = [
+  const tools = [
     new DynamicStructuredTool({
       name: 'search_zendesk_tickets',
       description: 'Search Zendesk tickets using a query string',

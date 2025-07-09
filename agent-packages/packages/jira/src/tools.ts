@@ -49,7 +49,7 @@ When formatting Jira responses:
 export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
   const service = new JiraService(config);
 
-  const tools: DynamicStructuredTool<any>[] = [
+  const tools = [
     new DynamicStructuredTool({
       name: 'find_jira_ticket',
       description: `Search for Jira issues using a valid JQL (Jira Query Language) query. 

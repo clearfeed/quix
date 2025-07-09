@@ -1,13 +1,13 @@
 import { PostgresService } from '.';
 import { PostgresConfig } from './types';
-import { DynamicStructuredTool, tool } from '@langchain/core/tools';
+import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 
 export function createPostgresTools(config: PostgresConfig): ToolConfig['tools'] {
   const service = new PostgresService(config);
 
-  const tools: DynamicStructuredTool<any>[] = [
+  const tools = [
     tool(async (args: { tableName: string }) => service.getTableSchema(args.tableName), {
       name: 'get_table_schema',
       description: 'Get the schema of a table',

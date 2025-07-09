@@ -13,11 +13,11 @@
     "prepublishOnly": "npm run clean && npm run build"
   },
   "devDependencies": {
-    "@langchain/core": "0.3.40",
+    "@langchain/core": "0.3.62",
     "typescript": "^5.7.3"
   },
   "peerDependencies": {
-    "@langchain/core": "0.3.40"
+    "@langchain/core": "0.3.62"
   },
   "license": "Apache-2.0",
   "dependencies": {

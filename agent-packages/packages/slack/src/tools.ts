@@ -53,7 +53,7 @@ When formatting Slack responses:
 export function createSlackToolsExport(config: SlackConfig): ToolConfig {
   const service = new SlackService(config);
 
-  const tools: DynamicStructuredTool<any>[] = [
+  const tools = [
     tool(async (args: ListChannelsParams) => service.listChannels(args), {
       name: 'slack_list_channels',
       description: 'List public channels in the Slack workspace with pagination',

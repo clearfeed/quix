@@ -17,7 +17,7 @@ import {
   CreateTaskParams,
   AssociateTaskWithEntityParams
 } from './types';
-import { DynamicStructuredTool, tool } from '@langchain/core/tools';
+import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import {
   taskUpdateSchema,
@@ -72,7 +72,7 @@ When formatting HubSpot responses:
 export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
   const service = new HubspotService(config);
 
-  const tools: DynamicStructuredTool<any>[] = [
+  const tools = [
     tool(async (args: SearchDealsParams) => service.searchDeals(args), {
       name: 'search_hubspot_deals',
       description: 'Search for deals in HubSpot',

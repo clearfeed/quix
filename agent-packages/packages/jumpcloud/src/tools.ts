@@ -101,7 +101,7 @@ export const SCHEMAS = {
 export function createJumpCloudToolsExport(config: JumpCloudConfig): ToolConfig {
   const service = new JumpCloudService(config);
 
-  const tools: DynamicStructuredTool<any>[] = [
+  const tools = [
     tool(async (args: z.infer<typeof SCHEMAS.listUsers>) => service.listUsers(args), {
       name: 'list_jumpcloud_users',
       description: 'List users in JumpCloud',

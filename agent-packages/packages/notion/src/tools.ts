@@ -71,7 +71,7 @@ When formatting Notion responses:
 export function createNotionToolsExport(config: NotionConfig): ToolConfig {
   const service = new NotionService(config);
 
-  const tools: DynamicStructuredTool<any>[] = [
+  const tools = [
     new DynamicStructuredTool({
       name: 'notion_retrieve_block',
       description: 'Retrieve a block from Notion',

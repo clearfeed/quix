@@ -17,10 +17,10 @@
     "@octokit/rest": "^21.1.1"
   },
   "peerDependencies": {
-    "@langchain/core": "0.3.40"
+    "@langchain/core": "0.3.62"
   },
   "devDependencies": {
-    "@langchain/core": "0.3.40",
+    "@langchain/core": "0.3.62",
     "typescript": "^5.7.3"
   },
   "license": "Apache-2.0"
