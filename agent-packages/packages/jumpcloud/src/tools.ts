@@ -1,7 +1,7 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { JumpCloudService } from './index';
 import { JumpCloudConfig } from './types';
-import { DynamicStructuredTool, tool } from '@langchain/core/tools';
+import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
 const JC_TOOL_SELECTION_PROMPT = `

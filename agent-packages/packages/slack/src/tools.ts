@@ -25,7 +25,7 @@ import {
 } from './schema';
 import { SlackConfig } from './types';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
-import { DynamicStructuredTool, tool } from '@langchain/core/tools';
+import { tool } from '@langchain/core/tools';
 
 const SLACK_TOOL_SELECTION_PROMPT = `
 Slack is a team communication platform that manages:

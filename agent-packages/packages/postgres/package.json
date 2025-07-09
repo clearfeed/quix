@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-postgres-agent",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Quix Postgres Agent",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
