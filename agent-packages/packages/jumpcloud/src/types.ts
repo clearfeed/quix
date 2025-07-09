@@ -70,6 +70,26 @@ export interface JumpCloudApplication {
   [key: string]: unknown;
 }
 
+// JumpCloud Device interface
+export interface JumpCloudDevice {
+  id: string;
+  displayName?: string;
+  hostname?: string;
+  serialNumber?: string;
+  os?: string;
+  version?: string;
+  arch?: string;
+  active?: boolean;
+  created?: string;
+  lastContact?: string;
+  templateName?: string;
+  systemTimezone?: string;
+  organization?: string;
+  agentVersion?: string;
+  // Additional fields that may be returned by the API
+  [key: string]: unknown;
+}
+
 // Response type interfaces
 export interface ListUsersResponse extends BaseResponse<JumpCloudUser[]> {}
 export interface CreateUserResponse extends BaseResponse<JumpCloudUser> {}
@@ -91,3 +111,6 @@ export interface AssignGroupToApplicationResponse extends BaseResponse<JumpCloud
 export interface UnassignGroupFromApplicationResponse extends BaseResponse<string> {}
 export interface DeleteApplicationResponse extends BaseResponse<string> {}
 export interface DeactivateApplicationResponse extends BaseResponse<string> {}
+
+export interface ListUserDevicesResponse extends BaseResponse<JumpCloudDevice[]> {}
+export interface ListDevicesResponse extends BaseResponse<JumpCloudDevice[]> {}

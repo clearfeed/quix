@@ -8,11 +8,12 @@ const JC_TOOL_SELECTION_PROMPT = `
 JumpCloud is an identity management platform that manages:
 - Users
 - Groups
+- Devices and systems
 - Applications and access policies
 
-Use JumpCloud tools when the user wants to manage identities or access.`;
+Use JumpCloud tools when the user wants to manage identities, access, or device assignments.`;
 
-const JC_RESPONSE_PROMPT = `When formatting JumpCloud responses be sure to mention object ids and important attributes.`;
+const JC_RESPONSE_PROMPT = `When formatting JumpCloud responses be sure to mention object ids and important attributes. For device information, include device name, OS, and last contact time when available.`;
 
 export const SCHEMAS = {
   listUsers: z.object({
@@ -95,6 +96,17 @@ export const SCHEMAS = {
   }),
   deleteGroupSchema: z.object({
     groupId: z.string().describe('ID of the group to delete')
+  }),
+  listUserDevicesSchema: z.object({
+    userId: z.string().describe('ID of the user to list devices for')
+  }),
+  listDevicesSchema: z.object({
+    limit: z.number().nullish().default(20).describe('Number of devices to return'),
+    query: z
+      .string()
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('Search query for devices')
   })
 };
 

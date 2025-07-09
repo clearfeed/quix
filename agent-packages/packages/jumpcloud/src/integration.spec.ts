@@ -280,6 +280,51 @@ describe('JumpCloud Integration Tests', () => {
     });
   });
 
+  describe('Device Management', () => {
+    it('should list devices for a user', async () => {
+      if (!testUserId) {
+        throw new Error('Test user was not created');
+      }
+
+      const result = await service.listUserDevices({ userId: testUserId });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+
+      console.log(`Found ${result.data?.length || 0} devices for user`);
+    });
+
+    it('should list all devices', async () => {
+      const result = await service.listDevices({ limit: 10 });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+
+      console.log(`Found ${result.data?.length || 0} devices`);
+    });
+
+    it('should list devices with query parameter', async () => {
+      const result = await service.listDevices({ limit: 10, query: 'test' });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+
+      console.log(`Found ${result.data?.length || 0} devices matching 'test'`);
+    });
+
+    it('should handle invalid user ID for device listing', async () => {
+      const result = await service.listUserDevices({ userId: 'invalid-user-id' });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+
+      console.log(`Expected error for invalid user ID: ${result.error}`);
+    });
+  });
+
   describe('Error Handling', () => {
     it('should handle invalid API key gracefully', async () => {
       const invalidService = new JumpCloudService({
