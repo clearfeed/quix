@@ -73,19 +73,19 @@ export interface JumpCloudApplication {
 // JumpCloud Device interface
 export interface JumpCloudDevice {
   id: string;
-  displayName?: string;
-  hostname?: string;
+  displayName: string;
+  hostname: string;
   serialNumber?: string;
-  os?: string;
-  version?: string;
-  arch?: string;
-  active?: boolean;
-  created?: string;
-  lastContact?: string;
+  os: string;
+  version: string;
+  arch: string;
+  active: boolean;
+  created: string;
+  lastContact: string;
   templateName?: string;
   systemTimezone?: string;
   organization?: string;
-  agentVersion?: string;
+  agentVersion: string;
   // Additional fields that may be returned by the API
   [key: string]: unknown;
 }
