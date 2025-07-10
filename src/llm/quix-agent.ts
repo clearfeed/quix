@@ -1,5 +1,11 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { AvailableToolsWithConfig, LLMContext, QuixAgentResult } from './types';
+import {
+  AvailableToolsWithConfig,
+  LLMContext,
+  PlanResult,
+  PlanStep,
+  QuixAgentResult
+} from './types';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import {
@@ -18,6 +24,7 @@ import { isEqual } from 'lodash';
 import { formatToOpenAITool } from '@langchain/openai';
 import { Logger } from '@nestjs/common';
 import { encryptForLogs } from '../lib/utils/encryption';
+
 export class QuixAgent {
   private readonly logger = new Logger(QuixAgent.name);
   constructor() {}
@@ -91,8 +98,9 @@ export class QuixAgent {
       llm,
       QuixPrompts.basePrompt(queryingUserName)
     );
+    // Fix: Add explicit types for step and i parameters
     const formattedPlan = plan
-      .map((step, i) => {
+      .map((step: PlanStep, i: number) => {
         if (step.type === 'tool') {
           return `${i + 1}. Call tool \`${step.tool}\`. ${step.input || ''}`.trim();
         } else {
@@ -213,7 +221,7 @@ export class QuixAgent {
     message: string,
     llm: BaseChatModel,
     basePrompt: string
-  ) {
+  ): Promise<PlanStep[]> {
     const allFunctions = availableTools
       .map((tool) => {
         const toolFunction = formatToOpenAITool(tool);
@@ -246,7 +254,7 @@ export class QuixAgent {
       )
     ]);
 
-    const result = await planChain.invoke(
+    const result: PlanResult = await planChain.invoke(
       {
         chat_history: previousMessages,
         input: message
