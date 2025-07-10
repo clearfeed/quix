@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { JiraConfig } from './types';
+import { JiraConfig } from './types/config';
 
 export const findJiraTicketSchema = z.object({
   jql_query: z.string(),

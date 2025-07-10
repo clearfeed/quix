@@ -1,4 +1,4 @@
-import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
+import { BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import {
   addJiraCommentSchema,
   assignJiraIssueSchema,
@@ -12,28 +12,9 @@ import {
   updateJiraTicketSchema
 } from '../schema';
 import { z } from 'zod';
-
-export type JiraAuth =
-  | {
-      username: string;
-      password: string;
-    }
-  | {
-      bearerToken: string;
-    }
-  | {
-      sharedSecret: string;
-      atlassianConnectAppKey: string;
-    };
-
-export interface JiraConfig extends BaseConfig {
-  host: string;
-  defaultConfig?: {
-    projectKey?: string;
-  };
-  auth: JiraAuth;
-  apiHost?: string;
-}
+import { JiraAuth } from './config';
+// Re-export config types for backward compatibility
+export { JiraConfig, JiraAuth } from './config';
 
 export interface JiraIssueResponse {
   id: string;
