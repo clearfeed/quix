@@ -1,5 +1,14 @@
 import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
-import { addJiraCommentSchema, createJiraIssueSchema, updateJiraTicketSchema } from '../schema';
+import {
+  addJiraCommentSchema,
+  assignJiraIssueSchema,
+  createJiraIssueSchema,
+  findJiraTicketSchema,
+  getJiraCommentsSchema,
+  getJiraIssueSchema,
+  searchJiraUsersSchema,
+  updateJiraTicketSchema
+} from '../schema';
 import { z } from 'zod';
 
 export type JiraAuth =
@@ -176,8 +185,6 @@ export interface JiraIssueComments {
   startAt: number;
 }
 
-export type AddCommentParams = z.infer<typeof addJiraCommentSchema>;
-
 export type AddCommentResponse = BaseResponse<{
   comment: JiraCommentResponse & { url: string };
 }>;
@@ -186,7 +193,6 @@ export type GetCommentsResponse = BaseResponse<{
   comments: (JiraIssueComments['comments'][number] & { url: string })[];
 }>;
 
-export type UpdateIssueParams = z.infer<typeof updateJiraTicketSchema>;
 export type UpdateIssueFields = Omit<UpdateIssueParams, 'issueId'>;
 export type UpdateIssueResponse = BaseResponse<{
   issueId: string;
@@ -250,3 +256,41 @@ export type JiraUpdateIssueMetadata = {
   startAt: number;
   total: number;
 };
+export const getExtendedFindJiraSchema = (config: JiraConfig) =>
+  findJiraTicketSchema.extend({
+    jql_query: z.string().describe(`
+      A valid Jira Query Language (JQL) query used to filter issues.
+      - When a user is mentioned in the query, first fetch users using the "search_jira_users" tool and then use the account ID of the mentioned user.
+      ${config.defaultConfig?.projectKey ? '- If no project is provided, use the default project as ' + config.defaultConfig.projectKey : ''}
+      `)
+  });
+
+export const getExtendedCreateJiraSchema = (config: JiraConfig) =>
+  createJiraIssueSchema.extend({
+    projectKey: config.defaultConfig?.projectKey
+      ? z
+          .string()
+          .describe('The key of the project where the issue will be created')
+          .default(config.defaultConfig.projectKey)
+      : z.string().describe('The key of the project where the issue will be created (required)')
+  });
+
+export const getProjectKeySchema = (config: JiraConfig) =>
+  z.object({
+    projectKey: config.defaultConfig?.projectKey
+      ? z
+          .string()
+          .describe('The key of the project for which to fetch issue types')
+          .default(config.defaultConfig.projectKey)
+      : z.string().describe('The key of the project for which to fetch issue types')
+  });
+
+export type FindJiraParams = z.infer<ReturnType<typeof getExtendedFindJiraSchema>>;
+export type CreateJiraParams = z.infer<ReturnType<typeof getExtendedCreateJiraSchema>>;
+export type ProjectKeyParams = z.infer<ReturnType<typeof getProjectKeySchema>>;
+export type GetIssueParams = z.infer<typeof getJiraIssueSchema>;
+export type AssignIssueParams = z.infer<typeof assignJiraIssueSchema>;
+export type AddCommentParams = z.infer<typeof addJiraCommentSchema>;
+export type GetCommentsParams = z.infer<typeof getJiraCommentsSchema>;
+export type UpdateIssueParams = z.infer<typeof updateJiraTicketSchema>;
+export type SearchUsersParams = z.infer<typeof searchJiraUsersSchema>;
