@@ -5,13 +5,13 @@ import {
   updateJiraTicketSchema,
   searchJiraUsersSchema,
   assignJiraIssueSchema,
-  getJiraIssueSchema
+  getJiraIssueSchema,
+  findJiraTicketSchemaWithConfig,
+  getProjectKeySchemaWithConfig,
+  createJiraIssueSchemaWithConfig
 } from './schema';
 import {
   JiraConfig,
-  getExtendedFindJiraSchema,
-  getExtendedCreateJiraSchema,
-  getProjectKeySchema,
   FindJiraParams,
   CreateJiraParams,
   ProjectKeyParams,
@@ -52,7 +52,7 @@ export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
       name: 'find_jira_ticket',
       description: `Search for Jira issues using a valid JQL (Jira Query Language) query. 
 This tool helps retrieve relevant issues by allowing complex filtering based on project, issue type, assignee, status, priority, labels, sprint, and more.`,
-      schema: getExtendedFindJiraSchema(config),
+      schema: findJiraTicketSchemaWithConfig(config),
       func: async (args: FindJiraParams) => service.searchIssues(args)
     }),
     new DynamicStructuredTool({
@@ -65,13 +65,13 @@ This tool helps retrieve relevant issues by allowing complex filtering based on 
     new DynamicStructuredTool({
       name: 'get_jira_issue_types',
       description: 'Retrieve all available issue types for a Jira project.',
-      schema: getProjectKeySchema(config),
+      schema: getProjectKeySchemaWithConfig(config),
       func: async ({ projectKey }: ProjectKeyParams) => service.getProjectIssueTypes(projectKey)
     }),
     new DynamicStructuredTool({
       name: 'create_jira_issue',
       description: 'Create a new Jira issue.',
-      schema: getExtendedCreateJiraSchema(config),
+      schema: createJiraIssueSchemaWithConfig(config),
       func: async (args: CreateJiraParams) => service.createIssue(args)
     }),
     new DynamicStructuredTool({

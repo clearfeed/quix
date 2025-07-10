@@ -3,9 +3,11 @@ import {
   addJiraCommentSchema,
   assignJiraIssueSchema,
   createJiraIssueSchema,
-  findJiraTicketSchema,
+  createJiraIssueSchemaWithConfig,
+  findJiraTicketSchemaWithConfig,
   getJiraCommentsSchema,
   getJiraIssueSchema,
+  getProjectKeySchemaWithConfig,
   searchJiraUsersSchema,
   updateJiraTicketSchema
 } from '../schema';
@@ -256,38 +258,10 @@ export type JiraUpdateIssueMetadata = {
   startAt: number;
   total: number;
 };
-export const getExtendedFindJiraSchema = (config: JiraConfig) =>
-  findJiraTicketSchema.extend({
-    jql_query: z.string().describe(`
-      A valid Jira Query Language (JQL) query used to filter issues.
-      - When a user is mentioned in the query, first fetch users using the "search_jira_users" tool and then use the account ID of the mentioned user.
-      ${config.defaultConfig?.projectKey ? '- If no project is provided, use the default project as ' + config.defaultConfig.projectKey : ''}
-      `)
-  });
 
-export const getExtendedCreateJiraSchema = (config: JiraConfig) =>
-  createJiraIssueSchema.extend({
-    projectKey: config.defaultConfig?.projectKey
-      ? z
-          .string()
-          .describe('The key of the project where the issue will be created')
-          .default(config.defaultConfig.projectKey)
-      : z.string().describe('The key of the project where the issue will be created (required)')
-  });
-
-export const getProjectKeySchema = (config: JiraConfig) =>
-  z.object({
-    projectKey: config.defaultConfig?.projectKey
-      ? z
-          .string()
-          .describe('The key of the project for which to fetch issue types')
-          .default(config.defaultConfig.projectKey)
-      : z.string().describe('The key of the project for which to fetch issue types')
-  });
-
-export type FindJiraParams = z.infer<ReturnType<typeof getExtendedFindJiraSchema>>;
-export type CreateJiraParams = z.infer<ReturnType<typeof getExtendedCreateJiraSchema>>;
-export type ProjectKeyParams = z.infer<ReturnType<typeof getProjectKeySchema>>;
+export type FindJiraParams = z.infer<ReturnType<typeof findJiraTicketSchemaWithConfig>>;
+export type CreateJiraParams = z.infer<ReturnType<typeof createJiraIssueSchemaWithConfig>>;
+export type ProjectKeyParams = z.infer<ReturnType<typeof getProjectKeySchemaWithConfig>>;
 export type GetIssueParams = z.infer<typeof getJiraIssueSchema>;
 export type AssignIssueParams = z.infer<typeof assignJiraIssueSchema>;
 export type AddCommentParams = z.infer<typeof addJiraCommentSchema>;
