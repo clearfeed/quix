@@ -98,7 +98,7 @@ export class QuixAgent {
       llm,
       QuixPrompts.basePrompt(queryingUserName)
     );
-    // Fix: Add explicit types for step and i parameters
+
     const formattedPlan = plan
       .map((step: PlanStep, i: number) => {
         if (step.type === 'tool') {
