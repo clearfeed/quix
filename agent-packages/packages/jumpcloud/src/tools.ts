@@ -102,7 +102,11 @@ export const SCHEMAS = {
   }),
   listDevicesSchema: z.object({
     limit: z.number().default(20).describe('Number of devices to return'),
-    query: z.string().optional().describe('Search query for devices')
+    query: z
+      .string()
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('Search query for devices')
   })
 };
 
