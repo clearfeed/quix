@@ -7,6 +7,7 @@ A TypeScript package for interacting with the JumpCloud API, providing user and 
 - **User Management**: Create, read, update, delete, and list users
 - **Group Management**: Create, delete, and list groups
 - **Group Membership**: Assign and unassign users to/from groups
+- **Device Management**: List devices assigned to users and all devices in the organization
 - **Error Handling**: Comprehensive error handling with detailed error messages
 - **Type Safety**: Full TypeScript support with proper type definitions
 - **Tool Integration**: LangChain-compatible tools for AI agents
@@ -86,6 +87,22 @@ const unassignResult = await service.unassignUserFromGroup({
 
 // Delete a group
 const deleteGroupResult = await service.deleteGroup({ groupId: 'group-id' });
+```
+
+### Device Management
+
+```typescript
+// List devices for a specific user
+const userDevices = await service.listUserDevices({ userId: 'user-id' });
+
+// List all devices in the organization
+const allDevices = await service.listDevices({ limit: 50 });
+
+// Search for devices
+const searchResults = await service.listDevices({
+  limit: 20,
+  query: 'MacBook'
+});
 ```
 
 ### Using with LangChain Tools
@@ -251,6 +268,8 @@ new JumpCloudService(config: JumpCloudConfig)
 - `unassignUserFromGroup(args)`: Remove user from group
 - `listGroupUsers(args)`: List users in a group
 - `deleteGroup(args)`: Delete a group
+- `listUserDevices(args)`: List devices assigned to a specific user
+- `listDevices(params)`: List all devices with optional filtering
 
 All methods return a promise that resolves to a response object with:
 

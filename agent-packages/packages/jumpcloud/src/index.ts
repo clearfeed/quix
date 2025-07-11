@@ -12,7 +12,9 @@ import {
   AssignUserToGroupResponse,
   UnassignUserFromGroupResponse,
   ListGroupUsersResponse,
-  DeleteGroupResponse
+  DeleteGroupResponse,
+  ListUserDevicesResponse,
+  ListDevicesResponse
 } from './types';
 import { extractPrimitives, extractErrorMessage } from './utils';
 import { SCHEMAS } from './tools';
@@ -201,6 +203,38 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
       return { success: true, data: `Group ${args.groupId} deleted` };
     } catch (error) {
       console.error('Error deleting JumpCloud group:', error);
+      return {
+        success: false,
+        error: extractErrorMessage(error)
+      };
+    }
+  }
+
+  async listUserDevices(
+    args: z.infer<typeof SCHEMAS.listUserDevicesSchema>
+  ): Promise<ListUserDevicesResponse> {
+    try {
+      const response = await this.client.get(`/systemusers/${args.userId}/systems`);
+      const data = (response.data || []).map(extractPrimitives);
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error listing user devices in JumpCloud:', error);
+      return {
+        success: false,
+        error: extractErrorMessage(error)
+      };
+    }
+  }
+
+  async listDevices(
+    params: z.infer<typeof SCHEMAS.listDevicesSchema>
+  ): Promise<ListDevicesResponse> {
+    try {
+      const response = await this.client.get('/systems', { params });
+      const data = response.data.results || [];
+      return { success: true, data: data.map(extractPrimitives) };
+    } catch (error) {
+      console.error('Error listing JumpCloud devices:', error);
       return {
         success: false,
         error: extractErrorMessage(error)
