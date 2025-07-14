@@ -17,7 +17,6 @@
     "@langchain/core": "0.3.62"
   },
   "devDependencies": {
-    "@langchain/core": "0.3.62",
     "typescript": "^5.8.3"
   },
   "license": "Apache-2.0",
