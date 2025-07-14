@@ -8,10 +8,6 @@
   "moduleNameMapper": {
     "@quix/(.*)": "<rootDir>/src/$1"
   },
-  "resolutions": {
-    "@langchain/core": "0.3.62",
-    "zod": "3.25.67"
-  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -25,7 +21,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:e2e": "jest --config ./test/je`st-e2e.json",
     "db:migrate": "sequelize-cli db:migrate",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
     "db:migrate:undo:all": "sequelize-cli db:migrate:undo:all",
@@ -46,7 +42,7 @@
     "@google/generative-ai": "^0.21.0",
     "@langchain/core": "^0.3.62",
     "@langchain/google-genai": "^0.2.14",
-    "@langchain/langgraph": "^0.3.6",
+    "@langchain/langgraph": "^0.3.8",
     "@langchain/openai": "^0.5.18",
     "@modelcontextprotocol/sdk": "^1.9.0",
     "@n8n/json-schema-to-zod": "^1.1.0",
