@@ -372,10 +372,10 @@
   dependencies:
     "@hubspot/api-client" "^12.0.1"
 
-"@clearfeed-ai/quix-jira-agent@^1.2.19":
-  version "1.2.19"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.2.19.tgz#8632ea8087692269d87cbf0c375cff8a88481556"
-  integrity sha512-NrxAqdP+l4832EvGiyocFQTu2hA4YDn1939X46EQdVYfC/t/66ODCHVvKq4XOvg5AGcRYv7aLA6ZQJvLF6m1lg==
+"@clearfeed-ai/quix-jira-agent@^1.2.20":
+  version "1.2.20"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.2.20.tgz#b13b6d6ac0517ed87001130d41c533cbc541685b"
+  integrity sha512-p2kIdd8bOJdF8GvvsSVLS91dcKnRDMNya7JDR8K7+Ie30scaFPva2BMGlj3vGHthylpbxufcJunSOOX5IUbapA==
   dependencies:
     atlassian-jwt "^2.0.3"
     axios "^1.8.2"
