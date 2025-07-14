@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-notion-agent",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -14,10 +14,9 @@
     "watch": "tsc --watch"
   },
   "peerDependencies": {
-    "@langchain/core": "^0.3.40"
+    "@langchain/core": "0.3.62"
   },
   "devDependencies": {
-    "@langchain/core": "^0.3.40",
     "typescript": "^5.8.3"
   },
   "license": "Apache-2.0",

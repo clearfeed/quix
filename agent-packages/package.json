@@ -6,9 +6,6 @@
   ],
   "version": "1.0.1",
   "description": "Quix Packages",
-  "resolutions": {
-    "@langchain/core": "0.3.40"
-  },
   "scripts": {
     "build": "yarn workspaces run build",
     "test": "yarn workspaces run test"
@@ -24,10 +21,10 @@
     "@clearfeed-ai/quix-common-agent": "^1.1.5"
   },
   "peerDependencies": {
-    "@langchain/core": "0.3.40"
+    "@langchain/core": "0.3.62",
+    "zod": "3.25.67"
   },
   "devDependencies": {
-    "@langchain/core": "0.3.40",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.1",
     "jest": "^29.7.0",

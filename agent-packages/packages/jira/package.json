@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-jira-agent",
-  "version": "1.2.18",
+  "version": "1.2.19",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -12,6 +12,9 @@
     "watch": "tsc --watch",
     "test": "jest",
     "prepublishOnly": "yarn build"
+  },
+  "peerDependencies": {
+    "@langchain/core": "0.3.62"
   },
   "dependencies": {
     "atlassian-jwt": "^2.0.3",

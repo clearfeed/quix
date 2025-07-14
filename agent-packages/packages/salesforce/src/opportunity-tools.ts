@@ -1,4 +1,4 @@
-import { DynamicStructuredTool, tool } from '@langchain/core/tools';
+import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { SearchOpportunitiesParams } from './types';
 import { SalesforceConfig } from './types';
@@ -22,7 +22,7 @@ const opportunitySearchSchema = z.object({
     .describe('The ID of the opportunity owner to filter by')
 });
 
-export const opportunityTools = (config: SalesforceConfig): DynamicStructuredTool<any>[] => {
+export const opportunityTools = (config: SalesforceConfig) => {
   const service = new SalesforceOpportunityService(config);
   return [
     tool(async (args: SearchOpportunitiesParams) => service.searchOpportunities(args), {

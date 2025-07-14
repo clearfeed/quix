@@ -84,7 +84,7 @@ When formatting GitHub responses:
 export async function createGitHubToolsExport(config: GitHubConfig): Promise<ToolConfig> {
   const service = await GitHubService.create(config);
 
-  const tools: DynamicStructuredTool<any>[] = [
+  const tools = [
     new DynamicStructuredTool({
       name: 'search_issues_or_pull_requests',
       description:
