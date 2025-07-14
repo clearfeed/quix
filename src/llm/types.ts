@@ -65,13 +65,7 @@ export type QuixAgentResult =
       toolCallTracker: QuixCallBackManager;
     };
 
-export interface PlanStep {
-  type: 'tool' | 'reason';
-  tool?: string;
-  args?: Record<string, any>;
-  input?: string;
-}
-
+export type PlanStep = z.infer<typeof PlanStepSchema>;
 export interface PlanResult {
   steps: PlanStep[];
 }

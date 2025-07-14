@@ -24,6 +24,7 @@ import { isEqual } from 'lodash';
 import { formatToOpenAITool } from '@langchain/openai';
 import { Logger } from '@nestjs/common';
 import { encryptForLogs } from '../lib/utils/encryption';
+import { PlanStepSchema } from './schema';
 
 export class QuixAgent {
   private readonly logger = new Logger(QuixAgent.name);
@@ -237,21 +238,9 @@ export class QuixAgent {
 
     const planChain = RunnableSequence.from([
       planPrompt,
-      llm.withStructuredOutput(
-        z.object({
-          steps: z.array(
-            z.object({
-              type: z.enum(['tool', 'reason']),
-              tool: z.string().optional(),
-              args: z.object({}).optional(),
-              input: z.string().optional()
-            })
-          )
-        }),
-        {
-          method: 'functionCalling'
-        }
-      )
+      llm.withStructuredOutput(PlanStepSchema, {
+        method: 'functionCalling'
+      })
     ]);
 
     const result: PlanResult = await planChain.invoke(
