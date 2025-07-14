@@ -93,7 +93,6 @@ export class QuixAgent {
       llm,
       QuixPrompts.basePrompt(queryingUserName)
     );
-
     const formattedPlan = plan
       .map((step, i) => {
         if (step.type === 'tool') {
@@ -106,9 +105,7 @@ export class QuixAgent {
     this.logger.log(`Plan generated for user's request`, {
       plan: encryptForLogs(formattedPlan)
     });
-
     const availableTools: Tool[] = availableFunctions.flatMap((func) => func.availableTools);
-
     const agent = createReactAgent({
       llm,
       tools: availableTools,
