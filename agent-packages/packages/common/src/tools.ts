@@ -7,12 +7,12 @@ import { z } from 'zod';
  */
 export function tool(
   config: ConstructorParameters<typeof DynamicStructuredTool>[0] & {
-    operation: ToolOperation[];
+    operations: ToolOperation[];
   }
 ): ToolType {
-  const { operation, ...toolConfig } = config;
+  const { operations, ...toolConfig } = config;
   const baseTool = new DynamicStructuredTool(toolConfig);
-  return Object.assign(baseTool, { operation });
+  return Object.assign(baseTool, { operations });
 }
 
 const TOOL_SELECTION_PROMPT = `
@@ -27,7 +27,7 @@ export function createCommonToolsExport(): ToolConfig {
       description:
         "Use this tool to resolve expressions like 'today', 'tomorrow', 'next week', or 'current time' into exact date and time values.",
       schema: z.object({}),
-      operation: [ToolOperation.READ],
+      operations: [ToolOperation.READ],
       func: async () => ({ success: true, data: { date: new Date().toISOString() } })
     })
   ];
