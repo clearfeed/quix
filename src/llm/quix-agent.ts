@@ -1,11 +1,5 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import {
-  AvailableToolsWithConfig,
-  LLMContext,
-  PlanResult,
-  PlanStep,
-  QuixAgentResult
-} from './types';
+import { AvailableToolsWithConfig, LLMContext, PlanResult, QuixAgentResult } from './types';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import {
@@ -15,7 +9,7 @@ import {
   MessagesPlaceholder
 } from '@langchain/core/prompts';
 import { RunnableSequence, Runnable } from '@langchain/core/runnables';
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
+import { Tool, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { QuixPrompts } from '../lib/constants';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { SystemMessage } from '@langchain/core/messages';
@@ -24,6 +18,7 @@ import { isEqual } from 'lodash';
 import { formatToOpenAITool } from '@langchain/openai';
 import { Logger } from '@nestjs/common';
 import { encryptForLogs } from '../lib/utils/encryption';
+import { PlanStepSchema } from './schema';
 
 export class QuixAgent {
   private readonly logger = new Logger(QuixAgent.name);
@@ -98,9 +93,8 @@ export class QuixAgent {
       llm,
       QuixPrompts.basePrompt(queryingUserName)
     );
-
     const formattedPlan = plan
-      .map((step: PlanStep, i: number) => {
+      .map((step, i) => {
         if (step.type === 'tool') {
           return `${i + 1}. Call tool \`${step.tool}\`. ${step.input || ''}`.trim();
         } else {
@@ -111,10 +105,10 @@ export class QuixAgent {
     this.logger.log(`Plan generated for user's request`, {
       plan: encryptForLogs(formattedPlan)
     });
-
+    const availableTools: Tool[] = availableFunctions.flatMap((func) => func.availableTools);
     const agent = createReactAgent({
       llm,
-      tools: availableFunctions.flatMap((func) => func.availableTools),
+      tools: availableTools,
       prompt: QuixPrompts.multiStepBasePrompt(formattedPlan, queryingUserName, customInstructions)
     });
 
@@ -221,7 +215,7 @@ export class QuixAgent {
     message: string,
     llm: BaseChatModel,
     basePrompt: string
-  ): Promise<PlanStep[]> {
+  ): Promise<PlanResult['steps']> {
     const allFunctions = availableTools
       .map((tool) => {
         const toolFunction = formatToOpenAITool(tool);
@@ -237,21 +231,9 @@ export class QuixAgent {
 
     const planChain = RunnableSequence.from([
       planPrompt,
-      llm.withStructuredOutput(
-        z.object({
-          steps: z.array(
-            z.object({
-              type: z.enum(['tool', 'reason']),
-              tool: z.string().optional(),
-              args: z.object({}).optional(),
-              input: z.string().optional()
-            })
-          )
-        }),
-        {
-          method: 'functionCalling'
-        }
-      )
+      llm.withStructuredOutput(PlanStepSchema, {
+        method: 'functionCalling'
+      })
     ]);
 
     const result: PlanResult = await planChain.invoke(

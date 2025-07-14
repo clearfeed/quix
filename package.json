@@ -8,10 +8,6 @@
   "moduleNameMapper": {
     "@quix/(.*)": "<rootDir>/src/$1"
   },
-  "resolutions": {
-    "@langchain/core": "0.3.62",
-    "zod": "3.25.67"
-  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -44,10 +40,10 @@
     "@clearfeed-ai/quix-slack-agent": "^1.0.4",
     "@clearfeed-ai/quix-zendesk-agent": "^1.1.6",
     "@google/generative-ai": "^0.21.0",
-    "@langchain/core": "^0.3.62",
-    "@langchain/google-genai": "^0.2.14",
-    "@langchain/langgraph": "^0.3.6",
-    "@langchain/openai": "^0.5.18",
+    "@langchain/core": "0.3.62",
+    "@langchain/google-genai": "0.2.14",
+    "@langchain/langgraph": "0.3.8",
+    "@langchain/openai": "0.5.18",
     "@modelcontextprotocol/sdk": "^1.9.0",
     "@n8n/json-schema-to-zod": "^1.1.0",
     "@nestjs/axios": "^4.0.0",

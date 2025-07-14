@@ -13,6 +13,9 @@
     "test": "jest",
     "prepublishOnly": "yarn build"
   },
+  "peerDependencies": {
+    "@langchain/core": "0.3.62"
+  },
   "dependencies": {
     "atlassian-jwt": "^2.0.3",
     "axios": "^1.8.2"

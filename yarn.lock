@@ -990,7 +990,7 @@
   dependencies:
     buffer "^6.0.3"
 
-"@langchain/core@0.3.62", "@langchain/core@^0.3.62":
+"@langchain/core@0.3.62":
   version "0.3.62"
   resolved "https://registry.yarnpkg.com/@langchain/core/-/core-0.3.62.tgz#ddb4646c98800b6efacf89508c0dbc6991943ea4"
   integrity sha512-GqRTcoUPnozGRMUcA6QkP7LHL/OvanGdB51Jgb0w7IIPDI3wFugxMHZ4gphnGDtxsD1tQY5ykyEpYNxFK8kl1w==
@@ -1008,7 +1008,7 @@
     zod "^3.25.32"
     zod-to-json-schema "^3.22.3"
 
-"@langchain/google-genai@^0.2.14":
+"@langchain/google-genai@0.2.14":
   version "0.2.14"
   resolved "https://registry.yarnpkg.com/@langchain/google-genai/-/google-genai-0.2.14.tgz#81be6f1575e6ea6b638013c872ca75ea528b2c4f"
   integrity sha512-gKe/T2LNh8wSSMJOaFmYd8cwQnDSXKtVtC6a7CFoq5nWuh0bKzhItM/7bue1aMN8mlKfB2G1HCwxhaZoSpS/DA==
@@ -1023,24 +1023,33 @@
   dependencies:
     uuid "^10.0.0"
 
-"@langchain/langgraph-sdk@~0.0.32":
-  version "0.0.53"
-  resolved "https://registry.yarnpkg.com/@langchain/langgraph-sdk/-/langgraph-sdk-0.0.53.tgz#a2f8744e385b515e5e0d98a59398c5261411072e"
-  integrity sha512-Do4coXHCMvWXRfY76nN69U03uB5kz1fZbfmEjAFAtclLcE2B5BTpQ6Zb8ya9jRuft4MvLWjyP1N+0M9ExaqIKA==
+"@langchain/langgraph-sdk@~0.0.92":
+  version "0.0.92"
+  resolved "https://registry.yarnpkg.com/@langchain/langgraph-sdk/-/langgraph-sdk-0.0.92.tgz#d058d33ae70c91cab9e42d3535330030676ad683"
+  integrity sha512-YL3uPo4At0q96Jk1v7uPctpf/NuKYlbHuQzuS03lQDvvzkLNBmw6ZRKr8SFmgZwmiHz2CNMfBP21kmb9aq/9Ug==
   dependencies:
     "@types/json-schema" "^7.0.15"
     p-queue "^6.6.2"
     p-retry "4"
     uuid "^9.0.0"
 
-"@langchain/langgraph@^0.3.6":
-  version "0.3.6"
-  resolved "https://registry.yarnpkg.com/@langchain/langgraph/-/langgraph-0.3.6.tgz#dc96d9b86d3686e74472d6f2181ecdbb4446f4a6"
-  integrity sha512-TMRUEPb/eC5mS8XdY6gwLGX2druwFDxSWUQDXHHNsbrqhIrL3BPlw+UumjcKBQ8wvhk3gEspg4aHXGq8mAqbRA==
+"@langchain/langgraph@0.3.8":
+  version "0.3.8"
+  resolved "https://registry.yarnpkg.com/@langchain/langgraph/-/langgraph-0.3.8.tgz#976ceb909953b895d896fd9e1aa498ac5f737fd9"
+  integrity sha512-JOtYNMa7BixzXrAtV76x1lS2+Blt4WLcbFUWwtiEqTMzwNg00fSvUQ6FaPeootL66iYamg67AVq12PerqMrelw==
   dependencies:
     "@langchain/langgraph-checkpoint" "~0.0.18"
-    "@langchain/langgraph-sdk" "~0.0.32"
+    "@langchain/langgraph-sdk" "~0.0.92"
     uuid "^10.0.0"
+    zod "^3.25.32"
+
+"@langchain/openai@0.5.18":
+  version "0.5.18"
+  resolved "https://registry.yarnpkg.com/@langchain/openai/-/openai-0.5.18.tgz#59ebbf48044d711ce9503d3b9854a3533cb54683"
+  integrity sha512-CX1kOTbT5xVFNdtLjnM0GIYNf+P7oMSu+dGCFxxWRa3dZwWiuyuBXCm+dToUGxDLnsHuV1bKBtIzrY1mLq/A1Q==
+  dependencies:
+    js-tiktoken "^1.0.12"
+    openai "^5.3.0"
     zod "^3.25.32"
 
 "@langchain/openai@>=0.1.0 <0.6.0":
@@ -1062,15 +1071,6 @@
     openai "^4.77.0"
     zod "^3.22.4"
     zod-to-json-schema "^3.22.3"
-
-"@langchain/openai@^0.5.18":
-  version "0.5.18"
-  resolved "https://registry.yarnpkg.com/@langchain/openai/-/openai-0.5.18.tgz#59ebbf48044d711ce9503d3b9854a3533cb54683"
-  integrity sha512-CX1kOTbT5xVFNdtLjnM0GIYNf+P7oMSu+dGCFxxWRa3dZwWiuyuBXCm+dToUGxDLnsHuV1bKBtIzrY1mLq/A1Q==
-  dependencies:
-    js-tiktoken "^1.0.12"
-    openai "^5.3.0"
-    zod "^3.25.32"
 
 "@langchain/textsplitters@>=0.0.0 <0.2.0":
   version "0.1.0"
