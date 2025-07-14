@@ -69,7 +69,7 @@ export interface BaseResponse<T = any> {
 export interface BaseService<TConfig extends BaseConfig = BaseConfig> {}
 
 export interface ToolConfig {
-  tools: ToolType[] | DynamicStructuredTool[];
+  tools: (ToolType | DynamicStructuredTool)[];
   prompts?: {
     toolSelection?: string;
     responseGeneration?: string;
