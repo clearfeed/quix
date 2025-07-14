@@ -4,6 +4,8 @@ import { Connections } from '@quix/lib/types/common';
 import { ConversationState } from '@quix/database/models';
 import { BaseMessage } from '@langchain/core/messages';
 import { QuixCallBackManager } from './callback-manager';
+import { PlanStepSchema } from './schema';
+import { z } from 'zod';
 
 export type LLMContext = {
   role: 'user' | 'assistant' | 'system';
@@ -65,7 +67,4 @@ export type QuixAgentResult =
       toolCallTracker: QuixCallBackManager;
     };
 
-export type PlanStep = z.infer<typeof PlanStepSchema>;
-export interface PlanResult {
-  steps: PlanStep[];
-}
+export type PlanResult = z.infer<typeof PlanStepSchema>;
