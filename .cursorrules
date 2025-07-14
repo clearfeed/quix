@@ -61,7 +61,7 @@ To add a new integration
    type User = z.infer<typeof userSchema>;
    ```
 
-10. For Zod schemas, use `.nullish().transform((val) => val ?? undefined)` instead of `.optional()` for better null handling:
+10. For Zod schemas, use `.nullish().transform((val) => val ?? undefined)` instead of `.optional()` for better null handling. Do not combine `.nullish()` with `.default()`:
 
     ```ts
     // Preferred: Handles both null and undefined properly
@@ -75,13 +75,14 @@ To add a new integration
         .email()
         .nullish()
         .transform((val) => val ?? undefined),
-      age: z.number().nullish().default(0) // For fields with defaults
+      age: z.number().default(0) // For fields with defaults - don't use .nullish() here
     });
 
     // Avoid: Only handles undefined, not null values
     const schema = z.object({
       name: z.string().optional(),
-      email: z.string().email().optional()
+      email: z.string().email().optional(),
+      age: z.number().nullish().default(0) // Don't combine .nullish() with .default()
     });
     ```
 
