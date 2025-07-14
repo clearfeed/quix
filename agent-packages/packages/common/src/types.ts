@@ -51,7 +51,7 @@ export enum ToolOperation {
 }
 
 export type ToolType = DynamicStructuredTool & {
-  operation: ToolOperation[];
+  operations: ToolOperation[];
 };
 
 /**
