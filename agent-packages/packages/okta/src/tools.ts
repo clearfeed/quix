@@ -1,7 +1,7 @@
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { OktaService } from './index';
 import { OktaAuthConfig } from './types';
-import { DynamicStructuredTool, tool } from '@langchain/core/tools';
+import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
 const OKTA_TOOL_SELECTION_PROMPT = `
@@ -213,7 +213,7 @@ export const SCHEMAS = {
 export function createOktaToolsExport(config: OktaAuthConfig): ToolConfig {
   const service = new OktaService(config);
 
-  const tools: DynamicStructuredTool<any>[] = [
+  const tools = [
     tool(async (args: z.infer<typeof SCHEMAS.listUsers>) => service.listUsers(args), {
       name: 'list_okta_users',
       description: 'List users in Okta, optionally filtered by a search query',

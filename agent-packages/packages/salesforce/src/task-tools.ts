@@ -1,4 +1,4 @@
-import { DynamicStructuredTool, tool } from '@langchain/core/tools';
+import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { SalesforceConfig } from './index';
 import { CreateTaskParams, GetTasksParams, UpdateTaskParams } from './types/index';
@@ -14,7 +14,7 @@ const dueDateTransformer = (val: string | undefined) => {
   return format(date, 'yyyy-MM-dd');
 };
 
-export const taskTools = (config: SalesforceConfig): DynamicStructuredTool<any>[] => {
+export const taskTools = (config: SalesforceConfig) => {
   const service = new SalesforceTaskService(config);
   return [
     tool(async (args: CreateTaskParams) => service.createTask(args), {

@@ -37,7 +37,7 @@ When formatting Salesforce responses:
 export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfig {
   const service = new SalesforceService(config);
 
-  const tools: DynamicStructuredTool<any>[] = [
+  const tools = [
     tool(
       async (args: { userIdentifier: { name?: string; email?: string } }) =>
         service.findUser(args.userIdentifier),
@@ -70,12 +70,12 @@ export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfi
           objectType: z.nativeEnum(SalesforceObjectName)
         })
       }
-    )
+    ),
+    ...taskTools(config),
+    ...accountTools(config),
+    ...opportunityTools(config)
   ];
 
-  tools.push(...taskTools(config));
-  tools.push(...accountTools(config));
-  tools.push(...opportunityTools(config));
   return {
     tools,
     prompts: {

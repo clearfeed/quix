@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-salesforce-agent",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -8,6 +8,9 @@
     "build": "yarn clean && tsc",
     "test": "jest",
     "prepublishOnly": "yarn build"
+  },
+  "peerDependencies": {
+    "@langchain/core": "0.3.62"
   },
   "dependencies": {
     "@clearfeed-ai/quix-common-agent": "^1.1.0",
