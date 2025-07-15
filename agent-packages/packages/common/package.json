@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-common-agent",
-  "version": "1.1.6",
+  "version": "1.2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -10,6 +10,7 @@
     "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
     "build": "tsc",
     "test": "jest",
+    "watch": "tsc --watch",
     "prepublishOnly": "npm run clean && npm run build"
   },
   "devDependencies": {

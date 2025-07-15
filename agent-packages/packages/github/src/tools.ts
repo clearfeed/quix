@@ -1,4 +1,4 @@
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, tool } from '@clearfeed-ai/quix-common-agent';
 import { GitHubService } from './index';
 import {
   GitHubConfig,
@@ -30,7 +30,6 @@ import {
   GetPullRequestReviewsParams,
   SearchRepositoryCodeParams
 } from './types';
-import { DynamicStructuredTool } from '@langchain/core/tools';
 import {
   baseSearchIssuesOrPullRequestsSchema,
   searchIssuesOrPullRequestsSchema,
@@ -85,20 +84,22 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
   const service = await GitHubService.create(config);
 
   const tools = [
-    new DynamicStructuredTool({
+    tool({
       name: 'search_issues_or_pull_requests',
       description:
         'Search issues or PRs within a specific repository based on status, keywords, and reporter',
       schema: searchIssuesOrPullRequestsSchema(config),
+      operations: [ToolOperation.READ],
       func: async (args: SearchIssuesOrPullRequestsParams) => {
         return service.searchIssuesOrPullRequests(args);
       }
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'get_github_issue',
       description:
         'Get detailed information about a specific GitHub issue or PR by number. PRs and Issues are interchangeable terms in GitHub',
       schema: getGithubIssueSchema(config),
+      operations: [ToolOperation.READ],
       func: async (args: GetGithubIssueParams) => {
         return service.getIssue(args.issueNumber, {
           repo: args.repo,
@@ -106,11 +107,12 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
         });
       }
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'add_github_assignee',
       description:
         'Add an assignee or assign someone to a GitHub issue or PR. PRs and Issues are interchangeable terms in GitHub',
       schema: addGithubAssigneeSchema(config),
+      operations: [ToolOperation.UPDATE],
       func: async (args: AddGithubAssigneeParams) => {
         return service.addAssigneeToIssue(args.issueNumber, args.assignee, {
           repo: args.repo,
@@ -118,11 +120,12 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
         });
       }
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'remove_github_assignee',
       description:
         'Remove an assignee or unassign someone from a GitHub issue or PR. PRs and Issues are interchangeable terms in GitHub',
       schema: removeGithubAssigneeSchema(config),
+      operations: [ToolOperation.UPDATE],
       func: async (args: RemoveGithubAssigneeParams) => {
         return service.removeAssigneeFromIssue(args.issueNumber, args.assignee, {
           repo: args.repo,
@@ -130,146 +133,169 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
         });
       }
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'get_organization_users',
       description: 'Get all users in a GitHub organization',
       schema: getOrganizationUsersSchema(config),
+      operations: [ToolOperation.READ],
       func: async (args: GetOrganizationUsersParams) => {
         return service.getOrganizationUsers(args.owner);
       }
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'create_github_issue',
       description: 'Creates an issue in a GitHub repository',
       schema: createGithubIssueSchema(config),
+      operations: [ToolOperation.CREATE],
       func: async (args: CreateGithubIssueParams) => service.createIssue(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'search_repository_code',
       description:
         'Search for code within a specific repository using natural language or keywords',
       schema: searchRepositoryCodeSchema(config),
+      operations: [ToolOperation.READ],
       func: async (args: SearchRepositoryCodeParams) => service.searchCode(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'create_or_update_file',
       description: 'Create a new file or update an existing file in a GitHub repository',
       schema: createOrUpdateFileSchema(config),
+      operations: [ToolOperation.CREATE, ToolOperation.UPDATE],
       func: async (args: CreateOrUpdateFileParams) => service.createOrUpdateFile(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'search_repositories',
       description: 'Search for GitHub repositories',
       schema: searchRepositoriesSchema,
+      operations: [ToolOperation.READ],
       func: async (args: SearchRepositoriesParams) => service.searchRepositories(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'create_repository',
       description: 'Create a new GitHub repository',
       schema: createRepositorySchema,
+      operations: [ToolOperation.CREATE],
       func: async (args: CreateRepositoryParams) => service.createRepository(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'get_file_contents',
       description: 'Get contents of a file or directory from a GitHub repository',
       schema: getFileContentsSchema(config),
+      operations: [ToolOperation.READ],
       func: async (args: GetFileContentsParams) => service.getFileContents(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'create_pull_request',
       description: 'Create a new pull request to propose and collaborate on changes',
       schema: createPullRequestSchema(config),
+      operations: [ToolOperation.CREATE],
       func: async (args: CreatePullRequestParams) => service.createPullRequest(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'create_branch',
       description: 'Create a new branch in a GitHub repository',
       schema: createBranchSchema(config),
+      operations: [ToolOperation.CREATE],
       func: async (args: CreateBranchParams) => service.createBranch(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'list_commits',
       description: 'Get list of commits of a branch',
       schema: listCommitsSchema(config),
+      operations: [ToolOperation.READ],
       func: async (args: ListCommitsParams) => service.listCommits(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'update_issue',
       description: 'Update an existing issue in a GitHub repository',
       schema: updateIssueSchema(config),
+      operations: [ToolOperation.UPDATE],
       func: async (args: UpdateIssueParams) => service.updateIssue(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'add_issue_comment',
       description: 'Add a comment to an existing issue or pull request',
       schema: addIssueCommentSchema(config),
+      operations: [ToolOperation.CREATE],
       func: async (args: AddIssueCommentParams) => service.addIssueComment(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'search_github_users',
       description: 'Search for GitHub users by username, name, or other criteria',
       schema: searchGithubUsersSchema(config),
+      operations: [ToolOperation.READ],
       func: async (args: SearchUsersParams) => service.searchUsers(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'get_pull_request',
       description: 'Get details of a specific pull request',
       schema: getPullRequestSchema(config),
+      operations: [ToolOperation.READ],
       func: async (args: PullRequestParams) => service.getPullRequest(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'create_pull_request_review',
       description: 'Create a review on a pull request with comments and approval status',
       schema: createPullRequestReviewSchema(config),
+      operations: [ToolOperation.CREATE],
       func: async (args: CreatePullRequestReviewParams) => service.createPullRequestReview(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'merge_pull_request',
       description: 'Merge a pull request into its base branch',
       schema: mergePullRequestSchema(config),
+      operations: [ToolOperation.UPDATE],
       func: async (args: MergePullRequestParams) => service.mergePullRequest(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'search_code_global',
       description:
         'Search for code across all public GitHub repositories using keywords, file paths, or language',
       schema: searchCodeGlobalSchema,
+      operations: [ToolOperation.READ],
       func: async (args: SearchCodeGlobalParams) => service.searchCodeGlobal(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'search_issues_global',
       description: 'Search for issues and pull requests across all GitHub repositories',
       schema: baseSearchIssuesOrPullRequestsSchema,
+      operations: [ToolOperation.READ],
       func: async (args: SearchIssuesGlobalParams) => service.searchIssuesGlobal(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'get_pull_request_status',
       description: 'Get the combined status of all status checks for a pull request',
       schema: getPullRequestStatusSchema(config),
+      operations: [ToolOperation.READ],
       func: async (args: GetPullRequestStatusParams) => service.getPullRequestStatus(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'get_pull_request_files',
       description: 'Get the list of files changed in a pull request',
       schema: getPullRequestFilesSchema(config),
+      operations: [ToolOperation.READ],
       func: async (args: GetPullRequestFilesParams) => service.getPullRequestFiles(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'get_pull_request_comments',
       description: 'Get the review comments on a pull request',
       schema: getPullRequestCommentsSchema(config),
+      operations: [ToolOperation.READ],
       func: async (args: GetPullRequestCommentsParams) => service.getPullRequestComments(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'get_pull_request_reviews',
       description: 'Get the reviews on a pull request',
       schema: getPullRequestReviewsSchema(config),
+      operations: [ToolOperation.READ],
       func: async (args: GetPullRequestReviewsParams) => service.getPullRequestReviews(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'update_pull_request_branch',
       description: 'Update a pull request branch with latest changes from base branch',
       schema: updatePullRequestBranchSchema(config),
+      operations: [ToolOperation.UPDATE],
       func: async (args: UpdatePullRequestBranchParams) => service.updatePullRequestBranch(args)
     })
   ];

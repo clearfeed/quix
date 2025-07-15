@@ -9,7 +9,9 @@
     "@quix/(.*)": "<rootDir>/src/$1"
   },
   "scripts": {
-    "build": "nest build",
+    "build:packages": "cd agent-packages && bash build.sh",
+    "link:packages": "bash link.sh", 
+    "build": "yarn build:packages && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
