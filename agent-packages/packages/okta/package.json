@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-okta-agent",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -9,6 +9,9 @@
     "test": "jest",
     "watch": "tsc --watch",
     "prepublishOnly": "yarn build"
+  },
+  "peerDependencies": {
+    "@langchain/core": "0.3.62"
   },
   "dependencies": {
     "@okta/okta-sdk-nodejs": "^7.0.1"

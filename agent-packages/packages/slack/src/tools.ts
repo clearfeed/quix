@@ -25,7 +25,7 @@ import {
 } from './schema';
 import { SlackConfig } from './types';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
-import { DynamicStructuredTool, tool } from '@langchain/core/tools';
+import { tool } from '@langchain/core/tools';
 
 const SLACK_TOOL_SELECTION_PROMPT = `
 Slack is a team communication platform that manages:
@@ -53,7 +53,7 @@ When formatting Slack responses:
 export function createSlackToolsExport(config: SlackConfig): ToolConfig {
   const service = new SlackService(config);
 
-  const tools: DynamicStructuredTool<any>[] = [
+  const tools = [
     tool(async (args: ListChannelsParams) => service.listChannels(args), {
       name: 'slack_list_channels',
       description: 'List public channels in the Slack workspace with pagination',

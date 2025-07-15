@@ -1,28 +1,20 @@
-import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
-import { addJiraCommentSchema, createJiraIssueSchema, updateJiraTicketSchema } from '../schema';
+import { BaseResponse } from '@clearfeed-ai/quix-common-agent';
+import {
+  addJiraCommentSchema,
+  assignJiraIssueSchema,
+  createJiraIssueSchema,
+  createJiraIssueSchemaWithConfig,
+  findJiraTicketSchemaWithConfig,
+  getJiraCommentsSchema,
+  getJiraIssueSchema,
+  getProjectKeySchemaWithConfig,
+  searchJiraUsersSchema,
+  updateJiraTicketSchema
+} from '../schema';
 import { z } from 'zod';
-
-export type JiraAuth =
-  | {
-      username: string;
-      password: string;
-    }
-  | {
-      bearerToken: string;
-    }
-  | {
-      sharedSecret: string;
-      atlassianConnectAppKey: string;
-    };
-
-export interface JiraConfig extends BaseConfig {
-  host: string;
-  defaultConfig?: {
-    projectKey?: string;
-  };
-  auth: JiraAuth;
-  apiHost?: string;
-}
+import { JiraAuth } from './config';
+// Re-export config types for backward compatibility
+export { JiraConfig, JiraAuth } from './config';
 
 export interface JiraIssueResponse {
   id: string;
@@ -176,8 +168,6 @@ export interface JiraIssueComments {
   startAt: number;
 }
 
-export type AddCommentParams = z.infer<typeof addJiraCommentSchema>;
-
 export type AddCommentResponse = BaseResponse<{
   comment: JiraCommentResponse & { url: string };
 }>;
@@ -186,7 +176,6 @@ export type GetCommentsResponse = BaseResponse<{
   comments: (JiraIssueComments['comments'][number] & { url: string })[];
 }>;
 
-export type UpdateIssueParams = z.infer<typeof updateJiraTicketSchema>;
 export type UpdateIssueFields = Omit<UpdateIssueParams, 'issueId'>;
 export type UpdateIssueResponse = BaseResponse<{
   issueId: string;
@@ -250,3 +239,13 @@ export type JiraUpdateIssueMetadata = {
   startAt: number;
   total: number;
 };
+
+export type FindJiraParams = z.infer<ReturnType<typeof findJiraTicketSchemaWithConfig>>;
+export type CreateJiraParams = z.infer<ReturnType<typeof createJiraIssueSchemaWithConfig>>;
+export type ProjectKeyParams = z.infer<ReturnType<typeof getProjectKeySchemaWithConfig>>;
+export type GetIssueParams = z.infer<typeof getJiraIssueSchema>;
+export type AssignIssueParams = z.infer<typeof assignJiraIssueSchema>;
+export type AddCommentParams = z.infer<typeof addJiraCommentSchema>;
+export type GetCommentsParams = z.infer<typeof getJiraCommentsSchema>;
+export type UpdateIssueParams = z.infer<typeof updateJiraTicketSchema>;
+export type SearchUsersParams = z.infer<typeof searchJiraUsersSchema>;
