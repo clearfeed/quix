@@ -33,6 +33,13 @@ When formatting Salesforce responses:
 - Format dates in a human-readable format
 `;
 
+const findUserSchema = z.object({
+  userIdentifier: z.union([
+    z.object({ name: z.string().describe('The name of the user to find') }),
+    z.object({ email: z.string().describe('The email of the user to find') })
+  ])
+});
+
 export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfig {
   const service = new SalesforceService(config);
 
@@ -40,15 +47,9 @@ export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfi
     tool({
       name: 'find_user',
       description: 'Find a user in Salesforce based on a name or email',
-      schema: z.object({
-        userIdentifier: z.union([
-          z.object({ name: z.string().describe('The name of the user to find') }),
-          z.object({ email: z.string().describe('The email of the user to find') })
-        ])
-      }),
+      schema: findUserSchema,
       operations: [ToolOperation.READ],
-      func: async (args: { userIdentifier: { name?: string; email?: string } }) =>
-        service.findUser(args.userIdentifier)
+      func: async (args: z.infer<typeof findUserSchema>) => service.findUser(args.userIdentifier)
     }),
     tool({
       name: 'describe_object',

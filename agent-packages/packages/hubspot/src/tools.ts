@@ -84,7 +84,8 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       description: 'Search for contacts in HubSpot based on name or email',
       schema: searchContactsSchema,
       operations: [ToolOperation.READ],
-      func: async (args: { keyword: string }) => service.searchContacts(args.keyword)
+      func: async (args: z.infer<typeof searchContactsSchema>) =>
+        service.searchContacts(args.keyword)
     }),
     tool({
       name: 'add_note_to_hubspot_deal',
@@ -173,7 +174,8 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       description: 'Search companies in HubSpot based on a keyword (e.g., company name)',
       schema: searchCompaniesSchema,
       operations: [ToolOperation.READ],
-      func: async (args: { keyword: string }) => service.searchCompanies(args.keyword)
+      func: async (args: z.infer<typeof searchCompaniesSchema>) =>
+        service.searchCompanies(args.keyword)
     }),
     tool({
       name: 'create_hubspot_task',
