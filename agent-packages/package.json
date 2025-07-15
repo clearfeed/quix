@@ -18,7 +18,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "lodash": "^4.17.21",
-    "@clearfeed-ai/quix-common-agent": "^1.1.5"
+    "@clearfeed-ai/quix-common-agent": "^1.2.0"
   },
   "peerDependencies": {
     "@langchain/core": "0.3.62",

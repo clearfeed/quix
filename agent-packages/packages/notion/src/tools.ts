@@ -1,6 +1,5 @@
 import { NotionService } from './index';
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
-import { DynamicStructuredTool } from '@langchain/core/tools';
+import { ToolConfig, ToolOperation, tool } from '@clearfeed-ai/quix-common-agent';
 import {
   AppendBlockChildrenArgs,
   CreateCommentArgs,
@@ -72,116 +71,134 @@ export function createNotionToolsExport(config: NotionConfig): ToolConfig {
   const service = new NotionService(config);
 
   const tools = [
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_retrieve_block',
       description: 'Retrieve a block from Notion',
       schema: retrieveBlockSchema,
+      operations: [ToolOperation.READ],
       func: async (args: RetrieveBlockArgs) => service.retrieveBlock(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_retrieve_block_children',
       description: 'Retrieve the children of a block',
       schema: retrieveBlockChildrenSchema,
+      operations: [ToolOperation.READ],
       func: async (args: RetrieveBlockChildrenArgs) => service.retrieveBlockChildren(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_append_block_children',
       description:
         "Append new children blocks to a specified parent block in Notion. Requires insert content capabilities. You can optionally specify the 'after' parameter to append after a certain block.",
       schema: appendBlockChildrenSchema,
+      operations: [ToolOperation.CREATE],
       func: async (args: AppendBlockChildrenArgs) => service.appendBlockChildren(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_delete_block',
       description: 'Delete a block in Notion',
       schema: deleteBlockSchema,
+      operations: [ToolOperation.DELETE],
       func: async (args: DeleteBlockArgs) => service.deleteBlock(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_update_block',
       description:
         'Update the content of a block in Notion based on its type. The update replaces the entire value for a given field.',
       schema: updateBlockSchema,
+      operations: [ToolOperation.UPDATE],
       func: async (args: UpdateBlockArgs) => service.updateBlock(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_retrieve_page',
       description: 'Retrieve a page from Notion',
       schema: retrievePageSchema,
+      operations: [ToolOperation.READ],
       func: async (args: RetrievePageArgs) => service.retrievePage(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_delete_or_archive_page',
       description: 'Delete or archive a page in Notion',
       schema: deleteOrArchivePageSchema,
+      operations: [ToolOperation.DELETE],
       func: async (args: DeleteOrArchivePageArgs) => service.deleteOrArchivePage(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_update_page_properties',
       description: 'Update properties of a page or an item in a Notion database',
       schema: updatePagePropertiesSchema,
+      operations: [ToolOperation.UPDATE],
       func: async (args: UpdatePagePropertiesArgs) => service.updatePageProperties(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_query_database',
       description: 'Query a database in Notion',
       schema: queryDatabaseSchema,
+      operations: [ToolOperation.READ],
       func: async (args: QueryDatabaseArgs) => service.queryDatabase(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_create_database',
       description: 'Create a new database in Notion',
       schema: createDatabaseSchema,
+      operations: [ToolOperation.CREATE],
       func: async (args: CreateDatabaseArgs) => service.createDatabase(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_retrieve_database',
       description: 'Retrieve a database in Notion',
       schema: retrieveDatabaseSchema,
+      operations: [ToolOperation.READ],
       func: async (args: RetrieveDatabaseArgs) => service.retrieveDatabase(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_create_database_item',
       description: 'Create a new item (page) in a Notion database',
       schema: createDatabaseItemSchema,
+      operations: [ToolOperation.CREATE],
       func: async (args: CreateDatabaseItemArgs) => service.createDatabaseItem(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_create_comment',
       description:
         "Create a comment in Notion. This requires the integration to have 'insert comment' capabilities. You can either specify a page parent or a discussion_id, but not both.",
       schema: createCommentSchema,
+      operations: [ToolOperation.CREATE],
       func: async (args: CreateCommentArgs) => service.createComment(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_retrieve_comments',
       description:
         "Retrieve a list of unresolved comments from a Notion page or block. Requires the integration to have 'read comment' capabilities.",
       schema: retrieveCommentsSchema,
+      operations: [ToolOperation.READ],
       func: async (args: RetrieveCommentsArgs) => service.retrieveComments(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_search',
       description: 'Search pages or databases by title in Notion',
       schema: searchSchema,
+      operations: [ToolOperation.READ],
       func: async (args: SearchArgs) => service.search(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_list_all_users',
       description: 'List all users in the Notion workspace.',
       schema: listAllUsersSchema,
+      operations: [ToolOperation.READ],
       func: async (args: ListAllUsersArgs) => service.listAllUsers(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_retrieve_user',
       description: 'Retrieve a specific user by user_id in Notion.',
       schema: retrieveUserSchema,
+      operations: [ToolOperation.READ],
       func: async (args: RetrieveUserArgs) => service.retrieveUser(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'notion_retrieve_bot_user',
       description: 'Retrieve the bot user associated with the current token in Notion',
       schema: retrieveBotUserSchema,
+      operations: [ToolOperation.READ],
       func: async () => service.retrieveBotUser()
     })
   ];

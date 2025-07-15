@@ -30,7 +30,7 @@ import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
-import { Tool } from '@clearfeed-ai/quix-common-agent';
+import { QuixTool } from '@clearfeed-ai/quix-common-agent';
 import { partition, isEmpty } from 'lodash';
 import { createNotionToolsExport } from '@clearfeed-ai/quix-notion-agent';
 import { createZendeskToolsExport } from '@clearfeed-ai/quix-zendesk-agent';
@@ -110,7 +110,7 @@ const getAvailableFns = async (selectedTool: SUPPORTED_INTEGRATIONS) => {
     }).tools;
 
     return tools.map(
-      (tool: Tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description
+      (tool: QuixTool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description
     );
   }
 

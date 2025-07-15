@@ -1,4 +1,4 @@
-import { tool } from '@langchain/core/tools';
+import { ToolOperation, tool } from '@clearfeed-ai/quix-common-agent';
 import { z } from 'zod';
 import { SalesforceConfig } from './index';
 import { CreateTaskParams, GetTasksParams, UpdateTaskParams } from './types/index';
@@ -17,7 +17,7 @@ const dueDateTransformer = (val: string | undefined) => {
 export const taskTools = (config: SalesforceConfig) => {
   const service = new SalesforceTaskService(config);
   return [
-    tool(async (args: CreateTaskParams) => service.createTask(args), {
+    tool({
       name: 'salesforce_create_task',
       description: 'Create a task in Salesforce',
       schema: z.object({
@@ -54,9 +54,11 @@ export const taskTools = (config: SalesforceConfig) => {
           .nullish()
           .transform((val) => (val ? dueDateTransformer(val) : undefined))
           .describe('The due date of the task, also referred to as ActivityDate')
-      })
+      }),
+      operations: [ToolOperation.CREATE],
+      func: async (args: CreateTaskParams) => service.createTask(args)
     }),
-    tool(async (args: UpdateTaskParams) => service.updateTask(args), {
+    tool({
       name: 'salesforce_update_task',
       description: 'Update a task in Salesforce',
       schema: z.object({
@@ -100,16 +102,20 @@ export const taskTools = (config: SalesforceConfig) => {
           .nullish()
           .transform((val) => (val ? dueDateTransformer(val) : undefined))
           .describe('The due date of the task, also referred to as ActivityDate')
-      })
+      }),
+      operations: [ToolOperation.UPDATE],
+      func: async (args: UpdateTaskParams) => service.updateTask(args)
     }),
-    tool(async (args: { taskId: string }) => service.deleteTask(args.taskId), {
+    tool({
       name: 'salesforce_delete_task',
       description: 'Delete a task in Salesforce, requires confirmation from the user.',
       schema: z.object({
         taskId: z.string().describe('The ID of the task to delete')
-      })
+      }),
+      operations: [ToolOperation.DELETE],
+      func: async (args: { taskId: string }) => service.deleteTask(args.taskId)
     }),
-    tool(async (args: GetTasksParams) => service.getTasks(args), {
+    tool({
       name: 'salesforce_get_tasks',
       description: 'Get tasks in Salesforce',
       schema: z.object({
@@ -145,7 +151,9 @@ export const taskTools = (config: SalesforceConfig) => {
           .describe('The due date of the task'),
         orderBy: z.string().default('CreatedDate').describe('The order by of the task'),
         limit: z.number().default(10).describe('The limit of the task')
-      })
+      }),
+      operations: [ToolOperation.READ],
+      func: async (args: GetTasksParams) => service.getTasks(args)
     })
   ];
 };

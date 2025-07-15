@@ -9,7 +9,7 @@ import {
   MessagesPlaceholder
 } from '@langchain/core/prompts';
 import { RunnableSequence, Runnable } from '@langchain/core/runnables';
-import { Tool, ToolConfig } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { QuixPrompts } from '../lib/constants';
 import { createReactAgent } from '@langchain/langgraph/prebuilt';
 import { SystemMessage } from '@langchain/core/messages';
@@ -105,7 +105,7 @@ export class QuixAgent {
     this.logger.log(`Plan generated for user's request`, {
       plan: encryptForLogs(formattedPlan)
     });
-    const availableTools: Tool[] = availableFunctions.flatMap((func) => func.availableTools);
+    const availableTools = availableFunctions.flatMap((func) => func.availableTools);
     const agent = createReactAgent({
       llm,
       tools: availableTools,

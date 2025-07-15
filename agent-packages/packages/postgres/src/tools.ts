@@ -1,31 +1,36 @@
 import { PostgresService } from '.';
 import { PostgresConfig } from './types';
-import { tool } from '@langchain/core/tools';
+import { ToolConfig, ToolOperation, tool } from '@clearfeed-ai/quix-common-agent';
 import { z } from 'zod';
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 
 export function createPostgresTools(config: PostgresConfig): ToolConfig['tools'] {
   const service = new PostgresService(config);
 
   const tools = [
-    tool(async (args: { tableName: string }) => service.getTableSchema(args.tableName), {
+    tool({
       name: 'get_table_schema',
       description: 'Get the schema of a table',
       schema: z.object({
         tableName: z.string().describe('The name of the table to get the schema of')
-      })
+      }),
+      operations: [ToolOperation.READ],
+      func: async (args: { tableName: string }) => service.getTableSchema(args.tableName)
     }),
-    tool(async () => service.listTables(), {
+    tool({
       name: 'list_tables',
       description: 'List all tables in the database',
-      schema: z.object({})
+      schema: z.object({}),
+      operations: [ToolOperation.READ],
+      func: async () => service.listTables()
     }),
-    tool(async (args: { query: string }) => service.queryDatabase(args.query), {
+    tool({
       name: 'query_database',
       description: 'Query the database with a SQL query',
       schema: z.object({
         query: z.string().describe('The SQL query to execute')
-      })
+      }),
+      operations: [ToolOperation.READ],
+      func: async (args: { query: string }) => service.queryDatabase(args.query)
     })
   ];
   return tools;
