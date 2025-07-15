@@ -29,6 +29,10 @@ When formatting HubSpot responses:
 - Format dates in a human-readable format
 `;
 
+const searchDealsSchema = z.object({
+  keyword: z.string().describe('The keyword to search for in HubSpot deals')
+});
+
 export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
   const service = new HubspotService(config);
 
@@ -36,10 +40,8 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
     new DynamicStructuredTool({
       name: 'search_hubspot_deals',
       description: 'Search for deals in HubSpot based on a keyword',
-      schema: z.object({
-        keyword: z.string().describe('The keyword to search for in HubSpot deals')
-      }),
-      func: async (args: { keyword: string }) => service.searchDeals(args.keyword)
+      schema: searchDealsSchema,
+      func: async (args: z.infer<typeof searchDealsSchema>) => service.searchDeals(args.keyword)
     })
   ]
 

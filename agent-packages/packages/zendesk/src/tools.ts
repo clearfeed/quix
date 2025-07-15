@@ -1,12 +1,6 @@
 import { createClient } from 'node-zendesk';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
-import {
-  GetTicketParams,
-  SearchTicketsParams,
-  ZendeskConfig,
-  GetTicketResponse,
-  SearchTicketsResponse
-} from './types';
+import { ZendeskConfig } from './types';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 
@@ -29,6 +23,15 @@ When formatting Zendesk responses:
 - List assignees and requesters clearly
 `;
 
+const searchTicketsSchema = z.object({
+  query: z.string().describe('The search query'),
+  limit: z.number().describe('Maximum number of tickets to return').optional()
+});
+
+const getTicketSchema = z.object({
+  ticketId: z.number().describe('The ID of the ticket to retrieve')
+});
+
 export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
   const client = createClient({
     username: config.email,
@@ -40,11 +43,8 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
     new DynamicStructuredTool({
       name: 'search_zendesk_tickets',
       description: 'Search Zendesk tickets using a query string',
-      schema: z.object({
-        query: z.string().describe('The search query'),
-        limit: z.number().describe('Maximum number of tickets to return').optional()
-      }),
-      func: async (args: SearchTicketsParams) => {
+      schema: searchTicketsSchema,
+      func: async (args: z.infer<typeof searchTicketsSchema>) => {
         try {
           const searchQuery = args.query;
           const limit = args.limit || 10;
@@ -67,10 +67,8 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
     new DynamicStructuredTool({
       name: 'get_zendesk_ticket',
       description: 'Retrieve a specific Zendesk ticket by ID',
-      schema: z.object({
-        ticketId: z.number().describe('The ID of the ticket to retrieve')
-      }),
-      func: async (args: GetTicketParams) => {
+      schema: getTicketSchema,
+      func: async (args: z.infer<typeof getTicketSchema>) => {
         try {
           const response = await client.tickets.show(args.ticketId);
           return {
