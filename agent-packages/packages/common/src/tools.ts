@@ -5,14 +5,16 @@ import { z } from 'zod';
 /**
  * Enhanced tool function that supports operation metadata
  */
-export function tool(
-  config: ConstructorParameters<typeof DynamicStructuredTool>[0] & {
-    operations: ToolOperation[];
-  }
-): ToolType {
+export function tool<T extends z.ZodSchema>(config: {
+  name: string;
+  description: string;
+  schema: T;
+  operations: ToolOperation[];
+  func: (input: z.infer<T>) => Promise<any>;
+}): ToolType {
   const { operations, ...toolConfig } = config;
   const baseTool = new DynamicStructuredTool(toolConfig);
-  return Object.assign(baseTool, { operations });
+  return Object.assign(baseTool, { operations }) as ToolType;
 }
 
 const TOOL_SELECTION_PROMPT = `
