@@ -34,9 +34,9 @@
     "@clearfeed-ai/quix-github-agent": "^1.2.14",
     "@clearfeed-ai/quix-hubspot-agent": "^1.1.12",
     "@clearfeed-ai/quix-jira-agent": "^1.2.20",
+    "@clearfeed-ai/quix-jumpcloud-agent": "^1.0.1",
     "@clearfeed-ai/quix-notion-agent": "^1.0.4",
     "@clearfeed-ai/quix-okta-agent": "^1.0.7",
-    "@clearfeed-ai/quix-jumpcloud-agent": "^1.0.1",
     "@clearfeed-ai/quix-postgres-agent": "^1.0.2",
     "@clearfeed-ai/quix-salesforce-agent": "^1.0.11",
     "@clearfeed-ai/quix-slack-agent": "^1.0.5",
@@ -105,7 +105,6 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
   },
   "jest": {
