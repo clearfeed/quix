@@ -1,4 +1,4 @@
-import { ToolConfig, ToolOperation, tool, ToolType } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, tool } from '@clearfeed-ai/quix-common-agent';
 import { GitHubService } from './index';
 import {
   GitHubConfig,
@@ -83,7 +83,7 @@ When formatting GitHub responses:
 export async function createGitHubToolsExport(config: GitHubConfig): Promise<ToolConfig> {
   const service = await GitHubService.create(config);
 
-  const tools: ToolType[] = [
+  const tools = [
     tool({
       name: 'search_issues_or_pull_requests',
       description:

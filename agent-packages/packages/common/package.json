@@ -10,6 +10,7 @@
     "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
     "build": "tsc",
     "test": "jest",
+    "watch": "tsc --watch",
     "prepublishOnly": "npm run clean && npm run build"
   },
   "devDependencies": {

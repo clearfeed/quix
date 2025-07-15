@@ -1,4 +1,12 @@
 import { DynamicStructuredTool } from '@langchain/core/tools';
+import {
+  DynamicStructuredToolInput,
+  ToolInputSchemaBase,
+  ToolInputSchemaInputType,
+  ToolInputSchemaOutputType,
+  ToolOutputType
+} from '@langchain/core/dist/tools/types';
+
 /**
  * Base configuration interface that all integrations must implement
  */
@@ -50,7 +58,20 @@ export enum ToolOperation {
   DELETE = 'delete'
 }
 
-export type ToolType = DynamicStructuredTool & {
+export type QuixToolInput<
+  SchemaT = ToolInputSchemaBase,
+  SchemaOutputT = ToolInputSchemaOutputType<SchemaT>,
+  ToolOutputT = ToolOutputType
+> = DynamicStructuredToolInput<SchemaT, SchemaOutputT, ToolOutputT> & {
+  operations: ToolOperation[];
+};
+
+export type QuixTool<
+  SchemaT = ToolInputSchemaBase,
+  SchemaOutputT = ToolInputSchemaOutputType<SchemaT>,
+  SchemaInputT = ToolInputSchemaInputType<SchemaT>,
+  ToolOutputT = ToolOutputType
+> = DynamicStructuredTool<SchemaT, SchemaOutputT, SchemaInputT, ToolOutputT> & {
   operations: ToolOperation[];
 };
 
@@ -69,7 +90,7 @@ export interface BaseResponse<T = any> {
 export interface BaseService<TConfig extends BaseConfig = BaseConfig> {}
 
 export interface ToolConfig {
-  tools: (ToolType | DynamicStructuredTool)[];
+  tools: (QuixTool | DynamicStructuredTool)[];
   prompts?: {
     toolSelection?: string;
     responseGeneration?: string;
