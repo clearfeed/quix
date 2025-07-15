@@ -351,26 +351,18 @@
   resolved "https://registry.yarnpkg.com/@cfworker/json-schema/-/json-schema-4.1.1.tgz#4a2a3947ee9fa7b7c24be981422831b8674c3be6"
   integrity sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==
 
-"@clearfeed-ai/quix-common-agent@1.2.0", "@clearfeed-ai/quix-common-agent@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.2.0.tgz#aeba2d6cbd02280059d1111a6c6595889760389e"
-  integrity sha512-Nh1jWpeXjIfTJWLO8MWb7M2T65VVzGurMI4EjC6WNOa5KNMmVylDBCL5MoTsXebTtJAE3EtrrrkwYvyIua0IWA==
-  dependencies:
-    zod "^3.24.2"
-
-"@clearfeed-ai/quix-common-agent@^1.1.0", "@clearfeed-ai/quix-common-agent@^1.1.5":
+"@clearfeed-ai/quix-common-agent@^1.1.0", "@clearfeed-ai/quix-common-agent@^1.1.5", "@clearfeed-ai/quix-common-agent@^1.1.6":
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.1.6.tgz#fbc428a246ee0e38c6a7755032e18f4c6dc5efe3"
   integrity sha512-IcdpnISUoLI1rxJxkdMEr2a7zdHB/DUIPI/uHJYlkEB1/4f07iV1wlNOlU7qvyWGT1hmugRVOQmYv7vhgTLU/Q==
   dependencies:
     zod "^3.24.2"
 
-"@clearfeed-ai/quix-github-agent@^1.2.14":
-  version "1.2.14"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.2.14.tgz#1b1fb7f6e0c537021a425c3400370eeea6d882e6"
-  integrity sha512-SsC0CcGns+N+7omyS7fFbtAzPmoDK8K/e8QKt4hufNLirYbpk4Q7JV48zSjMe2NozhUxi1nVjEI6uyqVy8qWmQ==
+"@clearfeed-ai/quix-github-agent@^1.2.13":
+  version "1.2.13"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.2.13.tgz#f277ca0b32e124de821e52ba082ce2a831feb454"
+  integrity sha512-/JrHGOVTL5Pob3r2lP4X3lUyEYpSxkSHEz+Txa6mHC860Mabux6hd9wA9sc+yG4mBGK/YExaoZU7JbIDdNx/mA==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "1.2.0"
     "@octokit/rest" "^21.1.1"
 
 "@clearfeed-ai/quix-hubspot-agent@^1.1.12":

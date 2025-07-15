@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build:packages": "cd agent-packages && bash build.sh",
-    "link:packages": "bash link.sh",
+    "link:packages": "bash link.sh", 
     "build": "yarn build:packages && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -30,8 +30,8 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^1.2.0",
-    "@clearfeed-ai/quix-github-agent": "^1.2.14",
+    "@clearfeed-ai/quix-common-agent": "^1.1.6",
+    "@clearfeed-ai/quix-github-agent": "^1.2.13",
     "@clearfeed-ai/quix-hubspot-agent": "^1.1.12",
     "@clearfeed-ai/quix-jira-agent": "^1.2.20",
     "@clearfeed-ai/quix-notion-agent": "^1.0.4",
