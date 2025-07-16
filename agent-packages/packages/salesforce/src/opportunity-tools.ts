@@ -64,8 +64,8 @@ export const opportunityTools = (config: SalesforceConfig) => {
       description: 'Get the URL to view an opportunity in Salesforce',
       schema: getOpportunityUrlSchema,
       operations: [ToolOperation.READ],
-      func: (args: z.infer<typeof getOpportunityUrlSchema>) => {
-        return Promise.resolve(service.getOpportunityUrl(args.opportunityId));
+      func: async (args: z.infer<typeof getOpportunityUrlSchema>) => {
+        return service.getOpportunityUrl(args.opportunityId);
       }
     }),
     tool({
