@@ -17,8 +17,8 @@
     "@langchain/core": "0.3.62"
   },
   "dependencies": {
-    "axios": "^1.8.2",
-    "@clearfeed-ai/quix-common-agent": "^1.1.5"
+    "@clearfeed-ai/quix-common-agent": "1.2.0",
+    "axios": "^1.8.2"
   },
   "devDependencies": {
     "typescript": "^5.7.3",

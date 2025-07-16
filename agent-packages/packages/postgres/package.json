@@ -12,7 +12,7 @@
     "@langchain/core": "0.3.62"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^1.1.0",
+    "@clearfeed-ai/quix-common-agent": "1.2.0",
     "pg": "^8.14.0"
   },
   "files": [

@@ -13,7 +13,7 @@
     "@langchain/core": "0.3.62"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^1.1.0",
+    "@clearfeed-ai/quix-common-agent": "1.2.0",
     "date-fns": "^4.1.0",
     "jsforce": "^3.5.0"
   },

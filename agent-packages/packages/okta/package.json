@@ -14,6 +14,7 @@
     "@langchain/core": "0.3.62"
   },
   "dependencies": {
+    "@clearfeed-ai/quix-common-agent": "1.2.0",
     "@okta/okta-sdk-nodejs": "^7.0.1"
   },
   "files": [
