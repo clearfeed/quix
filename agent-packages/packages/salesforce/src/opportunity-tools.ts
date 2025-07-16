@@ -47,11 +47,7 @@ export const opportunityTools = (config: SalesforceConfig) => {
       schema: opportunitySearchSchema,
       operations: [ToolOperation.READ],
       func: async (args: z.infer<typeof opportunitySearchSchema>) => {
-        try {
-          return await service.searchOpportunities(args);
-        } catch (error) {
-          return { success: false, error: error instanceof Error ? error.message : String(error) };
-        }
+        return await service.searchOpportunities(args);
       }
     }),
     tool({
@@ -60,11 +56,7 @@ export const opportunityTools = (config: SalesforceConfig) => {
       schema: addNoteToOpportunitySchema,
       operations: [ToolOperation.CREATE],
       func: async (args: z.infer<typeof addNoteToOpportunitySchema>) => {
-        try {
-          return await service.addNoteToOpportunity(args.opportunityId, args.note, args.title);
-        } catch (error) {
-          return { success: false, error: error instanceof Error ? error.message : String(error) };
-        }
+        return await service.addNoteToOpportunity(args.opportunityId, args.note, args.title);
       }
     }),
     tool({
@@ -72,12 +64,8 @@ export const opportunityTools = (config: SalesforceConfig) => {
       description: 'Get the URL to view an opportunity in Salesforce',
       schema: getOpportunityUrlSchema,
       operations: [ToolOperation.READ],
-      func: async (args: z.infer<typeof getOpportunityUrlSchema>) => {
-        try {
-          return await service.getOpportunityUrl(args.opportunityId);
-        } catch (error) {
-          return { success: false, error: error instanceof Error ? error.message : String(error) };
-        }
+      func: (args: z.infer<typeof getOpportunityUrlSchema>) => {
+        return Promise.resolve(service.getOpportunityUrl(args.opportunityId));
       }
     }),
     tool({
@@ -86,11 +74,7 @@ export const opportunityTools = (config: SalesforceConfig) => {
       schema: getOpportunityStagesSchema,
       operations: [ToolOperation.READ],
       func: async (args: z.infer<typeof getOpportunityStagesSchema>) => {
-        try {
-          return await service.getOpportunityStages();
-        } catch (error) {
-          return { success: false, error: error instanceof Error ? error.message : String(error) };
-        }
+        return await service.getOpportunityStages();
       }
     }),
     tool({
@@ -99,11 +83,7 @@ export const opportunityTools = (config: SalesforceConfig) => {
       schema: opportunitySearchSchema,
       operations: [ToolOperation.READ],
       func: async (args: z.infer<typeof opportunitySearchSchema>) => {
-        try {
-          return await service.getOpportunityCount(args);
-        } catch (error) {
-          return { success: false, error: error instanceof Error ? error.message : String(error) };
-        }
+        return await service.getOpportunityCount(args);
       }
     })
   ];

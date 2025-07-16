@@ -140,11 +140,7 @@ export const taskTools = (config: SalesforceConfig) => {
       schema: createTaskSchema,
       operations: [ToolOperation.CREATE],
       func: async (args: z.infer<typeof createTaskSchema>) => {
-        try {
-          return await service.createTask(args);
-        } catch (error) {
-          return { success: false, error: error instanceof Error ? error.message : String(error) };
-        }
+        return await service.createTask(args);
       }
     }),
     tool({
@@ -153,11 +149,7 @@ export const taskTools = (config: SalesforceConfig) => {
       schema: updateTaskSchema,
       operations: [ToolOperation.UPDATE],
       func: async (args: z.infer<typeof updateTaskSchema>) => {
-        try {
-          return await service.updateTask(args);
-        } catch (error) {
-          return { success: false, error: error instanceof Error ? error.message : String(error) };
-        }
+        return await service.updateTask(args);
       }
     }),
     tool({
@@ -166,11 +158,7 @@ export const taskTools = (config: SalesforceConfig) => {
       schema: deleteTaskSchema,
       operations: [ToolOperation.DELETE],
       func: async (args: z.infer<typeof deleteTaskSchema>) => {
-        try {
-          return await service.deleteTask(args.taskId);
-        } catch (error) {
-          return { success: false, error: error instanceof Error ? error.message : String(error) };
-        }
+        return await service.deleteTask(args.taskId);
       }
     }),
     tool({
@@ -179,11 +167,7 @@ export const taskTools = (config: SalesforceConfig) => {
       schema: getTasksSchema,
       operations: [ToolOperation.READ],
       func: async (args: z.infer<typeof getTasksSchema>) => {
-        try {
-          return await service.getTasks(args);
-        } catch (error) {
-          return { success: false, error: error instanceof Error ? error.message : String(error) };
-        }
+        return await service.getTasks(args);
       }
     })
   ];
