@@ -1,4 +1,4 @@
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, tool } from '@clearfeed-ai/quix-common-agent';
 import { HubspotService } from './index';
 import {
   CreateContactParams,
@@ -17,7 +17,6 @@ import {
   CreateTaskParams,
   AssociateTaskWithEntityParams
 } from './types';
-import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import {
   taskUpdateSchema,
@@ -73,137 +72,168 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
   const service = new HubspotService(config);
 
   const tools = [
-    tool(async (args: SearchDealsParams) => service.searchDeals(args), {
+    tool({
       name: 'search_hubspot_deals',
       description: 'Search for deals in HubSpot',
-      schema: searchDealsSchema
+      schema: searchDealsSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: SearchDealsParams) => service.searchDeals(args)
     }),
-    tool(async (args: { keyword: string }) => service.searchContacts(args.keyword), {
+    tool({
       name: 'search_hubspot_contacts',
       description: 'Search for contacts in HubSpot based on name or email',
-      schema: searchContactsSchema
+      schema: searchContactsSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: z.infer<typeof searchContactsSchema>) =>
+        service.searchContacts(args.keyword)
     }),
-    tool(
-      async (args: { entityId: string; note: string }) =>
+    tool({
+      name: 'add_note_to_hubspot_deal',
+      description: 'Add a note to a deal in HubSpot',
+      schema: z.object({
+        entityId: z.string().describe('The ID of the deal'),
+        note: z.string().describe('The content of the note')
+      }),
+      operations: [ToolOperation.CREATE],
+      func: async (args: { entityId: string; note: string }) =>
         service.createNote({
           entityType: HubspotEntityType.DEAL,
           entityId: args.entityId,
           note: args.note
-        }),
-      {
-        name: 'add_note_to_hubspot_deal',
-        description: 'Add a note to a deal in HubSpot',
-        schema: z.object({
-          entityId: z.string().describe('The ID of the deal'),
-          note: z.string().describe('The content of the note')
         })
-      }
-    ),
-    tool(
-      async (args: { entityId: string; note: string }) =>
+    }),
+    tool({
+      name: 'add_note_to_hubspot_contact',
+      description: 'Add a note to a contact in HubSpot',
+      schema: z.object({
+        entityId: z.string().describe('The ID of the contact'),
+        note: z.string().describe('The content of the note')
+      }),
+      operations: [ToolOperation.CREATE],
+      func: async (args: { entityId: string; note: string }) =>
         service.createNote({
           entityType: HubspotEntityType.CONTACT,
           entityId: args.entityId,
           note: args.note
-        }),
-      {
-        name: 'add_note_to_hubspot_contact',
-        description: 'Add a note to a contact in HubSpot',
-        schema: z.object({
-          entityId: z.string().describe('The ID of the contact'),
-          note: z.string().describe('The content of the note')
         })
-      }
-    ),
-    tool(
-      async (args: { entityId: string; note: string }) =>
+    }),
+    tool({
+      name: 'add_note_to_hubspot_company',
+      description: 'Add a note to a company in HubSpot',
+      schema: z.object({
+        entityId: z.string().describe('The ID of the company'),
+        note: z.string().describe('The content of the note')
+      }),
+      operations: [ToolOperation.CREATE],
+      func: async (args: { entityId: string; note: string }) =>
         service.createNote({
           entityType: HubspotEntityType.COMPANY,
           entityId: args.entityId,
           note: args.note
-        }),
-      {
-        name: 'add_note_to_hubspot_company',
-        description: 'Add a note to a company in HubSpot',
-        schema: z.object({
-          entityId: z.string().describe('The ID of the company'),
-          note: z.string().describe('The content of the note')
         })
-      }
-    ),
-    tool(async (args: CreateDealParams) => service.createDeal(args), {
+    }),
+    tool({
       name: 'create_hubspot_deal',
       description: 'Create a new deal in HubSpot',
-      schema: createDealSchema
+      schema: createDealSchema,
+      operations: [ToolOperation.CREATE],
+      func: async (args: CreateDealParams) => service.createDeal(args)
     }),
-    tool(async (args: UpdateDealParams) => service.updateDeal(args), {
+    tool({
       name: 'update_hubspot_deal',
       description:
         'Update the details of an existing HubSpot deal. Only the fields explicitly provided should be updated; leave all other fields unchanged.',
-      schema: updateDealSchema
+      schema: updateDealSchema,
+      operations: [ToolOperation.UPDATE],
+      func: async (args: UpdateDealParams) => service.updateDeal(args)
     }),
-    tool(async (args: CreateContactParams) => service.createContact(args), {
+    tool({
       name: 'create_hubspot_contact',
       description: 'Create a new contact in HubSpot',
-      schema: createContactSchema
+      schema: createContactSchema,
+      operations: [ToolOperation.CREATE],
+      func: async (args: CreateContactParams) => service.createContact(args)
     }),
-    tool(async (args: GetPipelinesParams) => service.getPipelines(args.entityType), {
+    tool({
       name: 'get_hubspot_pipelines',
       description:
         'Retrieve all pipelines in HubSpot associated with a specific object type, such as tickets or deals.',
-      schema: getPipelinesSchema
+      schema: getPipelinesSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: GetPipelinesParams) => service.getPipelines(args.entityType)
     }),
-    tool(async () => service.getOwners(), {
+    tool({
       name: 'get_hubspot_owners',
       description: 'Fetch all HubSpot owners (users) and their IDs',
-      schema: z.object({})
+      schema: z.object({}),
+      operations: [ToolOperation.READ],
+      func: async () => service.getOwners()
     }),
-    tool(async (args: { keyword: string }) => service.searchCompanies(args.keyword), {
+    tool({
       name: 'search_hubspot_companies',
       description: 'Search companies in HubSpot based on a keyword (e.g., company name)',
-      schema: searchCompaniesSchema
+      schema: searchCompaniesSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: z.infer<typeof searchCompaniesSchema>) =>
+        service.searchCompanies(args.keyword)
     }),
-    tool(async (args: CreateTaskParams) => service.createTask(args), {
+    tool({
       name: 'create_hubspot_task',
       description:
         'Create a new HubSpot task using only the information provided. Do not populate any additional fields unless they are required.',
-      schema: baseTaskSchema
+      schema: baseTaskSchema,
+      operations: [ToolOperation.CREATE],
+      func: async (args: CreateTaskParams) => service.createTask(args)
     }),
-    tool(async (args: AssociateTaskWithEntityParams) => service.associateTaskWithEntity(args), {
+    tool({
       name: 'associate_task_with_entity',
       description: 'Associate an existing task with a HubSpot contact, company, or deal.',
-      schema: associateTaskWithEntitySchema
+      schema: associateTaskWithEntitySchema,
+      operations: [ToolOperation.UPDATE],
+      func: async (args: AssociateTaskWithEntityParams) => service.associateTaskWithEntity(args)
     }),
-    tool(async (args: UpdateTaskParams) => service.updateTask(args), {
+    tool({
       name: 'update_hubspot_task',
       description: 'Update the details of an existing task in HubSpot.',
-      schema: taskUpdateSchema
+      schema: taskUpdateSchema,
+      operations: [ToolOperation.UPDATE],
+      func: async (args: UpdateTaskParams) => service.updateTask(args)
     }),
-    tool(async (args: TaskSearchParams) => service.searchTasks(args), {
+    tool({
       name: 'search_hubspot_tasks',
       description:
         'Search for tasks in HubSpot using filters such as keyword, owner, status, priority, due date.',
-      schema: taskSearchSchema
+      schema: taskSearchSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: TaskSearchParams) => service.searchTasks(args)
     }),
-    tool(async (args: CreateTicketParams) => service.createTicket(args), {
+    tool({
       name: 'create_hubspot_ticket',
       description: 'Create a new HubSpot ticket.',
-      schema: baseTicketSchema
+      schema: baseTicketSchema,
+      operations: [ToolOperation.CREATE],
+      func: async (args: CreateTicketParams) => service.createTicket(args)
     }),
-    tool(async (args: AssociateTicketWithEntityParams) => service.associateTicketWithEntity(args), {
+    tool({
       name: 'associate_ticket_with_entity',
       description: 'Associate an existing ticket with a HubSpot contact, company, or deal.',
-      schema: associateTicketWithEntitySchema
+      schema: associateTicketWithEntitySchema,
+      operations: [ToolOperation.UPDATE],
+      func: async (args: AssociateTicketWithEntityParams) => service.associateTicketWithEntity(args)
     }),
-    tool(async (args: UpdateTicketParams) => service.updateTicket(args), {
+    tool({
       name: 'update_hubspot_ticket',
       description: 'Update the details of an existing HubSpot ticket.',
-      schema: ticketUpdateSchema
+      schema: ticketUpdateSchema,
+      operations: [ToolOperation.UPDATE],
+      func: async (args: UpdateTicketParams) => service.updateTicket(args)
     }),
-    tool(async (args: TicketSearchParams) => service.searchTickets(args), {
+    tool({
       name: 'search_hubspot_tickets',
       description: 'Search for tickets in HubSpot based on a keyword, owner, stage, or priority.',
-      schema: ticketSearchSchema
+      schema: ticketSearchSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: TicketSearchParams) => service.searchTickets(args)
     })
   ];
 

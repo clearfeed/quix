@@ -1,5 +1,4 @@
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
-import { DynamicStructuredTool, tool } from '@langchain/core/tools';
+import { ToolConfig, ToolOperation, tool } from '@clearfeed-ai/quix-common-agent';
 import { z } from 'zod';
 import { SalesforceConfig } from './types';
 import { SalesforceService } from './index';
@@ -34,43 +33,44 @@ When formatting Salesforce responses:
 - Format dates in a human-readable format
 `;
 
+const findUserSchema = z.object({
+  userIdentifier: z.union([
+    z.object({ name: z.string().describe('The name of the user to find') }),
+    z.object({ email: z.string().describe('The email of the user to find') })
+  ])
+});
+
 export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfig {
   const service = new SalesforceService(config);
 
   const tools = [
-    tool(
-      async (args: { userIdentifier: { name?: string; email?: string } }) =>
-        service.findUser(args.userIdentifier),
-      {
-        name: 'find_user',
-        description: 'Find a user in Salesforce based on a name or email',
-        schema: z.object({
-          userIdentifier: z.union([
-            z.object({ name: z.string().describe('The name of the user to find') }),
-            z.object({ email: z.string().describe('The email of the user to find') })
-          ])
-        })
-      }
-    ),
-    tool(async (args: DescribeObjectParams) => service.describeObject(args), {
+    tool({
+      name: 'find_user',
+      description: 'Find a user in Salesforce based on a name or email',
+      schema: findUserSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: z.infer<typeof findUserSchema>) => service.findUser(args.userIdentifier)
+    }),
+    tool({
       name: 'describe_object',
       description: 'Describe salesforce objects such as accounts, contacts, opportunities, etc.',
       schema: z.object({
         objectName: z.nativeEnum(SalesforceObjectName)
-      })
+      }),
+      operations: [ToolOperation.READ],
+      func: async (args: DescribeObjectParams) => service.describeObject(args)
     }),
-    tool(
-      async (args: { objectId: string; objectType: SalesforceObjectName }) =>
-        service.getObjectDetails(args.objectType, args.objectId),
-      {
-        name: 'get_object_details',
-        description: 'Get details of an object in Salesforce',
-        schema: z.object({
-          objectId: z.string().describe('The ID of the object to get details for'),
-          objectType: z.nativeEnum(SalesforceObjectName)
-        })
-      }
-    ),
+    tool({
+      name: 'get_object_details',
+      description: 'Get details of an object in Salesforce',
+      schema: z.object({
+        objectId: z.string().describe('The ID of the object to get details for'),
+        objectType: z.nativeEnum(SalesforceObjectName)
+      }),
+      operations: [ToolOperation.READ],
+      func: async (args: { objectId: string; objectType: SalesforceObjectName }) =>
+        service.getObjectDetails(args.objectType, args.objectId)
+    }),
     ...taskTools(config),
     ...accountTools(config),
     ...opportunityTools(config)

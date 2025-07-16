@@ -9,8 +9,7 @@ import {
   CreateTicketParams
 } from './types';
 import { ZendeskService } from './index';
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
-import { DynamicStructuredTool } from '@langchain/core/tools';
+import { ToolConfig, ToolOperation, tool } from '@clearfeed-ai/quix-common-agent';
 import { z } from 'zod';
 
 const ZENDESK_TOOL_SELECTION_PROMPT = `
@@ -36,7 +35,7 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
   const service = new ZendeskService(config);
 
   const tools = [
-    new DynamicStructuredTool({
+    tool({
       name: 'search_zendesk_tickets',
       description: 'Search Zendesk tickets using a query string',
       schema: z.object({
@@ -53,26 +52,29 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
           .describe('Maximum number of tickets to return')
           .default(10)
       }),
+      operations: [ToolOperation.READ],
       func: async (args: SearchTicketsParams) => service.searchTickets(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'get_zendesk_ticket',
       description: 'Retrieve a Zendesk ticket by its ID',
       schema: z.object({
         ticketId: z.number().int().describe('The ID of the Zendesk ticket to retrieve')
       }),
+      operations: [ToolOperation.READ],
       func: async (args: GetTicketParams) => service.getTicket(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'get_zendesk_ticket_with_comments',
       description:
         'Retrieve a Zendesk ticket along with all its public comments and internal notes',
       schema: z.object({
         ticketId: z.number().int().describe('The ID of the Zendesk ticket to retrieve')
       }),
+      operations: [ToolOperation.READ],
       func: async (args: GetTicketWithCommentsParams) => service.getTicketWithComments(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'add_zendesk_ticket_public_comment',
       description: 'Add a public comment to a Zendesk ticket',
       schema: z.object({
@@ -82,10 +84,11 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
           .describe('The ID of the Zendesk ticket to add the public comment to'),
         comment: z.string().describe('The content of the public comment to add')
       }),
+      operations: [ToolOperation.CREATE],
       func: async (args: AddInternalCommentParams) =>
         service.addComment({ public: true, ticketId: args.ticketId, comment: args.comment })
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'add_zendesk_ticket_internal_note',
       description: 'Add an internal note (private comment) to a Zendesk ticket',
       schema: z.object({
@@ -95,10 +98,11 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
           .describe('The ID of the Zendesk ticket to add the internal note (private comment) to'),
         note: z.string().describe('The content of the internal note (private comment) to add')
       }),
+      operations: [ToolOperation.CREATE],
       func: async (args: AddInternalNoteParams) =>
         service.addComment({ public: false, ticketId: args.ticketId, comment: args.note })
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'get_zendesk_ticket_internal_notes',
       description: 'Retrieve all internal notes (private comments) from a Zendesk ticket',
       schema: z.object({
@@ -109,10 +113,11 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
             'The ID of the Zendesk ticket to retrieve internal notes (private comments) from'
           )
       }),
+      operations: [ToolOperation.READ],
       func: async (args: Pick<GetCommentsParams, 'ticketId'>) =>
         service.getComments({ ...args, public: false })
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'get_zendesk_ticket_public_comments',
       description: 'Retrieve all public comments from a Zendesk ticket',
       schema: z.object({
@@ -121,10 +126,11 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
           .int()
           .describe('The ID of the Zendesk ticket to retrieve public comments from')
       }),
+      operations: [ToolOperation.READ],
       func: async (args: Pick<GetCommentsParams, 'ticketId'>) =>
         service.getComments({ ...args, public: true })
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'create_zendesk_ticket',
       description: 'Create a new Zendesk ticket with subject, description, and optional properties',
       schema: z.object({
@@ -153,9 +159,10 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
           .transform((val) => val ?? undefined)
           .describe('List of tags to categorize or label the ticket')
       }),
+      operations: [ToolOperation.CREATE],
       func: async (args: CreateTicketParams) => service.createTicket(args)
     }),
-    new DynamicStructuredTool({
+    tool({
       name: 'search_zendesk_users_by_name',
       description:
         'Search for Zendesk users (agents or end users) by name. Useful for finding assignees or requesters.',
@@ -172,6 +179,7 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
             'Filter users by role. Use "agent" or "admin" when looking for assignees. Use "end-user" for requesters.'
           )
       }),
+      operations: [ToolOperation.READ],
       func: async (args: { name: string; role?: 'end-user' | 'agent' | 'admin' }) =>
         service.searchUsersByName(args.name, args.role)
     })

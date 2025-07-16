@@ -1,7 +1,6 @@
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, tool } from '@clearfeed-ai/quix-common-agent';
 import { JumpCloudService } from './index';
 import { JumpCloudConfig } from './types';
-import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
 const JC_TOOL_SELECTION_PROMPT = `
@@ -114,84 +113,100 @@ export function createJumpCloudToolsExport(config: JumpCloudConfig): ToolConfig 
   const service = new JumpCloudService(config);
 
   const tools = [
-    tool(async (args: z.infer<typeof SCHEMAS.listUsers>) => service.listUsers(args), {
+    tool({
       name: 'list_jumpcloud_users',
       description: 'List users in JumpCloud',
-      schema: SCHEMAS.listUsers
+      schema: SCHEMAS.listUsers,
+      operations: [ToolOperation.READ],
+      func: async (args: z.infer<typeof SCHEMAS.listUsers>) => service.listUsers(args)
     }),
-    tool(async (args: z.infer<typeof SCHEMAS.createUserSchema>) => service.createUser(args), {
+    tool({
       name: 'create_jumpcloud_user',
       description: 'Create a user in JumpCloud',
-      schema: SCHEMAS.createUserSchema
+      schema: SCHEMAS.createUserSchema,
+      operations: [ToolOperation.CREATE],
+      func: async (args: z.infer<typeof SCHEMAS.createUserSchema>) => service.createUser(args)
     }),
-    tool(async (args: z.infer<typeof SCHEMAS.getUserSchema>) => service.getUser(args), {
+    tool({
       name: 'get_jumpcloud_user',
       description: 'Get a specific user from JumpCloud',
-      schema: SCHEMAS.getUserSchema
+      schema: SCHEMAS.getUserSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: z.infer<typeof SCHEMAS.getUserSchema>) => service.getUser(args)
     }),
-    tool(async (args: z.infer<typeof SCHEMAS.updateUserSchema>) => service.updateUser(args), {
+    tool({
       name: 'update_jumpcloud_user',
       description: 'Update a user in JumpCloud',
-      schema: SCHEMAS.updateUserSchema
+      schema: SCHEMAS.updateUserSchema,
+      operations: [ToolOperation.UPDATE],
+      func: async (args: z.infer<typeof SCHEMAS.updateUserSchema>) => service.updateUser(args)
     }),
-    tool(async (args: z.infer<typeof SCHEMAS.deleteUserSchema>) => service.deleteUser(args), {
+    tool({
       name: 'delete_jumpcloud_user',
       description: 'Delete a user in JumpCloud',
-      schema: SCHEMAS.deleteUserSchema
+      schema: SCHEMAS.deleteUserSchema,
+      operations: [ToolOperation.DELETE],
+      func: async (args: z.infer<typeof SCHEMAS.deleteUserSchema>) => service.deleteUser(args)
     }),
-    tool(async (args: z.infer<typeof SCHEMAS.listGroupsSchema>) => service.listGroups(args), {
+    tool({
       name: 'list_jumpcloud_groups',
       description: 'List groups in JumpCloud',
-      schema: SCHEMAS.listGroupsSchema
+      schema: SCHEMAS.listGroupsSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: z.infer<typeof SCHEMAS.listGroupsSchema>) => service.listGroups(args)
     }),
-    tool(async (args: z.infer<typeof SCHEMAS.createGroupSchema>) => service.createGroup(args), {
+    tool({
       name: 'create_jumpcloud_group',
       description: 'Create a group in JumpCloud',
-      schema: SCHEMAS.createGroupSchema
+      schema: SCHEMAS.createGroupSchema,
+      operations: [ToolOperation.CREATE],
+      func: async (args: z.infer<typeof SCHEMAS.createGroupSchema>) => service.createGroup(args)
     }),
-    tool(
-      async (args: z.infer<typeof SCHEMAS.assignUserToGroupSchema>) =>
-        service.assignUserToGroup(args),
-      {
-        name: 'assign_user_to_jumpcloud_group',
-        description: 'Assign a user to a JumpCloud group',
-        schema: SCHEMAS.assignUserToGroupSchema
-      }
-    ),
-    tool(
-      async (args: z.infer<typeof SCHEMAS.unassignUserFromGroupSchema>) =>
-        service.unassignUserFromGroup(args),
-      {
-        name: 'unassign_user_from_jumpcloud_group',
-        description: 'Remove a user from a JumpCloud group',
-        schema: SCHEMAS.unassignUserFromGroupSchema
-      }
-    ),
-    tool(
-      async (args: z.infer<typeof SCHEMAS.listGroupUsersSchema>) => service.listGroupUsers(args),
-      {
-        name: 'list_jumpcloud_group_users',
-        description: 'List users in a JumpCloud group',
-        schema: SCHEMAS.listGroupUsersSchema
-      }
-    ),
-    tool(async (args: z.infer<typeof SCHEMAS.deleteGroupSchema>) => service.deleteGroup(args), {
+    tool({
+      name: 'assign_user_to_jumpcloud_group',
+      description: 'Assign a user to a JumpCloud group',
+      schema: SCHEMAS.assignUserToGroupSchema,
+      operations: [ToolOperation.UPDATE],
+      func: async (args: z.infer<typeof SCHEMAS.assignUserToGroupSchema>) =>
+        service.assignUserToGroup(args)
+    }),
+    tool({
+      name: 'unassign_user_from_jumpcloud_group',
+      description: 'Remove a user from a JumpCloud group',
+      schema: SCHEMAS.unassignUserFromGroupSchema,
+      operations: [ToolOperation.UPDATE],
+      func: async (args: z.infer<typeof SCHEMAS.unassignUserFromGroupSchema>) =>
+        service.unassignUserFromGroup(args)
+    }),
+    tool({
+      name: 'list_jumpcloud_group_users',
+      description: 'List users in a JumpCloud group',
+      schema: SCHEMAS.listGroupUsersSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: z.infer<typeof SCHEMAS.listGroupUsersSchema>) =>
+        service.listGroupUsers(args)
+    }),
+    tool({
       name: 'delete_jumpcloud_group',
       description: 'Delete a JumpCloud group',
-      schema: SCHEMAS.deleteGroupSchema
+      schema: SCHEMAS.deleteGroupSchema,
+      operations: [ToolOperation.DELETE],
+      func: async (args: z.infer<typeof SCHEMAS.deleteGroupSchema>) => service.deleteGroup(args)
     }),
-    tool(
-      async (args: z.infer<typeof SCHEMAS.listUserDevicesSchema>) => service.listUserDevices(args),
-      {
-        name: 'list_jumpcloud_user_devices',
-        description: 'List devices assigned to a specific user in JumpCloud',
-        schema: SCHEMAS.listUserDevicesSchema
-      }
-    ),
-    tool(async (args: z.infer<typeof SCHEMAS.listDevicesSchema>) => service.listDevices(args), {
+    tool({
+      name: 'list_jumpcloud_user_devices',
+      description: 'List devices assigned to a specific user in JumpCloud',
+      schema: SCHEMAS.listUserDevicesSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: z.infer<typeof SCHEMAS.listUserDevicesSchema>) =>
+        service.listUserDevices(args)
+    }),
+    tool({
       name: 'list_jumpcloud_devices',
       description: 'List all devices in JumpCloud with optional search and limit',
-      schema: SCHEMAS.listDevicesSchema
+      schema: SCHEMAS.listDevicesSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: z.infer<typeof SCHEMAS.listDevicesSchema>) => service.listDevices(args)
     })
   ];
 
