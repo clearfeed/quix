@@ -17,7 +17,8 @@ import {
   OktaConnectionModalArgs,
   ConnectionInfo,
   ZendeskConnectionModalArgs,
-  JumpCloudConnectionModalArgs
+  JumpCloudConnectionModalArgs,
+  AssetPandaConnectionModalArgs
 } from './types';
 import { WebClient } from '@slack/web-api';
 import { Surfaces } from 'slack-block-builder';
@@ -1035,4 +1036,59 @@ export const publishDisconnectConfirmationModal = async (
       ])
     }
   });
+};
+
+export const publishAssetPandaConnectionModal = async (
+  webClient: WebClient,
+  args: AssetPandaConnectionModalArgs
+) => {
+  try {
+    const modal = {
+      type: 'modal' as const,
+      title: {
+        type: 'plain_text' as const,
+        text: 'AssetPanda Configuration'
+      },
+      blocks: [
+        {
+          type: 'input' as const,
+          block_id: 'assetpanda_api_token',
+          label: {
+            type: 'plain_text' as const,
+            text: 'Please provide your AssetPanda API token:'
+          },
+          hint: {
+            type: 'plain_text' as const,
+            text: 'API token from your AssetPanda account'
+          },
+          element: {
+            type: 'plain_text_input' as const,
+            action_id: SLACK_ACTIONS.ASSETPANDA_CONNECTION_ACTIONS.API_TOKEN,
+            placeholder: {
+              type: 'plain_text' as const,
+              text: 'Enter your AssetPanda API token'
+            },
+            initial_value: args.initialValues?.apiToken || ''
+          }
+        }
+      ],
+      submit: {
+        type: 'plain_text' as const,
+        text: 'Connect'
+      },
+      close: {
+        type: 'plain_text' as const,
+        text: 'Cancel'
+      },
+      callback_id: SLACK_ACTIONS.SUBMIT_ASSETPANDA_CONNECTION
+    };
+
+    await webClient.views.open({
+      trigger_id: args.triggerId,
+      view: modal
+    });
+  } catch (error) {
+    console.error('Error publishing AssetPanda connection modal:', error);
+    throw error;
+  }
 };

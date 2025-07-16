@@ -30,6 +30,7 @@ import { ConversationState } from './conversation-state.model';
 import { OktaConfig } from './okta-config.model';
 import { ZendeskConfig } from './zendesk-config.model';
 import { JumpCloudConfig } from './jumpcloud-config.model';
+import { AssetPandaConfig } from './assetpanda-config.model';
 
 @Table({ tableName: 'slack_workspaces' })
 export class SlackWorkspace extends Model<
@@ -267,6 +268,9 @@ export class SlackWorkspace extends Model<
 
   @HasOne(() => JumpCloudConfig, { foreignKey: 'team_id', as: 'jumpcloudConfig' })
   declare jumpcloudConfig?: JumpCloudConfig;
+
+  @HasOne(() => AssetPandaConfig, { foreignKey: 'team_id', as: 'assetpandaConfig' })
+  declare assetpandaConfig?: AssetPandaConfig;
 
   async postMessage(message: string, channel: string, thread_ts?: string) {
     const webClient = new WebClient(this.bot_access_token);

@@ -12,3 +12,4 @@ export * from './conversation-state.model';
 export * from './okta-config.model';
 export * from './zendesk-config.model';
 export * from './jumpcloud-config.model';
+export * from './assetpanda-config.model';

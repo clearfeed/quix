@@ -79,6 +79,10 @@ export const SLACK_ACTIONS = {
   SUBMIT_JUMPCLOUD_CONNECTION: 'submit-jumpcloud-connection',
   JUMPCLOUD_CONNECTION_ACTIONS: {
     API_KEY: 'jumpcloud-api-key'
+  },
+  SUBMIT_ASSETPANDA_CONNECTION: 'submit-assetpanda-connection',
+  ASSETPANDA_CONNECTION_ACTIONS: {
+    API_TOKEN: 'assetpanda-api-token'
   }
 } as const;
 

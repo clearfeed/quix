@@ -396,6 +396,40 @@ export class InteractionsService {
             web: new WebClient(slackWorkspace.bot_access_token)
           });
         }
+      case SLACK_ACTIONS.SUBMIT_ASSETPANDA_CONNECTION:
+        try {
+          this.integrationsInstallService
+            .assetpanda(payload)
+            .then(async (assetPandaConfig) => {
+              await displaySuccessModal(new WebClient(slackWorkspace.bot_access_token), {
+                text: 'AssetPanda connected successfully',
+                viewId: payload.view.id
+              });
+              this.appHomeService.handleIntegrationConnected(
+                payload.user.id,
+                payload.view.team_id,
+                SUPPORTED_INTEGRATIONS.ASSETPANDA,
+                assetPandaConfig
+              );
+            })
+            .catch((error) => {
+              return displayErrorModal({
+                error,
+                backgroundCaller: true,
+                viewId: payload.view.id,
+                web: new WebClient(slackWorkspace.bot_access_token)
+              });
+            });
+          return displayLoadingModal('Please Wait');
+        } catch (error) {
+          console.error(error);
+          return displayErrorModal({
+            error,
+            backgroundCaller: true,
+            viewId: payload.view.id,
+            web: new WebClient(slackWorkspace.bot_access_token)
+          });
+        }
       case SLACK_ACTIONS.DISCONNECT_CONFIRM_MODAL.SUBMIT: {
         const connectionInfo: ConnectionInfo = JSON.parse(payload.view.private_metadata);
 
@@ -426,6 +460,9 @@ export class InteractionsService {
             break;
           case SUPPORTED_INTEGRATIONS.JUMPCLOUD:
             await this.integrationsService.removeJumpCloudConfig(payload.view.team_id);
+            break;
+          case SUPPORTED_INTEGRATIONS.ASSETPANDA:
+            await this.integrationsService.removeAssetPandaConfig(payload.view.team_id);
             break;
           case SUPPORTED_INTEGRATIONS.ZENDESK:
             await this.integrationsService.removeZendeskConfig(payload.view.team_id);

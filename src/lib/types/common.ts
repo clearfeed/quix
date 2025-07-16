@@ -9,7 +9,8 @@ import {
   HubspotConfig,
   JiraConfig,
   McpConnection,
-  JumpCloudConfig
+  JumpCloudConfig,
+  AssetPandaConfig
 } from '@quix/database/models';
 
 export type Nullable<T> = T | null;
@@ -31,4 +32,5 @@ export type Connections =
   | McpConnection
   | OktaConfig
   | ZendeskConfig
-  | JumpCloudConfig;
+  | JumpCloudConfig
+  | AssetPandaConfig;

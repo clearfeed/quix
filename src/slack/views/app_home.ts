@@ -36,6 +36,7 @@ import { createNotionToolsExport } from '@clearfeed-ai/quix-notion-agent';
 import { createZendeskToolsExport } from '@clearfeed-ai/quix-zendesk-agent';
 import { createOktaToolsExport } from '@clearfeed-ai/quix-okta-agent';
 import { createJumpCloudToolsExport } from '@clearfeed-ai/quix-jumpcloud-agent';
+import { createAssetPandaToolsExport } from '@clearfeed-ai/quix-assetpanda-agent';
 
 export const getToolData = async (
   selectedTool: (typeof INTEGRATIONS)[number]['value'] | string | undefined
@@ -146,6 +147,15 @@ const getAvailableFns = async (selectedTool: SUPPORTED_INTEGRATIONS) => {
         email: '',
         token: ''
       }
+    }).tools;
+
+    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
+  }
+
+  if (selectedTool === SUPPORTED_INTEGRATIONS.ASSETPANDA) {
+    const tools = createAssetPandaToolsExport({
+      apiToken: 'test-api-token',
+      baseUrl: 'https://api.assetpanda.com'
     }).tools;
 
     return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
