@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-jira-agent",
-  "version": "1.2.1",
+  "version": "1.2.21",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -11,9 +11,14 @@
     "build": "yarn clean && tsc",
     "test": "jest"
   },
+  "peerDependencies": {
+    "zod": "3.25.67",
+    "@langchain/core": "0.3.62"
+  },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^1.1.0",
-    "axios": "^1.7.9"
+    "@clearfeed-ai/quix-common-agent": "1.2.0",
+    "atlassian-jwt": "^2.0.3",
+    "axios": "^1.8.2"
   },
   "devDependencies": {
     "typescript": "^5.7.3"

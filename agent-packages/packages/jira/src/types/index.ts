@@ -129,4 +129,45 @@ export interface JiraUserResponse {
   emailAddress: string;
   displayName: string;
   active: boolean;
-};
+}
+
+// Additional types for comprehensive implementation
+export interface FindJiraParams {
+  jql: string;
+  startAt?: number;
+  maxResults?: number;
+  fields?: string[];
+}
+
+export interface GetIssueParams {
+  issueId: string;
+}
+
+export interface ProjectKeyParams {
+  projectKey: string;
+}
+
+export interface CreateJiraParams extends CreateIssueParams {}
+
+export interface AssignIssueParams {
+  issueId: string;
+  accountId: string;
+}
+
+export interface AddCommentParams {
+  issueId: string;
+  body: string;
+}
+
+export interface GetCommentsParams {
+  issueId: string;
+}
+
+export interface UpdateIssueParams {
+  issueId: string;
+  fields?: Record<string, any>;
+}
+
+export interface SearchUsersParams {
+  query: string;
+}

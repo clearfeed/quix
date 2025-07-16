@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-zendesk-agent",
-  "version": "1.1.0",
+  "version": "1.1.8",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -11,8 +11,12 @@
     "build": "yarn clean && tsc",
     "test": "jest"
   },
+  "peerDependencies": {
+    "zod": "3.25.67",
+    "@langchain/core": "0.3.62"
+  },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^1.1.0",
+    "@clearfeed-ai/quix-common-agent": "1.2.0",
     "node-zendesk": "^6.0.1"
   },
   "devDependencies": {

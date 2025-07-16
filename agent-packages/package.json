@@ -1,26 +1,30 @@
 {
-  "name": "@clearfeed-ai/quix-packages",
+  "name": "@clearfeed-ai/quix-agents-monorepo",
   "private": true,
+  "version": "1.0.0",
+  "description": "Monorepo for Quix integration agent packages",
+  "main": "index.js",
   "workspaces": [
     "packages/*"
   ],
-  "version": "1.0.1",
-  "description": "Quix Packages",
   "scripts": {
-    "build": "yarn workspaces run build",
-    "test": "yarn workspaces run test"
+    "build:all": "bash build.sh",
+    "clean:all": "find packages -name dist -type d -exec rm -rf {} +",
+    "test:all": "yarn workspaces run test"
   },
   "keywords": [
-    "quix",
-    "integrations"
+    "ai",
+    "agents",
+    "integrations",
+    "quix"
   ],
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@types/node": "^22.13.1",
-    "typescript": "^5.7.3",
-    "jest": "^29.7.0",
     "@types/jest": "^29.5.14",
-    "ts-jest": "^29.2.5"
+    "@types/node": "^22.13.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.7.3"
   }
 }

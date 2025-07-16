@@ -1,5 +1,5 @@
-import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
+
 /**
  * Base configuration interface that all integrations must implement
  */
@@ -33,15 +33,64 @@ export interface FunctionDefinition {
 }
 
 /**
- * Represents a single tool that can be exposed to the AI
+ * Operations that tools can perform
  */
-// export interface Tool<TArgs = any, TResponse = any> {
-//   type: 'function';
-//   function: FunctionDefinition;
-//   handler: (args: TArgs) => Promise<TResponse>;
-// }
+export enum ToolOperation {
+  READ = 'read',
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete'
+}
 
-export type Tool = DynamicStructuredTool;
+/**
+ * Configuration for creating a QuixTool
+ */
+export interface QuixToolConfig<T = any> {
+  name: string;
+  description: string;
+  schema: z.ZodSchema<T>;
+  operations: ToolOperation[];
+  func: (args: T) => Promise<any>;
+}
+
+/**
+ * QuixTool class that wraps the tool functionality
+ */
+export class QuixTool<T = any> {
+  public lc_kwargs: {
+    name: string;
+    description: string;
+    schema: z.ZodSchema<T>;
+    operations: ToolOperation[];
+  };
+  
+  private func: (args: T) => Promise<any>;
+
+  constructor(config: QuixToolConfig<T>) {
+    this.lc_kwargs = {
+      name: config.name,
+      description: config.description,
+      schema: config.schema,
+      operations: config.operations
+    };
+    this.func = config.func;
+  }
+
+  async call(args: T): Promise<any> {
+    return this.func(args);
+  }
+
+  async invoke(args: T): Promise<any> {
+    return this.func(args);
+  }
+}
+
+/**
+ * Factory function to create QuixTool instances
+ */
+export function tool<T = any>(config: QuixToolConfig<T>): QuixTool<T> {
+  return new QuixTool(config);
+}
 
 /**
  * Standard response format for all integration operations
@@ -60,7 +109,7 @@ export interface BaseService<TConfig extends BaseConfig = BaseConfig> {
 }
 
 export interface ToolConfig {
-  tools: Tool[];
+  tools: QuixTool[];
   prompts?: {
     toolSelection?: string;
     responseGeneration?: string;
