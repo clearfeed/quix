@@ -14,7 +14,8 @@ import {
   McpConnection,
   OktaConfig,
   ZendeskConfig,
-  JumpCloudConfig
+  JumpCloudConfig,
+  AssetPandaConfig
 } from '@quix/database/models';
 import {
   Elements,
@@ -154,8 +155,7 @@ const getAvailableFns = async (selectedTool: SUPPORTED_INTEGRATIONS) => {
 
   if (selectedTool === SUPPORTED_INTEGRATIONS.ASSETPANDA) {
     const tools = createAssetPandaToolsExport({
-      apiToken: 'test-api-token',
-      baseUrl: 'https://api.assetpanda.com'
+      apiToken: 'test-api-token'
     }).tools;
 
     return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
@@ -350,6 +350,8 @@ export const getConnectionInfo = (connection: HomeViewArgs['connection']): strin
       return `Connected to JumpCloud`;
     case connection instanceof ZendeskConfig:
       return `Connected to ${connection.subdomain}.zendesk.com`;
+    case connection instanceof AssetPandaConfig:
+      return `Connected to AssetPanda`;
     default:
       return '';
   }
@@ -425,7 +427,8 @@ export const getIntegrationInfo = (
     connection instanceof LinearConfig ||
     connection instanceof OktaConfig ||
     connection instanceof JumpCloudConfig ||
-    connection instanceof ZendeskConfig
+    connection instanceof ZendeskConfig ||
+    connection instanceof AssetPandaConfig
   ) {
     overflowMenuOptions.unshift(
       Bits.Option({

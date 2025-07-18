@@ -5,13 +5,48 @@ import { SCHEMAS } from './schema';
 import { z } from 'zod';
 
 const ASSETPANDA_TOOL_SELECTION_PROMPT = `
-AssetPanda is an asset management platform that manages:
-- Employees and users
-- Hardware assets (laptops, monitors, etc.)
-- Software licenses
-- Asset assignments and reservations
+AssetPanda is an asset management platform for managing employees, assets, and software licenses.
 
-Use AssetPanda tools when the user wants to manage IT assets, assign hardware/software to employees, or track asset inventory.`;
+When using AssetPanda tools, always follow these workflows:
+
+1. **Create Employee Record**
+   - First, search for the employee by email.
+   - If the employee does not exist, create a new employee.
+   - The account ID will be automatically retrieved from the AssetPanda settings.
+
+2. **Create Object in Group**
+   - First, get the list of available groups to identify the correct group.
+   - Create the object in the specified group using dynamic fields (field_1, field_2, etc.).
+   - Fields are key-value pairs that can contain any data (e.g., field_1: "Asset Name", field_2: "Description", gps_coordinates: [50, 50]).
+
+3. **Assign Asset to User**
+   - Search for the asset by name or other criteria to obtain its ID.
+   - Search for the employee by email.
+   - If the employee does not exist, create the employee.
+   - Assign the asset by updating its status and assigned fields.
+
+4. **Mark Asset as Returned**
+   - Search for the employee by email to get their ID.
+   - Search for all assets assigned to the employee.
+   - For each asset to be returned, update its status and assigned fields to reflect return.
+
+5. **Reserve Asset**
+   - Identify the correct asset group (e.g., "Assets", "Hardware", "Licenses") and get its group_id.
+   - Search for the asset(s) to obtain their id(s).
+   - Reserve the asset by updating its status.
+
+6. **Assign Software License**
+   - Identify the license group and search for the right license.
+   - Check if a seat is available (available seats > 0).
+   - If available, assign the license to the employee (search/create employee as needed).
+
+7. **Reclaim/Deallocate Software License**
+   - Search for the employee by email to get their ID.
+   - Identify the license group and search for the license assigned to the user.
+   - Remove the employee from the assigned list and increase the available seats count.
+
+**Always chain these steps as needed. Never assume a record exists—always search first. If an API call fails, explain what went wrong and suggest verifying IDs or permissions.**
+`;
 
 const ASSETPANDA_RESPONSE_PROMPT = `When formatting AssetPanda responses be sure to mention object IDs, employee emails, and asset names. For asset assignments, include the asset name and assigned employee. For license management, include available seats and assigned users.`;
 
@@ -19,18 +54,42 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
   const service = new AssetPandaService(config);
 
   const tools = [
-    // Create Employee Record
+    tool({
+      name: 'get_assetpanda_settings',
+      description:
+        'Get AssetPanda account settings including account ID, groups, and configuration',
+      schema: SCHEMAS.getSettingsSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: z.infer<typeof SCHEMAS.getSettingsSchema>) => service.getSettings()
+    }),
+
+    tool({
+      name: 'get_assetpanda_current_user',
+      description: 'Get current AssetPanda user information including account ID',
+      schema: z.object({}),
+      operations: [ToolOperation.READ],
+      func: async () => service.getCurrentUser()
+    }),
+
     tool({
       name: 'create_assetpanda_employee',
       description:
-        'Create a new employee record in AssetPanda. If the employee already exists, returns the existing record.',
+        'Create a new employee record in AssetPanda. If the employee already exists, returns the existing record. The account ID will be automatically retrieved from settings.',
       schema: SCHEMAS.createEmployeeSchema,
       operations: [ToolOperation.CREATE],
       func: async (args: z.infer<typeof SCHEMAS.createEmployeeSchema>) =>
         service.createEmployee(args)
     }),
 
-    // Reserve Asset
+    tool({
+      name: 'create_assetpanda_object',
+      description:
+        'Create a new object (asset, employee, license, etc.) in a specific AssetPanda group using dynamic fields (e.g., field_1, field_2, gps_coordinates)',
+      schema: SCHEMAS.createObjectSchema,
+      operations: [ToolOperation.CREATE],
+      func: async (args: z.infer<typeof SCHEMAS.createObjectSchema>) => service.createObject(args)
+    }),
+
     tool({
       name: 'reserve_assetpanda_asset',
       description:
@@ -40,7 +99,6 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
       func: async (args: z.infer<typeof SCHEMAS.reserveAssetSchema>) => service.reserveAsset(args)
     }),
 
-    // Assign Asset to User
     tool({
       name: 'assign_assetpanda_asset_to_user',
       description: 'Assign a hardware asset to a specific employee in AssetPanda.',
@@ -50,7 +108,6 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
         service.assignAssetToUser(args)
     }),
 
-    // Mark Asset as Returned
     tool({
       name: 'mark_assetpanda_asset_returned',
       description:
@@ -61,7 +118,6 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
         service.markAssetReturned(args)
     }),
 
-    // Assign Software License
     tool({
       name: 'assign_assetpanda_software_license',
       description:
@@ -72,7 +128,6 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
         service.assignSoftwareLicense(args)
     }),
 
-    // Reclaim/Deallocate Software License
     tool({
       name: 'reclaim_assetpanda_software_license',
       description:
@@ -83,7 +138,6 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
         service.reclaimSoftwareLicense(args)
     }),
 
-    // Check Asset Availability
     tool({
       name: 'check_assetpanda_asset_availability',
       description:
@@ -92,34 +146,23 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
       operations: [ToolOperation.READ],
       func: async (args: z.infer<typeof SCHEMAS.checkAssetAvailabilitySchema>) => {
         try {
-          // Find the asset group
-          const group = await service['findGroupByName'](args.group_name || 'Assets');
-          if (!group) {
+          let groupId: number | undefined;
+          if ((args.group_name || 'Assets') === 'Assets') groupId = 225052;
+          // Add more static group mappings if needed
+          if (!groupId) {
             return {
               success: false,
-              error: `Asset group not found: ${args.group_name || 'Assets'}`
+              error: `Group not found: ${args.group_name}`
             };
           }
-
-          // Search for available assets
-          const response = await service.searchObjects({
-            group_id: group.id,
-            search: args.asset_type,
-            status: 'Available'
-          });
-
-          return response;
+          const resp = await service.searchObjects({ group_id: groupId, search: args.asset_type });
+          return resp;
         } catch (error) {
-          console.error('Error checking asset availability:', error);
-          return {
-            success: false,
-            error: 'Failed to check asset availability'
-          };
+          return { success: false, error: (error as Error).message };
         }
       }
     }),
 
-    // List Groups
     tool({
       name: 'list_assetpanda_groups',
       description: 'List all groups in AssetPanda (Assets, Licenses, Employees, etc.)',
@@ -128,7 +171,6 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
       func: async (args: z.infer<typeof SCHEMAS.listGroupsSchema>) => service.listGroups(args)
     }),
 
-    // List Users
     tool({
       name: 'list_assetpanda_users',
       description: 'List all users/employees in AssetPanda',
@@ -137,7 +179,6 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
       func: async (args: z.infer<typeof SCHEMAS.listUsersSchema>) => service.listUsers(args)
     }),
 
-    // Search Objects
     tool({
       name: 'search_assetpanda_objects',
       description: 'Search for objects (assets, licenses) in a specific group with filters',

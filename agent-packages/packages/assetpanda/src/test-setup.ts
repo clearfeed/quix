@@ -1,3 +1,8 @@
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
+import { join } from 'path';
 
-dotenv.config();
+// Load environment variables from .env file
+dotenv.config({ path: join(__dirname, '..', '.env') });
+
+// Increase timeout for integration tests
+jest.setTimeout(30000);

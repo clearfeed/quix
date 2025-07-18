@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
-    "build": "yarn clean && tsc",
+    "build": "tsc",
     "test": "jest",
     "test:integration": "jest --testNamePattern='Integration'",
     "prepublishOnly": "yarn build"

@@ -1,11 +1,17 @@
+// AssetPanda Static Group & Field Mappings (based on all objects)
+// Assets: field_1 (Asset Name/ID), field_15 (Type), field_11 (Status), field_4 (Model), field_6 (Manufacturer), field_8 (SKU), field_10 (Serial), field_2 (Purchase Date), field_9 (Price), field_40 (Warranty), field_41 (Warranty Expiry), field_18 (Custom Date), field_12 (Created/Updated), field_239 ("no")
+// Employees: field_1 (Name), field_2 (Email), field_4 (Employee ID), field_6 (Status)
+// Software Licenses: field_1 (Name), field_4 (Key), field_3 (Vendor), field_10 (Type), field_9 (Price), field_5 (Seats), field_56 (?), field_31 (Assigned Users), field_54 (Status), field_55 (Expiry)
+// All enums: { id, value }
+// Minimal/test objects may have only field_1, field_12, field_239
+
 import axios, { AxiosInstance } from 'axios';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   AssetPandaConfig,
-  AssetPandaUser,
-  AssetPandaGroup,
   AssetPandaObject,
   CreateUserRequest,
+  CreateObjectRequest,
   SearchObjectsRequest,
   UpdateObjectRequest,
   ListUsersResponse,
@@ -13,12 +19,13 @@ import {
   ListGroupsResponse,
   SearchObjectsResponse,
   UpdateObjectResponse,
-  CreateEmployeeResponse,
+  CreateObjectResponse,
   ReserveAssetResponse,
   AssignAssetResponse,
   MarkAssetReturnedResponse,
   AssignLicenseResponse,
-  ReclaimLicenseResponse
+  ReclaimLicenseResponse,
+  GetSettingsResponse
 } from './types';
 import { SCHEMAS } from './schema';
 import { z } from 'zod';
@@ -26,15 +33,60 @@ import { z } from 'zod';
 export * from './types';
 export * from './tools';
 
+// Static group names
+const GROUPS = {
+  ASSETS: 'Assets',
+  EMPLOYEES: 'Employees',
+  SOFTWARE_LICENSES: 'Software Licenses'
+};
+
+// Static field keys
+const FIELDS = {
+  ASSET: {
+    NAME: 'field_1',
+    TYPE: 'field_15',
+    STATUS: 'field_11',
+    MODEL: 'field_4',
+    MANUFACTURER: 'field_6',
+    SKU: 'field_8',
+    SERIAL: 'field_10',
+    PURCHASE_DATE: 'field_2',
+    PRICE: 'field_9',
+    WARRANTY: 'field_40',
+    WARRANTY_EXPIRY: 'field_41',
+    CUSTOM_DATE: 'field_18',
+    CREATED: 'field_12',
+    FLAG: 'field_239'
+  },
+  EMPLOYEE: {
+    NAME: 'field_1',
+    EMAIL: 'field_2',
+    EMPLOYEE_ID: 'field_4',
+    STATUS: 'field_6'
+  },
+  LICENSE: {
+    NAME: 'field_1',
+    KEY: 'field_4',
+    VENDOR: 'field_3',
+    TYPE: 'field_10',
+    PRICE: 'field_9',
+    SEATS: 'field_5',
+    UNKNOWN: 'field_56',
+    ASSIGNED_USERS: 'field_31',
+    STATUS: 'field_54',
+    EXPIRY: 'field_55'
+  }
+};
+
 export class AssetPandaService implements BaseService<AssetPandaConfig> {
   private client: AxiosInstance;
+  private cachedSettings: any = null;
 
   constructor(private config: AssetPandaConfig) {
     const validation = this.validateConfig(config);
     if (!validation.isValid) {
       throw new Error(validation.error);
     }
-
     this.client = axios.create({
       baseURL: 'https://api.assetpanda.com/v3',
       headers: {
@@ -48,19 +100,14 @@ export class AssetPandaService implements BaseService<AssetPandaConfig> {
     config?: Record<string, any>
   ): { isValid: boolean; error?: string } & Record<string, any> {
     const cfg = config || this.config;
-
     if (!cfg.apiToken) {
       return { isValid: false, error: 'AssetPanda API token is required' };
     }
-
     return { isValid: true };
   }
 
-  // Helper method to extract primitives from API responses
   private extractPrimitives<T>(obj: T): T {
-    if (obj === null || obj === undefined) {
-      return obj;
-    }
+    if (obj === null || obj === undefined) return obj;
     if (typeof obj === 'object') {
       const result: any = {};
       for (const [key, value] of Object.entries(obj)) {
@@ -71,79 +118,112 @@ export class AssetPandaService implements BaseService<AssetPandaConfig> {
     return obj;
   }
 
-  // Helper method to extract error messages
   private extractErrorMessage(error: any): string {
-    if (error.response?.data?.message) {
-      return error.response.data.message;
-    }
-    if (error.response?.data?.error) {
-      return error.response.data.error;
-    }
-    if (error.message) {
-      return error.message;
-    }
+    if (error.response?.data?.message) return error.response.data.message;
+    if (error.response?.data?.error) return error.response.data.error;
+    if (error.message) return error.message;
     return 'Unknown error occurred';
   }
 
-  // List all users
+  async getSettings(): Promise<GetSettingsResponse> {
+    try {
+      const response = await this.client.get('/settings');
+      this.cachedSettings = this.extractPrimitives(response.data);
+      return { success: true, data: this.cachedSettings };
+    } catch (error) {
+      return { success: false, error: this.extractErrorMessage(error) };
+    }
+  }
+
+  async getCurrentUser(): Promise<CreateUserResponse> {
+    try {
+      const response = await this.client.get('/users/me');
+      return { success: true, data: this.extractPrimitives(response.data) };
+    } catch (error) {
+      return { success: false, error: this.extractErrorMessage(error) };
+    }
+  }
+
+  private async getAccountId() {
+    try {
+      if (!this.cachedSettings) {
+        const settingsResponse = await this.getSettings();
+        if (settingsResponse.success && settingsResponse.data) {
+          this.cachedSettings = settingsResponse.data;
+        }
+      }
+      if (this.cachedSettings?.user_details?.account_id) {
+        return this.cachedSettings.user_details.account_id.toString();
+      }
+      const userResponse = await this.getCurrentUser();
+      if (userResponse.success && userResponse.data && userResponse.data.account_id) {
+        return userResponse.data.account_id.toString();
+      }
+      throw new Error('Failed to get AssetPanda account ID');
+    } catch (error) {
+      throw new Error('Failed to get AssetPanda account ID');
+    }
+  }
+
   async listUsers(params: z.infer<typeof SCHEMAS.listUsersSchema>): Promise<ListUsersResponse> {
     try {
       const response = await this.client.get('/users', { params });
       const data = Array.isArray(response.data) ? response.data : [];
       return { success: true, data: data.map((user) => this.extractPrimitives(user)) };
     } catch (error) {
-      console.error('Error listing AssetPanda users:', error);
-      return {
-        success: false,
-        error: this.extractErrorMessage(error)
-      };
+      return { success: false, error: this.extractErrorMessage(error) };
     }
   }
 
-  // Create a new user/employee
-  async createUser(
-    args: z.infer<typeof SCHEMAS.createEmployeeSchema>
-  ): Promise<CreateUserResponse> {
+  async createUser(args: z.infer<typeof SCHEMAS.createUserSchema>): Promise<CreateUserResponse> {
     try {
+      const accountId = args.create_for_account || (await this.getAccountId());
       const payload: CreateUserRequest = {
-        device: 'web',
         user: {
           first_name: args.first_name,
           last_name: args.last_name,
           email: args.email,
           password: args.password,
           password_confirmation: args.password_confirmation,
-          create_for_account: args.create_for_account
-        }
+          create_for_account: String(accountId)
+        },
+        device: args.device || 'web'
       };
-
       const response = await this.client.post('/users', payload);
       return { success: true, data: this.extractPrimitives(response.data) };
     } catch (error) {
-      console.error('Error creating AssetPanda user:', error);
-      return {
-        success: false,
-        error: this.extractErrorMessage(error)
-      };
+      return { success: false, error: this.extractErrorMessage(error) };
     }
   }
 
-  // List all groups
   async listGroups(params: z.infer<typeof SCHEMAS.listGroupsSchema>): Promise<ListGroupsResponse> {
     try {
       const response = await this.client.get('/groups', { params });
-      const data = Array.isArray(response.data) ? response.data : [];
-      return { success: true, data: data.map((group) => this.extractPrimitives(group)) };
+      const data = response.data?.groups || [];
+      return { success: true, data: data.map((group: any) => this.extractPrimitives(group)) };
     } catch (error) {
-      console.error('Error listing AssetPanda groups:', error);
-      return {
-        success: false,
-        error: this.extractErrorMessage(error)
-      };
+      return { success: false, error: this.extractErrorMessage(error) };
     }
   }
 
-  // Search objects in a group
+  async createObject(
+    args: z.infer<typeof SCHEMAS.createObjectSchema>
+  ): Promise<CreateObjectResponse> {
+    try {
+      const groupName = args.group_name;
+      let groupId: number | undefined;
+      if (groupName === GROUPS.ASSETS) groupId = 225052;
+      else if (groupName === GROUPS.EMPLOYEES) groupId = 225055;
+      else if (groupName === GROUPS.SOFTWARE_LICENSES) groupId = 225056;
+      if (!groupId) return { success: false, error: `Group not found: ${groupName}` };
+      const payload: CreateObjectRequest = args.fields;
+      const response = await this.client.post(`/groups/${groupId}/objects`, payload);
+      return { success: true, data: this.extractPrimitives(response.data) };
+    } catch (error) {
+      return { success: false, error: this.extractErrorMessage(error) };
+    }
+  }
+
   async searchObjects(
     args: z.infer<typeof SCHEMAS.searchObjectsSchema>
   ): Promise<SearchObjectsResponse> {
@@ -152,387 +232,216 @@ export class AssetPandaService implements BaseService<AssetPandaConfig> {
       if (args.search) payload.search = args.search;
       if (args.status) payload.status = args.status;
       if (args.assigned_to) payload.assigned_to = args.assigned_to;
-
       const response = await this.client.post(`/groups/${args.group_id}/objects/search`, payload);
       return { success: true, data: this.extractPrimitives(response.data) };
     } catch (error) {
-      console.error('Error searching AssetPanda objects:', error);
-      return {
-        success: false,
-        error: this.extractErrorMessage(error)
-      };
+      return { success: false, error: this.extractErrorMessage(error) };
     }
   }
 
-  // Update an object
   async updateObject(
     groupId: number,
-    objectId: number,
+    objectId: string,
     payload: UpdateObjectRequest
   ): Promise<UpdateObjectResponse> {
     try {
       const response = await this.client.patch(`/groups/${groupId}/objects/${objectId}`, payload);
       return { success: true, data: this.extractPrimitives(response.data) };
     } catch (error) {
-      console.error('Error updating AssetPanda object:', error);
-      return {
-        success: false,
-        error: this.extractErrorMessage(error)
+      return { success: false, error: this.extractErrorMessage(error) };
+    }
+  }
+
+  // --- EMPLOYEE MANAGEMENT ---
+  async createEmployee(args: Record<string, any>): Promise<CreateObjectResponse> {
+    try {
+      const groupId = 225055;
+      const fields: Record<string, any> = {
+        [FIELDS.EMPLOYEE.NAME]: args.name,
+        [FIELDS.EMPLOYEE.EMAIL]: args.email,
+        [FIELDS.EMPLOYEE.EMPLOYEE_ID]: args.employee_id
       };
-    }
-  }
-
-  // Find user by email
-  private async findUserByEmail(email: string): Promise<AssetPandaUser | null> {
-    try {
-      const response = await this.listUsers({ limit: 100 });
-      if (!response.success || !response.data) {
-        return null;
-      }
-      return response.data.find((user) => user.email.toLowerCase() === email.toLowerCase()) || null;
+      // Status is optional
+      if (args.status) fields[FIELDS.EMPLOYEE.STATUS] = args.status;
+      return this.createObject({ group_name: GROUPS.EMPLOYEES, fields });
     } catch (error) {
-      console.error('Error finding user by email:', error);
-      return null;
+      return { success: false, error: this.extractErrorMessage(error) };
     }
   }
 
-  // Find group by name
-  private async findGroupByName(name: string): Promise<AssetPandaGroup | null> {
-    try {
-      const response = await this.listGroups({ limit: 100 });
-      if (!response.success || !response.data) {
-        return null;
-      }
-      return (
-        response.data.find((group) => group.name.toLowerCase().includes(name.toLowerCase())) || null
-      );
-    } catch (error) {
-      console.error('Error finding group by name:', error);
-      return null;
-    }
-  }
-
-  // Find asset by name in a group
-  private async findAssetByName(
-    assetName: string,
-    groupId: number
-  ): Promise<AssetPandaObject | null> {
-    try {
-      const response = await this.searchObjects({
-        group_id: groupId,
-        search: assetName
-      });
-      if (!response.success || !response.data || !response.data.objects) {
-        return null;
-      }
-      return (
-        response.data.objects.find((obj) =>
-          obj.name.toLowerCase().includes(assetName.toLowerCase())
-        ) || null
-      );
-    } catch (error) {
-      console.error('Error finding asset by name:', error);
-      return null;
-    }
-  }
-
-  // Create Employee Record (v1 scope)
-  async createEmployee(
-    args: z.infer<typeof SCHEMAS.createEmployeeSchema>
-  ): Promise<CreateEmployeeResponse> {
-    try {
-      // First check if employee already exists
-      const existingUser = await this.findUserByEmail(args.email);
-      if (existingUser) {
-        return {
-          success: true,
-          data: existingUser,
-          message: 'Employee already exists'
-        };
-      }
-
-      // Create new employee
-      return await this.createUser(args);
-    } catch (error) {
-      console.error('Error creating employee:', error);
-      return {
-        success: false,
-        error: this.extractErrorMessage(error)
-      };
-    }
-  }
-
-  // Reserve Asset (v1 scope)
+  // --- ASSET MANAGEMENT ---
   async reserveAsset(
     args: z.infer<typeof SCHEMAS.reserveAssetSchema>
   ): Promise<ReserveAssetResponse> {
     try {
-      // Find the asset group
-      const group = await this.findGroupByName(args.group_name || 'Assets');
-      if (!group) {
-        return {
-          success: false,
-          error: `Asset group not found: ${args.group_name || 'Assets'}`
-        };
+      const groupId = 225052;
+      if (!args.asset_name) return { success: false, error: 'Asset name is required' };
+      const asset = await this.findObjectByName(groupId, args.asset_name);
+      if (!asset) return { success: false, error: 'Asset not found' };
+      const statusEnum = asset.data?.[FIELDS.ASSET.STATUS];
+      let reservedId: string | undefined = undefined;
+      if (
+        statusEnum &&
+        typeof statusEnum === 'object' &&
+        statusEnum !== null &&
+        'id' in statusEnum &&
+        'value' in statusEnum &&
+        (statusEnum as any).value !== 'Reserved'
+      ) {
+        reservedId = (statusEnum as any).id;
       }
-
-      // Find the asset
-      const asset = await this.findAssetByName(args.asset_name, group.id);
-      if (!asset) {
-        return {
-          success: false,
-          error: `Asset not found: ${args.asset_name}`
-        };
-      }
-
-      // Reserve the asset by updating its status
-      const updatePayload: UpdateObjectRequest = {
-        status_field_id: 'Reserved'
+      const payload: UpdateObjectRequest = {
+        [FIELDS.ASSET.STATUS]: reservedId
+          ? { id: reservedId, value: 'Reserved' }
+          : { value: 'Reserved' }
       };
-
-      return await this.updateObject(group.id, asset.id, updatePayload);
+      return this.updateObject(groupId, String(asset.id), payload);
     } catch (error) {
-      console.error('Error reserving asset:', error);
-      return {
-        success: false,
-        error: this.extractErrorMessage(error)
-      };
+      return { success: false, error: this.extractErrorMessage(error) };
     }
   }
 
-  // Assign Asset to User (v1 scope)
   async assignAssetToUser(
     args: z.infer<typeof SCHEMAS.assignAssetToUserSchema>
   ): Promise<AssignAssetResponse> {
     try {
-      // Find or create the employee
-      let employee = await this.findUserByEmail(args.employee_email);
-      if (!employee) {
-        return {
-          success: false,
-          error: `Employee not found: ${args.employee_email}. Please create the employee first.`
-        };
+      const groupId = 225052;
+      if (!args.asset_name) return { success: false, error: 'Asset name is required' };
+      const asset = await this.findObjectByName(groupId, args.asset_name);
+      if (!asset) return { success: false, error: 'Asset not found' };
+      const empGroupId = 225055;
+      const employee = await this.findEmployeeByEmail(args.employee_email);
+      if (!employee) return { success: false, error: 'Employee not found' };
+      const statusEnum = asset.data?.[FIELDS.ASSET.STATUS];
+      let assignedId: string | undefined = undefined;
+      if (
+        statusEnum &&
+        typeof statusEnum === 'object' &&
+        statusEnum !== null &&
+        'id' in statusEnum &&
+        'value' in statusEnum &&
+        (statusEnum as any).value !== 'Assigned to Employee'
+      ) {
+        assignedId = (statusEnum as any).id;
       }
-
-      // Find the asset group
-      const group = await this.findGroupByName(args.group_name || 'Assets');
-      if (!group) {
-        return {
-          success: false,
-          error: `Asset group not found: ${args.group_name || 'Assets'}`
-        };
-      }
-
-      // Find the asset
-      const asset = await this.findAssetByName(args.asset_name, group.id);
-      if (!asset) {
-        return {
-          success: false,
-          error: `Asset not found: ${args.asset_name}`
-        };
-      }
-
-      // Assign the asset to the employee
-      const updatePayload: UpdateObjectRequest = {
-        assigned_to: employee.id,
-        status_field_id: 'Assigned'
+      const payload: UpdateObjectRequest = {
+        [FIELDS.ASSET.STATUS]: assignedId
+          ? { id: assignedId, value: 'Assigned to Employee' }
+          : { value: 'Assigned to Employee' }
       };
-
-      return await this.updateObject(group.id, asset.id, updatePayload);
+      return this.updateObject(groupId, String(asset.id), payload);
     } catch (error) {
-      console.error('Error assigning asset to user:', error);
-      return {
-        success: false,
-        error: this.extractErrorMessage(error)
-      };
+      return { success: false, error: this.extractErrorMessage(error) };
     }
   }
 
-  // Mark Asset as Returned (v1 scope)
   async markAssetReturned(
     args: z.infer<typeof SCHEMAS.markAssetReturnedSchema>
   ): Promise<MarkAssetReturnedResponse> {
     try {
-      // Find the employee
-      const employee = await this.findUserByEmail(args.employee_email);
-      if (!employee) {
-        return {
-          success: false,
-          error: `Employee not found: ${args.employee_email}`
-        };
+      const groupId = 225052;
+      if (!args.asset_name) return { success: false, error: 'Asset name is required' };
+      const asset = await this.findObjectByName(groupId, args.asset_name);
+      if (!asset) return { success: false, error: 'Asset not found' };
+      const statusEnum = asset.data?.[FIELDS.ASSET.STATUS];
+      let availableId: string | undefined = undefined;
+      if (
+        statusEnum &&
+        typeof statusEnum === 'object' &&
+        statusEnum !== null &&
+        'id' in statusEnum &&
+        'value' in statusEnum &&
+        (statusEnum as any).value !== 'Available'
+      ) {
+        availableId = (statusEnum as any).id;
       }
-
-      // Find the asset group
-      const group = await this.findGroupByName(args.group_name || 'Assets');
-      if (!group) {
-        return {
-          success: false,
-          error: `Asset group not found: ${args.group_name || 'Assets'}`
-        };
-      }
-
-      // Find assets assigned to the employee
-      const response = await this.searchObjects({
-        group_id: group.id,
-        assigned_to: employee.id
-      });
-
-      if (!response.success || !response.data || !response.data.objects) {
-        return {
-          success: false,
-          error: 'No assets found assigned to this employee'
-        };
-      }
-
-      // Filter by specific asset name if provided
-      let assetsToReturn = response.data.objects;
-      if (args.asset_name) {
-        assetsToReturn = assetsToReturn.filter((asset) =>
-          asset.name.toLowerCase().includes(args.asset_name!.toLowerCase())
-        );
-      }
-
-      if (assetsToReturn.length === 0) {
-        return {
-          success: false,
-          error: `No assets found to return for employee: ${args.employee_email}`
-        };
-      }
-
-      // Return all matching assets
-      const results = [];
-      for (const asset of assetsToReturn) {
-        const updatePayload: UpdateObjectRequest = {
-          assigned_to: null,
-          status_field_id: 'Available'
-        };
-        const result = await this.updateObject(group.id, asset.id, updatePayload);
-        results.push(result);
-      }
-
-      // Return the first result (or create a summary)
-      return results[0];
-    } catch (error) {
-      console.error('Error marking asset as returned:', error);
-      return {
-        success: false,
-        error: this.extractErrorMessage(error)
+      const payload: UpdateObjectRequest = {
+        [FIELDS.ASSET.STATUS]: availableId
+          ? { id: availableId, value: 'Available' }
+          : { value: 'Available' }
       };
+      return this.updateObject(groupId, String(asset.id), payload);
+    } catch (error) {
+      return { success: false, error: this.extractErrorMessage(error) };
     }
   }
 
-  // Assign Software License (v1 scope)
+  // --- LICENSE MANAGEMENT ---
   async assignSoftwareLicense(
     args: z.infer<typeof SCHEMAS.assignSoftwareLicenseSchema>
   ): Promise<AssignLicenseResponse> {
     try {
-      // Find or create the employee
-      let employee = await this.findUserByEmail(args.employee_email);
-      if (!employee) {
-        return {
-          success: false,
-          error: `Employee not found: ${args.employee_email}. Please create the employee first.`
-        };
-      }
-
-      // Find the license group
-      const group = await this.findGroupByName(args.group_name || 'Licenses');
-      if (!group) {
-        return {
-          success: false,
-          error: `License group not found: ${args.group_name || 'Licenses'}`
-        };
-      }
-
-      // Find the license
-      const license = await this.findAssetByName(args.license_name, group.id);
-      if (!license) {
-        return {
-          success: false,
-          error: `License not found: ${args.license_name}`
-        };
-      }
-
-      // Check if seats are available
-      const currentSeats = license.available_seats || 0;
-      if (currentSeats <= 0) {
-        return {
-          success: false,
-          error: `No available seats for license: ${args.license_name}`
-        };
-      }
-
-      // Assign the license to the employee
-      const currentAssignedUsers = license.assigned_users || [];
-      const updatePayload: UpdateObjectRequest = {
-        assigned_users: [...currentAssignedUsers, employee.id],
-        available_seats: currentSeats - 1
+      const groupId = 225056;
+      const license = await this.findObjectByName(groupId, args.license_name);
+      if (!license) return { success: false, error: 'License not found' };
+      const employee = await this.findEmployeeByEmail(args.employee_email);
+      if (!employee) return { success: false, error: 'Employee not found' };
+      const current = (license.data && license.data[FIELDS.LICENSE.ASSIGNED_USERS]) || {};
+      let nextIdx = current ? Object.keys(current).length : 0;
+      const newAssign = {
+        ...current,
+        [nextIdx]: { id: String(employee.id), value: employee.data?.[FIELDS.EMPLOYEE.NAME] || '' }
       };
-
-      return await this.updateObject(group.id, license.id, updatePayload);
+      const payload: UpdateObjectRequest = { [FIELDS.LICENSE.ASSIGNED_USERS]: newAssign };
+      return this.updateObject(groupId, String(license.id), payload);
     } catch (error) {
-      console.error('Error assigning software license:', error);
-      return {
-        success: false,
-        error: this.extractErrorMessage(error)
-      };
+      return { success: false, error: this.extractErrorMessage(error) };
     }
   }
 
-  // Reclaim/Deallocate Software License (v1 scope)
   async reclaimSoftwareLicense(
     args: z.infer<typeof SCHEMAS.reclaimSoftwareLicenseSchema>
   ): Promise<ReclaimLicenseResponse> {
     try {
-      // Find the employee
-      const employee = await this.findUserByEmail(args.employee_email);
-      if (!employee) {
-        return {
-          success: false,
-          error: `Employee not found: ${args.employee_email}`
-        };
+      const groupId = 225056;
+      const license = await this.findObjectByName(groupId, args.license_name);
+      if (!license) return { success: false, error: 'License not found' };
+      const employee = await this.findEmployeeByEmail(args.employee_email);
+      if (!employee) return { success: false, error: 'Employee not found' };
+      const current = (license.data && license.data[FIELDS.LICENSE.ASSIGNED_USERS]) || {};
+      let newAssign: Record<string, any> = {};
+      for (const [k, v] of Object.entries(current)) {
+        if ((v as any).id !== String(employee.id)) newAssign[k] = v;
       }
-
-      // Find the license group
-      const group = await this.findGroupByName(args.group_name || 'Licenses');
-      if (!group) {
-        return {
-          success: false,
-          error: `License group not found: ${args.group_name || 'Licenses'}`
-        };
-      }
-
-      // Find the license
-      const license = await this.findAssetByName(args.license_name, group.id);
-      if (!license) {
-        return {
-          success: false,
-          error: `License not found: ${args.license_name}`
-        };
-      }
-
-      // Check if employee is assigned to this license
-      const currentAssignedUsers = license.assigned_users || [];
-      if (!currentAssignedUsers.includes(employee.id)) {
-        return {
-          success: false,
-          error: `Employee ${args.employee_email} is not assigned to license ${args.license_name}`
-        };
-      }
-
-      // Remove employee from license and increase available seats
-      const updatePayload: UpdateObjectRequest = {
-        assigned_users: currentAssignedUsers.filter((id) => id !== employee.id),
-        available_seats: (license.available_seats || 0) + 1
-      };
-
-      return await this.updateObject(group.id, license.id, updatePayload);
+      const payload: UpdateObjectRequest = { [FIELDS.LICENSE.ASSIGNED_USERS]: newAssign };
+      return this.updateObject(groupId, String(license.id), payload);
     } catch (error) {
-      console.error('Error reclaiming software license:', error);
-      return {
-        success: false,
-        error: this.extractErrorMessage(error)
-      };
+      return { success: false, error: this.extractErrorMessage(error) };
     }
+  }
+
+  // --- UTILS ---
+  private async findObjectByName(groupId: number, name: string): Promise<AssetPandaObject | null> {
+    const response = await this.searchObjects({ group_id: groupId, search: name });
+    if (response.success && response.data && response.data.objects) {
+      const objects = response.data.objects as Record<string, any>;
+      for (const obj of Object.values(objects)) {
+        if (
+          (obj.display_name && obj.display_name.toLowerCase().includes(name.toLowerCase())) ||
+          (obj.data?.[FIELDS.ASSET.NAME] &&
+            typeof obj.data[FIELDS.ASSET.NAME] === 'string' &&
+            obj.data[FIELDS.ASSET.NAME].toLowerCase().includes(name.toLowerCase()))
+        ) {
+          return obj;
+        }
+      }
+    }
+    return null;
+  }
+
+  private async findEmployeeByEmail(email: string): Promise<AssetPandaObject | null> {
+    const response = await this.searchObjects({ group_id: 225055, search: email });
+    if (response.success && response.data && response.data.objects) {
+      const objects = response.data.objects as Record<string, any>;
+      for (const obj of Object.values(objects)) {
+        if (
+          obj.data?.[FIELDS.EMPLOYEE.EMAIL] &&
+          obj.data[FIELDS.EMPLOYEE.EMAIL].toLowerCase() === email.toLowerCase()
+        ) {
+          return obj;
+        }
+      }
+    }
+    return null;
   }
 }
