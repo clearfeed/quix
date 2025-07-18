@@ -9,7 +9,7 @@ describe('AssetPanda Integration', () => {
     // Check if API key is provided
     const apiKey = process.env.ASSETPANDA_API_KEY;
     if (!apiKey) {
-      throw new Error('ASSETPANDA environment variable is required for integration tests');
+      throw new Error('ASSETPANDA_API_TOKEN environment variable is required for integration tests');
     }
 
     config = {
