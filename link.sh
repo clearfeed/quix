@@ -15,7 +15,7 @@ yarn link
 cd ../..
 
 # Link other packages and their dependencies
-for package in packages/github packages/hubspot packages/jira packages/postgres packages/salesforce packages/slack packages/zendesk packages/notion packages/okta packages/jumpcloud; do
+for package in packages/github packages/hubspot packages/jira packages/postgres packages/salesforce packages/slack packages/zendesk packages/notion packages/okta packages/jumpcloud packages/assetpanda; do
   if [ -d "$package" ]; then
     echo "📦 Linking $package..."
     cd $package
@@ -46,6 +46,7 @@ yarn link "@clearfeed-ai/quix-zendesk-agent"
 yarn link "@clearfeed-ai/quix-notion-agent"
 yarn link "@clearfeed-ai/quix-okta-agent"
 yarn link "@clearfeed-ai/quix-jumpcloud-agent"
+yarn link "@clearfeed-ai/quix-assetpanda-agent"
 
 echo "✅ All packages linked successfully in root and sub-packages!"
 echo "To use these packages in another project, run:"
@@ -60,3 +61,4 @@ echo "  yarn link @clearfeed-ai/quix-zendesk-agent"
 echo "  yarn link @clearfeed-ai/quix-notion-agent"
 echo "  yarn link @clearfeed-ai/quix-okta-agent"
 echo "  yarn link @clearfeed-ai/quix-jumpcloud-agent"
+echo "  yarn link @clearfeed-ai/quix-assetpanda-agent"
