@@ -32,7 +32,6 @@ import {
   OktaConfig,
   ZendeskConfig,
   JumpCloudConfig,
-  AssetPandaConfig,
   SlackWorkspace
 } from '../database/models';
 import { ToolInstallState } from '@quix/lib/types/common';
@@ -44,7 +43,6 @@ import { SLACK_ACTIONS } from '@quix/lib/utils/slack-constants';
 import { Sequelize } from 'sequelize-typescript';
 import { McpService } from './mcp.service';
 import { encryptForLogs } from '@quix/lib/utils/encryption';
-import axios from 'axios';
 @Injectable()
 export class IntegrationsInstallService {
   private readonly logger = new Logger(IntegrationsInstallService.name);
@@ -75,8 +73,6 @@ export class IntegrationsInstallService {
     private readonly zendeskConfigModel: typeof ZendeskConfig,
     @InjectModel(JumpCloudConfig)
     private readonly jumpCloudConfigModel: typeof JumpCloudConfig,
-    @InjectModel(AssetPandaConfig)
-    private readonly assetPandaConfigModel: typeof AssetPandaConfig,
     @InjectModel(SlackWorkspace)
     private readonly slackWorkspaceModel: typeof SlackWorkspace,
     private readonly eventEmitter: EventEmitter2,
@@ -811,51 +807,5 @@ export class IntegrationsInstallService {
       this.logger.error('Failed to connect to JumpCloud:', error);
       throw new BadRequestException('Failed to connect to JumpCloud');
     }
-  }
-
-  async assetpanda(payload: ViewSubmitAction): Promise<AssetPandaConfig> {
-    const teamId = payload.view.team_id;
-    const apiToken =
-      payload.view.state.values.assetpanda_api_token[
-        SLACK_ACTIONS.ASSETPANDA_CONNECTION_ACTIONS.API_TOKEN
-      ].value;
-
-    if (!apiToken) {
-      throw new BadRequestException('AssetPanda API token is required');
-    }
-
-    // Validate the API token by making a test request to AssetPanda
-    const testUrl = 'https://api.assetpanda.com/v3';
-    try {
-      const response = await axios.get(`${testUrl}/users`, {
-        headers: {
-          Authorization: `Bearer ${apiToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (response.status !== 200) {
-        throw new Error('Invalid API token');
-      }
-    } catch (error: any) {
-      this.logger.error('AssetPanda API token validation failed:', error);
-      throw new BadRequestException('Invalid AssetPanda API token');
-    }
-
-    const config = await this.assetPandaConfigModel.upsert({
-      team_id: teamId,
-      api_token: apiToken
-    });
-
-    this.eventEmitter.emit(EVENT_NAMES.ASSETPANDA_CONNECTED, {
-      teamId,
-      type: SUPPORTED_INTEGRATIONS.ASSETPANDA
-    });
-
-    this.logger.log(`AssetPanda connected for team ${teamId}`);
-    return config[0];
-  }
-  catch(error: any) {
-    this.logger.error('Failed to connect AssetPanda:', error);
-    throw new BadRequestException('Failed to connect AssetPanda');
   }
 }

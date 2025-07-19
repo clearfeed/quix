@@ -11,8 +11,7 @@ export enum SUPPORTED_INTEGRATIONS {
   NOTION = 'notion',
   LINEAR = 'linear',
   OKTA = 'okta',
-  JUMPCLOUD = 'jumpcloud',
-  ASSETPANDA = 'assetpanda'
+  JUMPCLOUD = 'jumpcloud'
 }
 
 export enum QuixUserAccessLevel {
@@ -185,20 +184,6 @@ export const INTEGRATIONS: {
       message: 'Find all JumpCloud users in the Engineering department'
     },
     oneLineSummary: 'Look up users, and groups in JumpCloud'
-  },
-  {
-    name: 'AssetPanda',
-    value: SUPPORTED_INTEGRATIONS.ASSETPANDA,
-    helpText: 'Connect AssetPanda to manage IT assets, licenses, and employee assignments.',
-    connectedText:
-      'AssetPanda has been successfully connected! You can now manage assets by chatting with me or mentioning me in any channel. Try asking me things like "Assign a MacBook to john.doe@company.com", "Reserve a laptop for a new hire", or "Check available software licenses".',
-    relation: 'assetpandaConfig',
-    oauth: false,
-    suggestedPrompt: {
-      title: 'Assign asset to employee',
-      message: 'Assign a MacBook Pro to john.doe@company.com'
-    },
-    oneLineSummary: 'Manage IT assets, licenses, and employee assignments'
   }
 ];
 

@@ -85,15 +85,6 @@ export type JumpCloudConnectionModalArgs = {
   };
 };
 
-export type AssetPandaConnectionModalArgs = {
-  triggerId: string;
-  teamId: string;
-  initialValues?: {
-    id: string;
-    apiToken: string;
-  };
-};
-
 export type ZendeskConnectionModalArgs = {
   triggerId: string;
   teamId: string;

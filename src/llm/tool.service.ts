@@ -17,7 +17,6 @@ import { createOktaToolsExport } from '@clearfeed-ai/quix-okta-agent';
 import { createNotionToolsExport } from '@clearfeed-ai/quix-notion-agent';
 import { createZendeskToolsExport } from '@clearfeed-ai/quix-zendesk-agent';
 import { createJumpCloudToolsExport } from '@clearfeed-ai/quix-jumpcloud-agent';
-import { createAssetPandaToolsExport } from '@clearfeed-ai/quix-assetpanda-agent';
 
 @Injectable()
 export class ToolService {
@@ -44,8 +43,7 @@ export class ToolService {
         'mcpConnections',
         'oktaConfig',
         'zendeskConfig',
-        'jumpcloudConfig',
-        'assetpandaConfig'
+        'jumpcloudConfig'
       ]
     });
     if (!slackWorkspace) return;
@@ -164,15 +162,6 @@ export class ToolService {
           apiKey: jumpcloudConfig.api_key
         }),
         config: jumpcloudConfig
-      };
-    }
-    const assetpandaConfig = slackWorkspace.assetpandaConfig;
-    if (assetpandaConfig) {
-      tools.assetpanda = {
-        toolConfig: createAssetPandaToolsExport({
-          apiToken: assetpandaConfig.api_token
-        }),
-        config: assetpandaConfig
       };
     }
     // Handle MCP-based integrations

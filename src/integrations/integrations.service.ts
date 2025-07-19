@@ -10,8 +10,7 @@ import {
   McpConnection,
   OktaConfig,
   ZendeskConfig,
-  JumpCloudConfig,
-  AssetPandaConfig
+  JumpCloudConfig
 } from '../database/models';
 import { TimeInMilliSeconds } from '@quix/lib/constants';
 import { HttpService } from '@nestjs/axios';
@@ -46,9 +45,7 @@ export class IntegrationsService {
     @InjectModel(ZendeskConfig)
     private readonly zendeskConfigModel: typeof ZendeskConfig,
     @InjectModel(JumpCloudConfig)
-    private readonly jumpCloudConfigModel: typeof JumpCloudConfig,
-    @InjectModel(AssetPandaConfig)
-    private readonly assetPandaConfigModel: typeof AssetPandaConfig
+    private readonly jumpCloudConfigModel: typeof JumpCloudConfig
   ) {
     this.httpService.axiosRef.defaults.headers.common['Content-Type'] = 'application/json';
   }
@@ -226,9 +223,5 @@ export class IntegrationsService {
       await config.destroy();
       this.logger.log(`Removed JumpCloud config for team ${teamId}`);
     }
-  }
-
-  async removeAssetPandaConfig(teamId: string) {
-    await this.assetPandaConfigModel.destroy({ where: { team_id: teamId }, force: true });
   }
 }

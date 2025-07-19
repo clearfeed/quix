@@ -29,8 +29,7 @@ import {
   publishHubspotConfigModal,
   publishDisconnectConfirmationModal,
   publishZendeskConnectionModal,
-  publishJumpCloudConnectionModal,
-  publishAssetPandaConnectionModal
+  publishJumpCloudConnectionModal
 } from './views/modals';
 import { INTEGRATIONS, QuixUserAccessLevel, SUPPORTED_INTEGRATIONS } from '@quix/lib/constants';
 import { SlackService } from './slack.service';
@@ -256,18 +255,6 @@ export class AppHomeService {
         triggerId,
         teamId,
         userId,
-        initialValues
-      });
-    } else if (selectedTool === SUPPORTED_INTEGRATIONS.ASSETPANDA) {
-      const initialValues = slackWorkspace.assetpandaConfig
-        ? {
-            id: slackWorkspace.assetpandaConfig.team_id,
-            apiToken: slackWorkspace.assetpandaConfig.api_token
-          }
-        : undefined;
-      await publishAssetPandaConnectionModal(webClient, {
-        triggerId: triggerId,
-        teamId,
         initialValues
       });
     }
