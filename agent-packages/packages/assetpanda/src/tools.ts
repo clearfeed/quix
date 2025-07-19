@@ -63,11 +63,20 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
     }),
 
     tool({
-      name: 'get_assetpanda_current_user',
-      description: 'Get current AssetPanda user information including account ID',
+      name: 'list_assetpanda_groups',
+      description:
+        'List all groups and their keys in AssetPanda (Assets, Licenses, Employees, etc.)',
       schema: z.object({}),
       operations: [ToolOperation.READ],
-      func: async () => service.getCurrentUser()
+      func: async () => service.listGroups()
+    }),
+
+    tool({
+      name: 'list_assetpanda_objects',
+      description: 'List all objects in a specific AssetPanda group with pagination support',
+      schema: SCHEMAS.listObjectsSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: z.infer<typeof SCHEMAS.listObjectsSchema>) => service.listObjects(args)
     }),
 
     tool({
@@ -78,24 +87,6 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
       operations: [ToolOperation.CREATE],
       func: async (args: z.infer<typeof SCHEMAS.createEmployeeSchema>) =>
         service.createEmployee(args)
-    }),
-
-    tool({
-      name: 'create_assetpanda_object',
-      description:
-        'Create a new object (asset, employee, license, etc.) in a specific AssetPanda group using dynamic fields (e.g., field_1, field_2, gps_coordinates)',
-      schema: SCHEMAS.createObjectSchema,
-      operations: [ToolOperation.CREATE],
-      func: async (args: z.infer<typeof SCHEMAS.createObjectSchema>) => service.createObject(args)
-    }),
-
-    tool({
-      name: 'reserve_assetpanda_asset',
-      description:
-        'Reserve an asset in AssetPanda for future assignment. Marks the asset as reserved status.',
-      schema: SCHEMAS.reserveAssetSchema,
-      operations: [ToolOperation.UPDATE],
-      func: async (args: z.infer<typeof SCHEMAS.reserveAssetSchema>) => service.reserveAsset(args)
     }),
 
     tool({
@@ -118,26 +109,6 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
     }),
 
     tool({
-      name: 'assign_assetpanda_software_license',
-      description:
-        'Assign a software license to an employee. Reduces available seats and adds employee to assigned users.',
-      schema: SCHEMAS.assignSoftwareLicenseSchema,
-      operations: [ToolOperation.UPDATE],
-      func: async (args: z.infer<typeof SCHEMAS.assignSoftwareLicenseSchema>) =>
-        service.assignSoftwareLicense(args)
-    }),
-
-    tool({
-      name: 'reclaim_assetpanda_software_license',
-      description:
-        'Reclaim a software license from an employee. Increases available seats and removes employee from assigned users.',
-      schema: SCHEMAS.reclaimSoftwareLicenseSchema,
-      operations: [ToolOperation.UPDATE],
-      func: async (args: z.infer<typeof SCHEMAS.reclaimSoftwareLicenseSchema>) =>
-        service.reclaimSoftwareLicense(args)
-    }),
-
-    tool({
       name: 'check_assetpanda_asset_availability',
       description:
         'Check the availability of assets by type. Returns available assets matching the search criteria.',
@@ -149,14 +120,6 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
     }),
 
     tool({
-      name: 'list_assetpanda_groups',
-      description: 'List all groups in AssetPanda (Assets, Licenses, Employees, etc.)',
-      schema: SCHEMAS.listGroupsSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: z.infer<typeof SCHEMAS.listGroupsSchema>) => service.listGroups(args)
-    }),
-
-    tool({
       name: 'list_assetpanda_users',
       description: 'List all users/employees in AssetPanda',
       schema: SCHEMAS.listUsersSchema,
@@ -165,11 +128,21 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
     }),
 
     tool({
-      name: 'search_assetpanda_objects',
-      description: 'Search for objects (assets, licenses) in a specific group with filters',
-      schema: SCHEMAS.searchObjectsSchema,
+      name: 'get_assetpanda_group_fields',
+      description: 'Get all fields and their keys for a specific group in AssetPanda',
+      schema: SCHEMAS.getGroupFieldsSchema,
       operations: [ToolOperation.READ],
-      func: async (args: z.infer<typeof SCHEMAS.searchObjectsSchema>) => service.searchObjects(args)
+      func: async (args: z.infer<typeof SCHEMAS.getGroupFieldsSchema>) =>
+        service.getGroupFields(args.group_id)
+    }),
+
+    tool({
+      name: 'get_assetpanda_group_statuses',
+      description: 'Get all available statuses and their IDs for a specific group in AssetPanda',
+      schema: SCHEMAS.getGroupStatusesSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: z.infer<typeof SCHEMAS.getGroupStatusesSchema>) =>
+        service.getGroupStatuses(args.group_id)
     })
   ];
 

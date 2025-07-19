@@ -99,6 +99,31 @@ export interface AssetPandaGroup {
   [key: string]: unknown;
 }
 
+export interface AssetPandaField {
+  id: number;
+  name: string;
+  key: string;
+  type: string;
+  is_only_embedded: boolean;
+  entity_id: number;
+  is_required: boolean;
+  is_open_field: boolean;
+  show_in_value: boolean;
+}
+
+export interface GetGroupFieldsResponse extends BaseResponse<AssetPandaField[]> {}
+
+export interface AssetPandaStatus {
+  id: number;
+  name: string;
+  entity_id: number;
+  key: string;
+  is_default: boolean;
+  default_for_listing: boolean;
+}
+
+export interface GetGroupStatusesResponse extends BaseResponse<AssetPandaStatus[]> {}
+
 export interface AssetPandaObject {
   id: string;
   display_name: string;
@@ -151,20 +176,7 @@ export interface CreateUserRequest {
   };
 }
 
-export interface CreateObjectRequest {
-  [key: string]: unknown;
-}
-
-export interface SearchObjectsRequest {
-  search?: string;
-  status?: string;
-  assigned_to?: number;
-  [key: string]: unknown;
-}
-
 export interface UpdateObjectRequest {
-  field_11?: string; // Status field
-  field_52?: string; // Assigned to employee
   [key: string]: unknown;
 }
 
@@ -174,19 +186,13 @@ export interface CreateUserResponse extends BaseResponse<AssetPandaUser> {}
 export interface GetUserResponse extends BaseResponse<AssetPandaUser> {}
 
 export interface ListGroupsResponse extends BaseResponse<AssetPandaGroup[]> {}
-export interface GetGroupResponse extends BaseResponse<AssetPandaGroup> {}
 
 export interface SearchObjectsResponse extends BaseResponse<AssetPandaSearchResponse> {}
-export interface CreateObjectResponse extends BaseResponse<AssetPandaObject> {}
 export interface UpdateObjectResponse extends BaseResponse<AssetPandaObject> {}
-export interface GetObjectResponse extends BaseResponse<AssetPandaObject> {}
 
 export interface CreateEmployeeResponse extends BaseResponse<AssetPandaUser> {}
-export interface ReserveAssetResponse extends BaseResponse<AssetPandaObject> {}
 export interface AssignAssetResponse extends BaseResponse<AssetPandaObject> {}
 export interface MarkAssetReturnedResponse extends BaseResponse<AssetPandaObject> {}
-export interface AssignLicenseResponse extends BaseResponse<AssetPandaObject> {}
-export interface ReclaimLicenseResponse extends BaseResponse<AssetPandaObject> {}
 
 // Zod schemas for validation
 export const SCHEMAS = {
@@ -290,126 +296,105 @@ export const SCHEMAS = {
       .describe('Device type')
   }),
 
-  // For employee object in Employees group
+  // For creating API users (employees)
   createEmployeeSchema: z.object({
-    name: z.string().describe('Full name of the employee'),
+    first_name: z.string().describe('First name of the employee'),
+    last_name: z.string().describe('Last name of the employee'),
     email: z.string().email().describe('Email address of the employee'),
-    employee_id: z.string().describe('Employee ID'),
-    status: z
-      .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Status (optional)')
-  }),
-
-  createObjectSchema: z.object({
-    group_name: z
-      .string()
-      .describe(
-        'Name of the group to create the object in (e.g., "Assets", "Employees", "Software Licenses")'
-      ),
-    fields: z
-      .record(z.unknown())
-      .describe('Dynamic fields for the object (e.g., field_1: "value", field_2: "value")')
-  }),
-
-  reserveAssetSchema: z.object({
-    asset_name: z.string().describe('Name or description of the asset to reserve'),
-    group_name: z
-      .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Name of the asset group (e.g., "Hardware", "Assets")')
+    password: z.string().describe('Password for the employee')
   }),
 
   assignAssetToUserSchema: z.object({
-    asset_name: z.string().describe('Name or description of the asset to assign'),
-    employee_email: z.string().email().describe('Email of the employee to assign the asset to'),
-    group_name: z
+    object_id: z.string().describe('ID of the asset object to assign'),
+    group_id: z
+      .number()
+      .describe(
+        'ID of the group containing the asset (call list_assetpanda_groups to get group IDs)'
+      ),
+    status_field_key: z
       .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Name of the asset group (e.g., "Hardware", "Assets")')
+      .describe('Key of the status field (call get_assetpanda_group_fields to get field keys)'),
+    status_id: z
+      .number()
+      .describe(
+        'ID of the "Assigned to Employee" status (call get_assetpanda_group_statuses to get status IDs)'
+      ),
+    employee_field_key: z
+      .string()
+      .describe(
+        'Key of the employee assignment field (call get_assetpanda_group_fields to get field keys)'
+      ),
+    employee_id: z
+      .string()
+      .describe(
+        'ID of the employee object (call list_assetpanda_objects on employees group to get employee IDs)'
+      )
   }),
 
   markAssetReturnedSchema: z.object({
-    employee_email: z.string().email().describe('Email of the employee returning the asset'),
-    asset_name: z
+    object_id: z.string().describe('ID of the asset object to mark as returned'),
+    group_id: z
+      .number()
+      .describe(
+        'ID of the group containing the asset (call list_assetpanda_groups to get group IDs)'
+      ),
+    status_field_key: z
       .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Name of the specific asset to return (optional)'),
-    group_name: z
+      .describe('Key of the status field (call get_assetpanda_group_fields to get field keys)'),
+    status_id: z
+      .number()
+      .describe(
+        'ID of the "Available" status (call get_assetpanda_group_statuses to get status IDs)'
+      ),
+    employee_field_key: z
       .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Name of the asset group (e.g., "Hardware", "Assets")')
-  }),
-
-  assignSoftwareLicenseSchema: z.object({
-    license_name: z
-      .string()
-      .describe('Name of the software license to assign (e.g., "Figma", "Adobe Creative Suite")'),
-    employee_email: z.string().email().describe('Email of the employee to assign the license to'),
-    group_name: z
-      .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Name of the license group (e.g., "Licenses", "Software")')
-  }),
-
-  reclaimSoftwareLicenseSchema: z.object({
-    license_name: z.string().describe('Name of the software license to reclaim'),
-    employee_email: z
-      .string()
-      .email()
-      .describe('Email of the employee to reclaim the license from'),
-    group_name: z
-      .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Name of the license group (e.g., "Licenses", "Software")')
+      .describe(
+        'Key of the employee assignment field to clear (call get_assetpanda_group_fields to get field keys)'
+      )
   }),
 
   checkAssetAvailabilitySchema: z.object({
-    asset_type: z
+    group_id: z
+      .number()
+      .describe(
+        'ID of the group to search for assets (call list_assetpanda_groups to get group IDs)'
+      ),
+    search_term: z
       .string()
-      .describe('Type of asset to check (e.g., "laptop", "monitor", "MacBook")'),
-    group_name: z
-      .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Name of the asset group (e.g., "Hardware", "Assets")')
+      .describe('Search term for asset type or name (e.g., "laptop", "monitor", "MacBook")'),
+    limit: z.number().default(50).describe('Number of results to return (default: 50)'),
+    offset: z.number().default(0).describe('Starting position for pagination (default: 0)')
   }),
 
   listGroupsSchema: z.object({
     limit: z.number().nullish().default(50).describe('Number of groups to return')
   }),
 
-  searchObjectsSchema: z.object({
-    group_id: z.number().describe('ID of the group to search in'),
-    search: z
-      .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Search term for objects'),
-    status: z
-      .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Filter by status (e.g., "Available", "Assigned", "Reserved")'),
-    assigned_to: z
+  listObjectsSchema: z.object({
+    group_id: z
       .number()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Filter by assigned user ID')
+      .describe(
+        'ID of the group to list objects from (call list_assetpanda_groups to get group IDs)'
+      ),
+    limit: z.number().default(50).describe('Number of objects per page (default: 50)'),
+    offset: z.number().default(0).describe('Starting position for pagination (default: 0)')
   }),
 
   listUsersSchema: z.object({
     limit: z.number().nullish().default(50).describe('Number of users to return')
+  }),
+
+  getGroupFieldsSchema: z.object({
+    group_id: z
+      .number()
+      .describe('ID of the group to get fields for (call list_assetpanda_groups to get group IDs)')
+  }),
+
+  getGroupStatusesSchema: z.object({
+    group_id: z
+      .number()
+      .describe(
+        'ID of the group to get statuses for (call list_assetpanda_groups to get group IDs)'
+      )
   })
 };
-
-// Type inference from schemas
-export type AssetPandaCreateUserRequest = z.infer<typeof SCHEMAS.createUserSchema>;
-export type AssetPandaCreateEmployeeRequest = z.infer<typeof SCHEMAS.createEmployeeSchema>;
