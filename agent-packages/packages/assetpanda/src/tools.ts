@@ -4,50 +4,27 @@ import { AssetPandaConfig, SCHEMAS } from './types';
 import { z } from 'zod';
 
 const ASSETPANDA_TOOL_SELECTION_PROMPT = `
-AssetPanda is an asset management platform for managing employees, assets, and software licenses.
+AssetPanda is an asset management platform. Use AssetPanda tools for:
 
-When using AssetPanda tools, always follow these workflows:
+**Employee Management:**
+- Create employee records
+- List users and employees
 
-1. **Create Employee Record**
-   - First, search for the employee by email.
-   - If the employee does not exist, create a new employee.
-   - The account ID will be automatically retrieved from the AssetPanda settings.
+**Asset Operations:**
+- Assign assets to users (requires group_id, object_id, status_field_key, employee_field_key, status_id, employee_id)
+- Mark assets as returned (requires group_id, object_id, status_field_key, employee_field_key, status_id)
+- Check asset availability by search terms
 
-2. **Create Object in Group**
-   - First, get the list of available groups to identify the correct group.
-   - Create the object in the specified group using dynamic fields (field_1, field_2, etc.).
-   - Fields are key-value pairs that can contain any data (e.g., field_1: "Asset Name", field_2: "Description", gps_coordinates: [50, 50]).
+**Data Discovery:**
+- List groups to find group IDs
+- Get group fields and statuses for IDs and keys
+- List objects within groups
+- Get account settings
 
-3. **Assign Asset to User**
-   - Search for the asset by name or other criteria to obtain its ID.
-   - Search for the employee by email.
-   - If the employee does not exist, create the employee.
-   - Assign the asset by updating its status and assigned fields.
-
-4. **Mark Asset as Returned**
-   - Search for the employee by email to get their ID.
-   - Search for all assets assigned to the employee.
-   - For each asset to be returned, update its status and assigned fields to reflect return.
-
-5. **Reserve Asset**
-   - Identify the correct asset group (e.g., "Assets", "Hardware", "Licenses") and get its group_id.
-   - Search for the asset(s) to obtain their id(s).
-   - Reserve the asset by updating its status.
-
-6. **Assign Software License**
-   - Identify the license group and search for the right license.
-   - Check if a seat is available (available seats > 0).
-   - If available, assign the license to the employee (search/create employee as needed).
-
-7. **Reclaim/Deallocate Software License**
-   - Search for the employee by email to get their ID.
-   - Identify the license group and search for the license assigned to the user.
-   - Remove the employee from the assigned list and increase the available seats count.
-
-**Always chain these steps as needed. Never assume a record exists—always search first. If an API call fails, explain what went wrong and suggest verifying IDs or permissions.**
+**Workflow:** Always get group/field/status info first, then use the IDs and keys in operations.
 `;
 
-const ASSETPANDA_RESPONSE_PROMPT = `When formatting AssetPanda responses be sure to mention object IDs, employee emails, and asset names. For asset assignments, include the asset name and assigned employee. For license management, include available seats and assigned users.`;
+const ASSETPANDA_RESPONSE_PROMPT = `When formatting AssetPanda responses be sure to mention object IDs, employee emails, and asset names. For asset assignments, include the asset name and assigned employee.`;
 
 export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfig {
   const service = new AssetPandaService(config);
@@ -59,7 +36,7 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
         'Get AssetPanda account settings including account ID, groups, and configuration',
       schema: SCHEMAS.getSettingsSchema,
       operations: [ToolOperation.READ],
-      func: async (args: z.infer<typeof SCHEMAS.getSettingsSchema>) => service.getSettings()
+      func: async () => service.getSettings()
     }),
 
     tool({
