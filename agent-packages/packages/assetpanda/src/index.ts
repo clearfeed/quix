@@ -81,6 +81,7 @@ const FIELDS = {
 export class AssetPandaService implements BaseService<AssetPandaConfig> {
   private client: AxiosInstance;
   private cachedSettings: any = null;
+  private cachedGroupIds: Map<string, number> = new Map();
 
   constructor(private config: AssetPandaConfig) {
     const validation = this.validateConfig(config);
@@ -165,6 +166,29 @@ export class AssetPandaService implements BaseService<AssetPandaConfig> {
     }
   }
 
+  private async getGroupId(groupName: string): Promise<number> {
+    if (this.cachedGroupIds.has(groupName)) {
+      return this.cachedGroupIds.get(groupName)!;
+    }
+
+    try {
+      const response = await this.listGroups({ limit: 100 });
+      if (response.success && response.data) {
+        for (const group of response.data) {
+          if (group.name === groupName) {
+            this.cachedGroupIds.set(groupName, group.id);
+            return group.id;
+          }
+        }
+      }
+      throw new Error(`Group not found: ${groupName}`);
+    } catch (error) {
+      throw new Error(
+        `Failed to get group ID for ${groupName}: ${this.extractErrorMessage(error)}`
+      );
+    }
+  }
+
   async listUsers(params: z.infer<typeof SCHEMAS.listUsersSchema>): Promise<ListUsersResponse> {
     try {
       const response = await this.client.get('/users', { params });
@@ -210,12 +234,7 @@ export class AssetPandaService implements BaseService<AssetPandaConfig> {
     args: z.infer<typeof SCHEMAS.createObjectSchema>
   ): Promise<CreateObjectResponse> {
     try {
-      const groupName = args.group_name;
-      let groupId: number | undefined;
-      if (groupName === GROUPS.ASSETS) groupId = 225052;
-      else if (groupName === GROUPS.EMPLOYEES) groupId = 225055;
-      else if (groupName === GROUPS.SOFTWARE_LICENSES) groupId = 225056;
-      if (!groupId) return { success: false, error: `Group not found: ${groupName}` };
+      const groupId = await this.getGroupId(args.group_name);
       const payload: CreateObjectRequest = args.fields;
       const response = await this.client.post(`/groups/${groupId}/objects`, payload);
       return { success: true, data: this.extractPrimitives(response.data) };
@@ -255,7 +274,6 @@ export class AssetPandaService implements BaseService<AssetPandaConfig> {
   // --- EMPLOYEE MANAGEMENT ---
   async createEmployee(args: Record<string, any>): Promise<CreateObjectResponse> {
     try {
-      const groupId = 225055;
       const fields: Record<string, any> = {
         [FIELDS.EMPLOYEE.NAME]: args.name,
         [FIELDS.EMPLOYEE.EMAIL]: args.email,
@@ -274,7 +292,7 @@ export class AssetPandaService implements BaseService<AssetPandaConfig> {
     args: z.infer<typeof SCHEMAS.reserveAssetSchema>
   ): Promise<ReserveAssetResponse> {
     try {
-      const groupId = 225052;
+      const groupId = await this.getGroupId(GROUPS.ASSETS);
       if (!args.asset_name) return { success: false, error: 'Asset name is required' };
       const asset = await this.findObjectByName(groupId, args.asset_name);
       if (!asset) return { success: false, error: 'Asset not found' };
@@ -305,11 +323,10 @@ export class AssetPandaService implements BaseService<AssetPandaConfig> {
     args: z.infer<typeof SCHEMAS.assignAssetToUserSchema>
   ): Promise<AssignAssetResponse> {
     try {
-      const groupId = 225052;
+      const groupId = await this.getGroupId(GROUPS.ASSETS);
       if (!args.asset_name) return { success: false, error: 'Asset name is required' };
       const asset = await this.findObjectByName(groupId, args.asset_name);
       if (!asset) return { success: false, error: 'Asset not found' };
-      const empGroupId = 225055;
       const employee = await this.findEmployeeByEmail(args.employee_email);
       if (!employee) return { success: false, error: 'Employee not found' };
       const statusEnum = asset.data?.[FIELDS.ASSET.STATUS];
@@ -339,7 +356,7 @@ export class AssetPandaService implements BaseService<AssetPandaConfig> {
     args: z.infer<typeof SCHEMAS.markAssetReturnedSchema>
   ): Promise<MarkAssetReturnedResponse> {
     try {
-      const groupId = 225052;
+      const groupId = await this.getGroupId(GROUPS.ASSETS);
       if (!args.asset_name) return { success: false, error: 'Asset name is required' };
       const asset = await this.findObjectByName(groupId, args.asset_name);
       if (!asset) return { success: false, error: 'Asset not found' };
@@ -371,7 +388,7 @@ export class AssetPandaService implements BaseService<AssetPandaConfig> {
     args: z.infer<typeof SCHEMAS.assignSoftwareLicenseSchema>
   ): Promise<AssignLicenseResponse> {
     try {
-      const groupId = 225056;
+      const groupId = await this.getGroupId(GROUPS.SOFTWARE_LICENSES);
       const license = await this.findObjectByName(groupId, args.license_name);
       if (!license) return { success: false, error: 'License not found' };
       const employee = await this.findEmployeeByEmail(args.employee_email);
@@ -393,7 +410,7 @@ export class AssetPandaService implements BaseService<AssetPandaConfig> {
     args: z.infer<typeof SCHEMAS.reclaimSoftwareLicenseSchema>
   ): Promise<ReclaimLicenseResponse> {
     try {
-      const groupId = 225056;
+      const groupId = await this.getGroupId(GROUPS.SOFTWARE_LICENSES);
       const license = await this.findObjectByName(groupId, args.license_name);
       if (!license) return { success: false, error: 'License not found' };
       const employee = await this.findEmployeeByEmail(args.employee_email);
@@ -430,7 +447,8 @@ export class AssetPandaService implements BaseService<AssetPandaConfig> {
   }
 
   private async findEmployeeByEmail(email: string): Promise<AssetPandaObject | null> {
-    const response = await this.searchObjects({ group_id: 225055, search: email });
+    const groupId = await this.getGroupId(GROUPS.EMPLOYEES);
+    const response = await this.searchObjects({ group_id: groupId, search: email });
     if (response.success && response.data && response.data.objects) {
       const objects = response.data.objects as Record<string, any>;
       for (const obj of Object.values(objects)) {
