@@ -25,9 +25,9 @@ import {
   MarkAssetReturnedResponse,
   AssignLicenseResponse,
   ReclaimLicenseResponse,
-  GetSettingsResponse
+  GetSettingsResponse,
+  SCHEMAS
 } from './types';
-import { SCHEMAS } from './schema';
 import { z } from 'zod';
 
 export * from './types';

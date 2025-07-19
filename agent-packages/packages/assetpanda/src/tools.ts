@@ -1,7 +1,6 @@
 import { ToolConfig, ToolOperation, tool } from '@clearfeed-ai/quix-common-agent';
 import { AssetPandaService } from './index';
-import { AssetPandaConfig } from './types';
-import { SCHEMAS } from './schema';
+import { AssetPandaConfig, SCHEMAS } from './types';
 import { z } from 'zod';
 
 const ASSETPANDA_TOOL_SELECTION_PROMPT = `
