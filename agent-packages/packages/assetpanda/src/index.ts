@@ -427,6 +427,19 @@ export class AssetPandaService implements BaseService<AssetPandaConfig> {
     }
   }
 
+  // --- ASSET AVAILABILITY ---
+  async checkAssetAvailability(
+    args: z.infer<typeof SCHEMAS.checkAssetAvailabilitySchema>
+  ): Promise<SearchObjectsResponse> {
+    try {
+      const groupName = args.group_name || 'Assets';
+      const groupId = await this.getGroupId(groupName);
+      return await this.searchObjects({ group_id: groupId, search: args.asset_type });
+    } catch (error) {
+      return { success: false, error: this.extractErrorMessage(error) };
+    }
+  }
+
   // --- UTILS ---
   private async findObjectByName(groupId: number, name: string): Promise<AssetPandaObject | null> {
     const response = await this.searchObjects({ group_id: groupId, search: name });

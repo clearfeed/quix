@@ -145,21 +145,7 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
       schema: SCHEMAS.checkAssetAvailabilitySchema,
       operations: [ToolOperation.READ],
       func: async (args: z.infer<typeof SCHEMAS.checkAssetAvailabilitySchema>) => {
-        try {
-          let groupId: number | undefined;
-          if ((args.group_name || 'Assets') === 'Assets') groupId = 225052;
-          // Add more static group mappings if needed
-          if (!groupId) {
-            return {
-              success: false,
-              error: `Group not found: ${args.group_name}`
-            };
-          }
-          const resp = await service.searchObjects({ group_id: groupId, search: args.asset_type });
-          return resp;
-        } catch (error) {
-          return { success: false, error: (error as Error).message };
-        }
+        return service.checkAssetAvailability(args);
       }
     }),
 
