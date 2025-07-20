@@ -147,6 +147,7 @@ export const SCHEMAS = {
       timeOffTypeId: z
         .number()
         .int()
+        .min(1, 'Time off type ID must be a positive number')
         .describe('The time off type ID (get it using get_bamboohr_time_off_types)'),
       start: z
         .string()
@@ -158,11 +159,11 @@ export const SCHEMAS = {
         .describe('End date in YYYY-MM-DD format'),
       amount: z
         .number()
-        .int()
+        .min(0.1, 'Amount must be greater than 0')
         .describe('Amount of time off in hours or days'),
       notes: z
-        .number()
-        .int()
+        .string()
+        .max(500, 'Notes cannot exceed 500 characters')
         .nullish()
         .transform((val) => val ?? undefined)
         .describe('Optional notes for the request')
