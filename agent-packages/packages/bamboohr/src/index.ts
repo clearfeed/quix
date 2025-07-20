@@ -197,7 +197,7 @@ export class BambooHRService implements BaseService<BambooHRConfig> {
         success: true,
         data: {
           message: 'Time off request created successfully',
-          requestId: response.data?.id || 'unknown'
+requestId: response.data?.id
         }
       };
     } catch (error) {
