@@ -92,7 +92,7 @@ export class BambooHRService implements BaseService<BambooHRConfig> {
   }
 
   async listEmployees(
-    params: ListEmployeesParams = {}
+    params: ListEmployeesParams = { limit: 1000 }
   ): Promise<BaseResponse<{ fields: any[]; employees: BambooHREmployee[] }>> {
     try {
       const queryParams: Record<string, any> = {};
@@ -197,7 +197,7 @@ export class BambooHRService implements BaseService<BambooHRConfig> {
         success: true,
         data: {
           message: 'Time off request created successfully',
-requestId: response.data?.id
+          requestId: response.data?.id
         }
       };
     } catch (error) {

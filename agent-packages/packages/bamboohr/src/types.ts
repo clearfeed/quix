@@ -89,7 +89,6 @@ export const SCHEMAS = {
       .number()
       .min(1)
       .max(1000)
-      .optional()
       .default(1000)
       .describe('Maximum number of employees to return (default: 1000, max: 1000)')
   }),
@@ -175,8 +174,8 @@ export const SCHEMAS = {
 };
 
 // Inferred types from Zod schemas
-export type ListEmployeesParams = z.input<typeof SCHEMAS.listEmployeesSchema>;
+export type ListEmployeesParams = z.infer<typeof SCHEMAS.listEmployeesSchema>;
 export type GetEmployeeParams = z.infer<typeof SCHEMAS.getEmployeeSchema>;
 export type GetTimeOffBalanceParams = z.infer<typeof SCHEMAS.getTimeOffBalanceSchema>;
-export type GetTimeOffRequestsParams = z.input<typeof SCHEMAS.getTimeOffRequestsSchema>;
+export type GetTimeOffRequestsParams = z.infer<typeof SCHEMAS.getTimeOffRequestsSchema>;
 export type CreateTimeOffRequestParams = z.infer<typeof SCHEMAS.createTimeOffRequestSchema>;

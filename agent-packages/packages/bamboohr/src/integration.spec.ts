@@ -1,6 +1,15 @@
+// Skip BambooHR integration tests when required environment variables are missing.
+// If BAMBOOHR_API_KEY is not set, the entire suite will be skipped so CI can run without secrets.
+
 import { BambooHRService, createBambooHRToolsExport, BambooHRConfig } from './index';
 
-describe('BambooHR Integration Tests', () => {
+// Determine whether we have the necessary credentials to run live API tests
+const hasCredentials = Boolean(process.env.BAMBOOHR_API_KEY && process.env.BAMBOOHR_API_KEY.trim());
+
+// Use `describe.skip` when credentials are absent to avoid failing the pipeline
+const describeOrSkip = hasCredentials ? describe : describe.skip;
+
+describeOrSkip('BambooHR Integration Tests', () => {
   let service: BambooHRService;
   let config: BambooHRConfig;
 
@@ -77,7 +86,7 @@ describe('BambooHR Integration Tests', () => {
 
       if (employees.success && employees.data?.employees && employees.data.employees.length > 0) {
         const employeeId = employees.data.employees[0].id;
-        const requests = await service.getTimeOffRequests({ employeeId });
+        const requests = await service.getTimeOffRequests({ employeeId, limit: 20 });
 
         expect(requests.success).toBe(true);
         expect(requests.data).toBeInstanceOf(Array);
@@ -103,7 +112,8 @@ describe('BambooHR Integration Tests', () => {
         const requests = await service.getTimeOffRequests({
           employeeId,
           startDate: '2024-01-01',
-          endDate: '2024-12-31'
+          endDate: '2024-12-31',
+          limit: 20
         });
 
         expect(requests.success).toBe(true);
@@ -112,7 +122,7 @@ describe('BambooHR Integration Tests', () => {
     });
 
     test('should handle non-existent employee ID', async () => {
-      const requests = await service.getTimeOffRequests({ employeeId: 999999 });
+      const requests = await service.getTimeOffRequests({ employeeId: 999999, limit: 20 });
 
       // Should succeed but return empty array or handle gracefully
       expect(requests.success).toBe(true);
