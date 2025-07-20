@@ -145,8 +145,8 @@ export const SCHEMAS = {
     .object({
       employeeId: z.number().int().positive().describe('The employee ID requesting time off'),
       timeOffTypeId: z
-        .string()
-        .min(1, 'Time off type ID cannot be empty')
+        .number()
+        .int()
         .describe('The time off type ID (get it using get_bamboohr_time_off_types)'),
       start: z
         .string()
@@ -157,13 +157,12 @@ export const SCHEMAS = {
         .regex(DATE_REGEX, 'End date must be in YYYY-MM-DD format')
         .describe('End date in YYYY-MM-DD format'),
       amount: z
-        .string()
-        .min(1, 'Amount cannot be empty')
-        .regex(/^\d+(\.\d+)?$/, 'Amount must be a valid number')
+        .number()
+        .int()
         .describe('Amount of time off in hours or days'),
       notes: z
-        .string()
-        .max(500, 'Notes cannot exceed 500 characters')
+        .number()
+        .int()
         .nullish()
         .transform((val) => val ?? undefined)
         .describe('Optional notes for the request')
