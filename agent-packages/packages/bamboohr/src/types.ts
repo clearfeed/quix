@@ -159,7 +159,7 @@ export const SCHEMAS = {
         .describe('End date in YYYY-MM-DD format'),
       amount: z
         .number()
-        .min(0.1, 'Amount must be greater than 0')
+        .min(1, 'Amount must be at least 1')
         .describe('Amount of time off in hours or days'),
       notes: z
         .string()
