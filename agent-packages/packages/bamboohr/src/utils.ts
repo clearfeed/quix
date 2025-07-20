@@ -54,30 +54,3 @@ export function getEmployeeFields(includeExtended: boolean = false): string {
   }
   return fields.join(',');
 }
-
-/**
- * Formats time off type ID to human readable name
- */
-export function formatTimeOffTypeName(typeId: string): string {
-  const typeMap: Record<string, string> = {
-    [BAMBOOHR_CONSTANTS.TIME_OFF_TYPES.VACATION]: 'Vacation',
-    [BAMBOOHR_CONSTANTS.TIME_OFF_TYPES.SICK]: 'Sick',
-    [BAMBOOHR_CONSTANTS.TIME_OFF_TYPES.BEREAVEMENT]: 'Bereavement',
-    [BAMBOOHR_CONSTANTS.TIME_OFF_TYPES.COVID_19]: 'COVID-19 Related',
-    [BAMBOOHR_CONSTANTS.TIME_OFF_TYPES.COMP_TIME]: 'Comp Time',
-    [BAMBOOHR_CONSTANTS.TIME_OFF_TYPES.FMLA]: 'FMLA'
-  };
-
-  return typeMap[typeId] || `Type ${typeId}`;
-}
-
-/**
- * Validates date range (start <= end)
- */
-export function isValidDateRange(start: string, end: string): boolean {
-  if (!isValidDateFormat(start) || !isValidDateFormat(end)) {
-    return false;
-  }
-
-  return new Date(start) <= new Date(end);
-}
