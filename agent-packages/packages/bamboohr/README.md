@@ -20,7 +20,7 @@ Gets detailed information for a specific employee by their ID, including job tit
 
 **Parameters:**
 
-- `employeeId` (string): The employee ID to get details for
+- `employeeId` (number): The employee ID to get details for
 
 **Returns:** Employee details object
 
@@ -37,13 +37,13 @@ Gets time off balances for a specific employee, showing available vacation days,
 
 **Returns:** Array of time off balances by type
 
-#### `get_bamboohr_time_off_requests`
+#### `get_bamboohr_time_off_requests_for_employee`
 
-Retrieves time off requests with optional filters for employee, date range, and status. Shows request details, dates, amounts, and approval status.
+Retrieves time off requests with optional filters for date range, and status. Shows request details, dates, amounts, and approval status.
 
 **Parameters:**
 
-- `employeeId` (string, optional): Filter by specific employee ID
+- `employeeId` (number, optional): Filter by specific employee ID
 - `startDate` (string, optional): Start date filter (YYYY-MM-DD format, defaults to current year start)
 - `endDate` (string, optional): End date filter (YYYY-MM-DD format, defaults to current year end)
 - `status` (string, optional): Filter by request status ('approved', 'denied', 'superceded', 'requested', 'canceled')
@@ -56,7 +56,7 @@ Creates a new time off request for an employee. Requires employee ID, time off t
 
 **Parameters:**
 
-- `employeeId` (string): The employee ID requesting time off
+- `employeeId` (number): The employee ID requesting time off
 - `timeOffTypeId` (string): The time off type ID (e.g., "78" for Vacation, "79" for Sick)
 - `start` (string): Start date in YYYY-MM-DD format
 - `end` (string): End date in YYYY-MM-DD format
