@@ -20,20 +20,6 @@ describe('AssetPanda Integration', () => {
     service = new AssetPandaService(config);
   });
 
-  describe('Configuration', () => {
-    it('should validate config with valid API token', () => {
-      const validConfig = { apiToken: 'valid-token' };
-      const validation = service.validateConfig(validConfig);
-      expect(validation.isValid).toBe(true);
-    });
-
-    it('should reject config without API token', () => {
-      const invalidConfig = {};
-      const validation = service.validateConfig(invalidConfig);
-      expect(validation.isValid).toBe(false);
-      expect(validation.error).toContain('AssetPanda API token is required');
-    });
-  });
   describe('API Endpoints', () => {
     it('should get settings', async () => {
       const result = await service.getSettings();

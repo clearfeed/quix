@@ -26,30 +26,13 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
   private client: AxiosInstance;
 
   constructor(private config: JumpCloudConfig) {
-    const validation = this.validateConfig(config);
-    if (!validation.isValid) {
-      throw new Error(validation.error);
-    }
-
     this.client = axios.create({
       baseURL: 'https://console.jumpcloud.com/api',
       headers: {
-        'x-api-key': config.apiKey,
+        'x-api-key': this.config.apiKey,
         'Content-Type': 'application/json'
       }
     });
-  }
-
-  validateConfig(
-    config?: Record<string, any>
-  ): { isValid: boolean; error?: string } & Record<string, any> {
-    const cfg = config || this.config;
-
-    if (!cfg.apiKey) {
-      return { isValid: false, error: 'JumpCloud API key is required' };
-    }
-
-    return { isValid: true };
   }
 
   async listUsers(params: z.infer<typeof SCHEMAS.listUsers>): Promise<ListUsersResponse> {

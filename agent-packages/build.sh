@@ -74,4 +74,10 @@ yarn install
 yarn link "@clearfeed-ai/quix-common-agent"
 yarn build
 
+# Link and build bamboohr package
+cd ../bamboohr
+yarn install
+yarn link "@clearfeed-ai/quix-common-agent"
+yarn build
+
 echo "All packages built successfully!"

@@ -30,27 +30,13 @@ export class AssetPandaService implements BaseService<AssetPandaConfig> {
   private cachedGroupFields: Map<number, AssetPandaField[]> = new Map();
 
   constructor(private config: AssetPandaConfig) {
-    const validation = this.validateConfig(config);
-    if (!validation.isValid) {
-      throw new Error(validation.error);
-    }
     this.client = axios.create({
       baseURL: 'https://api.assetpanda.com/v3',
       headers: {
-        Authorization: `Bearer ${config.apiToken}`,
+        Authorization: `Bearer ${this.config.apiToken}`,
         'Content-Type': 'application/json'
       }
     });
-  }
-
-  validateConfig(
-    config?: Record<string, any>
-  ): { isValid: boolean; error?: string } & Record<string, any> {
-    const cfg = config || this.config;
-    if (!cfg.apiToken) {
-      return { isValid: false, error: 'AssetPanda API token is required' };
-    }
-    return { isValid: true };
   }
 
   private extractPrimitives<T>(obj: T): T {
