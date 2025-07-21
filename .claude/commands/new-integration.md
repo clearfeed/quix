@@ -41,7 +41,6 @@ Follow these rules when creating the integration:
   - Make your service class implement `BaseService<YourConfig>`
   - Make your config interface extend `BaseConfig`
   - Return `BaseResponse<T>` from all service methods
-  - Add a `validateConfig` method that validates the configuration
   - In tools, unwrap the BaseResponse and throw errors if the operation failed
   - Add proper error handling with try/catch blocks in service methods
 - To select tools to implement:
