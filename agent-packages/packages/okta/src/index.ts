@@ -1,4 +1,4 @@
-import { Client, User } from '@okta/okta-sdk-nodejs';
+import { Client } from '@okta/okta-sdk-nodejs';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   OktaAuthConfig,
@@ -35,7 +35,7 @@ import {
   ListDeviceUsersResponse
 } from './types';
 import { extractPrimitives } from './utils';
-import { SCHEMAS } from './tools';
+import { SCHEMAS } from './schemas/input';
 import { z } from 'zod';
 export * from './types';
 export * from './tools';
@@ -305,10 +305,10 @@ export class OktaService implements BaseService<OktaAuthConfig> {
     try {
       const user = await this.getUser({ userId });
 
-      if (user.data?.status !== 'DEPROVISIONED') {
+      if (user.success && user.data?.status !== 'DEPROVISIONED') {
         return {
           success: false,
-          data: `User is currently '${user.data?.status?.toLowerCase()}'.`
+          error: `User is currently '${user.data?.status?.toLowerCase()}'.`
         };
       }
       await this.client.userApi.deleteUser({ userId });
@@ -422,7 +422,7 @@ export class OktaService implements BaseService<OktaAuthConfig> {
     try {
       const users = await this.client.groupApi.listGroupUsers({ groupId });
 
-      const data: User[] = [];
+      const data = [];
 
       for await (const user of users) {
         const simplified = extractPrimitives(user);
