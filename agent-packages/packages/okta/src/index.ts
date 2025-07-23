@@ -1,4 +1,4 @@
-import { Client, User } from '@okta/okta-sdk-nodejs';
+import { Client, User, UserApiListUsersRequest } from '@okta/okta-sdk-nodejs';
 import { BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   OktaAuthConfig,
@@ -63,11 +63,16 @@ export class OktaService implements BaseService<OktaAuthConfig> {
 
   // === USER METHODS ===
 
-  async listUsers({ limit, query }: z.infer<typeof SCHEMAS.listUsers>): Promise<ListUsersResponse> {
+  async listUsers({
+    limit,
+    search,
+    filter
+  }: z.infer<typeof SCHEMAS.listUsers>): Promise<ListUsersResponse> {
     try {
-      const queryParams: any = {};
+      const queryParams: UserApiListUsersRequest = {};
       if (limit) queryParams.limit = limit;
-      if (query) queryParams.q = query;
+      if (search) queryParams.search = search;
+      if (filter) queryParams.filter = filter;
 
       const users = await this.client.userApi.listUsers(queryParams);
       const data = [];
