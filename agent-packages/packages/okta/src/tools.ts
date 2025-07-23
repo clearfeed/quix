@@ -41,7 +41,7 @@ export const SCHEMAS = {
       .nullish()
       .transform((val) => val ?? undefined)
       .describe(
-        'Search expression with filtering for user properties. Supports any user profile attribute (including custom attributes), status, created, activated, statusChanged, lastUpdated, id, and type.id. Operators: eq, sw, co, gt, ge, lt, le. Logical operators: and, or. Examples: "profile.department eq \\"Engineering\\"", "profile.firstName sw \\"John\\"", "status eq \\"ACTIVE\\"", "profile.department eq \\"Engineering\\" and status eq \\"ACTIVE\\"". Note: Includes DEPROVISIONED users by default.'
+        'Search expression with filtering for user properties. Supports any user profile attribute (including custom attributes), status, created, activated, statusChanged, lastUpdated, id, and type.id. Operators: eq, sw, co, gt, ge, lt, le. Logical operators: and, or. Examples: "profile.department eq \\"Engineering\\"", "profile.firstName sw \\"John\\"", "status eq \\"ACTIVE\\"", "profile.department eq \\"Engineering\\" and status eq \\"ACTIVE\\"".'
       ),
     filter: z
       .string()
@@ -225,7 +225,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): ToolConfig {
     tool({
       name: 'list_okta_users',
       description:
-        'List users in Okta using search parameter for filtering by any user properties including profile attributes, status, and dates. Always use date in extended format (e.g., 2013-06-01T00:00:00.000Z) ',
+        'List users in Okta using the search or filter parameter to filter by any user properties, including profile attributes, status, and dates. Always use dates in extended format (e.g., 2013-06-01T00:00:00.000Z).',
       schema: SCHEMAS.listUsers,
       operations: [ToolOperation.READ],
       func: async (args: z.infer<typeof SCHEMAS.listUsers>) => service.listUsers(args)
