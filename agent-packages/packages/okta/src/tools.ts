@@ -36,11 +36,13 @@ When formatting Okta responses:
 export const SCHEMAS = {
   listUsers: z.object({
     limit: z.number().default(20).describe('Number of results to return (default 20)'),
-    query: z
+    search: z
       .string()
       .nullish()
       .transform((val) => val ?? undefined)
-      .describe('Search a user by firstName, lastName, or email')
+      .describe(
+        'Search expression with filtering for user properties. Supports any user profile attribute (including custom attributes), status, created, activated, statusChanged, lastUpdated, id, and type.id. Operators: eq, sw, co, gt, ge, lt, le. Logical operators: and, or. Available statuses: STAGED, PROVISIONED, ACTIVE, RECOVERY, PASSWORD_EXPIRED, LOCKED_OUT, SUSPENDED, DEPROVISIONED - use whatever is required. Examples: "profile.department eq \\"Engineering\\"", "profile.firstName sw \\"John\\"", "status eq \\"ACTIVE\\"", "profile.department eq \\"Engineering\\" and status eq \\"ACTIVE\\"".'
+      )
   }),
   createUserSchema: z.object({
     profile: z.object({
@@ -215,7 +217,8 @@ export function createOktaToolsExport(config: OktaAuthConfig): ToolConfig {
   const tools = [
     tool({
       name: 'list_okta_users',
-      description: 'List users in Okta, optionally filtered by a search query',
+      description:
+        'List users in Okta using the search or filter parameter to filter by any user properties, including profile attributes, status, and dates. Always use dates in extended format (e.g., 2013-06-01T00:00:00.000Z).',
       schema: SCHEMAS.listUsers,
       operations: [ToolOperation.READ],
       func: async (args: z.infer<typeof SCHEMAS.listUsers>) => service.listUsers(args)
