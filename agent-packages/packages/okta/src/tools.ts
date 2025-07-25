@@ -41,7 +41,7 @@ export const SCHEMAS = {
       .nullish()
       .transform((val) => val ?? undefined)
       .describe(
-        'Search expression with filtering for user properties. Supports any user profile attribute (including custom attributes), status, created, activated, statusChanged, lastUpdated, id, and type.id. Operators: eq, sw, co, gt, ge, lt, le. Logical operators: and, or. Examples: "profile.department eq \\"Engineering\\"", "profile.firstName sw \\"John\\"", "status eq \\"ACTIVE\\"", "profile.department eq \\"Engineering\\" and status eq \\"ACTIVE\\"".'
+        'Search expression with filtering for user properties. Supports any user profile attribute (including custom attributes), status, created, activated, statusChanged, lastUpdated, id, and type.id. Operators: eq, sw, co, gt, ge, lt, le. Logical operators: and, or. Available statuses: STAGED, PROVISIONED, ACTIVE, RECOVERY, PASSWORD_EXPIRED, LOCKED_OUT, SUSPENDED, DEPROVISIONED - use whatever is required. Examples: "profile.department eq \\"Engineering\\"", "profile.firstName sw \\"John\\"", "status eq \\"ACTIVE\\"", "profile.department eq \\"Engineering\\" and status eq \\"ACTIVE\\"".'
       )
   }),
   createUserSchema: z.object({
