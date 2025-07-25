@@ -65,14 +65,12 @@ export class OktaService implements BaseService<OktaAuthConfig> {
 
   async listUsers({
     limit,
-    search,
-    filter
+    search
   }: z.infer<typeof SCHEMAS.listUsers>): Promise<ListUsersResponse> {
     try {
       const queryParams: UserApiListUsersRequest = {};
       if (limit) queryParams.limit = limit;
       if (search) queryParams.search = search;
-      if (filter) queryParams.filter = filter;
 
       const users = await this.client.userApi.listUsers(queryParams);
       const data = [];
