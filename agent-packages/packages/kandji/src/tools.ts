@@ -21,8 +21,16 @@ const KANDJI_RESPONSE_PROMPT = `When formatting Kandji responses, include import
 export const SCHEMAS = {
   listDevices: z.object({
     limit: z.number().default(50).describe('Number of devices to return (max 300)'),
-    offset: z.number().optional().describe('Offset for pagination'),
-    search: z.string().optional().describe('Search query for device names')
+    offset: z
+      .number()
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('Offset for pagination'),
+    search: z
+      .string()
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('Search query for device names')
   }),
 
   getDevice: z.object({
