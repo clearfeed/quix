@@ -34,6 +34,13 @@ export class KandjiService implements BaseService<KandjiConfig> {
     });
   }
 
+  private handleRequestError(error: any, action: string): { success: false; error: string } {
+    console.error(`Error ${action} in Kandji service:`, error);
+    const message =
+      (error as any).response?.data?.message || (error as Error).message || `Failed to ${action}`;
+    return { success: false, error: message };
+  }
+
   async listDevices(params: ListDevicesParams = {}): Promise<ListDevicesResponse> {
     try {
       const queryParams: Record<string, any> = {};
@@ -44,12 +51,8 @@ export class KandjiService implements BaseService<KandjiConfig> {
       const response = await this.client.get('/devices', { params: queryParams });
       const data = Array.isArray(response.data) ? response.data : [];
       return { success: true, data };
-    } catch (error: any) {
-      console.error('Error listing Kandji devices:', error);
-      return {
-        success: false,
-        error: error.response?.data?.message || error.message || 'Failed to list devices'
-      };
+    } catch (error: unknown) {
+      return this.handleRequestError(error, 'list devices');
     }
   }
 
@@ -57,12 +60,8 @@ export class KandjiService implements BaseService<KandjiConfig> {
     try {
       const response = await this.client.get(`/devices/${params.deviceId}`);
       return { success: true, data: response.data };
-    } catch (error: any) {
-      console.error('Error getting Kandji device:', error);
-      return {
-        success: false,
-        error: error.response?.data?.message || error.message || 'Failed to get device'
-      };
+    } catch (error: unknown) {
+      return this.handleRequestError(error, 'get device');
     }
   }
 
@@ -70,12 +69,8 @@ export class KandjiService implements BaseService<KandjiConfig> {
     try {
       await this.client.post(`/devices/${params.deviceId}/action/lock`);
       return { success: true, data: `Device ${params.deviceId} lock command sent` };
-    } catch (error: any) {
-      console.error('Error locking Kandji device:', error);
-      return {
-        success: false,
-        error: error.response?.data?.message || error.message || 'Failed to lock device'
-      };
+    } catch (error: unknown) {
+      return this.handleRequestError(error, 'lock device');
     }
   }
 
@@ -83,12 +78,8 @@ export class KandjiService implements BaseService<KandjiConfig> {
     try {
       await this.client.post(`/devices/${params.deviceId}/action/shutdown`);
       return { success: true, data: `Device ${params.deviceId} shutdown command sent` };
-    } catch (error: any) {
-      console.error('Error shutting down Kandji device:', error);
-      return {
-        success: false,
-        error: error.response?.data?.message || error.message || 'Failed to shutdown device'
-      };
+    } catch (error: unknown) {
+      return this.handleRequestError(error, 'shutdown device');
     }
   }
 
@@ -96,12 +87,8 @@ export class KandjiService implements BaseService<KandjiConfig> {
     try {
       await this.client.post(`/devices/${params.deviceId}/action/restart`);
       return { success: true, data: `Device ${params.deviceId} restart command sent` };
-    } catch (error: any) {
-      console.error('Error restarting Kandji device:', error);
-      return {
-        success: false,
-        error: error.response?.data?.message || error.message || 'Failed to restart device'
-      };
+    } catch (error: unknown) {
+      return this.handleRequestError(error, 'restart device');
     }
   }
 
@@ -109,12 +96,8 @@ export class KandjiService implements BaseService<KandjiConfig> {
     try {
       await this.client.post(`/devices/${params.deviceId}/action/reinstallagent`);
       return { success: true, data: `Device ${params.deviceId} reinstall agent command sent` };
-    } catch (error: any) {
-      console.error('Error reinstalling Kandji agent:', error);
-      return {
-        success: false,
-        error: error.response?.data?.message || error.message || 'Failed to reinstall agent'
-      };
+    } catch (error: unknown) {
+      return this.handleRequestError(error, 'reinstall agent');
     }
   }
 
@@ -122,12 +105,8 @@ export class KandjiService implements BaseService<KandjiConfig> {
     try {
       await this.client.post(`/devices/${params.deviceId}/action/erase`);
       return { success: true, data: `Device ${params.deviceId} reset/erase command sent` };
-    } catch (error: any) {
-      console.error('Error resetting Kandji device:', error);
-      return {
-        success: false,
-        error: error.response?.data?.message || error.message || 'Failed to reset device'
-      };
+    } catch (error: unknown) {
+      return this.handleRequestError(error, 'reset device');
     }
   }
 
@@ -135,12 +114,8 @@ export class KandjiService implements BaseService<KandjiConfig> {
     try {
       await this.client.post(`/devices/${params.deviceId}/action/unlockaccount`);
       return { success: true, data: `Device ${params.deviceId} unlock user account command sent` };
-    } catch (error: any) {
-      console.error('Error unlocking user account on Kandji device:', error);
-      return {
-        success: false,
-        error: error.response?.data?.message || error.message || 'Failed to unlock user account'
-      };
+    } catch (error: unknown) {
+      return this.handleRequestError(error, 'unlock user account');
     }
   }
 
@@ -148,15 +123,8 @@ export class KandjiService implements BaseService<KandjiConfig> {
     try {
       await this.client.post(`/devices/${params.deviceId}/action/updateinventory`);
       return { success: true, data: `Device ${params.deviceId} update inventory command sent` };
-    } catch (error: any) {
-      console.error('Error sending update inventory to Kandji device:', error);
-      return {
-        success: false,
-        error:
-          error.response?.data?.message ||
-          error.message ||
-          'Failed to send update inventory command'
-      };
+    } catch (error: unknown) {
+      return this.handleRequestError(error, 'send update inventory command');
     }
   }
 
@@ -166,12 +134,8 @@ export class KandjiService implements BaseService<KandjiConfig> {
         DeviceName: params.deviceName
       });
       return { success: true, data: `Device ${params.deviceId} name set to ${params.deviceName}` };
-    } catch (error: any) {
-      console.error('Error setting Kandji device name:', error);
-      return {
-        success: false,
-        error: error.response?.data?.message || error.message || 'Failed to set device name'
-      };
+    } catch (error: unknown) {
+      return this.handleRequestError(error, 'set device name');
     }
   }
 
@@ -180,12 +144,8 @@ export class KandjiService implements BaseService<KandjiConfig> {
       const response = await this.client.get('/blueprints');
       const data = response.data?.results || [];
       return { success: true, data };
-    } catch (error: any) {
-      console.error('Error listing Kandji blueprints:', error);
-      return {
-        success: false,
-        error: error.response?.data?.message || error.message || 'Failed to list blueprints'
-      };
+    } catch (error: unknown) {
+      return this.handleRequestError(error, 'list blueprints');
     }
   }
 }
