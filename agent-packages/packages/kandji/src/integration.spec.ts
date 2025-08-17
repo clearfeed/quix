@@ -8,12 +8,23 @@ describe('Kandji Integration Tests', () => {
   };
 
   let service: KandjiService;
+  let testDeviceId: string;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     if (!config.apiKey) {
       throw new Error('KANDJI_API_KEY environment variable is required for integration tests');
     }
     service = new KandjiService(config);
+
+    const devicesResponse = await service.listDevices({ limit: 1 });
+    if (devicesResponse.success && devicesResponse.data && devicesResponse.data.length > 0) {
+      testDeviceId = devicesResponse.data[0].device_id;
+      console.log(`Found device for all tests: ${testDeviceId}`);
+    } else {
+      throw new Error(
+        `No devices found in Kandji instance. Response: ${JSON.stringify(devicesResponse, null, 2)}`
+      );
+    }
   });
 
   describe('Device Management', () => {
@@ -70,21 +81,8 @@ describe('Kandji Integration Tests', () => {
   });
 
   describe('Device Actions', () => {
-    let testDeviceId: string;
-
-    beforeAll(async () => {
-      const devicesResponse = await service.listDevices({ limit: 1 });
-      if (devicesResponse.success && devicesResponse.data && devicesResponse.data.length > 0) {
-        testDeviceId = devicesResponse.data[0].device_id;
-      } else {
-        console.warn('Skipping device action tests: No devices found in Kandji instance.');
-      }
-    });
-
     test('should handle send blank push action (may fail if endpoint not available)', async () => {
-      if (!testDeviceId) {
-        return expect(true).toBe(true); // Mark as passing but indicate skip in test name
-      }
+      expect(testDeviceId).toBeDefined();
 
       const response = await service.sendBlankPush({ deviceId: testDeviceId });
       // This may fail if the endpoint doesn't exist or device is not MDM managed
@@ -97,9 +95,7 @@ describe('Kandji Integration Tests', () => {
     }, 10000);
 
     test('should handle lock device action (may fail if device not MDM managed)', async () => {
-      if (!testDeviceId) {
-        return expect(true).toBe(true); // Mark as passing but indicate skip in test name
-      }
+      expect(testDeviceId).toBeDefined();
 
       const response = await service.lockDevice({ deviceId: testDeviceId });
       // This may fail if device is not MDM managed, but we test the API call structure
