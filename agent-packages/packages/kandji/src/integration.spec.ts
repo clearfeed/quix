@@ -106,5 +106,87 @@ describe('Kandji Integration Tests', () => {
         expect(response.error).toBeDefined();
       }
     }, 10000);
+
+    test('should handle restart device action (may fail if device not MDM managed or not macOS)', async () => {
+      expect(testDeviceId).toBeDefined();
+
+      const response = await service.restartDevice({ deviceId: testDeviceId });
+      // This may fail if device is not MDM managed or not macOS, but we test the API call structure
+      expect(typeof response.success).toBe('boolean');
+      if (response.success) {
+        expect(response.data).toContain('restart command sent');
+      } else {
+        expect(response.error).toBeDefined();
+      }
+    }, 10000);
+
+    test('should handle shutdown device action (may fail if device not MDM managed or not macOS)', async () => {
+      expect(testDeviceId).toBeDefined();
+
+      const response = await service.shutdownDevice({ deviceId: testDeviceId });
+      // This may fail if device is not MDM managed or not macOS, but we test the API call structure
+      expect(typeof response.success).toBe('boolean');
+      if (response.success) {
+        expect(response.data).toContain('shutdown command sent');
+      } else {
+        expect(response.error).toBeDefined();
+      }
+    }, 10000);
+
+    test('should handle reinstall agent action (may fail if device not MDM managed)', async () => {
+      expect(testDeviceId).toBeDefined();
+
+      const response = await service.reinstallAgent({ deviceId: testDeviceId });
+      // This may fail if device is not MDM managed, but we test the API call structure
+      expect(typeof response.success).toBe('boolean');
+      if (response.success) {
+        expect(response.data).toContain('reinstall agent command sent');
+      } else {
+        expect(response.error).toBeDefined();
+      }
+    }, 10000);
+
+    test('should handle unlock user account action (may fail if device not MDM managed)', async () => {
+      expect(testDeviceId).toBeDefined();
+
+      const response = await service.unlockUserAccount({ deviceId: testDeviceId });
+      // This may fail if device is not MDM managed, but we test the API call structure
+      expect(typeof response.success).toBe('boolean');
+      if (response.success) {
+        expect(response.data).toContain('unlock user account command sent');
+      } else {
+        expect(response.error).toBeDefined();
+      }
+    }, 10000);
+
+    test('should handle set device name action (may fail if device not MDM managed)', async () => {
+      expect(testDeviceId).toBeDefined();
+
+      const newName = `TestDevice_${Date.now()}`;
+      const response = await service.setDeviceName({ deviceId: testDeviceId, deviceName: newName });
+      // This may fail if device is not MDM managed, but we test the API call structure
+      expect(typeof response.success).toBe('boolean');
+      if (response.success) {
+        expect(response.data).toContain('name set to');
+      } else {
+        expect(response.error).toBeDefined();
+      }
+    }, 10000);
+  });
+
+  describe('Destructive Device Actions', () => {
+    test('should handle reset device action (DESTRUCTIVE - will likely fail in test)', async () => {
+      expect(testDeviceId).toBeDefined();
+
+      const response = await service.resetDevice({ deviceId: testDeviceId });
+      // This should fail in most cases as it's a destructive operation that wipes the device
+      // We're testing the API call structure and error handling
+      expect(typeof response.success).toBe('boolean');
+      if (response.success) {
+        expect(response.data).toContain('reset command sent');
+      } else {
+        expect(response.error).toBeDefined();
+      }
+    }, 10000);
   });
 });

@@ -14,6 +14,8 @@ Use Kandji tools when the user wants to:
 - View device information (name, model, OS version, serial number, blueprint)
 - Perform device management actions (lock, shutdown, restart, reset)
 - Manage Kandji agent or device settings
+
+IMPORTANT: For all device actions (lock, shutdown, restart, reset, etc.), you MUST use the device_id field from list_kandji_devices results, NOT the serial number. If you only have a serial number or device name, first call list_kandji_devices to find the corresponding device_id.
 `;
 
 const KANDJI_RESPONSE_PROMPT = `When formatting Kandji responses, include important device details like device name, model, OS version, and last check-in time. For device actions, confirm the action was sent and mention that the device needs to be online and MDM-managed to execute the command.`;
@@ -42,11 +44,11 @@ export const SCHEMAS = {
   }),
 
   shutdownDevice: z.object({
-    deviceId: z.string().describe('Kandji device ID to shutdown (macOS only)')
+    deviceId: z.string().describe('Kandji device ID to shutdown')
   }),
 
   restartDevice: z.object({
-    deviceId: z.string().describe('Kandji device ID to restart (macOS only)')
+    deviceId: z.string().describe('Kandji device ID to restart')
   }),
 
   reinstallAgent: z.object({
@@ -141,7 +143,8 @@ export function createKandjiToolsExport(config: KandjiConfig): ToolConfig {
       description: 'Unlock the local user account on a Kandji-managed device',
       schema: SCHEMAS.unlockUserAccount,
       operations: [ToolOperation.UPDATE],
-      func: async (args: z.infer<typeof SCHEMAS.unlockUserAccount>) => service.unlockUserAccount(args)
+      func: async (args: z.infer<typeof SCHEMAS.unlockUserAccount>) =>
+        service.unlockUserAccount(args)
     }),
 
     tool({
