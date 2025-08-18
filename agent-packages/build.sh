@@ -2,82 +2,29 @@
 
 set -e # Exit on error
 
-# Build and link common package
-cd packages/common
+# Get the directory where the script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PACKAGES_DIR="$SCRIPT_DIR/packages"
+
+# Build and link common package first (other packages depend on it)
+echo "Building common package..."
+cd "$PACKAGES_DIR/common"
 yarn install
 yarn build
 yarn link
 
-# Link and build github package
-cd ../github
-yarn install
-yarn link "@clearfeed-ai/quix-common-agent"
-yarn build
+# Get all directories in packages folder except common (already built)
+PACKAGE_DIRS=($(find "$PACKAGES_DIR" -mindepth 1 -maxdepth 1 -type d -not -name "common" | sort))
 
-# Link and build hubspot package
-cd ../hubspot
-yarn install
-yarn link "@clearfeed-ai/quix-common-agent"
-yarn build
-
-# Link and build jira package
-cd ../jira
-yarn install
-yarn link "@clearfeed-ai/quix-common-agent"
-yarn build
-
-# Link and build postgres package
-cd ../postgres
-yarn install
-yarn link "@clearfeed-ai/quix-common-agent"
-yarn build
-
-# Link and build salesforce package
-cd ../salesforce
-yarn install
-yarn link "@clearfeed-ai/quix-common-agent"
-yarn build
-
-# Link and build slack package
-cd ../slack
-yarn install
-yarn link "@clearfeed-ai/quix-common-agent"
-yarn build
-
-# Link and build zendesk package
-cd ../zendesk
-yarn install
-yarn link "@clearfeed-ai/quix-common-agent"
-yarn build
-
-# Link and build notion package
-cd ../notion
-yarn install
-yarn link "@clearfeed-ai/quix-common-agent"
-yarn build
-
-# Link and build okta package
-cd ../okta
-yarn install
-yarn link "@clearfeed-ai/quix-common-agent"
-yarn build
-
-# Link and build jumpcloud package
-cd ../jumpcloud
-yarn install
-yarn link "@clearfeed-ai/quix-common-agent"
-yarn build
-
-# Link and build assetpanda package
-cd ../assetpanda
-yarn install
-yarn link "@clearfeed-ai/quix-common-agent"
-yarn build
-
-# Link and build bamboohr package
-cd ../bamboohr
-yarn install
-yarn link "@clearfeed-ai/quix-common-agent"
-yarn build
+# Build all other packages
+for package_path in "${PACKAGE_DIRS[@]}"; do
+    package_name=$(basename "$package_path")
+    echo "Building $package_name package..."
+    
+    cd "$package_path"
+    yarn install
+    yarn link "@clearfeed-ai/quix-common-agent"
+    yarn build
+done
 
 echo "All packages built successfully!"
