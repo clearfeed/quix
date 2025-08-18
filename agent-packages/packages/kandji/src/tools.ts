@@ -83,13 +83,7 @@ export function createKandjiToolsExport(config: KandjiConfig): ToolConfig {
         'List devices managed by Kandji with their details including name, model, OS version, serial number, and blueprint',
       schema: SCHEMAS.listDevices,
       operations: [ToolOperation.READ],
-      func: async (args: z.infer<typeof SCHEMAS.listDevices>) => {
-        const response = await service.listDevices(args);
-        if (!response.success) {
-          throw new Error(response.error);
-        }
-        return response.data;
-      }
+      func: async (args: z.infer<typeof SCHEMAS.listDevices>) => service.listDevices(args)
     }),
 
     tool({
@@ -97,13 +91,7 @@ export function createKandjiToolsExport(config: KandjiConfig): ToolConfig {
       description: 'Get detailed information about a specific Kandji device',
       schema: SCHEMAS.getDevice,
       operations: [ToolOperation.READ],
-      func: async (args: z.infer<typeof SCHEMAS.getDevice>) => {
-        const response = await service.getDevice(args);
-        if (!response.success) {
-          throw new Error(response.error);
-        }
-        return response.data;
-      }
+      func: async (args: z.infer<typeof SCHEMAS.getDevice>) => service.getDevice(args)
     }),
 
     tool({
@@ -112,13 +100,7 @@ export function createKandjiToolsExport(config: KandjiConfig): ToolConfig {
         'Lock a Kandji-managed device. iOS devices require passcode to unlock, macOS devices require generated PIN',
       schema: SCHEMAS.lockDevice,
       operations: [ToolOperation.UPDATE],
-      func: async (args: z.infer<typeof SCHEMAS.lockDevice>) => {
-        const response = await service.lockDevice(args);
-        if (!response.success) {
-          throw new Error(response.error);
-        }
-        return response.data;
-      }
+      func: async (args: z.infer<typeof SCHEMAS.lockDevice>) => service.lockDevice(args)
     }),
 
     tool({
@@ -126,13 +108,7 @@ export function createKandjiToolsExport(config: KandjiConfig): ToolConfig {
       description: 'Shutdown a Kandji-managed macOS device (macOS only)',
       schema: SCHEMAS.shutdownDevice,
       operations: [ToolOperation.UPDATE],
-      func: async (args: z.infer<typeof SCHEMAS.shutdownDevice>) => {
-        const response = await service.shutdownDevice(args);
-        if (!response.success) {
-          throw new Error(response.error);
-        }
-        return response.data;
-      }
+      func: async (args: z.infer<typeof SCHEMAS.shutdownDevice>) => service.shutdownDevice(args)
     }),
 
     tool({
@@ -140,13 +116,7 @@ export function createKandjiToolsExport(config: KandjiConfig): ToolConfig {
       description: 'Restart a Kandji-managed macOS device (macOS only)',
       schema: SCHEMAS.restartDevice,
       operations: [ToolOperation.UPDATE],
-      func: async (args: z.infer<typeof SCHEMAS.restartDevice>) => {
-        const response = await service.restartDevice(args);
-        if (!response.success) {
-          throw new Error(response.error);
-        }
-        return response.data;
-      }
+      func: async (args: z.infer<typeof SCHEMAS.restartDevice>) => service.restartDevice(args)
     }),
 
     tool({
@@ -154,13 +124,7 @@ export function createKandjiToolsExport(config: KandjiConfig): ToolConfig {
       description: 'Reinstall the Kandji agent on a managed device',
       schema: SCHEMAS.reinstallAgent,
       operations: [ToolOperation.UPDATE],
-      func: async (args: z.infer<typeof SCHEMAS.reinstallAgent>) => {
-        const response = await service.reinstallAgent(args);
-        if (!response.success) {
-          throw new Error(response.error);
-        }
-        return response.data;
-      }
+      func: async (args: z.infer<typeof SCHEMAS.reinstallAgent>) => service.reinstallAgent(args)
     }),
 
     tool({
@@ -169,13 +133,7 @@ export function createKandjiToolsExport(config: KandjiConfig): ToolConfig {
         'Reset/erase a Kandji-managed device - WARNING: This will completely wipe the device',
       schema: SCHEMAS.resetDevice,
       operations: [ToolOperation.DELETE],
-      func: async (args: z.infer<typeof SCHEMAS.resetDevice>) => {
-        const response = await service.resetDevice(args);
-        if (!response.success) {
-          throw new Error(response.error);
-        }
-        return response.data;
-      }
+      func: async (args: z.infer<typeof SCHEMAS.resetDevice>) => service.resetDevice(args)
     }),
 
     tool({
@@ -183,13 +141,7 @@ export function createKandjiToolsExport(config: KandjiConfig): ToolConfig {
       description: 'Unlock the local user account on a Kandji-managed device',
       schema: SCHEMAS.unlockUserAccount,
       operations: [ToolOperation.UPDATE],
-      func: async (args: z.infer<typeof SCHEMAS.unlockUserAccount>) => {
-        const response = await service.unlockUserAccount(args);
-        if (!response.success) {
-          throw new Error(response.error);
-        }
-        return response.data;
-      }
+      func: async (args: z.infer<typeof SCHEMAS.unlockUserAccount>) => service.unlockUserAccount(args)
     }),
 
     tool({
@@ -198,13 +150,7 @@ export function createKandjiToolsExport(config: KandjiConfig): ToolConfig {
         'Send an update inventory command to a Kandji-managed device to trigger check-in and refresh device information',
       schema: SCHEMAS.sendBlankPush,
       operations: [ToolOperation.UPDATE],
-      func: async (args: z.infer<typeof SCHEMAS.sendBlankPush>) => {
-        const response = await service.sendBlankPush(args);
-        if (!response.success) {
-          throw new Error(response.error);
-        }
-        return response.data;
-      }
+      func: async (args: z.infer<typeof SCHEMAS.sendBlankPush>) => service.sendBlankPush(args)
     }),
 
     tool({
@@ -212,13 +158,7 @@ export function createKandjiToolsExport(config: KandjiConfig): ToolConfig {
       description: 'Set the name of a Kandji-managed device',
       schema: SCHEMAS.setDeviceName,
       operations: [ToolOperation.UPDATE],
-      func: async (args: z.infer<typeof SCHEMAS.setDeviceName>) => {
-        const response = await service.setDeviceName(args);
-        if (!response.success) {
-          throw new Error(response.error);
-        }
-        return response.data;
-      }
+      func: async (args: z.infer<typeof SCHEMAS.setDeviceName>) => service.setDeviceName(args)
     })
   ];
 
