@@ -78,6 +78,30 @@ Implement a single tool that searches for deals by keyword, selects the closest 
 - **Service method signatures**: Use named parameter types like `params: GetEmployeeParams` instead of inline object types
 - **Export inferred types**: Add type exports in `types.ts` like `export type GetEmployeeParams = z.infer<typeof SCHEMAS.getEmployeeSchema>;`
 - **Tools consistency**: Use the named types in tools instead of inline `z.infer` calls
+- **Zod Schema Best Practices**: For better null handling, use `.nullish().transform((val) => val ?? undefined)` instead of `.optional()` for optional fields. Do not combine `.nullish()` with `.default()`:
+
+  ```ts
+  // Preferred: Handles both null and undefined properly
+  const schema = z.object({
+    name: z
+      .string()
+      .nullish()
+      .transform((val) => val ?? undefined),
+    email: z
+      .string()
+      .email()
+      .nullish()
+      .transform((val) => val ?? undefined),
+    age: z.number().default(0) // For fields with defaults - don't use .nullish() here
+  });
+
+  // Avoid: Only handles undefined, not null values
+  const schema = z.object({
+    name: z.string().optional(),
+    email: z.string().email().optional(),
+    age: z.number().nullish().default(0) // Don't combine .nullish() with .default()
+  });
+  ```
 
 ## Step 4: Document the Integration
 
