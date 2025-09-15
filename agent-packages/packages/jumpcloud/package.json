@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-jumpcloud-agent",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@clearfeed-ai/quix-common-agent": "1.2.0",
-    "axios": "^1.8.2"
+    "axios": "^1.12.2"
   },
   "devDependencies": {
     "typescript": "^5.7.3",
