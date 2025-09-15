@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@clearfeed-ai/quix-common-agent": "1.2.0",
-    "axios": "^1.8.2"
+    "axios": "^1.12.0"
   },
   "devDependencies": {
     "typescript": "^5.7.3",
