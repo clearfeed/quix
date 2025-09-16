@@ -111,7 +111,7 @@ export class JiraClient {
   }
 
   async searchIssues(jql: string, options: { maxResults?: number }): Promise<SearchIssuesResponse> {
-    const response = await this.makeApiCall('GET', '/search', {
+    const response = await this.makeApiCall('GET', '/search/jql', {
       params: {
         jql,
         fields: ['summary', 'description', 'status', 'priority', 'assignee'],
