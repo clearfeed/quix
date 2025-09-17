@@ -205,3 +205,8 @@ export const updateDealSchema = baseDealSchema.extend({
 export const searchCompaniesSchema = z.object({
   keyword: z.string().describe('The keyword to search for in company names')
 });
+
+export const associateDealWithContactSchema = z.object({
+  dealId: z.string().describe('The ID of the existing deal to associate with the contact'),
+  contactId: z.string().describe('The ID of the existing contact to associate with the deal')
+});

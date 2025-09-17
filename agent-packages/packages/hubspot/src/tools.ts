@@ -15,7 +15,8 @@ import {
   SearchDealsParams,
   UpdateDealParams,
   CreateTaskParams,
-  AssociateTaskWithEntityParams
+  AssociateTaskWithEntityParams,
+  AssociateDealWithContactParams
 } from './types';
 import { z } from 'zod';
 import {
@@ -33,7 +34,8 @@ import {
   associateTaskWithEntitySchema,
   searchContactsSchema,
   createContactSchema,
-  searchCompaniesSchema
+  searchCompaniesSchema,
+  associateDealWithContactSchema
 } from './schema';
 
 const HUBSPOT_TOOL_SELECTION_PROMPT = `
@@ -234,6 +236,13 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       schema: ticketSearchSchema,
       operations: [ToolOperation.READ],
       func: async (args: TicketSearchParams) => service.searchTickets(args)
+    }),
+    tool({
+      name: 'associate_deal_with_contact',
+      description: 'Associate an existing deal with an existing contact in HubSpot',
+      schema: associateDealWithContactSchema,
+      operations: [ToolOperation.UPDATE],
+      func: async (args: AssociateDealWithContactParams) => service.associateDealWithContact(args)
     })
   ];
 

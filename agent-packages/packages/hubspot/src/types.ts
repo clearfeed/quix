@@ -249,3 +249,13 @@ export type HubspotPipeline = {
 export type CreateDealParams = z.infer<typeof createDealSchema>;
 export type SearchDealsParams = z.infer<typeof searchDealsSchema>;
 export type UpdateDealParams = z.infer<typeof updateDealSchema>;
+
+export interface AssociateDealWithContactParams {
+  dealId: string;
+  contactId: string;
+}
+
+export type AssociateDealWithContactResponse = BaseResponse<{
+  dealId: string;
+  contactId: string;
+}>;

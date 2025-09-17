@@ -33,7 +33,9 @@ import {
   SearchDealsParams,
   UpdateDealParams,
   AssociateTaskWithEntityParams,
-  AssociateTaskWithEntityResponse
+  AssociateTaskWithEntityResponse,
+  AssociateDealWithContactParams,
+  AssociateDealWithContactResponse
 } from './types';
 import { FilterOperatorEnum as CompanyFilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/companies';
 import { FilterOperatorEnum as ContactFilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/contacts';
@@ -675,6 +677,35 @@ export class HubspotService implements BaseService<HubspotConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to associate task with entity'
+      };
+    }
+  }
+
+  async associateDealWithContact(
+    params: AssociateDealWithContactParams
+  ): Promise<AssociateDealWithContactResponse> {
+    try {
+      const { dealId, contactId } = params;
+
+      await this.client.crm.associations.v4.basicApi.create('deal', dealId, 'contact', contactId, [
+        {
+          associationCategory: DealAssociationSpecAssociationCategoryEnum.HubspotDefined,
+          associationTypeId: ASSOCIATION_TYPE_IDS.DEAL_TO_ENTITY.CONTACT
+        }
+      ]);
+
+      return {
+        success: true,
+        data: {
+          dealId,
+          contactId
+        }
+      };
+    } catch (error) {
+      console.error('Error associating deal with contact:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to associate deal with contact'
       };
     }
   }
