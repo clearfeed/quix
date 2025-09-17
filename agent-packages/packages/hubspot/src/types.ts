@@ -12,7 +12,8 @@ import {
   searchDealsSchema,
   updateDealSchema,
   associateTaskWithEntitySchema,
-  createContactSchema
+  createContactSchema,
+  associateDealWithContactSchema
 } from './schema';
 import { z } from 'zod';
 
@@ -250,10 +251,7 @@ export type CreateDealParams = z.infer<typeof createDealSchema>;
 export type SearchDealsParams = z.infer<typeof searchDealsSchema>;
 export type UpdateDealParams = z.infer<typeof updateDealSchema>;
 
-export interface AssociateDealWithContactParams {
-  dealId: string;
-  contactId: string;
-}
+export type AssociateDealWithContactParams = z.infer<typeof associateDealWithContactSchema>;
 
 export type AssociateDealWithContactResponse = BaseResponse<{
   dealId: string;
