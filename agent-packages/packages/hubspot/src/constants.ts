@@ -19,6 +19,7 @@ export const ASSOCIATION_TYPE_IDS = {
   },
   DEAL_TO_ENTITY: {
     COMPANY: 341,
-    CONTACT: 3
+    CONTACT: 3,
+    DEAL: 451
   }
 };

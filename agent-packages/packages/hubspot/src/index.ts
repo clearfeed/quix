@@ -34,8 +34,8 @@ import {
   UpdateDealParams,
   AssociateTaskWithEntityParams,
   AssociateTaskWithEntityResponse,
-  AssociateDealWithContactParams,
-  AssociateDealWithContactResponse
+  AssociateDealWithEntityParams,
+  AssociateDealWithEntityResponse
 } from './types';
 import { FilterOperatorEnum as CompanyFilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/companies';
 import { FilterOperatorEnum as ContactFilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/contacts';
@@ -681,31 +681,51 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
-  async associateDealWithContact(
-    params: AssociateDealWithContactParams
-  ): Promise<AssociateDealWithContactResponse> {
+  async associateDealWithEntity(
+    params: AssociateDealWithEntityParams
+  ): Promise<AssociateDealWithEntityResponse> {
     try {
-      const { dealId, contactId } = params;
+      const { dealId, associatedObjectType, associatedObjectId } = params;
+      const associationTypeIds: Record<string, number> = {
+        [HubspotEntityType.COMPANY]: ASSOCIATION_TYPE_IDS.DEAL_TO_ENTITY.COMPANY,
+        [HubspotEntityType.CONTACT]: ASSOCIATION_TYPE_IDS.DEAL_TO_ENTITY.CONTACT,
+        [HubspotEntityType.DEAL]: ASSOCIATION_TYPE_IDS.DEAL_TO_ENTITY.DEAL
+      };
 
-      await this.client.crm.associations.v4.basicApi.create('deal', dealId, 'contact', contactId, [
-        {
-          associationCategory: DealAssociationSpecAssociationCategoryEnum.HubspotDefined,
-          associationTypeId: ASSOCIATION_TYPE_IDS.DEAL_TO_ENTITY.CONTACT
-        }
-      ]);
+      const typeId = associationTypeIds[associatedObjectType];
+
+      if (!typeId) {
+        throw new Error(
+          `Unsupported association type: ${associatedObjectType}. Only CONTACT, COMPANY, and DEAL are supported for deal associations.`
+        );
+      }
+
+      await this.client.crm.associations.v4.basicApi.create(
+        'deal',
+        dealId,
+        associatedObjectType,
+        associatedObjectId,
+        [
+          {
+            associationCategory: DealAssociationSpecAssociationCategoryEnum.HubspotDefined,
+            associationTypeId: typeId
+          }
+        ]
+      );
 
       return {
         success: true,
         data: {
           dealId,
-          contactId
+          associatedObjectType,
+          associatedObjectId
         }
       };
     } catch (error) {
-      console.error('Error associating deal with contact:', error);
+      console.error('Error associating deal with entity:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to associate deal with contact'
+        error: error instanceof Error ? error.message : 'Failed to associate deal with entity'
       };
     }
   }

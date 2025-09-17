@@ -206,7 +206,14 @@ export const searchCompaniesSchema = z.object({
   keyword: z.string().describe('The keyword to search for in company names')
 });
 
-export const associateDealWithContactSchema = z.object({
-  dealId: z.string().describe('The ID of the existing deal to associate with the contact'),
-  contactId: z.string().describe('The ID of the existing contact to associate with the deal')
+export const associateDealWithEntitySchema = z.object({
+  dealId: z.string().describe('ID of the existing deal to associate with an entity.'),
+  associatedObjectType: z
+    .nativeEnum(HubspotEntityType)
+    .describe('Type of HubSpot object to associate with the deal.'),
+  associatedObjectId: z
+    .string()
+    .describe(
+      'ID of the contact, company, or deal in HubSpot to associate with the deal. If the ID is not available, use one of the search tools: "search_hubspot_contacts", "search_hubspot_companies", or "search_hubspot_deals" to find it.'
+    )
 });

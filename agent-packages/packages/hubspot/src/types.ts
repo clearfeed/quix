@@ -13,7 +13,7 @@ import {
   updateDealSchema,
   associateTaskWithEntitySchema,
   createContactSchema,
-  associateDealWithContactSchema
+  associateDealWithEntitySchema
 } from './schema';
 import { z } from 'zod';
 
@@ -251,9 +251,10 @@ export type CreateDealParams = z.infer<typeof createDealSchema>;
 export type SearchDealsParams = z.infer<typeof searchDealsSchema>;
 export type UpdateDealParams = z.infer<typeof updateDealSchema>;
 
-export type AssociateDealWithContactParams = z.infer<typeof associateDealWithContactSchema>;
+export type AssociateDealWithEntityParams = z.infer<typeof associateDealWithEntitySchema>;
 
-export type AssociateDealWithContactResponse = BaseResponse<{
+export type AssociateDealWithEntityResponse = BaseResponse<{
   dealId: string;
-  contactId: string;
+  associatedObjectType: HubspotEntityType;
+  associatedObjectId: string;
 }>;
