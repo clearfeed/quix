@@ -12,7 +12,8 @@ import {
   searchDealsSchema,
   updateDealSchema,
   associateTaskWithEntitySchema,
-  createContactSchema
+  createContactSchema,
+  associateDealWithEntitySchema
 } from './schema';
 import { z } from 'zod';
 
@@ -249,3 +250,11 @@ export type HubspotPipeline = {
 export type CreateDealParams = z.infer<typeof createDealSchema>;
 export type SearchDealsParams = z.infer<typeof searchDealsSchema>;
 export type UpdateDealParams = z.infer<typeof updateDealSchema>;
+
+export type AssociateDealWithEntityParams = z.infer<typeof associateDealWithEntitySchema>;
+
+export type AssociateDealWithEntityResponse = BaseResponse<{
+  dealId: string;
+  associatedObjectType: HubspotEntityType;
+  associatedObjectId: string;
+}>;
