@@ -27,7 +27,7 @@ export class JumpCloudService implements BaseService<JumpCloudConfig> {
 
   constructor(private config: JumpCloudConfig) {
     this.client = axios.create({
-      baseURL: 'https://console.jumpcloud.com/api',
+      baseURL: this.config.baseUrl,
       headers: {
         'x-api-key': this.config.apiKey,
         'Content-Type': 'application/json'
