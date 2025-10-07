@@ -2,6 +2,7 @@ import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 
 export interface JumpCloudConfig extends BaseConfig {
   apiKey: string;
+  baseUrl: string;
 }
 
 // JumpCloud User interface

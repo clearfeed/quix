@@ -27,7 +27,7 @@ import { JumpCloudService } from '@clearfeed-ai/quix-jumpcloud-agent';
 
 const service = new JumpCloudService({
   apiKey: 'your-jumpcloud-api-key',
-  baseUrl: 'https://console.jumpcloud.com/api' // optional, defaults to this value
+  baseUrl: 'https://console.jumpcloud.com/api' | 'https://console.eu.jumpcloud.com/api'  // mandatory - depending on your base region
 });
 ```
 
@@ -144,6 +144,8 @@ This package includes comprehensive tests that can run against a real JumpCloud 
    ```bash
    # JumpCloud API Configuration
    JUMPCLOUD_API_KEY=your_jumpcloud_api_key_here
+
+   # OR https://console.eu.jumpcloud.com/api depending on your region
    JUMPCLOUD_BASE_URL=https://console.jumpcloud.com/api
 
    # Test Configuration (optional)
@@ -239,7 +241,7 @@ Tests provide detailed console output showing:
 | Variable             | Description            | Default                             | Required                    |
 | -------------------- | ---------------------- | ----------------------------------- | --------------------------- |
 | `JUMPCLOUD_API_KEY`  | Your JumpCloud API key | -                                   | Yes (for integration tests) |
-| `JUMPCLOUD_BASE_URL` | JumpCloud API base URL | `https://console.jumpcloud.com/api` | No                          |
+| `JUMPCLOUD_BASE_URL` | JumpCloud API base URL | -      | Yes                         | 
 | `TEST_USER_PREFIX`   | Prefix for test users  | `test-user-`                        | No                          |
 | `TEST_GROUP_PREFIX`  | Prefix for test groups | `test-group-`                       | No                          |
 

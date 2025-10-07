@@ -14,12 +14,17 @@ describe('JumpCloud Integration Tests', () => {
   beforeAll(() => {
     // Check if API key is provided
     const apiKey = process.env.JUMPCLOUD_API_KEY;
+    const baseUrl = process.env.JUMPCLOUD_BASE_URL;
     if (!apiKey) {
       throw new Error('JUMPCLOUD_API_KEY environment variable is required for integration tests');
     }
+    if (!baseUrl) {
+      throw new Error('JUMPCLOUD_BASE_URL environment variable is required for integration tests');
+    }
 
     config = {
-      apiKey
+      apiKey,
+      baseUrl
     };
 
     service = new JumpCloudService(config);
@@ -330,7 +335,8 @@ describe('JumpCloud Integration Tests', () => {
   describe('Error Handling', () => {
     it('should handle invalid API key gracefully', async () => {
       const invalidService = new JumpCloudService({
-        apiKey: 'invalid-api-key'
+        apiKey: 'invalid-api-key',
+        baseUrl: 'does-not-matter'
       });
 
       const result = await invalidService.listUsers({ limit: 20 });
@@ -343,7 +349,8 @@ describe('JumpCloud Integration Tests', () => {
 
     it('should handle network errors gracefully', async () => {
       const networkErrorService = new JumpCloudService({
-        apiKey: config.apiKey
+        apiKey: config.apiKey,
+        baseUrl: 'does-not-matter'
       });
 
       const result = await networkErrorService.listUsers({ limit: 20 });
