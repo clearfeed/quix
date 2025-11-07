@@ -35,7 +35,9 @@ import {
   AssociateTaskWithEntityParams,
   AssociateTaskWithEntityResponse,
   AssociateDealWithEntityParams,
-  AssociateDealWithEntityResponse
+  AssociateDealWithEntityResponse,
+  HubspotProperty,
+  GetTicketPropertiesResponse
 } from './types';
 import { FilterOperatorEnum as CompanyFilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/companies';
 import { FilterOperatorEnum as ContactFilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/contacts';
@@ -1061,7 +1063,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async updateTicket(params: UpdateTicketParams): Promise<UpdateTicketResponse> {
     try {
-      const { subject, content, stage, priority, ownerId, ticketId } = params;
+      const { subject, content, stage, priority, ownerId, ticketId, customProperties } = params;
       const properties: Record<string, string> = {};
       if (subject) {
         properties.subject = subject;
@@ -1088,6 +1090,46 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       if (ownerId) {
         properties.hubspot_owner_id = ownerId;
+      }
+
+      // ========== NEW: CUSTOM PROPERTIES HANDLING ==========
+      if (customProperties) {
+        for (const [key, value] of Object.entries(customProperties)) {
+          // Skip null/undefined values
+          if (value === null || value === undefined) {
+            continue;
+          }
+
+          /**
+           * Type-aware value transformation based on HubSpot API requirements:
+           * - Enumeration/multi-select: semicolon-separated string
+           * - Boolean checkbox: string 'true'/'false'
+           * - Number: string representation
+           * - Date: ISO 8601 YYYY-MM-DD
+           * - Other: direct string conversion
+           */
+          if (Array.isArray(value)) {
+            // Multi-select checkbox or enumeration field
+            // HubSpot requires semicolon-separated values
+            // Example: ["urgent", "vip"] → "urgent;vip"
+            properties[key] = value.join(';');
+          } else if (typeof value === 'boolean') {
+            // Boolean checkbox field
+            // HubSpot requires string representation
+            // Example: true → "true"
+            properties[key] = String(value);
+          } else if (typeof value === 'number') {
+            // Number field (integer or decimal)
+            // HubSpot accepts string representation
+            // Example: 42 → "42"
+            properties[key] = String(value);
+          } else {
+            // String fields (text, textarea, phone, date, etc.)
+            // Use value as-is, converted to string
+            // For dates, pass ISO 8601 YYYY-MM-DD format strings
+            properties[key] = String(value);
+          }
+        }
       }
 
       const updateInput: TicketParameters = { properties };
@@ -1396,6 +1438,44 @@ export class HubspotService implements BaseService<HubspotConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to search HubSpot tickets'
+      };
+    }
+  }
+
+  /**
+   * Retrieve all ticket properties including custom fields
+   * @returns BaseResponse containing array of HubspotProperty objects
+   */
+  async getTicketProperties(): Promise<GetTicketPropertiesResponse> {
+    try {
+      // Call HubSpot Properties API to get all ticket property definitions
+      const response = await this.client.crm.properties.coreApi.getAll('tickets');
+
+      // Transform API response to our interface
+      const properties: HubspotProperty[] = response.results.map((prop) => ({
+        name: prop.name,
+        label: prop.label,
+        type: prop.type as HubspotProperty['type'],
+        fieldType: prop.fieldType,
+        description: prop.description || '',
+        options: prop.options?.map((opt) => ({
+          label: opt.label,
+          value: opt.value
+        })),
+        groupName: prop.groupName,
+        hidden: prop.hidden,
+        displayOrder: prop.displayOrder
+      }));
+
+      return {
+        success: true,
+        data: properties
+      };
+    } catch (error) {
+      console.error('Error fetching ticket properties:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch ticket properties'
       };
     }
   }

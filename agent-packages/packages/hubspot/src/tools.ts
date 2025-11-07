@@ -238,6 +238,13 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       func: async (args: TicketSearchParams) => service.searchTickets(args)
     }),
     tool({
+      name: 'get_hubspot_ticket_properties',
+      description: 'Get all available ticket properties including custom fields in HubSpot.',
+      schema: z.object({}),
+      operations: [ToolOperation.READ],
+      func: async () => service.getTicketProperties()
+    }),
+    tool({
       name: 'associate_deal_with_entity',
       description: 'Associate an existing deal with a HubSpot contact, company, or deal.',
       schema: associateDealWithEntitySchema,

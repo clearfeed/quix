@@ -247,6 +247,26 @@ export type HubspotPipeline = {
   stages: HubspotPipelineStage[];
 };
 
+/**
+ * Represents a HubSpot property definition including custom fields
+ */
+export interface HubspotProperty {
+  name: string; // Internal property name (case-sensitive)
+  label: string; // Display label
+  type: 'string' | 'number' | 'bool' | 'enumeration' | 'date' | 'datetime';
+  fieldType: string; // UI field type (text, select, checkbox, etc.)
+  description: string; // Property description
+  options?: Array<{ label: string; value: string }>; // Options for select/radio fields
+  groupName?: string; // Property group
+  hidden?: boolean; // Whether hidden in UI
+  displayOrder?: number; // Display order
+}
+
+/**
+ * Response type for getTicketProperties method
+ */
+export type GetTicketPropertiesResponse = BaseResponse<HubspotProperty[]>;
+
 export type CreateDealParams = z.infer<typeof createDealSchema>;
 export type SearchDealsParams = z.infer<typeof searchDealsSchema>;
 export type UpdateDealParams = z.infer<typeof updateDealSchema>;

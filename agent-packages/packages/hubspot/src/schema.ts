@@ -141,7 +141,15 @@ export const ticketUpdateSchema = z.object({
     .string()
     .nullish()
     .describe('Updated stage (also referred to as status) name for the ticket.'),
-  ownerId: z.string().nullish().describe('Updated HubSpot user ID to assign the ticket to.')
+  ownerId: z.string().nullish().describe('Updated HubSpot user ID to assign the ticket to.'),
+  customProperties: z
+    .record(z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]))
+    .nullish()
+    .describe(
+      'Custom field properties to update. ' +
+        'Keys must match property names, use get_hubspot_ticket_properties to fetch properties. ' +
+        'Values: string for text, number, boolean, or string array for multi-select.'
+    )
 });
 
 export const ticketSearchSchema = z.object({
