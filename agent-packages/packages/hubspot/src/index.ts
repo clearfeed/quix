@@ -131,7 +131,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
   async searchContacts(keyword: string): Promise<SearchContactsResponse> {
     try {
       // Fetch contact properties metadata to include custom fields
-      const propertiesResponse = await this.client.crm.properties.coreApi.getAll('contact');
+      const propertiesResponse = await this.getContactProperties();
 
       const propertiesToFetch = [
         'firstname',
@@ -143,11 +143,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
       ];
 
       // Add custom properties using metadata filtering
-      if (propertiesResponse.results.length > 0) {
-        const customPropertyNames = propertiesResponse.results
-          .filter(
-            (prop) => !prop.hidden && !(prop as any).hubspotDefined && !(prop as any).calculated
-          )
+      if (propertiesResponse.success && propertiesResponse.data) {
+        const customPropertyNames = propertiesResponse.data
+          .filter((prop) => !prop.hidden && !prop.hubspotDefined && !prop.calculated)
           .map((prop) => prop.name);
         propertiesToFetch.push(...customPropertyNames);
       }
@@ -271,7 +269,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const { keyword, ownerId, stage } = params;
 
       // Fetch deal properties metadata to include custom fields
-      const propertiesResponse = await this.client.crm.properties.coreApi.getAll('deal');
+      const propertiesResponse = await this.getDealProperties();
 
       const propertiesToFetch = [
         'dealname',
@@ -285,11 +283,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
       ];
 
       // Add custom properties using metadata filtering
-      if (propertiesResponse.results.length > 0) {
-        const customPropertyNames = propertiesResponse.results
-          .filter(
-            (prop) => !prop.hidden && !(prop as any).hubspotDefined && !(prop as any).calculated
-          )
+      if (propertiesResponse.success && propertiesResponse.data) {
+        const customPropertyNames = propertiesResponse.data
+          .filter((prop) => !prop.hidden && !prop.hubspotDefined && !prop.calculated)
           .map((prop) => prop.name);
         propertiesToFetch.push(...customPropertyNames);
       }
@@ -1736,9 +1732,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
         groupName: prop.groupName,
         hidden: prop.hidden,
         displayOrder: prop.displayOrder,
-        hubspotDefined: (prop as any).hubspotDefined,
-        calculated: (prop as any).calculated,
-        createdUserId: (prop as any).createdUserId
+        hubspotDefined: prop.hubspotDefined,
+        calculated: prop.calculated,
+        createdUserId: prop.createdUserId
       }));
 
       return {
@@ -1777,9 +1773,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
         groupName: prop.groupName,
         hidden: prop.hidden,
         displayOrder: prop.displayOrder,
-        hubspotDefined: (prop as any).hubspotDefined,
-        calculated: (prop as any).calculated,
-        createdUserId: (prop as any).createdUserId
+        hubspotDefined: prop.hubspotDefined,
+        calculated: prop.calculated,
+        createdUserId: prop.createdUserId
       }));
 
       return {
@@ -1818,9 +1814,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
         groupName: prop.groupName,
         hidden: prop.hidden,
         displayOrder: prop.displayOrder,
-        hubspotDefined: (prop as any).hubspotDefined,
-        calculated: (prop as any).calculated,
-        createdUserId: (prop as any).createdUserId
+        hubspotDefined: prop.hubspotDefined,
+        calculated: prop.calculated,
+        createdUserId: prop.createdUserId
       }));
 
       return {
