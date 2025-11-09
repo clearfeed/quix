@@ -3,8 +3,12 @@ import { BaseResponse, BaseService } from '@clearfeed-ai/quix-common-agent';
 import {
   HubspotConfig,
   SearchDealsResponse,
+  Deal,
   CreateContactParams,
   CreateContactResponse,
+  UpdateContactParams,
+  UpdateContactResponse,
+  ContactWithCompanies,
   CreateDealParams,
   CreateNoteParams,
   AddNoteResponse,
@@ -37,7 +41,9 @@ import {
   AssociateDealWithEntityParams,
   AssociateDealWithEntityResponse,
   HubspotProperty,
-  GetTicketPropertiesResponse
+  GetTicketPropertiesResponse,
+  GetDealPropertiesResponse,
+  GetContactPropertiesResponse
 } from './types';
 import { FilterOperatorEnum as CompanyFilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/companies';
 import { FilterOperatorEnum as ContactFilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/contacts';
@@ -124,6 +130,28 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async searchContacts(keyword: string): Promise<SearchContactsResponse> {
     try {
+      // Fetch contact properties metadata to include custom fields
+      const propertiesResponse = await this.client.crm.properties.coreApi.getAll('contact');
+
+      const propertiesToFetch = [
+        'firstname',
+        'lastname',
+        'email',
+        'phone',
+        'createdate',
+        'hs_lastmodifieddate'
+      ];
+
+      // Add custom properties using metadata filtering
+      if (propertiesResponse.results.length > 0) {
+        const customPropertyNames = propertiesResponse.results
+          .filter(
+            (prop) => !prop.hidden && !(prop as any).hubspotDefined && !(prop as any).calculated
+          )
+          .map((prop) => prop.name);
+        propertiesToFetch.push(...customPropertyNames);
+      }
+
       const response = await this.client.crm.contacts.searchApi.doSearch({
         filterGroups: ['email', 'firstname', 'lastname'].map((property) => {
           return {
@@ -136,18 +164,21 @@ export class HubspotService implements BaseService<HubspotConfig> {
             ]
           };
         }),
-        properties: [
-          'firstname',
-          'lastname',
-          'email',
-          'phone',
-          'createdate',
-          'hs_lastmodifieddate'
-        ],
+        properties: propertiesToFetch,
         sorts: ['createdate'],
         limit: 100,
         after: '0'
       });
+
+      // Define standard properties to exclude from custom properties
+      const standardContactProperties = new Set([
+        'firstname',
+        'lastname',
+        'email',
+        'phone',
+        'createdate',
+        'hs_lastmodifieddate'
+      ]);
 
       // First, collect all company IDs from all contacts
       const contactCompanyMap = new Map<string, Set<string>>();
@@ -191,7 +222,19 @@ export class HubspotService implements BaseService<HubspotConfig> {
           .map((companyId) => companyMap[companyId])
           .filter((company) => company !== undefined);
 
-        return {
+        // Extract custom properties
+        const customProperties: Record<string, string | number | boolean | string[]> = {};
+        Object.keys(contact.properties).forEach((key) => {
+          if (!standardContactProperties.has(key)) {
+            const value = contact.properties[key];
+            // Only include non-empty custom properties
+            if (value !== null && value !== undefined && value !== '') {
+              customProperties[key] = value;
+            }
+          }
+        });
+
+        const baseContact: ContactWithCompanies = {
           id: contact.id,
           firstName: contact.properties.firstname || '',
           lastName: contact.properties.lastname || '',
@@ -201,6 +244,13 @@ export class HubspotService implements BaseService<HubspotConfig> {
           createdAt: contact.properties.createdate || '',
           lastModifiedDate: contact.properties.hs_lastmodifieddate || ''
         };
+
+        // Only add customProperties if there are custom fields
+        if (Object.keys(customProperties).length > 0) {
+          baseContact.customProperties = customProperties;
+        }
+
+        return baseContact;
       });
 
       return {
@@ -219,6 +269,30 @@ export class HubspotService implements BaseService<HubspotConfig> {
   async searchDeals(params: SearchDealsParams): Promise<SearchDealsResponse> {
     try {
       const { keyword, ownerId, stage } = params;
+
+      // Fetch deal properties metadata to include custom fields
+      const propertiesResponse = await this.client.crm.properties.coreApi.getAll('deal');
+
+      const propertiesToFetch = [
+        'dealname',
+        'pipeline',
+        'dealstage',
+        'amount',
+        'closedate',
+        'hubspot_owner_id',
+        'createdate',
+        'hs_lastmodifieddate'
+      ];
+
+      // Add custom properties using metadata filtering
+      if (propertiesResponse.results.length > 0) {
+        const customPropertyNames = propertiesResponse.results
+          .filter(
+            (prop) => !prop.hidden && !(prop as any).hubspotDefined && !(prop as any).calculated
+          )
+          .map((prop) => prop.name);
+        propertiesToFetch.push(...customPropertyNames);
+      }
 
       const filterGroups: Array<{
         filters: Array<{
@@ -268,19 +342,22 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       const searchRequest = {
         ...(filterGroups.length > 0 ? { filterGroups } : {}),
-        properties: [
-          'dealname',
-          'pipeline',
-          'dealstage',
-          'amount',
-          'closedate',
-          'hubspot_owner_id',
-          'createdate',
-          'hs_lastmodifieddate'
-        ],
+        properties: propertiesToFetch,
         limit: 100
       };
       const response = await this.client.crm.deals.searchApi.doSearch(searchRequest);
+
+      // Define standard properties to exclude from custom properties
+      const standardDealProperties = new Set([
+        'dealname',
+        'pipeline',
+        'dealstage',
+        'amount',
+        'closedate',
+        'hubspot_owner_id',
+        'createdate',
+        'hs_lastmodifieddate'
+      ]);
 
       // First, collect all company IDs from all deals
       const dealCompanyMap = new Map<string, Set<string>>();
@@ -327,8 +404,21 @@ export class HubspotService implements BaseService<HubspotConfig> {
           if (deal.properties.hubspot_owner_id) {
             owner = await this.getOwner(Number(deal.properties.hubspot_owner_id));
           }
+
+          // Extract custom properties
+          const customProperties: Record<string, string | number | boolean | string[]> = {};
+          Object.keys(deal.properties).forEach((key) => {
+            if (!standardDealProperties.has(key)) {
+              const value = deal.properties[key];
+              // Only include non-empty custom properties
+              if (value !== null && value !== undefined && value !== '') {
+                customProperties[key] = value;
+              }
+            }
+          });
+
           const dealUrl = this.getDealUrl(deal.id);
-          return {
+          const baseDeal: Deal = {
             id: deal.id,
             name: deal.properties.dealname || '',
             stage: deal.properties.dealstage || '',
@@ -341,6 +431,13 @@ export class HubspotService implements BaseService<HubspotConfig> {
             lastModifiedDate: deal.properties.hs_lastmodifieddate || '',
             dealUrl
           };
+
+          // Only add customProperties if there are custom fields
+          if (Object.keys(customProperties).length > 0) {
+            baseDeal.customProperties = customProperties;
+          }
+
+          return baseDeal;
         })
       );
 
@@ -506,7 +603,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
     params: UpdateDealParams
   ): Promise<BaseResponse<{ deal: DealResponse; dealUrl: string }>> {
     try {
-      const { dealId, dealstage, ownerId } = params;
+      const { dealId, dealstage, ownerId, customProperties } = params;
       let error: string | undefined = undefined;
       const properties: Record<string, string> = {};
 
@@ -538,6 +635,13 @@ export class HubspotService implements BaseService<HubspotConfig> {
         } else {
           error = `The provided deal stage '${dealstage}' is not valid for the pipeline associated with deal ID '${dealId}'. Please provide a valid stage for this deal's pipeline.`;
         }
+      }
+
+      // Transform and add custom properties
+      if (customProperties) {
+        const transformedCustomProperties =
+          this.transformCustomPropertiesToHubSpotFormat(customProperties);
+        Object.assign(properties, transformedCustomProperties);
       }
 
       const response = await this.client.crm.deals.basicApi.update(dealId, { properties });
@@ -588,6 +692,85 @@ export class HubspotService implements BaseService<HubspotConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to create HubSpot contact'
+      };
+    }
+  }
+
+  async updateContact(params: UpdateContactParams): Promise<UpdateContactResponse> {
+    try {
+      const { contactId, customProperties } = params;
+      const properties: Record<string, string> = {};
+
+      if (params.firstName) {
+        properties.firstname = params.firstName;
+      }
+      if (params.lastName) {
+        properties.lastname = params.lastName;
+      }
+      if (params.email) {
+        properties.email = params.email;
+      }
+      if (params.phone) {
+        properties.phone = params.phone;
+      }
+      if (params.company) {
+        properties.company = params.company;
+      }
+
+      // Transform and add custom properties
+      if (customProperties) {
+        const transformedCustomProperties =
+          this.transformCustomPropertiesToHubSpotFormat(customProperties);
+        Object.assign(properties, transformedCustomProperties);
+      }
+
+      const response = await this.client.crm.contacts.basicApi.update(contactId, {
+        properties
+      });
+
+      const contactData: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        phone?: string;
+        company?: string;
+        customProperties?: Record<string, string | number | boolean | string[]>;
+      } = {
+        id: response.id,
+        firstName: response.properties.firstname || '',
+        lastName: response.properties.lastname || '',
+        email: response.properties.email || '',
+        phone: response.properties.phone ?? undefined,
+        company: response.properties.company ?? undefined
+      };
+
+      // If custom properties were updated, extract them from the response
+      if (customProperties && Object.keys(customProperties).length > 0) {
+        const returnedCustomProps: Record<string, string | number | boolean | string[]> = {};
+        Object.keys(customProperties).forEach((key) => {
+          const value = response.properties[key];
+          if (value !== undefined && value !== null) {
+            returnedCustomProps[key] = value;
+          }
+        });
+
+        if (Object.keys(returnedCustomProps).length > 0) {
+          contactData.customProperties = returnedCustomProps;
+        }
+      }
+
+      return {
+        success: true,
+        data: {
+          contact: contactData
+        }
+      };
+    } catch (error) {
+      console.error('Error updating HubSpot contact:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update HubSpot contact'
       };
     }
   }
@@ -1064,6 +1247,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
   async updateTicket(params: UpdateTicketParams): Promise<UpdateTicketResponse> {
     try {
       const { subject, content, stage, priority, ownerId, ticketId, customProperties } = params;
+
       const properties: Record<string, string> = {};
       if (subject) {
         properties.subject = subject;
@@ -1092,60 +1276,51 @@ export class HubspotService implements BaseService<HubspotConfig> {
         properties.hubspot_owner_id = ownerId;
       }
 
-      // ========== NEW: CUSTOM PROPERTIES HANDLING ==========
+      // Transform and add custom properties
       if (customProperties) {
-        for (const [key, value] of Object.entries(customProperties)) {
-          // Skip null/undefined values
-          if (value === null || value === undefined) {
-            continue;
-          }
-
-          /**
-           * Type-aware value transformation based on HubSpot API requirements:
-           * - Enumeration/multi-select: semicolon-separated string
-           * - Boolean checkbox: string 'true'/'false'
-           * - Number: string representation
-           * - Date: ISO 8601 YYYY-MM-DD
-           * - Other: direct string conversion
-           */
-          if (Array.isArray(value)) {
-            // Multi-select checkbox or enumeration field
-            // HubSpot requires semicolon-separated values
-            // Example: ["urgent", "vip"] → "urgent;vip"
-            properties[key] = value.join(';');
-          } else if (typeof value === 'boolean') {
-            // Boolean checkbox field
-            // HubSpot requires string representation
-            // Example: true → "true"
-            properties[key] = String(value);
-          } else if (typeof value === 'number') {
-            // Number field (integer or decimal)
-            // HubSpot accepts string representation
-            // Example: 42 → "42"
-            properties[key] = String(value);
-          } else {
-            // String fields (text, textarea, phone, date, etc.)
-            // Use value as-is, converted to string
-            // For dates, pass ISO 8601 YYYY-MM-DD format strings
-            properties[key] = String(value);
-          }
-        }
+        const transformedCustomProperties =
+          this.transformCustomPropertiesToHubSpotFormat(customProperties);
+        Object.assign(properties, transformedCustomProperties);
       }
 
       const updateInput: TicketParameters = { properties };
 
       const response = await this.client.crm.tickets.basicApi.update(ticketId, updateInput);
 
+      const ticketData: {
+        id: string;
+        subject: string;
+        stage: string;
+        priority: string;
+        url: string;
+        customProperties?: Record<string, string | number | boolean | string[]>;
+      } = {
+        id: response.id,
+        subject: response.properties.subject || '',
+        stage: response.properties.hs_pipeline_stage || '',
+        priority: response.properties.hs_ticket_priority || '',
+        url: this.getTicketUrl(response.id)
+      };
+
+      // If custom properties were updated, include them in response
+      if (customProperties && Object.keys(customProperties).length > 0) {
+        const returnedCustomProps: Record<string, string | number | boolean | string[]> = {};
+        Object.keys(customProperties).forEach((key) => {
+          const value = response.properties[key];
+          if (value !== undefined && value !== null) {
+            returnedCustomProps[key] = value;
+          }
+        });
+
+        if (Object.keys(returnedCustomProps).length > 0) {
+          ticketData.customProperties = returnedCustomProps;
+        }
+      }
+
       return {
         success: true,
         data: {
-          ticket: {
-            id: response.id,
-            subject: response.properties.subject || '',
-            stage: response.properties.hs_pipeline_stage || '',
-            priority: response.properties.hs_ticket_priority || '',
-            url: this.getTicketUrl(response.id)
-          }
+          ticket: ticketData
         }
       };
     } catch (error) {
@@ -1309,10 +1484,84 @@ export class HubspotService implements BaseService<HubspotConfig> {
   }
 
   /**
+   * Transform custom properties to HubSpot-compatible format
+   * @param customProperties - Record of custom property key-value pairs
+   * @returns Record of transformed properties as strings
+   */
+  private transformCustomPropertiesToHubSpotFormat(
+    customProperties: Record<string, any>
+  ): Record<string, string> {
+    const transformedProperties: Record<string, string> = {};
+
+    for (const [key, value] of Object.entries(customProperties)) {
+      // Skip null/undefined values
+      if (value === null || value === undefined) {
+        continue;
+      }
+
+      /**
+       * Type-aware value transformation based on HubSpot API requirements:
+       * - Enumeration/multi-select: semicolon-separated string
+       * - Boolean checkbox: string 'true'/'false'
+       * - Number: string representation
+       * - Date: ISO 8601 YYYY-MM-DD
+       * - Other: direct string conversion
+       */
+      if (Array.isArray(value)) {
+        // Multi-select checkbox or enumeration field
+        // HubSpot requires semicolon-separated values
+        // Example: ["urgent", "vip"] → "urgent;vip"
+        transformedProperties[key] = value.join(';');
+      } else if (typeof value === 'boolean') {
+        // Boolean checkbox field
+        // HubSpot requires string representation
+        // Example: true → "true"
+        transformedProperties[key] = String(value);
+      } else if (typeof value === 'number') {
+        // Number field (integer or decimal)
+        // HubSpot accepts string representation
+        // Example: 42 → "42"
+        transformedProperties[key] = String(value);
+      } else {
+        // String fields (text, textarea, phone, date, etc.)
+        // Use value as-is, converted to string
+        // For dates, pass ISO 8601 YYYY-MM-DD format strings
+        transformedProperties[key] = String(value);
+      }
+    }
+
+    return transformedProperties;
+  }
+
+  /**
    * Search for tickets in HubSpot using various filters
    */
   async searchTickets(params: TicketSearchParams): Promise<SearchTicketsResponse> {
     try {
+      // Fetch all ticket properties to include custom fields
+      const propertiesResponse = await this.getTicketProperties();
+
+      const propertiesToFetch = [
+        'subject',
+        'content',
+        'hs_ticket_priority',
+        'hs_ticket_category',
+        'createdate',
+        'hs_lastmodifieddate',
+        'hubspot_owner_id',
+        'hs_pipeline_stage',
+        'hs_pipeline'
+      ];
+
+      // Add custom properties using metadata filtering
+      if (propertiesResponse.success && propertiesResponse.data) {
+        const customPropertyNames = propertiesResponse.data
+          .filter((prop) => !prop.hidden && !prop.hubspotDefined && !prop.calculated)
+          .map((prop) => prop.name);
+
+        propertiesToFetch.push(...customPropertyNames);
+      }
+
       const filterGroups: Array<{
         filters: Array<{
           propertyName: string;
@@ -1373,19 +1622,24 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       const searchRequest = {
         ...(filterGroups.length > 0 ? { filterGroups } : {}),
-        properties: [
-          'subject',
-          'content',
-          'hs_ticket_priority',
-          'hs_ticket_category',
-          'createdate',
-          'hs_lastmodifieddate',
-          'hubspot_owner_id'
-        ],
+        properties: propertiesToFetch,
         limit: 100
       };
 
       const response = await this.client.crm.tickets.searchApi.doSearch(searchRequest);
+
+      // Standard properties that are explicitly included in the response
+      const standardProperties = new Set([
+        'subject',
+        'content',
+        'hs_ticket_priority',
+        'hs_ticket_category',
+        'createdate',
+        'hs_lastmodifieddate',
+        'hubspot_owner_id',
+        'hs_pipeline_stage',
+        'hs_pipeline'
+      ]);
 
       // Collect owner IDs
       const ownerIds = new Set<string>();
@@ -1415,18 +1669,35 @@ export class HubspotService implements BaseService<HubspotConfig> {
         const ownerId = ticket.properties.hubspot_owner_id;
         const owner = ownerId ? ownerMap[ownerId] : undefined;
 
-        return {
+        // Separate custom properties from standard properties
+        const customProperties: Record<string, string | number | boolean | string[]> = {};
+        Object.keys(ticket.properties).forEach((key) => {
+          if (!standardProperties.has(key)) {
+            const value = ticket.properties[key];
+            // Only include non-empty custom properties
+            if (value !== null && value !== undefined && value !== '') {
+              customProperties[key] = value;
+            }
+          }
+        });
+
+        const baseTicket: HubspotTicket = {
           id: ticket.id,
-          url: this.getTicketUrl(ticket.id),
           subject: ticket.properties.subject || '',
           content: ticket.properties.content || '',
           priority: ticket.properties.hs_ticket_priority || '',
           stage: ticket.properties.hs_pipeline_stage || '',
-          category: ticket.properties.hs_ticket_category || '',
           createdAt: ticket.properties.createdate || '',
           lastModifiedDate: ticket.properties.hs_lastmodifieddate || '',
           owner
         };
+
+        // Only add customProperties if there are custom fields
+        if (Object.keys(customProperties).length > 0) {
+          baseTicket.customProperties = customProperties;
+        }
+
+        return baseTicket;
       });
 
       return {
@@ -1451,7 +1722,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
       // Call HubSpot Properties API to get all ticket property definitions
       const response = await this.client.crm.properties.coreApi.getAll('tickets');
 
-      // Transform API response to our interface
+      // Transform API response to our interface including metadata fields
       const properties: HubspotProperty[] = response.results.map((prop) => ({
         name: prop.name,
         label: prop.label,
@@ -1464,7 +1735,10 @@ export class HubspotService implements BaseService<HubspotConfig> {
         })),
         groupName: prop.groupName,
         hidden: prop.hidden,
-        displayOrder: prop.displayOrder
+        displayOrder: prop.displayOrder,
+        hubspotDefined: (prop as any).hubspotDefined,
+        calculated: (prop as any).calculated,
+        createdUserId: (prop as any).createdUserId
       }));
 
       return {
@@ -1476,6 +1750,88 @@ export class HubspotService implements BaseService<HubspotConfig> {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch ticket properties'
+      };
+    }
+  }
+
+  /**
+   * Retrieve all deal properties including custom fields
+   * @returns BaseResponse containing array of HubspotProperty objects
+   */
+  async getDealProperties(): Promise<GetDealPropertiesResponse> {
+    try {
+      // Call HubSpot Properties API to get all deal property definitions
+      const response = await this.client.crm.properties.coreApi.getAll('deal');
+
+      // Transform API response to our interface including metadata fields
+      const properties: HubspotProperty[] = response.results.map((prop) => ({
+        name: prop.name,
+        label: prop.label,
+        type: prop.type as HubspotProperty['type'],
+        fieldType: prop.fieldType,
+        description: prop.description || '',
+        options: prop.options?.map((opt) => ({
+          label: opt.label,
+          value: opt.value
+        })),
+        groupName: prop.groupName,
+        hidden: prop.hidden,
+        displayOrder: prop.displayOrder,
+        hubspotDefined: (prop as any).hubspotDefined,
+        calculated: (prop as any).calculated,
+        createdUserId: (prop as any).createdUserId
+      }));
+
+      return {
+        success: true,
+        data: properties
+      };
+    } catch (error) {
+      console.error('Error fetching deal properties:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch deal properties'
+      };
+    }
+  }
+
+  /**
+   * Retrieve all contact properties including custom fields
+   * @returns BaseResponse containing array of HubspotProperty objects
+   */
+  async getContactProperties(): Promise<GetContactPropertiesResponse> {
+    try {
+      // Call HubSpot Properties API to get all contact property definitions
+      const response = await this.client.crm.properties.coreApi.getAll('contact');
+
+      // Transform API response to our interface including metadata fields
+      const properties: HubspotProperty[] = response.results.map((prop) => ({
+        name: prop.name,
+        label: prop.label,
+        type: prop.type as HubspotProperty['type'],
+        fieldType: prop.fieldType,
+        description: prop.description || '',
+        options: prop.options?.map((opt) => ({
+          label: opt.label,
+          value: opt.value
+        })),
+        groupName: prop.groupName,
+        hidden: prop.hidden,
+        displayOrder: prop.displayOrder,
+        hubspotDefined: (prop as any).hubspotDefined,
+        calculated: (prop as any).calculated,
+        createdUserId: (prop as any).createdUserId
+      }));
+
+      return {
+        success: true,
+        data: properties
+      };
+    } catch (error) {
+      console.error('Error fetching contact properties:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch contact properties'
       };
     }
   }

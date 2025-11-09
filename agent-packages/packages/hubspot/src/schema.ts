@@ -147,7 +147,8 @@ export const ticketUpdateSchema = z.object({
     .nullish()
     .describe(
       'Custom field properties to update. ' +
-        'Keys must match property names, use get_hubspot_ticket_properties to fetch properties. ' +
+        'Use get_hubspot_ticket_properties to discover available fields. ' +
+        'Keys must match property names exactly (case-sensitive). ' +
         'Values: string for text, number, boolean, or string array for multi-select.'
     )
 });
@@ -205,9 +206,36 @@ export const searchContactsSchema = z.object({
   keyword: z.string().describe('The keyword to search for in contact names or email addresses')
 });
 
+export const updateContactSchema = z.object({
+  contactId: z.string().describe('The ID of the contact to update'),
+  firstName: z.string().nullish().describe('The first name of the contact'),
+  lastName: z.string().nullish().describe('The last name of the contact'),
+  email: z.string().nullish().describe('The email address of the contact'),
+  phone: z.string().nullish().describe('The phone number of the contact'),
+  company: z.string().nullish().describe('The company associated with the contact'),
+  customProperties: z
+    .record(z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]))
+    .nullish()
+    .describe(
+      'Custom field properties to update. ' +
+        'Use get_hubspot_contact_properties to discover available fields. ' +
+        'Keys must match property names exactly (case-sensitive). ' +
+        'Values: string for text, number, boolean, or string array for multi-select.'
+    )
+});
+
 export const updateDealSchema = baseDealSchema.extend({
   dealId: z.string().describe('The ID of the deal to update'),
-  dealname: z.string().nullish().describe('The name of the deal')
+  dealname: z.string().nullish().describe('The name of the deal'),
+  customProperties: z
+    .record(z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]))
+    .nullish()
+    .describe(
+      'Custom field properties to update. ' +
+        'Use get_hubspot_deal_properties to discover available fields. ' +
+        'Keys must match property names exactly (case-sensitive). ' +
+        'Values: string for text, number, boolean, or string array for multi-select.'
+    )
 });
 
 export const searchCompaniesSchema = z.object({

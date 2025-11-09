@@ -13,6 +13,7 @@ import {
   updateDealSchema,
   associateTaskWithEntitySchema,
   createContactSchema,
+  updateContactSchema,
   associateDealWithEntitySchema
 } from './schema';
 import { z } from 'zod';
@@ -50,6 +51,7 @@ export interface Deal {
   createdAt: string;
   lastModifiedDate: string;
   dealUrl: string;
+  customProperties?: Record<string, string | number | boolean | string[]>;
 }
 
 export interface Contact {
@@ -61,6 +63,7 @@ export interface Contact {
   company?: string;
   createdAt: string;
   lastModifiedDate: string;
+  customProperties?: Record<string, string | number | boolean | string[]>;
 }
 
 export type ContactWithCompanies = Contact & {
@@ -81,6 +84,20 @@ export type CreateContactParams = z.infer<typeof createContactSchema>;
 
 export type CreateContactResponse = BaseResponse<{
   contactId: string;
+}>;
+
+export type UpdateContactParams = z.infer<typeof updateContactSchema>;
+
+export type UpdateContactResponse = BaseResponse<{
+  contact: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    company?: string;
+    customProperties?: Record<string, string | number | boolean | string[]>;
+  };
 }>;
 
 export type SearchDealsResponse = BaseResponse<{
@@ -213,6 +230,7 @@ export type UpdateTicketResponse = BaseResponse<{
     stage: string;
     priority: string;
     url: string;
+    customProperties?: Record<string, string | number | boolean | string[]>;
   };
 }>;
 
@@ -226,6 +244,7 @@ export interface HubspotTicket {
   lastModifiedDate: string;
   owner?: HubspotOwner;
   pipeline?: string;
+  customProperties?: Record<string, string | number | boolean | string[]>;
 }
 
 export type SearchTicketsResponse = BaseResponse<{
@@ -260,12 +279,25 @@ export interface HubspotProperty {
   groupName?: string; // Property group
   hidden?: boolean; // Whether hidden in UI
   displayOrder?: number; // Display order
+  hubspotDefined?: boolean; // Whether this is a HubSpot standard property
+  calculated?: boolean; // Whether this is a system-calculated property
+  createdUserId?: string | null; // User who created the property (for reference)
 }
 
 /**
  * Response type for getTicketProperties method
  */
 export type GetTicketPropertiesResponse = BaseResponse<HubspotProperty[]>;
+
+/**
+ * Response type for getDealProperties method
+ */
+export type GetDealPropertiesResponse = BaseResponse<HubspotProperty[]>;
+
+/**
+ * Response type for getContactProperties method
+ */
+export type GetContactPropertiesResponse = BaseResponse<HubspotProperty[]>;
 
 export type CreateDealParams = z.infer<typeof createDealSchema>;
 export type SearchDealsParams = z.infer<typeof searchDealsSchema>;
