@@ -724,15 +724,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         properties
       });
 
-      const contactData: {
-        id: string;
-        firstName: string;
-        lastName: string;
-        email: string;
-        phone?: string;
-        company?: string;
-        customProperties?: Record<string, string | number | boolean | string[]>;
-      } = {
+      const contactData: NonNullable<UpdateContactResponse['data']>['contact'] = {
         id: response.id,
         firstName: response.properties.firstname || '',
         lastName: response.properties.lastname || '',
@@ -1283,14 +1275,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       const response = await this.client.crm.tickets.basicApi.update(ticketId, updateInput);
 
-      const ticketData: {
-        id: string;
-        subject: string;
-        stage: string;
-        priority: string;
-        url: string;
-        customProperties?: Record<string, string | number | boolean | string[]>;
-      } = {
+      const ticketData: NonNullable<UpdateTicketResponse['data']>['ticket'] = {
         id: response.id,
         subject: response.properties.subject || '',
         stage: response.properties.hs_pipeline_stage || '',
@@ -1485,7 +1470,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
    * @returns Record of transformed properties as strings
    */
   private transformCustomPropertiesToHubSpotFormat(
-    customProperties: Record<string, any>
+    customProperties: Record<string, unknown>
   ): Record<string, string> {
     const transformedProperties: Record<string, string> = {};
 
