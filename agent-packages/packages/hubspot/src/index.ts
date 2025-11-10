@@ -71,6 +71,17 @@ export * from './types';
 export * from './tools';
 
 export class HubspotService implements BaseService<HubspotConfig> {
+  private static readonly VALID_PROPERTY_TYPES = [
+    'string',
+    'number',
+    'bool',
+    'enumeration',
+    'date',
+    'datetime',
+    'json',
+    'object_coordinates'
+  ] as const satisfies readonly HubspotProperty['type'][];
+
   private client: Client;
   constructor(private config: HubspotConfig) {
     this.client = new Client({ accessToken: config.accessToken });
@@ -1465,6 +1476,15 @@ export class HubspotService implements BaseService<HubspotConfig> {
   }
 
   /**
+   * Validates if a string is a valid HubSpot property type
+   * @param type - The type string to validate
+   * @returns True if the type is valid, false otherwise
+   */
+  private isValidPropertyType(type: string): type is HubspotProperty['type'] {
+    return HubspotService.VALID_PROPERTY_TYPES.includes(type as HubspotProperty['type']);
+  }
+
+  /**
    * Transform custom properties to HubSpot-compatible format
    * @param customProperties - Record of custom property key-value pairs
    * @returns Record of transformed properties as strings
@@ -1707,7 +1727,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const properties: HubspotProperty[] = response.results.map((prop) => ({
         name: prop.name,
         label: prop.label,
-        type: prop.type as HubspotProperty['type'],
+        type: this.isValidPropertyType(prop.type) ? prop.type : 'string',
         fieldType: prop.fieldType,
         description: prop.description || '',
         options: prop.options?.map((opt) => ({
@@ -1748,7 +1768,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const properties: HubspotProperty[] = response.results.map((prop) => ({
         name: prop.name,
         label: prop.label,
-        type: prop.type as HubspotProperty['type'],
+        type: this.isValidPropertyType(prop.type) ? prop.type : 'string',
         fieldType: prop.fieldType,
         description: prop.description || '',
         options: prop.options?.map((opt) => ({
@@ -1789,7 +1809,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const properties: HubspotProperty[] = response.results.map((prop) => ({
         name: prop.name,
         label: prop.label,
-        type: prop.type as HubspotProperty['type'],
+        type: this.isValidPropertyType(prop.type) ? prop.type : 'string',
         fieldType: prop.fieldType,
         description: prop.description || '',
         options: prop.options?.map((opt) => ({

@@ -272,7 +272,15 @@ export type HubspotPipeline = {
 export interface HubspotProperty {
   name: string; // Internal property name (case-sensitive)
   label: string; // Display label
-  type: 'string' | 'number' | 'bool' | 'enumeration' | 'date' | 'datetime';
+  type:
+    | 'string'
+    | 'number'
+    | 'bool'
+    | 'enumeration'
+    | 'date'
+    | 'datetime'
+    | 'json'
+    | 'object_coordinates';
   fieldType: string; // UI field type (text, select, checkbox, etc.)
   description: string; // Property description
   options?: Array<{ label: string; value: string }>; // Options for select/radio fields
