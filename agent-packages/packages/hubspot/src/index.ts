@@ -36,6 +36,7 @@ import {
   AssociateTicketWithEntityResponse,
   SearchDealsParams,
   UpdateDealParams,
+  UpdateDealResponse,
   AssociateTaskWithEntityParams,
   AssociateTaskWithEntityResponse,
   AssociateDealWithEntityParams,
@@ -571,9 +572,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
     }
   }
 
-  async updateDeal(
-    params: UpdateDealParams
-  ): Promise<BaseResponse<{ deal: DealResponse; dealUrl: string }>> {
+  async updateDeal(params: UpdateDealParams): Promise<UpdateDealResponse> {
     try {
       const { dealId, dealstage, ownerId, customProperties } = params;
       let error: string | undefined = undefined;
@@ -618,9 +617,28 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       const response = await this.client.crm.deals.basicApi.update(dealId, { properties });
 
+      const dealData: NonNullable<UpdateDealResponse['data']>['deal'] = {
+        id: response.id,
+        name: response.properties.dealname || '',
+        stage: response.properties.dealstage || '',
+        amount: parseFloat(response.properties.amount || '0'),
+        closeDate: response.properties.closedate || '',
+        pipeline: response.properties.pipeline || '',
+        dealUrl: this.getDealUrl(dealId)
+      };
+
+      // If custom properties were updated, extract them from the response and add directly
+      if (customProperties && Object.keys(customProperties).length > 0) {
+        this.extractUpdatedCustomProperties(
+          Object.keys(customProperties),
+          response.properties,
+          dealData
+        );
+      }
+
       return {
         success: true,
-        data: { deal: response, dealUrl: this.getDealUrl(dealId) },
+        data: { deal: dealData },
         error
       };
     } catch (error) {

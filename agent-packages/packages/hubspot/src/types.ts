@@ -101,6 +101,19 @@ export type UpdateContactResponse = BaseResponse<{
   };
 }>;
 
+export type UpdateDealResponse = BaseResponse<{
+  deal: {
+    id: string;
+    name: string;
+    stage: string;
+    amount: number;
+    closeDate: string;
+    pipeline: string;
+    dealUrl: string;
+    [key: string]: string | number | boolean | string[] | undefined;
+  };
+}>;
+
 export type SearchDealsResponse = BaseResponse<{
   deals: Deal[];
 }>;
