@@ -1444,9 +1444,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
    * @param targetObject - Object to add custom properties to
    */
   private addCustomPropertiesToObject(
-    sourceProperties: Record<string, any>,
+    sourceProperties: Record<string, unknown>,
     standardProperties: Set<string>,
-    targetObject: Record<string, any>
+    targetObject: Record<string, unknown>
   ): void {
     Object.keys(sourceProperties).forEach((key) => {
       if (!standardProperties.has(key)) {
@@ -1466,8 +1466,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
    */
   private extractUpdatedCustomProperties(
     customPropertyKeys: string[],
-    responseProperties: Record<string, any>,
-    targetObject: Record<string, any>
+    responseProperties: Record<string, unknown>,
+    targetObject: Record<string, unknown>
   ): void {
     customPropertyKeys.forEach((key) => {
       const value = responseProperties[key];
