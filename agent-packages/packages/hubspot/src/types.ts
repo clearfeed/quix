@@ -267,20 +267,31 @@ export type HubspotPipeline = {
 };
 
 /**
+ * Valid HubSpot property types
+ */
+export const HUBSPOT_PROPERTY_TYPES = [
+  'string',
+  'number',
+  'bool',
+  'enumeration',
+  'date',
+  'datetime',
+  'json',
+  'object_coordinates'
+] as const;
+
+/**
+ * Derived type from HUBSPOT_PROPERTY_TYPES constant
+ */
+export type HubspotPropertyType = (typeof HUBSPOT_PROPERTY_TYPES)[number];
+
+/**
  * Represents a HubSpot property definition including custom fields
  */
 export interface HubspotProperty {
   name: string; // Internal property name (case-sensitive)
   label: string; // Display label
-  type:
-    | 'string'
-    | 'number'
-    | 'bool'
-    | 'enumeration'
-    | 'date'
-    | 'datetime'
-    | 'json'
-    | 'object_coordinates';
+  type: HubspotPropertyType;
   fieldType: string; // UI field type (text, select, checkbox, etc.)
   description: string; // Property description
   options?: Array<{ label: string; value: string }>; // Options for select/radio fields

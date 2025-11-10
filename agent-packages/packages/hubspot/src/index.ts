@@ -43,7 +43,8 @@ import {
   HubspotProperty,
   GetTicketPropertiesResponse,
   GetDealPropertiesResponse,
-  GetContactPropertiesResponse
+  GetContactPropertiesResponse,
+  HUBSPOT_PROPERTY_TYPES
 } from './types';
 import { FilterOperatorEnum as CompanyFilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/companies';
 import { FilterOperatorEnum as ContactFilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/contacts';
@@ -71,17 +72,6 @@ export * from './types';
 export * from './tools';
 
 export class HubspotService implements BaseService<HubspotConfig> {
-  private static readonly VALID_PROPERTY_TYPES = [
-    'string',
-    'number',
-    'bool',
-    'enumeration',
-    'date',
-    'datetime',
-    'json',
-    'object_coordinates'
-  ] as const satisfies readonly HubspotProperty['type'][];
-
   private client: Client;
   constructor(private config: HubspotConfig) {
     this.client = new Client({ accessToken: config.accessToken });
@@ -1481,7 +1471,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
    * @returns True if the type is valid, false otherwise
    */
   private isValidPropertyType(type: string): type is HubspotProperty['type'] {
-    return HubspotService.VALID_PROPERTY_TYPES.includes(type as HubspotProperty['type']);
+    return HUBSPOT_PROPERTY_TYPES.includes(type as HubspotProperty['type']);
   }
 
   /**
