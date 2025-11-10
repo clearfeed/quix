@@ -70,18 +70,12 @@ export interface Contact {
     | boolean
     | string[]
     | HubspotCompany[]
-    | { name: string; domain: string; industry: string; website: string; description: string }[]
+    | Omit<HubspotCompany, 'id'>[]
     | undefined;
 }
 
 export type ContactWithCompanies = Contact & {
-  companies: {
-    name: string;
-    domain: string;
-    industry: string;
-    website: string;
-    description: string;
-  }[];
+  companies: Omit<HubspotCompany, 'id'>[];
 };
 
 export type SearchContactsResponse = BaseResponse<{
