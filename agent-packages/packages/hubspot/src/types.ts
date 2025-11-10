@@ -64,7 +64,14 @@ export interface Contact {
   company?: string;
   createdAt: string;
   lastModifiedDate: string;
-  [key: string]: string | number | boolean | string[] | HubspotCompany[] | undefined;
+  [key: string]:
+    | string
+    | number
+    | boolean
+    | string[]
+    | HubspotCompany[]
+    | { name: string; domain: string; industry: string; website: string; description: string }[]
+    | undefined;
 }
 
 export type ContactWithCompanies = Contact & {

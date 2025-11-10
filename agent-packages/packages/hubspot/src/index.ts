@@ -144,12 +144,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
       ];
 
       // Add custom properties using metadata filtering
-      if (propertiesResponse.success && propertiesResponse.data) {
-        const customPropertyNames = propertiesResponse.data
-          .filter((prop) => !prop.hidden && !prop.hubspotDefined && !prop.calculated)
-          .map((prop) => prop.name);
-        propertiesToFetch.push(...customPropertyNames);
-      }
+      const customPropertyNames = this.getCustomPropertyNames(propertiesResponse);
+      propertiesToFetch.push(...customPropertyNames);
 
       const response = await this.client.crm.contacts.searchApi.doSearch({
         filterGroups: ['email', 'firstname', 'lastname'].map((property) => {
@@ -274,12 +270,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
       ];
 
       // Add custom properties using metadata filtering
-      if (propertiesResponse.success && propertiesResponse.data) {
-        const customPropertyNames = propertiesResponse.data
-          .filter((prop) => !prop.hidden && !prop.hubspotDefined && !prop.calculated)
-          .map((prop) => prop.name);
-        propertiesToFetch.push(...customPropertyNames);
-      }
+      const customPropertyNames = this.getCustomPropertyNames(propertiesResponse);
+      propertiesToFetch.push(...customPropertyNames);
 
       const filterGroups: Array<{
         filters: Array<{
@@ -1456,6 +1448,22 @@ export class HubspotService implements BaseService<HubspotConfig> {
   }
 
   /**
+   * Extracts custom property names from property metadata response
+   * Filters out hidden, HubSpot-defined, and calculated properties
+   * @param propertiesResponse - Response from getProperties API call
+   * @returns Array of custom property names
+   */
+  private getCustomPropertyNames(propertiesResponse: GetPropertiesResponse): string[] {
+    if (!propertiesResponse.success || !propertiesResponse.data) {
+      return [];
+    }
+
+    return propertiesResponse.data
+      .filter((prop) => !prop.hidden && !prop.hubspotDefined && !prop.calculated)
+      .map((prop) => prop.name);
+  }
+
+  /**
    * Adds custom properties directly to target object, excluding standard properties
    * @param sourceProperties - All properties from HubSpot API response
    * @param standardProperties - Set of standard property names to exclude
@@ -1716,7 +1724,9 @@ export class HubspotService implements BaseService<HubspotConfig> {
    * @param objectType - The type of HubSpot object ('ticket', 'deal', or 'contact')
    * @returns BaseResponse containing array of HubspotProperty objects
    */
-  async getProperties(objectType: string): Promise<GetPropertiesResponse> {
+  async getProperties(
+    objectType: GetPropertiesParams['objectType']
+  ): Promise<GetPropertiesResponse> {
     try {
       // Map user-facing object types to HubSpot API object types
       const objectTypeMap: Record<string, string> = {
