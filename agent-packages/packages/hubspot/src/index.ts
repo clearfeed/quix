@@ -41,9 +41,8 @@ import {
   AssociateDealWithEntityParams,
   AssociateDealWithEntityResponse,
   HubspotProperty,
-  GetTicketPropertiesResponse,
-  GetDealPropertiesResponse,
-  GetContactPropertiesResponse,
+  GetPropertiesParams,
+  GetPropertiesResponse,
   HUBSPOT_PROPERTY_TYPES
 } from './types';
 import { FilterOperatorEnum as CompanyFilterOperatorEnum } from '@hubspot/api-client/lib/codegen/crm/companies';
@@ -132,7 +131,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
   async searchContacts(keyword: string): Promise<SearchContactsResponse> {
     try {
       // Fetch contact properties metadata to include custom fields
-      const propertiesResponse = await this.getContactProperties();
+      const propertiesResponse = await this.getProperties('contact');
 
       const propertiesToFetch = [
         'firstname',
@@ -221,18 +220,6 @@ export class HubspotService implements BaseService<HubspotConfig> {
           .map((companyId) => companyMap[companyId])
           .filter((company) => company !== undefined);
 
-        // Extract custom properties
-        const customProperties: Record<string, string | number | boolean | string[]> = {};
-        Object.keys(contact.properties).forEach((key) => {
-          if (!standardContactProperties.has(key)) {
-            const value = contact.properties[key];
-            // Only include non-empty custom properties
-            if (value !== null && value !== undefined && value !== '') {
-              customProperties[key] = value;
-            }
-          }
-        });
-
         const baseContact: ContactWithCompanies = {
           id: contact.id,
           firstName: contact.properties.firstname || '',
@@ -244,10 +231,12 @@ export class HubspotService implements BaseService<HubspotConfig> {
           lastModifiedDate: contact.properties.hs_lastmodifieddate || ''
         };
 
-        // Only add customProperties if there are custom fields
-        if (Object.keys(customProperties).length > 0) {
-          baseContact.customProperties = customProperties;
-        }
+        // Add custom properties directly to the contact object
+        this.addCustomPropertiesToObject(
+          contact.properties,
+          standardContactProperties,
+          baseContact
+        );
 
         return baseContact;
       });
@@ -270,7 +259,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const { keyword, ownerId, stage } = params;
 
       // Fetch deal properties metadata to include custom fields
-      const propertiesResponse = await this.getDealProperties();
+      const propertiesResponse = await this.getProperties('deal');
 
       const propertiesToFetch = [
         'dealname',
@@ -402,18 +391,6 @@ export class HubspotService implements BaseService<HubspotConfig> {
             owner = await this.getOwner(Number(deal.properties.hubspot_owner_id));
           }
 
-          // Extract custom properties
-          const customProperties: Record<string, string | number | boolean | string[]> = {};
-          Object.keys(deal.properties).forEach((key) => {
-            if (!standardDealProperties.has(key)) {
-              const value = deal.properties[key];
-              // Only include non-empty custom properties
-              if (value !== null && value !== undefined && value !== '') {
-                customProperties[key] = value;
-              }
-            }
-          });
-
           const dealUrl = this.getDealUrl(deal.id);
           const baseDeal: Deal = {
             id: deal.id,
@@ -429,10 +406,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
             dealUrl
           };
 
-          // Only add customProperties if there are custom fields
-          if (Object.keys(customProperties).length > 0) {
-            baseDeal.customProperties = customProperties;
-          }
+          // Add custom properties directly to the deal object
+          this.addCustomPropertiesToObject(deal.properties, standardDealProperties, baseDeal);
 
           return baseDeal;
         })
@@ -734,19 +709,13 @@ export class HubspotService implements BaseService<HubspotConfig> {
         company: response.properties.company ?? undefined
       };
 
-      // If custom properties were updated, extract them from the response
+      // If custom properties were updated, extract them from the response and add directly
       if (customProperties && Object.keys(customProperties).length > 0) {
-        const returnedCustomProps: Record<string, string | number | boolean | string[]> = {};
-        Object.keys(customProperties).forEach((key) => {
-          const value = response.properties[key];
-          if (value !== undefined && value !== null) {
-            returnedCustomProps[key] = value;
-          }
-        });
-
-        if (Object.keys(returnedCustomProps).length > 0) {
-          contactData.customProperties = returnedCustomProps;
-        }
+        this.extractUpdatedCustomProperties(
+          Object.keys(customProperties),
+          response.properties,
+          contactData
+        );
       }
 
       return {
@@ -1284,19 +1253,13 @@ export class HubspotService implements BaseService<HubspotConfig> {
         url: this.getTicketUrl(response.id)
       };
 
-      // If custom properties were updated, include them in response
+      // If custom properties were updated, extract them from the response and add directly
       if (customProperties && Object.keys(customProperties).length > 0) {
-        const returnedCustomProps: Record<string, string | number | boolean | string[]> = {};
-        Object.keys(customProperties).forEach((key) => {
-          const value = response.properties[key];
-          if (value !== undefined && value !== null) {
-            returnedCustomProps[key] = value;
-          }
-        });
-
-        if (Object.keys(returnedCustomProps).length > 0) {
-          ticketData.customProperties = returnedCustomProps;
-        }
+        this.extractUpdatedCustomProperties(
+          Object.keys(customProperties),
+          response.properties,
+          ticketData
+        );
       }
 
       return {
@@ -1475,6 +1438,46 @@ export class HubspotService implements BaseService<HubspotConfig> {
   }
 
   /**
+   * Adds custom properties directly to target object, excluding standard properties
+   * @param sourceProperties - All properties from HubSpot API response
+   * @param standardProperties - Set of standard property names to exclude
+   * @param targetObject - Object to add custom properties to
+   */
+  private addCustomPropertiesToObject(
+    sourceProperties: Record<string, any>,
+    standardProperties: Set<string>,
+    targetObject: Record<string, any>
+  ): void {
+    Object.keys(sourceProperties).forEach((key) => {
+      if (!standardProperties.has(key)) {
+        const value = sourceProperties[key];
+        if (value !== null && value !== undefined && value !== '') {
+          targetObject[key] = value;
+        }
+      }
+    });
+  }
+
+  /**
+   * Extracts updated custom properties from API response and adds to target object
+   * @param customPropertyKeys - Keys of custom properties that were updated
+   * @param responseProperties - Properties object from HubSpot API response
+   * @param targetObject - Object to add extracted properties to
+   */
+  private extractUpdatedCustomProperties(
+    customPropertyKeys: string[],
+    responseProperties: Record<string, any>,
+    targetObject: Record<string, any>
+  ): void {
+    customPropertyKeys.forEach((key) => {
+      const value = responseProperties[key];
+      if (value !== undefined && value !== null) {
+        targetObject[key] = value;
+      }
+    });
+  }
+
+  /**
    * Transform custom properties to HubSpot-compatible format
    * @param customProperties - Record of custom property key-value pairs
    * @returns Record of transformed properties as strings
@@ -1530,7 +1533,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
   async searchTickets(params: TicketSearchParams): Promise<SearchTicketsResponse> {
     try {
       // Fetch all ticket properties to include custom fields
-      const propertiesResponse = await this.getTicketProperties();
+      const propertiesResponse = await this.getProperties('ticket');
 
       const propertiesToFetch = [
         'subject',
@@ -1660,18 +1663,6 @@ export class HubspotService implements BaseService<HubspotConfig> {
         const ownerId = ticket.properties.hubspot_owner_id;
         const owner = ownerId ? ownerMap[ownerId] : undefined;
 
-        // Separate custom properties from standard properties
-        const customProperties: Record<string, string | number | boolean | string[]> = {};
-        Object.keys(ticket.properties).forEach((key) => {
-          if (!standardProperties.has(key)) {
-            const value = ticket.properties[key];
-            // Only include non-empty custom properties
-            if (value !== null && value !== undefined && value !== '') {
-              customProperties[key] = value;
-            }
-          }
-        });
-
         const baseTicket: HubspotTicket = {
           id: ticket.id,
           subject: ticket.properties.subject || '',
@@ -1683,10 +1674,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
           owner
         };
 
-        // Only add customProperties if there are custom fields
-        if (Object.keys(customProperties).length > 0) {
-          baseTicket.customProperties = customProperties;
-        }
+        // Add custom properties directly to the ticket object
+        this.addCustomPropertiesToObject(ticket.properties, standardProperties, baseTicket);
 
         return baseTicket;
       });
@@ -1705,13 +1694,23 @@ export class HubspotService implements BaseService<HubspotConfig> {
   }
 
   /**
-   * Retrieve all ticket properties including custom fields
+   * Retrieve all properties for a HubSpot object type including custom fields
+   * @param objectType - The type of HubSpot object ('ticket', 'deal', or 'contact')
    * @returns BaseResponse containing array of HubspotProperty objects
    */
-  async getTicketProperties(): Promise<GetTicketPropertiesResponse> {
+  async getProperties(objectType: string): Promise<GetPropertiesResponse> {
     try {
-      // Call HubSpot Properties API to get all ticket property definitions
-      const response = await this.client.crm.properties.coreApi.getAll('tickets');
+      // Map user-facing object types to HubSpot API object types
+      const objectTypeMap: Record<string, string> = {
+        ticket: 'tickets',
+        deal: 'deal',
+        contact: 'contact'
+      };
+
+      const hubspotObjectType = objectTypeMap[objectType];
+
+      // Call HubSpot Properties API to get all property definitions
+      const response = await this.client.crm.properties.coreApi.getAll(hubspotObjectType);
 
       // Transform API response to our interface including metadata fields
       const properties: HubspotProperty[] = response.results.map((prop) => ({
@@ -1737,92 +1736,10 @@ export class HubspotService implements BaseService<HubspotConfig> {
         data: properties
       };
     } catch (error) {
-      console.error('Error fetching ticket properties:', error);
+      console.error(`Error fetching ${objectType} properties:`, error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch ticket properties'
-      };
-    }
-  }
-
-  /**
-   * Retrieve all deal properties including custom fields
-   * @returns BaseResponse containing array of HubspotProperty objects
-   */
-  async getDealProperties(): Promise<GetDealPropertiesResponse> {
-    try {
-      // Call HubSpot Properties API to get all deal property definitions
-      const response = await this.client.crm.properties.coreApi.getAll('deal');
-
-      // Transform API response to our interface including metadata fields
-      const properties: HubspotProperty[] = response.results.map((prop) => ({
-        name: prop.name,
-        label: prop.label,
-        type: this.isValidPropertyType(prop.type) ? prop.type : 'string',
-        fieldType: prop.fieldType,
-        description: prop.description || '',
-        options: prop.options?.map((opt) => ({
-          label: opt.label,
-          value: opt.value
-        })),
-        groupName: prop.groupName,
-        hidden: prop.hidden,
-        displayOrder: prop.displayOrder,
-        hubspotDefined: prop.hubspotDefined,
-        calculated: prop.calculated,
-        createdUserId: prop.createdUserId
-      }));
-
-      return {
-        success: true,
-        data: properties
-      };
-    } catch (error) {
-      console.error('Error fetching deal properties:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch deal properties'
-      };
-    }
-  }
-
-  /**
-   * Retrieve all contact properties including custom fields
-   * @returns BaseResponse containing array of HubspotProperty objects
-   */
-  async getContactProperties(): Promise<GetContactPropertiesResponse> {
-    try {
-      // Call HubSpot Properties API to get all contact property definitions
-      const response = await this.client.crm.properties.coreApi.getAll('contact');
-
-      // Transform API response to our interface including metadata fields
-      const properties: HubspotProperty[] = response.results.map((prop) => ({
-        name: prop.name,
-        label: prop.label,
-        type: this.isValidPropertyType(prop.type) ? prop.type : 'string',
-        fieldType: prop.fieldType,
-        description: prop.description || '',
-        options: prop.options?.map((opt) => ({
-          label: opt.label,
-          value: opt.value
-        })),
-        groupName: prop.groupName,
-        hidden: prop.hidden,
-        displayOrder: prop.displayOrder,
-        hubspotDefined: prop.hubspotDefined,
-        calculated: prop.calculated,
-        createdUserId: prop.createdUserId
-      }));
-
-      return {
-        success: true,
-        data: properties
-      };
-    } catch (error) {
-      console.error('Error fetching contact properties:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to fetch contact properties'
+        error: error instanceof Error ? error.message : `Failed to fetch ${objectType} properties`
       };
     }
   }

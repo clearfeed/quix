@@ -147,7 +147,7 @@ export const ticketUpdateSchema = z.object({
     .nullish()
     .describe(
       'Custom field properties to update. ' +
-        'Use get_hubspot_ticket_properties to discover available fields. ' +
+        'Use get_hubspot_properties with objectType="ticket" to discover available fields. ' +
         'Keys must match property names exactly (case-sensitive). ' +
         'Values: string for text, number, boolean, or string array for multi-select.'
     )
@@ -165,6 +165,14 @@ export const getPipelinesSchema = z.object({
     .enum(['ticket', 'deal'])
     .describe(
       'Type of HubSpot object for which to fetch pipelines. Use "ticket" to get ticket pipelines, or "deal" for deal pipelines.'
+    )
+});
+
+export const getPropertiesSchema = z.object({
+  objectType: z
+    .enum(['ticket', 'deal', 'contact'])
+    .describe(
+      'Type of HubSpot object for which to fetch properties. Use "ticket" to get ticket properties, "deal" for deal properties, or "contact" for contact properties.'
     )
 });
 
@@ -218,7 +226,7 @@ export const updateContactSchema = z.object({
     .nullish()
     .describe(
       'Custom field properties to update. ' +
-        'Use get_hubspot_contact_properties to discover available fields. ' +
+        'Use get_hubspot_properties with objectType="contact" to discover available fields. ' +
         'Keys must match property names exactly (case-sensitive). ' +
         'Values: string for text, number, boolean, or string array for multi-select.'
     )
@@ -232,7 +240,7 @@ export const updateDealSchema = baseDealSchema.extend({
     .nullish()
     .describe(
       'Custom field properties to update. ' +
-        'Use get_hubspot_deal_properties to discover available fields. ' +
+        'Use get_hubspot_properties with objectType="deal" to discover available fields. ' +
         'Keys must match property names exactly (case-sensitive). ' +
         'Values: string for text, number, boolean, or string array for multi-select.'
     )

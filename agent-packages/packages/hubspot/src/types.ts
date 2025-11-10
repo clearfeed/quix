@@ -7,6 +7,7 @@ import {
   ticketSearchSchema,
   ticketUpdateSchema,
   getPipelinesSchema,
+  getPropertiesSchema,
   associateTicketWithEntitySchema,
   createDealSchema,
   searchDealsSchema,
@@ -51,7 +52,7 @@ export interface Deal {
   createdAt: string;
   lastModifiedDate: string;
   dealUrl: string;
-  customProperties?: Record<string, string | number | boolean | string[]>;
+  [key: string]: string | number | boolean | string[] | HubspotOwner | HubspotCompany[] | undefined;
 }
 
 export interface Contact {
@@ -63,7 +64,7 @@ export interface Contact {
   company?: string;
   createdAt: string;
   lastModifiedDate: string;
-  customProperties?: Record<string, string | number | boolean | string[]>;
+  [key: string]: string | number | boolean | string[] | HubspotCompany[] | undefined;
 }
 
 export type ContactWithCompanies = Contact & {
@@ -96,7 +97,7 @@ export type UpdateContactResponse = BaseResponse<{
     email: string;
     phone?: string;
     company?: string;
-    customProperties?: Record<string, string | number | boolean | string[]>;
+    [key: string]: string | number | boolean | string[] | undefined;
   };
 }>;
 
@@ -230,7 +231,7 @@ export type UpdateTicketResponse = BaseResponse<{
     stage: string;
     priority: string;
     url: string;
-    customProperties?: Record<string, string | number | boolean | string[]>;
+    [key: string]: string | number | boolean | string[] | undefined;
   };
 }>;
 
@@ -244,7 +245,7 @@ export interface HubspotTicket {
   lastModifiedDate: string;
   owner?: HubspotOwner;
   pipeline?: string;
-  customProperties?: Record<string, string | number | boolean | string[]>;
+  [key: string]: string | number | boolean | string[] | HubspotOwner | undefined;
 }
 
 export type SearchTicketsResponse = BaseResponse<{
@@ -303,20 +304,8 @@ export interface HubspotProperty {
   createdUserId?: string | null; // User who created the property (for reference)
 }
 
-/**
- * Response type for getTicketProperties method
- */
-export type GetTicketPropertiesResponse = BaseResponse<HubspotProperty[]>;
-
-/**
- * Response type for getDealProperties method
- */
-export type GetDealPropertiesResponse = BaseResponse<HubspotProperty[]>;
-
-/**
- * Response type for getContactProperties method
- */
-export type GetContactPropertiesResponse = BaseResponse<HubspotProperty[]>;
+export type GetPropertiesParams = z.infer<typeof getPropertiesSchema>;
+export type GetPropertiesResponse = BaseResponse<HubspotProperty[]>;
 
 export type CreateDealParams = z.infer<typeof createDealSchema>;
 export type SearchDealsParams = z.infer<typeof searchDealsSchema>;
