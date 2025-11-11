@@ -414,6 +414,8 @@ const toolResponseMap: ToolResponseTypeMap = {
       tickets: overrides.tickets || [
         {
           id: '9001',
+          url: 'https://app.hubspot.com/contacts/12345/ticket/9001',
+          category: 'Technical Support',
           subject: 'API Integration Issue',
           content: 'Customer reporting API connection failures',
           priority: 'HIGH',
