@@ -2,12 +2,14 @@ import { ToolConfig, ToolOperation, tool } from '@clearfeed-ai/quix-common-agent
 import { HubspotService } from './index';
 import {
   CreateContactParams,
+  UpdateContactParams,
   HubspotConfig,
   CreateDealParams,
   HubspotEntityType,
   UpdateTaskParams,
   TaskSearchParams,
   GetPipelinesParams,
+  GetPropertiesParams,
   CreateTicketParams,
   AssociateTicketWithEntityParams,
   UpdateTicketParams,
@@ -24,6 +26,7 @@ import {
   taskSearchSchema,
   baseTicketSchema,
   getPipelinesSchema,
+  getPropertiesSchema,
   associateTicketWithEntitySchema,
   ticketUpdateSchema,
   ticketSearchSchema,
@@ -34,6 +37,7 @@ import {
   associateTaskWithEntitySchema,
   searchContactsSchema,
   createContactSchema,
+  updateContactSchema,
   searchCompaniesSchema,
   associateDealWithEntitySchema
 } from './schema';
@@ -144,7 +148,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
     tool({
       name: 'update_hubspot_deal',
       description:
-        'Update the details of an existing HubSpot deal. Only the fields explicitly provided should be updated; leave all other fields unchanged.',
+        'Update an existing HubSpot deal including standard fields (dealname, amount, closedate, pipeline, dealstage, owner) and custom fields. Use get_hubspot_properties with objectType="deal" first to discover available custom field names (case-sensitive).',
       schema: updateDealSchema,
       operations: [ToolOperation.UPDATE],
       func: async (args: UpdateDealParams) => service.updateDeal(args)
@@ -157,12 +161,28 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
       func: async (args: CreateContactParams) => service.createContact(args)
     }),
     tool({
+      name: 'update_hubspot_contact',
+      description:
+        'Update an existing HubSpot contact including standard fields (firstName, lastName, email, phone, company) and custom fields. Use get_hubspot_properties with objectType="contact" first to discover available custom field names (case-sensitive).',
+      schema: updateContactSchema,
+      operations: [ToolOperation.UPDATE],
+      func: async (args: UpdateContactParams) => service.updateContact(args)
+    }),
+    tool({
       name: 'get_hubspot_pipelines',
       description:
         'Retrieve all pipelines in HubSpot associated with a specific object type, such as tickets or deals.',
       schema: getPipelinesSchema,
       operations: [ToolOperation.READ],
       func: async (args: GetPipelinesParams) => service.getPipelines(args.entityType)
+    }),
+    tool({
+      name: 'get_hubspot_properties',
+      description:
+        'Get all properties for a HubSpot object type (ticket, deal, or contact) including custom fields.',
+      schema: getPropertiesSchema,
+      operations: [ToolOperation.READ],
+      func: async (args: GetPropertiesParams) => service.getProperties(args.objectType)
     }),
     tool({
       name: 'get_hubspot_owners',
@@ -225,7 +245,8 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
     }),
     tool({
       name: 'update_hubspot_ticket',
-      description: 'Update the details of an existing HubSpot ticket.',
+      description:
+        'Update an existing HubSpot ticket including standard fields (subject, content, stage, priority, owner) and custom fields. Use get_hubspot_properties with objectType="ticket" first to discover available custom field names (case-sensitive).',
       schema: ticketUpdateSchema,
       operations: [ToolOperation.UPDATE],
       func: async (args: UpdateTicketParams) => service.updateTicket(args)

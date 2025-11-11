@@ -431,6 +431,8 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         tickets: [
           {
             id: '2001',
+            url: 'https://app.hubspot.com/contacts/12345/ticket/2001',
+            category: 'Technical Support',
             subject: 'API failures for Acme Corp',
             content: 'Intermittent API timeouts',
             priority: 'URGENT',

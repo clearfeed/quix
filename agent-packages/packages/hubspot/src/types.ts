@@ -7,15 +7,22 @@ import {
   ticketSearchSchema,
   ticketUpdateSchema,
   getPipelinesSchema,
+  getPropertiesSchema,
   associateTicketWithEntitySchema,
   createDealSchema,
   searchDealsSchema,
   updateDealSchema,
   associateTaskWithEntitySchema,
   createContactSchema,
+  updateContactSchema,
   associateDealWithEntitySchema
 } from './schema';
 import { z } from 'zod';
+
+/**
+ * Represents the possible value types for HubSpot custom fields
+ */
+export type HubSpotCustomFieldValueType = string | number | boolean | string[];
 
 export interface HubspotConfig extends BaseConfig {
   accessToken: string;
@@ -50,6 +57,7 @@ export interface Deal {
   createdAt: string;
   lastModifiedDate: string;
   dealUrl: string;
+  [key: string]: HubSpotCustomFieldValueType | HubspotOwner | HubspotCompany[] | undefined;
 }
 
 export interface Contact {
@@ -61,16 +69,15 @@ export interface Contact {
   company?: string;
   createdAt: string;
   lastModifiedDate: string;
+  [key: string]:
+    | HubSpotCustomFieldValueType
+    | HubspotCompany[]
+    | Omit<HubspotCompany, 'id'>[]
+    | undefined;
 }
 
 export type ContactWithCompanies = Contact & {
-  companies: {
-    name: string;
-    domain: string;
-    industry: string;
-    website: string;
-    description: string;
-  }[];
+  companies: Omit<HubspotCompany, 'id'>[];
 };
 
 export type SearchContactsResponse = BaseResponse<{
@@ -81,6 +88,33 @@ export type CreateContactParams = z.infer<typeof createContactSchema>;
 
 export type CreateContactResponse = BaseResponse<{
   contactId: string;
+}>;
+
+export type UpdateContactParams = z.infer<typeof updateContactSchema>;
+
+export type UpdateContactResponse = BaseResponse<{
+  contact: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    company?: string;
+    [key: string]: HubSpotCustomFieldValueType | undefined;
+  };
+}>;
+
+export type UpdateDealResponse = BaseResponse<{
+  deal: {
+    id: string;
+    name: string;
+    stage: string;
+    amount: number;
+    closeDate: string;
+    pipeline: string;
+    dealUrl: string;
+    [key: string]: HubSpotCustomFieldValueType | undefined;
+  };
 }>;
 
 export type SearchDealsResponse = BaseResponse<{
@@ -213,12 +247,15 @@ export type UpdateTicketResponse = BaseResponse<{
     stage: string;
     priority: string;
     url: string;
+    [key: string]: string | number | boolean | string[] | undefined;
   };
 }>;
 
 export interface HubspotTicket {
   id: string;
   subject: string;
+  url: string;
+  category: string | undefined;
   content: string;
   priority: string | undefined;
   stage: string | undefined;
@@ -226,6 +263,7 @@ export interface HubspotTicket {
   lastModifiedDate: string;
   owner?: HubspotOwner;
   pipeline?: string;
+  [key: string]: HubSpotCustomFieldValueType | HubspotOwner | undefined;
 }
 
 export type SearchTicketsResponse = BaseResponse<{
@@ -246,6 +284,46 @@ export type HubspotPipeline = {
   displayOrder: number;
   stages: HubspotPipelineStage[];
 };
+
+/**
+ * Valid HubSpot property types
+ */
+export const HUBSPOT_PROPERTY_TYPES = [
+  'string',
+  'number',
+  'bool',
+  'enumeration',
+  'date',
+  'datetime',
+  'json',
+  'object_coordinates'
+] as const;
+
+/**
+ * Derived type from HUBSPOT_PROPERTY_TYPES constant
+ */
+export type HubspotPropertyType = (typeof HUBSPOT_PROPERTY_TYPES)[number];
+
+/**
+ * Represents a HubSpot property definition including custom fields
+ */
+export interface HubspotProperty {
+  name: string; // Internal property name (case-sensitive)
+  label: string; // Display label
+  type: HubspotPropertyType;
+  fieldType: string; // UI field type (text, select, checkbox, etc.)
+  description: string; // Property description
+  options?: Array<{ label: string; value: string }>; // Options for select/radio fields
+  groupName?: string; // Property group
+  hidden?: boolean; // Whether hidden in UI
+  displayOrder?: number; // Display order
+  hubspotDefined?: boolean; // Whether this is a HubSpot standard property
+  calculated?: boolean; // Whether this is a system-calculated property
+  createdUserId?: string | null; // User who created the property (for reference)
+}
+
+export type GetPropertiesParams = z.infer<typeof getPropertiesSchema>;
+export type GetPropertiesResponse = BaseResponse<HubspotProperty[]>;
 
 export type CreateDealParams = z.infer<typeof createDealSchema>;
 export type SearchDealsParams = z.infer<typeof searchDealsSchema>;
