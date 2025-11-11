@@ -1355,6 +1355,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
       ]);
       const result = {
         id: response.id,
+        url: this.getTicketUrl(response.id),
         subject: response.properties.subject || '',
         content: response.properties.hs_ticket_body || '',
         stage: response.properties.hs_pipeline_stage || '',
@@ -1691,18 +1692,17 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
         const baseTicket: HubspotTicket = {
           id: ticket.id,
+          url: this.getTicketUrl(ticket.id),
           subject: ticket.properties.subject || '',
           content: ticket.properties.content || '',
           priority: ticket.properties.hs_ticket_priority || '',
           stage: ticket.properties.hs_pipeline_stage || '',
+          category: ticket.properties.hs_ticket_category || '',
           createdAt: ticket.properties.createdate || '',
           lastModifiedDate: ticket.properties.hs_lastmodifieddate || '',
           owner
         };
-
-        // Add custom properties directly to the ticket object
         this.addCustomPropertiesToObject(ticket.properties, standardProperties, baseTicket);
-
         return baseTicket;
       });
 
@@ -1728,19 +1728,13 @@ export class HubspotService implements BaseService<HubspotConfig> {
     objectType: GetPropertiesParams['objectType']
   ): Promise<GetPropertiesResponse> {
     try {
-      // Map user-facing object types to HubSpot API object types
-      const objectTypeMap: Record<string, string> = {
+      const objectTypeMap: Record<GetPropertiesParams['objectType'], string> = {
         ticket: 'tickets',
         deal: 'deal',
         contact: 'contact'
       };
-
       const hubspotObjectType = objectTypeMap[objectType];
-
-      // Call HubSpot Properties API to get all property definitions
       const response = await this.client.crm.properties.coreApi.getAll(hubspotObjectType);
-
-      // Transform API response to our interface including metadata fields
       const properties: HubspotProperty[] = response.results.map((prop) => ({
         name: prop.name,
         label: prop.label,

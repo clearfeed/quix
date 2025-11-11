@@ -252,6 +252,8 @@ export type UpdateTicketResponse = BaseResponse<{
 export interface HubspotTicket {
   id: string;
   subject: string;
+  url: string;
+  category: string | undefined;
   content: string;
   priority: string | undefined;
   stage: string | undefined;
