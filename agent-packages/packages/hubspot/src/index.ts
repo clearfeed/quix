@@ -1575,13 +1575,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
       ];
 
       // Add custom properties using metadata filtering
-      if (propertiesResponse.success && propertiesResponse.data) {
-        const customPropertyNames = propertiesResponse.data
-          .filter((prop) => !prop.hidden && !prop.hubspotDefined && !prop.calculated)
-          .map((prop) => prop.name);
-
-        propertiesToFetch.push(...customPropertyNames);
-      }
+      const customPropertyNames = this.getCustomPropertyNames(propertiesResponse);
+      propertiesToFetch.push(...customPropertyNames);
 
       const filterGroups: Array<{
         filters: Array<{

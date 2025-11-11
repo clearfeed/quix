@@ -19,6 +19,11 @@ import {
 } from './schema';
 import { z } from 'zod';
 
+/**
+ * Represents the possible value types for HubSpot custom fields
+ */
+export type HubSpotCustomFieldValueType = string | number | boolean | string[];
+
 export interface HubspotConfig extends BaseConfig {
   accessToken: string;
   hubId: number;
@@ -52,7 +57,7 @@ export interface Deal {
   createdAt: string;
   lastModifiedDate: string;
   dealUrl: string;
-  [key: string]: string | number | boolean | string[] | HubspotOwner | HubspotCompany[] | undefined;
+  [key: string]: HubSpotCustomFieldValueType | HubspotOwner | HubspotCompany[] | undefined;
 }
 
 export interface Contact {
@@ -65,10 +70,7 @@ export interface Contact {
   createdAt: string;
   lastModifiedDate: string;
   [key: string]:
-    | string
-    | number
-    | boolean
-    | string[]
+    | HubSpotCustomFieldValueType
     | HubspotCompany[]
     | Omit<HubspotCompany, 'id'>[]
     | undefined;
@@ -98,7 +100,7 @@ export type UpdateContactResponse = BaseResponse<{
     email: string;
     phone?: string;
     company?: string;
-    [key: string]: string | number | boolean | string[] | undefined;
+    [key: string]: HubSpotCustomFieldValueType | undefined;
   };
 }>;
 
@@ -111,7 +113,7 @@ export type UpdateDealResponse = BaseResponse<{
     closeDate: string;
     pipeline: string;
     dealUrl: string;
-    [key: string]: string | number | boolean | string[] | undefined;
+    [key: string]: HubSpotCustomFieldValueType | undefined;
   };
 }>;
 
@@ -261,7 +263,7 @@ export interface HubspotTicket {
   lastModifiedDate: string;
   owner?: HubspotOwner;
   pipeline?: string;
-  [key: string]: string | number | boolean | string[] | HubspotOwner | undefined;
+  [key: string]: HubSpotCustomFieldValueType | HubspotOwner | undefined;
 }
 
 export type SearchTicketsResponse = BaseResponse<{
