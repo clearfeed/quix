@@ -84,7 +84,7 @@
     "@types/cache-manager": "3.4.3",
     "@types/cache-manager-redis-store": "2.0.4",
     "@types/express": "^5.0.0",
-    "@types/jest": "^30.0.0",
+    "@types/jest": "^29.5.14",
     "@types/node": "^22.10.7",
     "@types/pg": "^8.15.4",
     "@types/sequelize": "^4.28.20",
