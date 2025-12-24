@@ -1,27 +1,16 @@
-import { DynamicStructuredTool } from '@langchain/core/tools';
-import { ToolConfig, ToolOperation, QuixTool, QuixToolInput } from '.';
+import { tool as createLangTool } from '@langchain/core/tools';
+import { ToolOperation, QuixTool, ToolConfig } from '.';
 import { z } from 'zod';
-import {
-  ToolInputSchemaBase,
-  ToolInputSchemaOutputType,
-  ToolInputSchemaInputType,
-  ToolOutputType
-} from '@langchain/core/dist/tools/types';
 
-export const tool = <
-  SchemaT = ToolInputSchemaBase,
-  SchemaOutputT = ToolInputSchemaOutputType<SchemaT>,
-  SchemaInputT = ToolInputSchemaInputType<SchemaT>,
-  ToolOutputT = ToolOutputType
->(
-  config: QuixToolInput<SchemaT, SchemaOutputT, ToolOutputT>
-): QuixTool<SchemaT, SchemaOutputT, SchemaInputT, ToolOutputT> => {
-  const { operations, ...toolConfig } = config;
-  const tool = new DynamicStructuredTool<SchemaT, SchemaOutputT, SchemaInputT, ToolOutputT>(
-    toolConfig
-  );
-  return Object.assign(tool, { operations });
-};
+export function tool(
+  payload: Omit<Parameters<typeof createLangTool>[1], 'metadata'> & {
+    metadata: { operations: ToolOperation[] };
+    func: Parameters<typeof createLangTool>[0];
+  }
+): QuixTool {
+  const { func, ...fields } = payload;
+  return createLangTool(func, fields) as QuixTool;
+}
 
 const TOOL_SELECTION_PROMPT = `
 When the user references relative dates like "today", "tomorrow", or "now", you **must** use this tool to resolve the actual date.
@@ -35,8 +24,8 @@ export function createCommonToolsExport(): ToolConfig {
       description:
         "Use this tool to resolve expressions like 'today', 'tomorrow', 'next week', or 'current time' into exact date and time values.",
       schema: z.object({}),
-      func: async () => ({ success: true, data: { date: new Date().toISOString() } }),
-      operations: [ToolOperation.READ]
+      metadata: { operations: [ToolOperation.READ] },
+      func: async () => ({ success: true, data: { date: new Date().toISOString() } })
     })
   ];
 
