@@ -150,13 +150,13 @@ describeOrSkip('BambooHR Integration Tests', () => {
       const toolsConfig = createBambooHRToolsExport(config);
 
       expect(toolsConfig).toBeDefined();
-      expect(toolsConfig.tools).toBeInstanceOf(Array);
-      expect(toolsConfig.tools.length).toBeGreaterThan(0);
+      expect(toolsConfig.toolConfigs).toBeInstanceOf(Array);
+      expect(toolsConfig.toolConfigs.length).toBeGreaterThan(0);
       expect(toolsConfig.prompts).toBeDefined();
       expect(toolsConfig.prompts?.toolSelection).toBeDefined();
       expect(toolsConfig.prompts?.responseGeneration).toBeDefined();
 
-      const toolNames = toolsConfig.tools.map((t: any) => t.tool.name);
+      const toolNames = toolsConfig.toolConfigs.map((t: any) => t.tool.name);
       expect(toolNames).toContain('list_bamboohr_employees');
       expect(toolNames).toContain('get_bamboohr_employee');
       expect(toolNames).toContain('get_bamboohr_employee_time_off_balance');

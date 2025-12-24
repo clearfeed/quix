@@ -1,5 +1,5 @@
 import { tool } from '@langchain/core/tools';
-import { ToolConfig, ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, Toolkit } from '@clearfeed-ai/quix-common-agent';
 import { HubspotService } from './index';
 import {
   CreateContactParams,
@@ -75,10 +75,10 @@ When formatting HubSpot responses:
 - For tickets, show priority, status, and category clearly
 `;
 
-export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
+export function createHubspotToolsExport(config: HubspotConfig): Toolkit {
   const service = new HubspotService(config);
 
-  const tools: QuixTool[] = [
+  const toolConfigs: ToolConfig[] = [
     {
       tool: tool(async (args: SearchDealsParams) => service.searchDeals(args), {
         name: 'search_hubspot_deals',
@@ -335,7 +335,7 @@ export function createHubspotToolsExport(config: HubspotConfig): ToolConfig {
   ];
 
   return {
-    tools,
+    toolConfigs,
     prompts: {
       toolSelection: HUBSPOT_TOOL_SELECTION_PROMPT,
       responseGeneration: HUBSPOT_RESPONSE_GENERATION_PROMPT

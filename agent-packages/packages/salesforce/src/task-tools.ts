@@ -1,5 +1,5 @@
 import { tool } from '@langchain/core/tools';
-import { ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolOperation, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { z } from 'zod';
 import { SalesforceConfig } from './index';
 import { SalesforceTaskService } from './services/task';
@@ -132,7 +132,7 @@ export const getTasksSchema = z.object({
   limit: z.number().default(10).describe('The limit of the task')
 });
 
-export const taskTools = (config: SalesforceConfig): QuixTool[] => {
+export const taskTools = (config: SalesforceConfig): ToolConfig[] => {
   const service = new SalesforceTaskService(config);
   return [
     {

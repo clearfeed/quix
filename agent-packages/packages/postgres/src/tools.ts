@@ -1,13 +1,13 @@
 import { tool } from '@langchain/core/tools';
 import { PostgresService } from '.';
 import { PostgresConfig } from './types';
-import { ToolConfig, ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, Toolkit } from '@clearfeed-ai/quix-common-agent';
 import { z } from 'zod';
 
-export function createPostgresToolsExport(config: PostgresConfig): ToolConfig {
+export function createPostgresToolsExport(config: PostgresConfig): Toolkit {
   const service = new PostgresService(config);
 
-  const tools: QuixTool[] = [
+  const toolConfigs: ToolConfig[] = [
     {
       tool: tool(async (args: { tableName: string }) => service.getTableSchema(args.tableName), {
         name: 'get_table_schema',
@@ -41,7 +41,7 @@ export function createPostgresToolsExport(config: PostgresConfig): ToolConfig {
   ];
 
   return {
-    tools,
+    toolConfigs,
     prompts: {
       toolSelection:
         'You can use this tool to query the database. Always hide sensitive information when querying the database.'

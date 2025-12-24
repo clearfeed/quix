@@ -1,5 +1,5 @@
 import { tool } from '@langchain/core/tools';
-import { ToolConfig, ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, Toolkit } from '@clearfeed-ai/quix-common-agent';
 import { z } from 'zod';
 import { SalesforceConfig } from './types';
 import { SalesforceService } from './index';
@@ -41,10 +41,10 @@ const findUserSchema = z.object({
   ])
 });
 
-export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfig {
+export function createSalesforceToolsExport(config: SalesforceConfig): Toolkit {
   const service = new SalesforceService(config);
 
-  const tools: QuixTool[] = [
+  const toolConfigs: ToolConfig[] = [
     {
       tool: tool(
         async (args: z.infer<typeof findUserSchema>) => service.findUser(args.userIdentifier),
@@ -87,7 +87,7 @@ export function createSalesforceToolsExport(config: SalesforceConfig): ToolConfi
   ];
 
   return {
-    tools,
+    toolConfigs,
     prompts: {
       toolSelection: SALESFORCE_TOOL_SELECTION_PROMPT,
       responseGeneration: SALESFORCE_RESPONSE_GENERATION_PROMPT

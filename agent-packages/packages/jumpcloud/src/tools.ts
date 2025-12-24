@@ -1,5 +1,5 @@
 import { tool } from '@langchain/core/tools';
-import { ToolConfig, ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, Toolkit } from '@clearfeed-ai/quix-common-agent';
 import { JumpCloudService } from './index';
 import { JumpCloudConfig } from './types';
 import { z } from 'zod';
@@ -110,10 +110,10 @@ export const SCHEMAS = {
   })
 };
 
-export function createJumpCloudToolsExport(config: JumpCloudConfig): ToolConfig {
+export function createJumpCloudToolsExport(config: JumpCloudConfig): Toolkit {
   const service = new JumpCloudService(config);
 
-  const tools: QuixTool[] = [
+  const toolConfigs: ToolConfig[] = [
     {
       tool: tool(async (args: z.infer<typeof SCHEMAS.listUsers>) => service.listUsers(args), {
         name: 'list_jumpcloud_users',
@@ -269,7 +269,7 @@ export function createJumpCloudToolsExport(config: JumpCloudConfig): ToolConfig 
   ];
 
   return {
-    tools,
+    toolConfigs,
     prompts: {
       toolSelection: JC_TOOL_SELECTION_PROMPT,
       responseGeneration: JC_RESPONSE_PROMPT

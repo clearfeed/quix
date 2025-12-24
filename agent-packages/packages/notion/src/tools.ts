@@ -1,6 +1,6 @@
 import { tool } from '@langchain/core/tools';
 import { NotionService } from './index';
-import { ToolConfig, ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, Toolkit } from '@clearfeed-ai/quix-common-agent';
 import {
   AppendBlockChildrenArgs,
   CreateCommentArgs,
@@ -68,10 +68,10 @@ When formatting Notion responses:
 - Format rich text with appropriate styling (bold, italic, etc.)
 `;
 
-export function createNotionToolsExport(config: NotionConfig): ToolConfig {
+export function createNotionToolsExport(config: NotionConfig): Toolkit {
   const service = new NotionService(config);
 
-  const tools: QuixTool[] = [
+  const toolConfigs: ToolConfig[] = [
     {
       tool: tool(async (args: RetrieveBlockArgs) => service.retrieveBlock(args), {
         name: 'notion_retrieve_block',
@@ -240,7 +240,7 @@ export function createNotionToolsExport(config: NotionConfig): ToolConfig {
   ];
 
   return {
-    tools,
+    toolConfigs,
     prompts: {
       toolSelection: NOTION_TOOL_SELECTION_PROMPT,
       responseGeneration: NOTION_RESPONSE_GENERATION_PROMPT

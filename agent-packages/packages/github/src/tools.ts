@@ -1,5 +1,5 @@
 import { tool } from '@langchain/core/tools';
-import { ToolConfig, ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, Toolkit } from '@clearfeed-ai/quix-common-agent';
 import { GitHubService } from './index';
 import {
   GitHubConfig,
@@ -81,10 +81,10 @@ When formatting GitHub responses:
 - Use bullet points for listing multiple items
 `;
 
-export async function createGitHubToolsExport(config: GitHubConfig): Promise<ToolConfig> {
+export async function createGitHubToolsExport(config: GitHubConfig): Promise<Toolkit> {
   const service = await GitHubService.create(config);
 
-  const tools: QuixTool[] = [
+  const toolConfigs: ToolConfig[] = [
     {
       tool: tool(
         async (args: SearchIssuesOrPullRequestsParams) => {
@@ -379,7 +379,7 @@ export async function createGitHubToolsExport(config: GitHubConfig): Promise<Too
   ];
 
   return {
-    tools,
+    toolConfigs,
     prompts: {
       toolSelection: GITHUB_TOOL_SELECTION_PROMPT,
       responseGeneration: GITHUB_RESPONSE_GENERATION_PROMPT

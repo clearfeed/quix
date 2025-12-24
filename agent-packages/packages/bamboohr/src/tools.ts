@@ -1,5 +1,5 @@
 import { tool } from '@langchain/core/tools';
-import { ToolConfig, ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, Toolkit } from '@clearfeed-ai/quix-common-agent';
 import { BambooHRService } from './index';
 import { z } from 'zod';
 import {
@@ -37,10 +37,10 @@ BambooHR is a human resources management platform. Use BambooHR tools for:
 
 const BAMBOOHR_RESPONSE_PROMPT = `When formatting BambooHR responses, be sure to mention employee names, job titles, departments, and manager relationships. For time off information, include leave types, balances, and used amounts. Always present the information in a clear, organized format.`;
 
-export function createBambooHRToolsExport(config: BambooHRConfig): ToolConfig {
+export function createBambooHRToolsExport(config: BambooHRConfig): Toolkit {
   const service = new BambooHRService(config);
 
-  const tools: QuixTool[] = [
+  const toolConfigs: ToolConfig[] = [
     {
       tool: tool(async (args: ListEmployeesParams) => service.listEmployees(args), {
         name: 'list_bamboohr_employees',
@@ -103,7 +103,7 @@ export function createBambooHRToolsExport(config: BambooHRConfig): ToolConfig {
   ];
 
   return {
-    tools,
+    toolConfigs,
     prompts: {
       toolSelection: BAMBOOHR_TOOL_SELECTION_PROMPT,
       responseGeneration: BAMBOOHR_RESPONSE_PROMPT

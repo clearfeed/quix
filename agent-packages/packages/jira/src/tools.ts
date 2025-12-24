@@ -1,5 +1,5 @@
 import { tool } from '@langchain/core/tools';
-import { ToolConfig, ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, Toolkit } from '@clearfeed-ai/quix-common-agent';
 import { JiraService } from './index';
 import {
   addJiraCommentSchema,
@@ -44,10 +44,10 @@ When formatting Jira responses:
 - When linking JIRA issues, use the host url: ${config.host}
 `;
 
-export function createJiraTools(config: JiraConfig): QuixTool[] {
+export function createJiraTools(config: JiraConfig): ToolConfig[] {
   const service = new JiraService(config);
 
-  const tools: QuixTool[] = [
+  const toolConfigs: ToolConfig[] = [
     {
       tool: tool(async (args: FindJiraParams) => service.searchIssues(args), {
         name: 'find_jira_ticket',
@@ -137,12 +137,12 @@ This tool helps retrieve relevant issues by allowing complex filtering based on 
       operations: [ToolOperation.READ]
     }
   ];
-  return tools;
+  return toolConfigs;
 }
 
-export function createJiraToolsExport(config: JiraConfig): ToolConfig {
+export function createJiraToolsExport(config: JiraConfig): Toolkit {
   return {
-    tools: createJiraTools(config),
+    toolConfigs: createJiraTools(config),
     prompts: {
       toolSelection: JIRA_TOOL_SELECTION_PROMPT,
       responseGeneration: getJiraResponsePrompt(config)

@@ -1,11 +1,11 @@
 import { tool } from '@langchain/core/tools';
-import { ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolOperation, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { z } from 'zod';
 import { SalesforceConfig } from './index';
 import { SalesforceObjectName, SearchAccountsParams } from './types/index';
 import { SalesforceAccountService } from './services/account';
 
-export const accountTools = (config: SalesforceConfig): QuixTool[] => {
+export const accountTools = (config: SalesforceConfig): ToolConfig[] => {
   const service = new SalesforceAccountService(config);
   return [
     {

@@ -1,5 +1,5 @@
 import { tool } from '@langchain/core/tools';
-import { ToolConfig, ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, Toolkit } from '@clearfeed-ai/quix-common-agent';
 import { OktaService } from './index';
 import { OktaAuthConfig } from './types';
 import { z } from 'zod';
@@ -212,10 +212,10 @@ export const SCHEMAS = {
   })
 };
 
-export function createOktaToolsExport(config: OktaAuthConfig): ToolConfig {
+export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
   const service = new OktaService(config);
 
-  const tools: QuixTool[] = [
+  const toolConfigs: ToolConfig[] = [
     {
       tool: tool(async (args: z.infer<typeof SCHEMAS.listUsers>) => service.listUsers(args), {
         name: 'list_okta_users',
@@ -567,7 +567,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): ToolConfig {
   ];
 
   return {
-    tools,
+    toolConfigs,
     prompts: {
       toolSelection: OKTA_TOOL_SELECTION_PROMPT,
       responseGeneration: OKTA_RESPONSE_GENERATION_PROMPT

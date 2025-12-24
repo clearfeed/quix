@@ -9,7 +9,7 @@ import {
   CreateTicketParams
 } from './types';
 import { ZendeskService } from './index';
-import { ToolConfig, ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, Toolkit } from '@clearfeed-ai/quix-common-agent';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 
@@ -32,10 +32,10 @@ When formatting Zendesk responses:
 - List assignees and requesters clearly
 `;
 
-export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
+export function createZendeskToolsExport(config: ZendeskConfig): Toolkit {
   const service = new ZendeskService(config);
 
-  const tools: QuixTool[] = [
+  const toolConfigs: ToolConfig[] = [
     {
       tool: tool(async (args: SearchTicketsParams) => service.searchTickets(args), {
         name: 'search_zendesk_tickets',
@@ -214,7 +214,7 @@ export function createZendeskToolsExport(config: ZendeskConfig): ToolConfig {
   ];
 
   return {
-    tools,
+    toolConfigs,
     prompts: {
       toolSelection: ZENDESK_TOOL_SELECTION_PROMPT,
       responseGeneration: ZENDESK_RESPONSE_GENERATION_PROMPT

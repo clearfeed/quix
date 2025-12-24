@@ -1,5 +1,5 @@
 import { tool } from '@langchain/core/tools';
-import { ToolConfig, ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, Toolkit } from '@clearfeed-ai/quix-common-agent';
 import { KandjiService } from './index';
 import { KandjiConfig } from './types';
 import { z } from 'zod';
@@ -76,10 +76,10 @@ export const SCHEMAS = {
   })
 };
 
-export function createKandjiToolsExport(config: KandjiConfig): ToolConfig {
+export function createKandjiToolsExport(config: KandjiConfig): Toolkit {
   const service = new KandjiService(config);
 
-  const tools: QuixTool[] = [
+  const toolConfigs: ToolConfig[] = [
     {
       tool: tool(async (args: z.infer<typeof SCHEMAS.listDevices>) => service.listDevices(args), {
         name: 'list_kandji_devices',
@@ -194,7 +194,7 @@ export function createKandjiToolsExport(config: KandjiConfig): ToolConfig {
   ];
 
   return {
-    tools,
+    toolConfigs,
     prompts: {
       toolSelection: KANDJI_TOOL_SELECTION_PROMPT,
       responseGeneration: KANDJI_RESPONSE_PROMPT

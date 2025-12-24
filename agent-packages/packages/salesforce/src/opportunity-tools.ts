@@ -1,5 +1,5 @@
 import { tool } from '@langchain/core/tools';
-import { ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolOperation, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { z } from 'zod';
 import { SalesforceConfig } from './types';
 import { SalesforceOpportunityService } from './services/opportunity';
@@ -38,7 +38,7 @@ export const getOpportunityUrlSchema = z.object({
 
 export const getOpportunityStagesSchema = z.object({});
 
-export const opportunityTools = (config: SalesforceConfig): QuixTool[] => {
+export const opportunityTools = (config: SalesforceConfig): ToolConfig[] => {
   const service = new SalesforceOpportunityService(config);
   return [
     {

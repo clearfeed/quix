@@ -1,5 +1,5 @@
 import { tool } from '@langchain/core/tools';
-import { ToolConfig, ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, Toolkit } from '@clearfeed-ai/quix-common-agent';
 import { SlackService } from './index';
 import {
   ListChannelsParams,
@@ -50,10 +50,10 @@ When formatting Slack responses:
 - Format code or text clearly
 `;
 
-export function createSlackToolsExport(config: SlackConfig): ToolConfig {
+export function createSlackToolsExport(config: SlackConfig): Toolkit {
   const service = new SlackService(config);
 
-  const tools: QuixTool[] = [
+  const toolConfigs: ToolConfig[] = [
     {
       tool: tool(async (args: ListChannelsParams) => service.listChannels(args), {
         name: 'slack_list_channels',
@@ -149,7 +149,7 @@ export function createSlackToolsExport(config: SlackConfig): ToolConfig {
   ];
 
   return {
-    tools,
+    toolConfigs,
     prompts: {
       toolSelection: SLACK_TOOL_SELECTION_PROMPT,
       responseGeneration: SLACK_RESPONSE_GENERATION_PROMPT

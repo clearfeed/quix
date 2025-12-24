@@ -1,5 +1,5 @@
 import { tool } from '@langchain/core/tools';
-import { ToolConfig, ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, Toolkit } from '@clearfeed-ai/quix-common-agent';
 import { AssetPandaService } from './index';
 import { AssetPandaConfig, SCHEMAS } from './types';
 import { z } from 'zod';
@@ -27,10 +27,10 @@ AssetPanda is an asset management platform. Use AssetPanda tools for:
 
 const ASSETPANDA_RESPONSE_PROMPT = `When formatting AssetPanda responses be sure to mention object IDs, employee emails, and asset names. For asset assignments, include the asset name and assigned employee.`;
 
-export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfig {
+export function createAssetPandaToolsExport(config: AssetPandaConfig): Toolkit {
   const service = new AssetPandaService(config);
 
-  const tools: QuixTool[] = [
+  const toolConfigs: ToolConfig[] = [
     {
       tool: tool(async () => service.getSettings(), {
         name: 'get_assetpanda_settings',
@@ -156,7 +156,7 @@ export function createAssetPandaToolsExport(config: AssetPandaConfig): ToolConfi
   ];
 
   return {
-    tools,
+    toolConfigs,
     prompts: {
       toolSelection: ASSETPANDA_TOOL_SELECTION_PROMPT,
       responseGeneration: ASSETPANDA_RESPONSE_PROMPT
