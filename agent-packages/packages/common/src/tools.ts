@@ -3,13 +3,13 @@ import { ToolOperation, QuixTool, ToolConfig } from '.';
 import { z } from 'zod';
 
 export function tool(
-  payload: Omit<Parameters<typeof createLangTool>[1], 'metadata'> & {
-    metadata: { operations: ToolOperation[] };
+  payload: Parameters<typeof createLangTool>[1] & {
+    operations: QuixTool['operations'];
     func: Parameters<typeof createLangTool>[0];
   }
 ): QuixTool {
-  const { func, ...fields } = payload;
-  return createLangTool(func, fields) as QuixTool;
+  const { func, operations, ...fields } = payload;
+  return { tool: createLangTool(func, fields), operations };
 }
 
 const TOOL_SELECTION_PROMPT = `
@@ -24,7 +24,7 @@ export function createCommonToolsExport(): ToolConfig {
       description:
         "Use this tool to resolve expressions like 'today', 'tomorrow', 'next week', or 'current time' into exact date and time values.",
       schema: z.object({}),
-      metadata: { operations: [ToolOperation.READ] },
+      operations: [ToolOperation.READ],
       func: async () => ({ success: true, data: { date: new Date().toISOString() } })
     })
   ];
