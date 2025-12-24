@@ -1,5 +1,5 @@
 import { tool } from '@langchain/core/tools';
-import { ToolOperation, ToolConfig, QuixTool } from '.';
+import { ToolOperation, ToolConfig, Toolkit } from '.';
 import { z } from 'zod';
 
 const TOOL_SELECTION_PROMPT = `
@@ -7,8 +7,8 @@ When the user references relative dates like "today", "tomorrow", or "now", you 
 Do not assume the current date — always call the tool to get it.
 `;
 
-export function createCommonToolsExport(): ToolConfig {
-  const tools: QuixTool[] = [
+export function createCommonToolsExport(): Toolkit {
+  const toolConfigs: ToolConfig[] = [
     {
       tool: tool(async () => ({ success: true, data: { date: new Date().toISOString() } }), {
         name: 'get_current_date_time',
@@ -21,7 +21,7 @@ export function createCommonToolsExport(): ToolConfig {
   ];
 
   return {
-    tools,
+    toolConfigs,
     prompts: {
       toolSelection: TOOL_SELECTION_PROMPT
     }
