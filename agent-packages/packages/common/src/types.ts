@@ -51,7 +51,7 @@ export enum ToolOperation {
   DELETE = 'delete'
 }
 
-export type QuixTool = {
+export type ToolConfig = {
   tool: DynamicStructuredTool;
   operations: ToolOperation[];
 };
@@ -70,8 +70,8 @@ export interface BaseResponse<T = any> {
  */
 export interface BaseService<TConfig extends BaseConfig = BaseConfig> {}
 
-export interface ToolConfig {
-  tools: QuixTool[];
+export interface Toolkit {
+  toolConfigs: ToolConfig[];
   prompts?: {
     toolSelection?: string;
     responseGeneration?: string;

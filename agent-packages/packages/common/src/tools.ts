@@ -1,13 +1,13 @@
 import { tool as createLangTool } from '@langchain/core/tools';
-import { ToolOperation, QuixTool, ToolConfig } from '.';
+import { ToolOperation, ToolConfig, Toolkit } from '.';
 import { z } from 'zod';
 
 export function tool(
   payload: Parameters<typeof createLangTool>[1] & {
-    operations: QuixTool['operations'];
+    operations: ToolConfig['operations'];
     func: Parameters<typeof createLangTool>[0];
   }
-): QuixTool {
+): ToolConfig {
   const { func, operations, ...fields } = payload;
   return { tool: createLangTool(func, fields), operations };
 }
@@ -17,8 +17,8 @@ When the user references relative dates like "today", "tomorrow", or "now", you 
 Do not assume the current date — always call the tool to get it.
 `;
 
-export function createCommonToolsExport(): ToolConfig {
-  const tools = [
+export function createCommonToolsExport(): Toolkit {
+  const toolConfigs = [
     tool({
       name: 'get_current_date_time',
       description:
@@ -30,7 +30,7 @@ export function createCommonToolsExport(): ToolConfig {
   ];
 
   return {
-    tools,
+    toolConfigs,
     prompts: {
       toolSelection: TOOL_SELECTION_PROMPT
     }
