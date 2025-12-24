@@ -1,4 +1,5 @@
-import { ToolOperation, tool } from '@clearfeed-ai/quix-common-agent';
+import { tool } from '@langchain/core/tools';
+import { ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
 import { z } from 'zod';
 import { SalesforceConfig } from './index';
 import { SalesforceTaskService } from './services/task';
@@ -131,44 +132,43 @@ export const getTasksSchema = z.object({
   limit: z.number().default(10).describe('The limit of the task')
 });
 
-export const taskTools = (config: SalesforceConfig) => {
+export const taskTools = (config: SalesforceConfig): QuixTool[] => {
   const service = new SalesforceTaskService(config);
   return [
-    tool({
-      name: 'salesforce_create_task',
-      description: 'Create a task in Salesforce',
-      schema: createTaskSchema,
-      operations: [ToolOperation.CREATE],
-      func: async (args: z.infer<typeof createTaskSchema>) => {
-        return await service.createTask(args);
-      }
-    }),
-    tool({
-      name: 'salesforce_update_task',
-      description: 'Update a task in Salesforce',
-      schema: updateTaskSchema,
-      operations: [ToolOperation.UPDATE],
-      func: async (args: z.infer<typeof updateTaskSchema>) => {
-        return await service.updateTask(args);
-      }
-    }),
-    tool({
-      name: 'salesforce_delete_task',
-      description: 'Delete a task in Salesforce, requires confirmation from the user.',
-      schema: deleteTaskSchema,
-      operations: [ToolOperation.DELETE],
-      func: async (args: z.infer<typeof deleteTaskSchema>) => {
-        return await service.deleteTask(args.taskId);
-      }
-    }),
-    tool({
-      name: 'salesforce_get_tasks',
-      description: 'Get tasks in Salesforce',
-      schema: getTasksSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: z.infer<typeof getTasksSchema>) => {
-        return await service.getTasks(args);
-      }
-    })
+    {
+      tool: tool(async (args: z.infer<typeof createTaskSchema>) => service.createTask(args), {
+        name: 'salesforce_create_task',
+        description: 'Create a task in Salesforce',
+        schema: createTaskSchema
+      }),
+      operations: [ToolOperation.CREATE]
+    },
+    {
+      tool: tool(async (args: z.infer<typeof updateTaskSchema>) => service.updateTask(args), {
+        name: 'salesforce_update_task',
+        description: 'Update a task in Salesforce',
+        schema: updateTaskSchema
+      }),
+      operations: [ToolOperation.UPDATE]
+    },
+    {
+      tool: tool(
+        async (args: z.infer<typeof deleteTaskSchema>) => service.deleteTask(args.taskId),
+        {
+          name: 'salesforce_delete_task',
+          description: 'Delete a task in Salesforce, requires confirmation from the user.',
+          schema: deleteTaskSchema
+        }
+      ),
+      operations: [ToolOperation.DELETE]
+    },
+    {
+      tool: tool(async (args: z.infer<typeof getTasksSchema>) => service.getTasks(args), {
+        name: 'salesforce_get_tasks',
+        description: 'Get tasks in Salesforce',
+        schema: getTasksSchema
+      }),
+      operations: [ToolOperation.READ]
+    }
   ];
 };

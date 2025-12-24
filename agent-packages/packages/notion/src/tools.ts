@@ -1,5 +1,6 @@
+import { tool } from '@langchain/core/tools';
 import { NotionService } from './index';
-import { ToolConfig, ToolOperation, tool } from '@clearfeed-ai/quix-common-agent';
+import { ToolConfig, ToolOperation, QuixTool } from '@clearfeed-ai/quix-common-agent';
 import {
   AppendBlockChildrenArgs,
   CreateCommentArgs,
@@ -70,137 +71,172 @@ When formatting Notion responses:
 export function createNotionToolsExport(config: NotionConfig): ToolConfig {
   const service = new NotionService(config);
 
-  const tools = [
-    tool({
-      name: 'notion_retrieve_block',
-      description: 'Retrieve a block from Notion',
-      schema: retrieveBlockSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: RetrieveBlockArgs) => service.retrieveBlock(args)
-    }),
-    tool({
-      name: 'notion_retrieve_block_children',
-      description: 'Retrieve the children of a block',
-      schema: retrieveBlockChildrenSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: RetrieveBlockChildrenArgs) => service.retrieveBlockChildren(args)
-    }),
-    tool({
-      name: 'notion_append_block_children',
-      description:
-        "Append new children blocks to a specified parent block in Notion. Requires insert content capabilities. You can optionally specify the 'after' parameter to append after a certain block.",
-      schema: appendBlockChildrenSchema,
-      operations: [ToolOperation.CREATE],
-      func: async (args: AppendBlockChildrenArgs) => service.appendBlockChildren(args)
-    }),
-    tool({
-      name: 'notion_delete_block',
-      description: 'Delete a block in Notion',
-      schema: deleteBlockSchema,
-      operations: [ToolOperation.DELETE],
-      func: async (args: DeleteBlockArgs) => service.deleteBlock(args)
-    }),
-    tool({
-      name: 'notion_update_block',
-      description:
-        'Update the content of a block in Notion based on its type. The update replaces the entire value for a given field.',
-      schema: updateBlockSchema,
-      operations: [ToolOperation.UPDATE],
-      func: async (args: UpdateBlockArgs) => service.updateBlock(args)
-    }),
-    tool({
-      name: 'notion_retrieve_page',
-      description: 'Retrieve a page from Notion',
-      schema: retrievePageSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: RetrievePageArgs) => service.retrievePage(args)
-    }),
-    tool({
-      name: 'notion_delete_or_archive_page',
-      description: 'Delete or archive a page in Notion',
-      schema: deleteOrArchivePageSchema,
-      operations: [ToolOperation.DELETE],
-      func: async (args: DeleteOrArchivePageArgs) => service.deleteOrArchivePage(args)
-    }),
-    tool({
-      name: 'notion_update_page_properties',
-      description: 'Update properties of a page or an item in a Notion database',
-      schema: updatePagePropertiesSchema,
-      operations: [ToolOperation.UPDATE],
-      func: async (args: UpdatePagePropertiesArgs) => service.updatePageProperties(args)
-    }),
-    tool({
-      name: 'notion_query_database',
-      description: 'Query a database in Notion',
-      schema: queryDatabaseSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: QueryDatabaseArgs) => service.queryDatabase(args)
-    }),
-    tool({
-      name: 'notion_create_database',
-      description: 'Create a new database in Notion',
-      schema: createDatabaseSchema,
-      operations: [ToolOperation.CREATE],
-      func: async (args: CreateDatabaseArgs) => service.createDatabase(args)
-    }),
-    tool({
-      name: 'notion_retrieve_database',
-      description: 'Retrieve a database in Notion',
-      schema: retrieveDatabaseSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: RetrieveDatabaseArgs) => service.retrieveDatabase(args)
-    }),
-    tool({
-      name: 'notion_create_database_item',
-      description: 'Create a new item (page) in a Notion database',
-      schema: createDatabaseItemSchema,
-      operations: [ToolOperation.CREATE],
-      func: async (args: CreateDatabaseItemArgs) => service.createDatabaseItem(args)
-    }),
-    tool({
-      name: 'notion_create_comment',
-      description:
-        "Create a comment in Notion. This requires the integration to have 'insert comment' capabilities. You can either specify a page parent or a discussion_id, but not both.",
-      schema: createCommentSchema,
-      operations: [ToolOperation.CREATE],
-      func: async (args: CreateCommentArgs) => service.createComment(args)
-    }),
-    tool({
-      name: 'notion_retrieve_comments',
-      description:
-        "Retrieve a list of unresolved comments from a Notion page or block. Requires the integration to have 'read comment' capabilities.",
-      schema: retrieveCommentsSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: RetrieveCommentsArgs) => service.retrieveComments(args)
-    }),
-    tool({
-      name: 'notion_search',
-      description: 'Search pages or databases by title in Notion',
-      schema: searchSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: SearchArgs) => service.search(args)
-    }),
-    tool({
-      name: 'notion_list_all_users',
-      description: 'List all users in the Notion workspace.',
-      schema: listAllUsersSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: ListAllUsersArgs) => service.listAllUsers(args)
-    }),
-    tool({
-      name: 'notion_retrieve_user',
-      description: 'Retrieve a specific user by user_id in Notion.',
-      schema: retrieveUserSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: RetrieveUserArgs) => service.retrieveUser(args)
-    }),
-    tool({
-      name: 'notion_retrieve_bot_user',
-      description: 'Retrieve the bot user associated with the current token in Notion',
-      schema: retrieveBotUserSchema,
-      operations: [ToolOperation.READ],
-      func: async () => service.retrieveBotUser()
-    })
+  const tools: QuixTool[] = [
+    {
+      tool: tool(async (args: RetrieveBlockArgs) => service.retrieveBlock(args), {
+        name: 'notion_retrieve_block',
+        description: 'Retrieve a block from Notion',
+        schema: retrieveBlockSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
+
+    {
+      tool: tool(async (args: RetrieveBlockChildrenArgs) => service.retrieveBlockChildren(args), {
+        name: 'notion_retrieve_block_children',
+        description: 'Retrieve the children of a block',
+        schema: retrieveBlockChildrenSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
+
+    {
+      tool: tool(async (args: AppendBlockChildrenArgs) => service.appendBlockChildren(args), {
+        name: 'notion_append_block_children',
+        description:
+          "Append new children blocks to a specified parent block in Notion. Requires insert content capabilities. You can optionally specify the 'after' parameter to append after a certain block.",
+        schema: appendBlockChildrenSchema
+      }),
+      operations: [ToolOperation.CREATE]
+    },
+
+    {
+      tool: tool(async (args: DeleteBlockArgs) => service.deleteBlock(args), {
+        name: 'notion_delete_block',
+        description: 'Delete a block in Notion',
+        schema: deleteBlockSchema
+      }),
+      operations: [ToolOperation.DELETE]
+    },
+
+    {
+      tool: tool(async (args: UpdateBlockArgs) => service.updateBlock(args), {
+        name: 'notion_update_block',
+        description:
+          'Update the content of a block in Notion based on its type. The update replaces the entire value for a given field.',
+        schema: updateBlockSchema
+      }),
+      operations: [ToolOperation.UPDATE]
+    },
+
+    {
+      tool: tool(async (args: RetrievePageArgs) => service.retrievePage(args), {
+        name: 'notion_retrieve_page',
+        description: 'Retrieve a page from Notion',
+        schema: retrievePageSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
+
+    {
+      tool: tool(async (args: DeleteOrArchivePageArgs) => service.deleteOrArchivePage(args), {
+        name: 'notion_delete_or_archive_page',
+        description: 'Delete or archive a page in Notion',
+        schema: deleteOrArchivePageSchema
+      }),
+      operations: [ToolOperation.DELETE]
+    },
+
+    {
+      tool: tool(async (args: UpdatePagePropertiesArgs) => service.updatePageProperties(args), {
+        name: 'notion_update_page_properties',
+        description: 'Update properties of a page or an item in a Notion database',
+        schema: updatePagePropertiesSchema
+      }),
+      operations: [ToolOperation.UPDATE]
+    },
+
+    {
+      tool: tool(async (args: QueryDatabaseArgs) => service.queryDatabase(args), {
+        name: 'notion_query_database',
+        description: 'Query a database in Notion',
+        schema: queryDatabaseSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
+
+    {
+      tool: tool(async (args: CreateDatabaseArgs) => service.createDatabase(args), {
+        name: 'notion_create_database',
+        description: 'Create a new database in Notion',
+        schema: createDatabaseSchema
+      }),
+      operations: [ToolOperation.CREATE]
+    },
+
+    {
+      tool: tool(async (args: RetrieveDatabaseArgs) => service.retrieveDatabase(args), {
+        name: 'notion_retrieve_database',
+        description: 'Retrieve a database in Notion',
+        schema: retrieveDatabaseSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
+
+    {
+      tool: tool(async (args: CreateDatabaseItemArgs) => service.createDatabaseItem(args), {
+        name: 'notion_create_database_item',
+        description: 'Create a new item (page) in a Notion database',
+        schema: createDatabaseItemSchema
+      }),
+      operations: [ToolOperation.CREATE]
+    },
+
+    {
+      tool: tool(async (args: CreateCommentArgs) => service.createComment(args), {
+        name: 'notion_create_comment',
+        description:
+          "Create a comment in Notion. This requires the integration to have 'insert comment' capabilities. You can either specify a page parent or a discussion_id, but not both.",
+        schema: createCommentSchema
+      }),
+      operations: [ToolOperation.CREATE]
+    },
+
+    {
+      tool: tool(async (args: RetrieveCommentsArgs) => service.retrieveComments(args), {
+        name: 'notion_retrieve_comments',
+        description:
+          "Retrieve a list of unresolved comments from a Notion page or block. Requires the integration to have 'read comment' capabilities.",
+        schema: retrieveCommentsSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
+
+    {
+      tool: tool(async (args: SearchArgs) => service.search(args), {
+        name: 'notion_search',
+        description: 'Search pages or databases by title in Notion',
+        schema: searchSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
+
+    {
+      tool: tool(async (args: ListAllUsersArgs) => service.listAllUsers(args), {
+        name: 'notion_list_all_users',
+        description: 'List all users in the Notion workspace.',
+        schema: listAllUsersSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
+
+    {
+      tool: tool(async (args: RetrieveUserArgs) => service.retrieveUser(args), {
+        name: 'notion_retrieve_user',
+        description: 'Retrieve a specific user by user_id in Notion.',
+        schema: retrieveUserSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
+
+    {
+      tool: tool(async () => service.retrieveBotUser(), {
+        name: 'notion_retrieve_bot_user',
+        description: 'Retrieve the bot user associated with the current token in Notion',
+        schema: retrieveBotUserSchema
+      }),
+      operations: [ToolOperation.READ]
+    }
   ];
 
   return {
