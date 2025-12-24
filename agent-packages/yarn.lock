@@ -288,6 +288,13 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
+"@clearfeed-ai/quix-common-agent@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.2.0.tgz#aeba2d6cbd02280059d1111a6c6595889760389e"
+  integrity sha512-Nh1jWpeXjIfTJWLO8MWb7M2T65VVzGurMI4EjC6WNOa5KNMmVylDBCL5MoTsXebTtJAE3EtrrrkwYvyIua0IWA==
+  dependencies:
+    zod "^3.24.2"
+
 "@hubspot/api-client@^12.0.1":
   version "12.0.1"
   resolved "https://registry.yarnpkg.com/@hubspot/api-client/-/api-client-12.0.1.tgz#5fbb404610c8eaf5859504d68d8b7f4fc39db44e"
