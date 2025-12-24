@@ -5,11 +5,11 @@ import { z } from 'zod';
 export function tool(
   payload: Parameters<typeof createLangTool>[1] & {
     operations: QuixTool['operations'];
-    func: Parameters<typeof createLangTool>[0];
+    func: any; // Allow typed functions, will be cast internally
   }
 ): QuixTool {
   const { func, operations, ...fields } = payload;
-  return { tool: createLangTool(func, fields), operations };
+  return { tool: createLangTool(func as Parameters<typeof createLangTool>[0], fields), operations };
 }
 
 const TOOL_SELECTION_PROMPT = `

@@ -156,7 +156,7 @@ describeOrSkip('BambooHR Integration Tests', () => {
       expect(toolsConfig.prompts?.toolSelection).toBeDefined();
       expect(toolsConfig.prompts?.responseGeneration).toBeDefined();
 
-      const toolNames = toolsConfig.tools.map((tool: any) => tool.name);
+      const toolNames = toolsConfig.tools.map((t: any) => t.tool.name);
       expect(toolNames).toContain('list_bamboohr_employees');
       expect(toolNames).toContain('get_bamboohr_employee');
       expect(toolNames).toContain('get_bamboohr_employee_time_off_balance');
