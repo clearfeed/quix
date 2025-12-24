@@ -51,7 +51,8 @@ export enum ToolOperation {
   DELETE = 'delete'
 }
 
-export type QuixTool = DynamicStructuredTool & {
+export type QuixTool = {
+  tool: DynamicStructuredTool;
   operations: ToolOperation[];
 };
 
