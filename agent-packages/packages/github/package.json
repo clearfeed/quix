@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-github-agent",
-  "version": "1.2.14",
+  "version": "2.0.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -14,7 +14,7 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "1.3.0",
+    "@clearfeed-ai/quix-common-agent": "2.0.0",
     "@octokit/rest": "^21.1.1"
   },
   "peerDependencies": {
