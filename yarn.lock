@@ -495,95 +495,95 @@
   resolved "https://registry.yarnpkg.com/@cfworker/json-schema/-/json-schema-4.1.1.tgz#4a2a3947ee9fa7b7c24be981422831b8674c3be6"
   integrity sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==
 
-"@clearfeed-ai/quix-common-agent@1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-1.2.0.tgz#aeba2d6cbd02280059d1111a6c6595889760389e"
-  integrity sha512-Nh1jWpeXjIfTJWLO8MWb7M2T65VVzGurMI4EjC6WNOa5KNMmVylDBCL5MoTsXebTtJAE3EtrrrkwYvyIua0IWA==
+"@clearfeed-ai/quix-common-agent@2.0.0", "@clearfeed-ai/quix-common-agent@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-2.0.0.tgz#1049577a975a0d95fed2835dd59c112b2e8263a5"
+  integrity sha512-XF/0u2ccFdoWDn22GZoElYqssf5Rv34qzlLIMbRM/onFE5aIEls617hfBznRX2WlGitNGV4afEs1oS9fsmEnDA==
   dependencies:
     zod "^3.24.2"
 
-"@clearfeed-ai/quix-github-agent@^1.2.14":
-  version "1.2.14"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-1.2.14.tgz#1b1fb7f6e0c537021a425c3400370eeea6d882e6"
-  integrity sha512-SsC0CcGns+N+7omyS7fFbtAzPmoDK8K/e8QKt4hufNLirYbpk4Q7JV48zSjMe2NozhUxi1nVjEI6uyqVy8qWmQ==
+"@clearfeed-ai/quix-github-agent@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-2.0.0.tgz#eccba45329bde29033646744c4f4a0591544c5d4"
+  integrity sha512-UH06egCYN9alvUwSesNCsK9unWmTHame/Fc4Cp//+CAsz9kKz3/uNEkFBq+TtuG2ztwdFJ5oA9t5hA0lDcI97g==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "1.2.0"
+    "@clearfeed-ai/quix-common-agent" "2.0.0"
     "@octokit/rest" "^21.1.1"
 
-"@clearfeed-ai/quix-hubspot-agent@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-1.2.0.tgz#fed6143fa186d1e3c8e17dae2aa115512bc6c8c8"
-  integrity sha512-VQqeJSpRwr8MjvM23zgUMBwOERl3BzJJ3V8/Brypn4G2TmWkrj1dNSDNa+5JfBheuzwatrEmosLPur791zXyPg==
+"@clearfeed-ai/quix-hubspot-agent@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-2.0.0.tgz#b2e6f9c5edb9d6906f07f5731203bf70932d428e"
+  integrity sha512-aHLxaCIguwPNedsDTP4feN+0wUI0Qbwjb4kGxyD7jve83cwl1krZG990PW7xIe3FDLQ0+siZHifRfR29hhv9UA==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "1.2.0"
+    "@clearfeed-ai/quix-common-agent" "2.0.0"
     "@hubspot/api-client" "^12.0.1"
 
-"@clearfeed-ai/quix-jira-agent@^1.2.22":
-  version "1.2.22"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-1.2.22.tgz#7609e0410bee8fad629801956ee323f19f82e7bf"
-  integrity sha512-9Scg9O5DXZnVm9IkyxrfpLYNC4VV9lg/Vti+3lzr4AXe3pR8aBqRn2Pakj40j7C61C1yMysLPtmPy6PlkaCYRQ==
+"@clearfeed-ai/quix-jira-agent@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-2.0.0.tgz#8932e3e40d71e788c44214761c3859f78e6ec0ad"
+  integrity sha512-q2ZGBfS0l/Bl6CNb0PJKpzCClbZGgyGyKX3J+NVM0QMQ/bp9qbF2RcncW7tPOrLH6W2mUJTDQ3szyHKGjK3OiQ==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "1.2.0"
+    "@clearfeed-ai/quix-common-agent" "2.0.0"
     atlassian-jwt "^2.0.3"
     axios "^1.12.2"
 
-"@clearfeed-ai/quix-jumpcloud-agent@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jumpcloud-agent/-/quix-jumpcloud-agent-1.0.4.tgz#5d0cce799bd14164b26640c38ee3b5e057d49160"
-  integrity sha512-BVmT0bhSzYMYPYO4zR9jQ8XXwEWXrfAZd9h5m5Rz7bZYTWSKbotvIGyeiKLFMyRLTViSokWqwFA4ItmDzBhRKw==
+"@clearfeed-ai/quix-jumpcloud-agent@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jumpcloud-agent/-/quix-jumpcloud-agent-2.0.0.tgz#fb566b3c5c9b2c7d6e7db511d2b85b3afa0c0851"
+  integrity sha512-ZhbVdN+ZgzyMa3U1oyW2/HfQ2cyMY3TqJw3b6a246M0PikRfCBN62qXYf0jiexDIoFgItheMsAxPgH+KNZRZNA==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "1.2.0"
+    "@clearfeed-ai/quix-common-agent" "2.0.0"
     axios "^1.12.2"
 
-"@clearfeed-ai/quix-notion-agent@^1.0.5":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-notion-agent/-/quix-notion-agent-1.0.5.tgz#b5eab8d31abb19f2fe30da69b457fe4e241cf727"
-  integrity sha512-HPRq5xMuXLNZjQMHYNaiLq3m/3NOmKL26aPFY7d147XXImr6aE5ep6sv7bzIR3GY0hYv7Y5ylgaHo5An2BTHKQ==
+"@clearfeed-ai/quix-notion-agent@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-notion-agent/-/quix-notion-agent-2.0.0.tgz#90ec4b657b95775b35f4f10da5aab34c4b2438f0"
+  integrity sha512-DeGsRsr0cU68hrtKCrqzwUHfnDGYRpqBUZmum/2Jfsm83bwPrhbwy5WgxgvbnPAenWtyvhQ18e67eeFuvku+EQ==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "1.2.0"
+    "@clearfeed-ai/quix-common-agent" "2.0.0"
     "@notionhq/client" "^3.0.1"
     lodash "^4.17.21"
 
-"@clearfeed-ai/quix-okta-agent@^1.0.9":
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-okta-agent/-/quix-okta-agent-1.0.9.tgz#9a81f7509b039f0c847e3b2baf1eb3aafaf49d65"
-  integrity sha512-xyrEcVmtpOGw6mCUarYrU/nLoEnCSvzaXITOsjzEjNrPohk5Z10p9wOr6RwSDrn4Fz3r+DCxHeUfuSGYsBFJTg==
+"@clearfeed-ai/quix-okta-agent@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-okta-agent/-/quix-okta-agent-2.0.0.tgz#4cc7d5c5b2121f110764131fbcbd7aa324fe3463"
+  integrity sha512-VMofNuF04sennwJwZimMRclYSeVp/KWdm4LA5l8ATqhwt8DactfwtuojP9T6LTd0F0nohD7VqeLbv464ks7RSA==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "1.2.0"
+    "@clearfeed-ai/quix-common-agent" "2.0.0"
     "@okta/okta-sdk-nodejs" "^7.0.1"
 
-"@clearfeed-ai/quix-postgres-agent@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-postgres-agent/-/quix-postgres-agent-1.0.3.tgz#61c6b42ac9a1f96f5df1f1f3657e00baba13824f"
-  integrity sha512-eG1tm8EzW42Ow9SBZ8wsnKstCNXI1xZnc7ODCqJUqFD1sQ258ccG4NW4DuAKXSKcSw/pOQryzh4zxjo8wDC6eg==
+"@clearfeed-ai/quix-postgres-agent@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-postgres-agent/-/quix-postgres-agent-2.0.0.tgz#1f3d74cd240a6eb210cee034b50ea7e21948ab21"
+  integrity sha512-ePth5mSG1J36BAXSBbjjQbLzKw1OF3SR8eAww3EacmpHhVcq8adiq3rvM9Ha+ClRLWN946JWMpDIlXGW8KmpDw==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "1.2.0"
+    "@clearfeed-ai/quix-common-agent" "2.0.0"
     pg "^8.14.0"
 
-"@clearfeed-ai/quix-salesforce-agent@^1.0.12":
-  version "1.0.12"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-salesforce-agent/-/quix-salesforce-agent-1.0.12.tgz#24cb3506cf9cd63bf6ef6795ffd06354ab302950"
-  integrity sha512-sc0e10CcTGmyK0PjnINg3ovVIYtmWFD6xua3lYCnxWWPO+JYI703OBXb3//P3sybAQf8rLzFF/JgwVBbaHUd4Q==
+"@clearfeed-ai/quix-salesforce-agent@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-salesforce-agent/-/quix-salesforce-agent-2.0.0.tgz#65549dad397fbbcfbaa33c1e639ce2d35793bfb7"
+  integrity sha512-mZBnq6J0/gkqVUhZi1iQtPhk6+DfOjAw6CbYPbVL/qjKarZPm85VBriyc+mspNceMmazjJXNKTHCja/KjmvTvQ==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "1.2.0"
+    "@clearfeed-ai/quix-common-agent" "2.0.0"
     date-fns "^4.1.0"
     jsforce "^3.5.0"
 
-"@clearfeed-ai/quix-slack-agent@^1.0.6":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-slack-agent/-/quix-slack-agent-1.0.6.tgz#94ec4f59a5809e88ed10c9b3a6fb55ce0b9d8425"
-  integrity sha512-3U2yjWM5F+JY0dZ0I9dgPOhXSXhRMYtr1kVzEFetjtv8u859ZGWR80n9acZyTzTp9iYdbT4Fv5tSA64C5XGScA==
+"@clearfeed-ai/quix-slack-agent@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-slack-agent/-/quix-slack-agent-2.0.0.tgz#e91c715eb21692f85e4a6cdbb3a247127c15edd5"
+  integrity sha512-vDrw4T0LC7PU3DVclf8UyD8muzdzAf6ICl0s/Zlog7V1eLGoAEtO/NXeuBW7fuPWi2Ds6ebvVbeKi0fX9ZPfEw==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "1.2.0"
+    "@clearfeed-ai/quix-common-agent" "2.0.0"
     "@slack/web-api" "^6.9.0"
     slackify-markdown "^4.4.0"
 
-"@clearfeed-ai/quix-zendesk-agent@^1.1.8":
-  version "1.1.8"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-zendesk-agent/-/quix-zendesk-agent-1.1.8.tgz#62293156e896df06d6de0092591d34d1409da183"
-  integrity sha512-Mg719NPe9dQrhFZURvybu4i09TvEp+VMKG/8807uQFe/Jc/HldCIS0DImILU8/Jb+/IK+BB1UxHovqWkuvMq2w==
+"@clearfeed-ai/quix-zendesk-agent@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-zendesk-agent/-/quix-zendesk-agent-2.0.0.tgz#d75be37ad4b09ad11e98128f648c3ae6f9eedd90"
+  integrity sha512-HXgjPCrML9Er7h6pO+aciD0Q6aJBA87r1TBbaX2BIZsBemUh0oHwKAjWkxIl9Yh24ul8zWhZkYbJd0K176+YCw==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "1.2.0"
+    "@clearfeed-ai/quix-common-agent" "2.0.0"
     node-zendesk "^6.0.1"
 
 "@colors/colors@1.5.0":
@@ -1299,67 +1299,63 @@
   dependencies:
     buffer "^6.0.3"
 
-"@langchain/core@0.3.62":
-  version "0.3.62"
-  resolved "https://registry.yarnpkg.com/@langchain/core/-/core-0.3.62.tgz#ddb4646c98800b6efacf89508c0dbc6991943ea4"
-  integrity sha512-GqRTcoUPnozGRMUcA6QkP7LHL/OvanGdB51Jgb0w7IIPDI3wFugxMHZ4gphnGDtxsD1tQY5ykyEpYNxFK8kl1w==
+"@langchain/core@1.1.8":
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/@langchain/core/-/core-1.1.8.tgz#d6fc8f0ea944c71af1dfb0a960647c2d9e9ae50f"
+  integrity sha512-kIUidOgc0ZdyXo4Ahn9Zas+OayqOfk4ZoKPi7XaDipNSWSApc2+QK5BVcjvwtzxstsNOrmXJiJWEN6WPF/MvAw==
   dependencies:
     "@cfworker/json-schema" "^4.0.2"
     ansi-styles "^5.0.0"
     camelcase "6"
     decamelize "1.2.0"
     js-tiktoken "^1.0.12"
-    langsmith "^0.3.33"
+    langsmith ">=0.4.0 <1.0.0"
     mustache "^4.2.0"
     p-queue "^6.6.2"
-    p-retry "4"
     uuid "^10.0.0"
-    zod "^3.25.32"
-    zod-to-json-schema "^3.22.3"
+    zod "^3.25.76 || ^4"
 
-"@langchain/google-genai@0.2.14":
-  version "0.2.14"
-  resolved "https://registry.yarnpkg.com/@langchain/google-genai/-/google-genai-0.2.14.tgz#81be6f1575e6ea6b638013c872ca75ea528b2c4f"
-  integrity sha512-gKe/T2LNh8wSSMJOaFmYd8cwQnDSXKtVtC6a7CFoq5nWuh0bKzhItM/7bue1aMN8mlKfB2G1HCwxhaZoSpS/DA==
+"@langchain/google-genai@2.1.3":
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/@langchain/google-genai/-/google-genai-2.1.3.tgz#97cc5f31a3b85125a7f552a584b023525f4dc288"
+  integrity sha512-ZdlFK/N10GyU6ATzkM01Sk1rlHBoy36Q/MawGD1SyXdD2lQxZxuQZjFWewj6uzWQ2Nnjj70EvU/kmmHVPn6sfQ==
   dependencies:
     "@google/generative-ai" "^0.24.0"
     uuid "^11.1.0"
 
-"@langchain/langgraph-checkpoint@~0.0.18":
-  version "0.0.18"
-  resolved "https://registry.yarnpkg.com/@langchain/langgraph-checkpoint/-/langgraph-checkpoint-0.0.18.tgz#2f7a9cdeda948ccc8d312ba9463810709d71d0b8"
-  integrity sha512-IS7zJj36VgY+4pf8ZjsVuUWef7oTwt1y9ylvwu0aLuOn1d0fg05Om9DLm3v2GZ2Df6bhLV1kfWAM0IAl9O5rQQ==
+"@langchain/langgraph-checkpoint@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@langchain/langgraph-checkpoint/-/langgraph-checkpoint-1.0.0.tgz#ece2ede439d0d0b0b532c4be7817fd5029afe4f8"
+  integrity sha512-xrclBGvNCXDmi0Nz28t3vjpxSH6UYx6w5XAXSiiB1WEdc2xD2iY/a913I3x3a31XpInUW/GGfXXfePfaghV54A==
   dependencies:
     uuid "^10.0.0"
 
-"@langchain/langgraph-sdk@~0.0.92":
-  version "0.0.92"
-  resolved "https://registry.yarnpkg.com/@langchain/langgraph-sdk/-/langgraph-sdk-0.0.92.tgz#d058d33ae70c91cab9e42d3535330030676ad683"
-  integrity sha512-YL3uPo4At0q96Jk1v7uPctpf/NuKYlbHuQzuS03lQDvvzkLNBmw6ZRKr8SFmgZwmiHz2CNMfBP21kmb9aq/9Ug==
+"@langchain/langgraph-sdk@~1.3.1":
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/@langchain/langgraph-sdk/-/langgraph-sdk-1.3.1.tgz#3ad5bd8553b499844745c3c1488573f6c14ad16e"
+  integrity sha512-zTi7DZHwqtMEzapvm3I1FL4Q7OZsxtq9tTXy6s2gcCxyIU3sphqRboqytqVN7dNHLdTCLb8nXy49QKurs2MIBg==
   dependencies:
-    "@types/json-schema" "^7.0.15"
     p-queue "^6.6.2"
     p-retry "4"
     uuid "^9.0.0"
 
-"@langchain/langgraph@0.3.8":
-  version "0.3.8"
-  resolved "https://registry.yarnpkg.com/@langchain/langgraph/-/langgraph-0.3.8.tgz#976ceb909953b895d896fd9e1aa498ac5f737fd9"
-  integrity sha512-JOtYNMa7BixzXrAtV76x1lS2+Blt4WLcbFUWwtiEqTMzwNg00fSvUQ6FaPeootL66iYamg67AVq12PerqMrelw==
+"@langchain/langgraph@1.0.7", "@langchain/langgraph@^1.0.0":
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/@langchain/langgraph/-/langgraph-1.0.7.tgz#4727b5168a921ee3e3f11ad4cbf2293611f36232"
+  integrity sha512-EBGqNOWoRiEoLUaeuiXRpUM8/DE6QcwiirNyd97XhezStebBoTTilWH8CUt6S94JRGl5zwfBBRHfzotDnZS/eA==
   dependencies:
-    "@langchain/langgraph-checkpoint" "~0.0.18"
-    "@langchain/langgraph-sdk" "~0.0.92"
+    "@langchain/langgraph-checkpoint" "^1.0.0"
+    "@langchain/langgraph-sdk" "~1.3.1"
     uuid "^10.0.0"
-    zod "^3.25.32"
 
-"@langchain/openai@0.5.18":
-  version "0.5.18"
-  resolved "https://registry.yarnpkg.com/@langchain/openai/-/openai-0.5.18.tgz#59ebbf48044d711ce9503d3b9854a3533cb54683"
-  integrity sha512-CX1kOTbT5xVFNdtLjnM0GIYNf+P7oMSu+dGCFxxWRa3dZwWiuyuBXCm+dToUGxDLnsHuV1bKBtIzrY1mLq/A1Q==
+"@langchain/openai@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@langchain/openai/-/openai-1.2.0.tgz#18ea4258192d81010492fb89d7816b877a77b3ef"
+  integrity sha512-r2g5Be3Sygw7VTJ89WVM/M94RzYToNTwXf8me1v+kgKxzdHbd/8XPYDFxpXEp3REyPgUrtJs+Oplba9pkTH5ug==
   dependencies:
     js-tiktoken "^1.0.12"
-    openai "^5.3.0"
-    zod "^3.25.32"
+    openai "^6.10.0"
+    zod "^3.25.76 || ^4"
 
 "@langchain/openai@>=0.1.0 <0.6.0":
   version "0.5.10"
@@ -1413,10 +1409,10 @@
     zod "^3.25 || ^4.0"
     zod-to-json-schema "^3.25.0"
 
-"@n8n/json-schema-to-zod@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@n8n/json-schema-to-zod/-/json-schema-to-zod-1.1.0.tgz#d59ecf5f0c90c560b8b09374ea3efafc2dd5b84e"
-  integrity sha512-HfL3jq5NSb0Mng56QCfUnzD09F4wxWR543jYJZ+XBQpb0f9B102r6K3qEtdXVTs1mwHVnxz5KBaesqipFYPjww==
+"@n8n/json-schema-to-zod@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@n8n/json-schema-to-zod/-/json-schema-to-zod-1.6.0.tgz#6bc933056e8d273e897cebe52012ca0f92d96627"
+  integrity sha512-5AryA/GdX0U0+Qx2u3S14vME9ZK4ubS+rOC2MYlRDtRPCalBMGd5heVzU+W5o95JWAm4XQL/s0PZGM9a1xEhHg==
 
 "@napi-rs/nice-android-arm-eabi@1.0.1":
   version "1.0.1"
@@ -5854,23 +5850,33 @@ langchain@^0.3.18:
     zod "^3.22.4"
     zod-to-json-schema "^3.22.3"
 
-langsmith@^0.3.11, langsmith@^0.3.16:
-  version "0.3.28"
-  resolved "https://registry.yarnpkg.com/langsmith/-/langsmith-0.3.28.tgz#685a7e35a95185ca5d08c684be62403fe7eb2d47"
-  integrity sha512-Vq8n0zJ9MhDMhwkOhmOEb/rl/8jpm0LnAF4dE5TEXMdLmhJ784gcrWOghnFh7Qs5B4DY2Bdz3OKxIevkGKn5xg==
+langchain@^1.2.3:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/langchain/-/langchain-1.2.3.tgz#66f64748d9ed1aff24903ad196cbe62280237dc5"
+  integrity sha512-3k986xJuqg4az53JxV5LnGlOzIXF1d9Kq6Y9s7XjitvzhpsbFuTDV5/kiF4cx3pkNGyw0mUXC4tLz9RxucO0hw==
+  dependencies:
+    "@langchain/langgraph" "^1.0.0"
+    "@langchain/langgraph-checkpoint" "^1.0.0"
+    langsmith ">=0.4.0 <1.0.0"
+    uuid "^10.0.0"
+    zod "^3.25.76 || ^4"
+
+"langsmith@>=0.4.0 <1.0.0":
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/langsmith/-/langsmith-0.4.2.tgz#4f9ce6db01846d64c0f0eb895ab755662a6c0dc0"
+  integrity sha512-BvBeFgSmR9esl8x5wsiDlALiHKKPybw2wE2Hh6x1tgSZki46H9c9KI9/06LARbPhyyDu/TZU7exfg6fnhdj1Qg==
   dependencies:
     "@types/uuid" "^10.0.0"
     chalk "^4.1.2"
     console-table-printer "^2.12.1"
     p-queue "^6.6.2"
-    p-retry "4"
     semver "^7.6.3"
     uuid "^10.0.0"
 
-langsmith@^0.3.33:
-  version "0.3.40"
-  resolved "https://registry.yarnpkg.com/langsmith/-/langsmith-0.3.40.tgz#49b1e7aa2a02d02e8b07f1c8a976e01204dbc721"
-  integrity sha512-6tWo2wauozHmQjriJuAlRWUw5XTxIfFVwLrUU79MNfp79ZrYhFQZzJLB7TodXWx8o243GxWMoCFc+ZI/2LGauQ==
+langsmith@^0.3.11, langsmith@^0.3.16:
+  version "0.3.28"
+  resolved "https://registry.yarnpkg.com/langsmith/-/langsmith-0.3.28.tgz#685a7e35a95185ca5d08c684be62403fe7eb2d47"
+  integrity sha512-Vq8n0zJ9MhDMhwkOhmOEb/rl/8jpm0LnAF4dE5TEXMdLmhJ784gcrWOghnFh7Qs5B4DY2Bdz3OKxIevkGKn5xg==
   dependencies:
     "@types/uuid" "^10.0.0"
     chalk "^4.1.2"
@@ -6613,10 +6619,10 @@ openai@^4.96.0:
     formdata-node "^4.3.2"
     node-fetch "^2.6.7"
 
-openai@^5.3.0:
-  version "5.8.2"
-  resolved "https://registry.yarnpkg.com/openai/-/openai-5.8.2.tgz#b12f968618deb87f6231b35a21b590d0b529d70b"
-  integrity sha512-8C+nzoHYgyYOXhHGN6r0fcb4SznuEn1R7YZMvlqDbnCuE0FM2mm3T1HiYW6WIcMS/F1Of2up/cSPjLPaWt0X9Q==
+openai@^6.10.0:
+  version "6.15.0"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-6.15.0.tgz#94f23643a50206a6ae889e9df8fc3bfb2dbf2c2b"
+  integrity sha512-F1Lvs5BoVvmZtzkUEVyh8mDQPPFolq4F+xdsx/DO8Hee8YF3IGAlZqUIsF+DVGhqf4aU0a3bTghsxB6OIsRy1g==
 
 openapi-types@^12.1.3:
   version "12.1.3"
@@ -8636,7 +8642,12 @@ zod-to-json-schema@^3.22.3, zod-to-json-schema@^3.25.0:
   resolved "https://registry.yarnpkg.com/zod-to-json-schema/-/zod-to-json-schema-3.25.0.tgz#df504c957c4fb0feff467c74d03e6aab0b013e1c"
   integrity sha512-HvWtU2UG41LALjajJrML6uQejQhNJx+JBO9IflpSja4R03iNWfKXrj6W2h7ljuLyc1nKS+9yDyL/9tD1U/yBnQ==
 
-zod@3.25.67, zod@^3.22.4, zod@^3.24.2, zod@^3.25.32:
+zod-to-json-schema@^3.24.6:
+  version "3.25.1"
+  resolved "https://registry.yarnpkg.com/zod-to-json-schema/-/zod-to-json-schema-3.25.1.tgz#7f24962101a439ddade2bf1aeab3c3bfec7d84ba"
+  integrity sha512-pM/SU9d3YAggzi6MtR4h7ruuQlqKtad8e9S0fmxcMi+ueAK5Korys/aWcV9LIIHTVbj01NdzxcnXSN+O74ZIVA==
+
+zod@^3.22.4, zod@^3.24.2:
   version "3.25.67"
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.67.tgz#62987e4078e2ab0f63b491ef0c4f33df24236da8"
   integrity sha512-idA2YXwpCdqUSKRCACDE6ItZD9TZzy3OZMtpfLoh6oPR47lipysRrJfjzMqFxQ3uJuUPyUeWe1r9vLH33xO/Qw==
@@ -8645,6 +8656,16 @@ zod@3.25.67, zod@^3.22.4, zod@^3.24.2, zod@^3.25.32:
   version "4.1.13"
   resolved "https://registry.yarnpkg.com/zod/-/zod-4.1.13.tgz#93699a8afe937ba96badbb0ce8be6033c0a4b6b1"
   integrity sha512-AvvthqfqrAhNH9dnfmrfKzX5upOdjUVJYFqNSlkmGf64gRaTzlPwz99IHYnVs28qYAybvAlBV+H7pn0saFY4Ig==
+
+zod@^3.25.76:
+  version "3.25.76"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.76.tgz#26841c3f6fd22a6a2760e7ccb719179768471e34"
+  integrity sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==
+
+"zod@^3.25.76 || ^4":
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-4.2.1.tgz#07f0388c7edbfd5f5a2466181cb4adf5b5dbd57b"
+  integrity sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==
 
 zwitch@^1.0.0:
   version "1.0.5"
