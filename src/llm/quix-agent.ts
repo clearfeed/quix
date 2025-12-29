@@ -1,6 +1,6 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { AvailableToolsWithConfig, LLMContext, PlanResult, QuixAgentResult } from './types';
-import { DynamicStructuredTool } from '@langchain/core/tools';
+import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
 import {
   ChatPromptTemplate,
@@ -161,21 +161,23 @@ export class QuixAgent {
     });
     const systemPrompt = QuixPrompts.basePrompt(authorName) + '\n' + toolSelectionPrompts;
 
-    const toolSelectionFunction = new DynamicStructuredTool({
-      name: 'selectTool',
-      description: QuixPrompts.baseToolSelection,
-      schema: z.object({
-        toolCategories: z.array(z.enum(availableCategories as [string, ...string[]])),
-        reason: z
-          .string()
-          .describe(
-            "An explanation of why the selected tool categories were chosen. If no tools were selected, this must include a direct answer to the user's query using general knowledge."
-          )
-      }),
-      func: async ({ toolCategories, reason }) => {
+    const toolSelectionFunction = tool(
+      async ({ toolCategories, reason }) => {
         return { toolCategories, reason };
+      },
+      {
+        name: 'selectTool',
+        description: QuixPrompts.baseToolSelection,
+        schema: z.object({
+          toolCategories: z.array(z.enum(availableCategories as [string, ...string[]])),
+          reason: z
+            .string()
+            .describe(
+              "An explanation of why the selected tool categories were chosen. If no tools were selected, this must include a direct answer to the user's query using general knowledge."
+            )
+        })
       }
-    });
+    );
 
     let llmProviderWithTools: Runnable | undefined;
     if ('bindTools' in llm && typeof llm.bindTools === 'function') {
@@ -224,7 +226,7 @@ export class QuixAgent {
   ): Promise<PlanResult['steps']> {
     const allFunctions = availableTools
       .map(({ tool }) => {
-        const jsonSchema = zodToJsonSchema(tool.schema as unknown as ZodTypeAny);
+        const jsonSchema = zodToJsonSchema(tool.schema as unknown as z.ZodTypeAny);
         return `${tool.name}: ${tool.description} Args: ${JSON.stringify(jsonSchema, null, 2)}\n`;
       })
       .flat();
