@@ -1,4 +1,5 @@
-import { ToolOperation, tool } from '@clearfeed-ai/quix-common-agent';
+import { tool } from '@langchain/core/tools';
+import { ToolOperation, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { z } from 'zod';
 import { SalesforceConfig } from './types';
 import { SalesforceOpportunityService } from './services/opportunity';
@@ -37,54 +38,66 @@ export const getOpportunityUrlSchema = z.object({
 
 export const getOpportunityStagesSchema = z.object({});
 
-export const opportunityTools = (config: SalesforceConfig) => {
+export const opportunityTools = (config: SalesforceConfig): ToolConfig[] => {
   const service = new SalesforceOpportunityService(config);
   return [
-    tool({
-      name: 'salesforce_search_opportunities',
-      description:
-        'Search for opportunities in Salesforce based on keyword, stage, and/or owner ID',
-      schema: opportunitySearchSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: z.infer<typeof opportunitySearchSchema>) => {
-        return await service.searchOpportunities(args);
-      }
-    }),
-    tool({
-      name: 'salesforce_add_note_to_opportunity',
-      description: 'Add a note to a Salesforce opportunity',
-      schema: addNoteToOpportunitySchema,
-      operations: [ToolOperation.CREATE],
-      func: async (args: z.infer<typeof addNoteToOpportunitySchema>) => {
-        return await service.addNoteToOpportunity(args.opportunityId, args.note, args.title);
-      }
-    }),
-    tool({
-      name: 'salesforce_get_opportunity_url',
-      description: 'Get the URL to view an opportunity in Salesforce',
-      schema: getOpportunityUrlSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: z.infer<typeof getOpportunityUrlSchema>) => {
-        return service.getOpportunityUrl(args.opportunityId);
-      }
-    }),
-    tool({
-      name: 'salesforce_get_opportunity_stages',
-      description: 'Get all available opportunity stages in Salesforce',
-      schema: getOpportunityStagesSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: z.infer<typeof getOpportunityStagesSchema>) => {
-        return await service.getOpportunityStages();
-      }
-    }),
-    tool({
-      name: 'salesforce_get_opportunity_count',
-      description: 'Get the count of opportunities matching the search criteria',
-      schema: opportunitySearchSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: z.infer<typeof opportunitySearchSchema>) => {
-        return await service.getOpportunityCount(args);
-      }
-    })
+    {
+      tool: tool(
+        async (args: z.infer<typeof opportunitySearchSchema>) => service.searchOpportunities(args),
+        {
+          name: 'salesforce_search_opportunities',
+          description:
+            'Search for opportunities in Salesforce based on keyword, stage, and/or owner ID',
+          schema: opportunitySearchSchema
+        }
+      ),
+      operations: [ToolOperation.READ]
+    },
+    {
+      tool: tool(
+        async (args: z.infer<typeof addNoteToOpportunitySchema>) =>
+          service.addNoteToOpportunity(args.opportunityId, args.note, args.title),
+        {
+          name: 'salesforce_add_note_to_opportunity',
+          description: 'Add a note to a Salesforce opportunity',
+          schema: addNoteToOpportunitySchema
+        }
+      ),
+      operations: [ToolOperation.CREATE]
+    },
+    {
+      tool: tool(
+        async (args: z.infer<typeof getOpportunityUrlSchema>) =>
+          service.getOpportunityUrl(args.opportunityId),
+        {
+          name: 'salesforce_get_opportunity_url',
+          description: 'Get the URL to view an opportunity in Salesforce',
+          schema: getOpportunityUrlSchema
+        }
+      ),
+      operations: [ToolOperation.READ]
+    },
+    {
+      tool: tool(
+        async (args: z.infer<typeof getOpportunityStagesSchema>) => service.getOpportunityStages(),
+        {
+          name: 'salesforce_get_opportunity_stages',
+          description: 'Get all available opportunity stages in Salesforce',
+          schema: getOpportunityStagesSchema
+        }
+      ),
+      operations: [ToolOperation.READ]
+    },
+    {
+      tool: tool(
+        async (args: z.infer<typeof opportunitySearchSchema>) => service.getOpportunityCount(args),
+        {
+          name: 'salesforce_get_opportunity_count',
+          description: 'Get the count of opportunities matching the search criteria',
+          schema: opportunitySearchSchema
+        }
+      ),
+      operations: [ToolOperation.READ]
+    }
   ];
 };

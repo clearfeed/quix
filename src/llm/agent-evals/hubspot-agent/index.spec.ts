@@ -49,8 +49,8 @@ describe('QuixAgent HubSpot – real LLM + mocked tools', () => {
 
         const toolsConfig: AvailableToolsWithConfig = {
           hubspot: {
-            toolConfig: {
-              tools: mockedHubspotTools,
+            toolKit: {
+              toolConfigs: mockedHubspotTools,
               prompts: hubspotToolsDef.prompts
             }
           }

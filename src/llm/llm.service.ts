@@ -170,8 +170,9 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
     const { totalTokens, toolCallCount, toolNames } =
       agentResult.agentExecutionOutput.messages.reduce(
         (acc, msg) => {
-          // Add token usage
-          const tokens = msg.response_metadata?.tokenUsage?.totalTokens || 0;
+          // Add token usage from AIMessages
+          const tokens =
+            msg instanceof AIMessage && msg.usage_metadata ? msg.usage_metadata.total_tokens : 0;
 
           // Add tool calls and names if it's an AIMessage with tool calls
           if (msg instanceof AIMessage && msg.tool_calls) {

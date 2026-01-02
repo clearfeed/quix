@@ -57,12 +57,12 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
     it(
       testCase.description,
       async () => {
-        const mockedJiraTools = createJiraMockedTools(testCase, jiraToolsDef.tools);
+        const mockedJiraTools = createJiraMockedTools(testCase, jiraToolsDef.toolConfigs);
 
         const toolsConfig: AvailableToolsWithConfig = {
           jira: {
-            toolConfig: {
-              tools: mockedJiraTools,
+            toolKit: {
+              toolConfigs: mockedJiraTools,
               prompts: jiraToolsDef.prompts
             }
           }

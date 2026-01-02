@@ -1,3 +1,5 @@
+import { tool } from '@langchain/core/tools';
+import { ToolConfig, ToolOperation, Toolkit } from '@clearfeed-ai/quix-common-agent';
 import { SlackService } from './index';
 import {
   ListChannelsParams,
@@ -24,7 +26,6 @@ import {
   leaveChannelParamsSchema
 } from './schema';
 import { SlackConfig } from './types';
-import { ToolConfig, ToolOperation, tool } from '@clearfeed-ai/quix-common-agent';
 
 const SLACK_TOOL_SELECTION_PROMPT = `
 Slack is a team communication platform that manages:
@@ -49,95 +50,106 @@ When formatting Slack responses:
 - Format code or text clearly
 `;
 
-export function createSlackToolsExport(config: SlackConfig): ToolConfig {
+export function createSlackToolsExport(config: SlackConfig): Toolkit {
   const service = new SlackService(config);
 
-  const tools = [
-    tool({
-      name: 'slack_list_channels',
-      description: 'List public channels in the Slack workspace with pagination',
-      schema: listChannelsParamsSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: ListChannelsParams) => service.listChannels(args)
-    }),
+  const toolConfigs: ToolConfig[] = [
+    {
+      tool: tool(async (args: ListChannelsParams) => service.listChannels(args), {
+        name: 'slack_list_channels',
+        description: 'List public channels in the Slack workspace with pagination',
+        schema: listChannelsParamsSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
 
-    tool({
-      name: 'slack_post_message',
-      description: 'Post a new message to a Slack channel',
-      schema: postMessageParamsSchema,
-      operations: [ToolOperation.CREATE],
-      func: async (args: PostMessageParams) => service.postMessage(args)
-    }),
+    {
+      tool: tool(async (args: PostMessageParams) => service.postMessage(args), {
+        name: 'slack_post_message',
+        description: 'Post a new message to a Slack channel',
+        schema: postMessageParamsSchema
+      }),
+      operations: [ToolOperation.CREATE]
+    },
 
-    tool({
-      name: 'slack_reply_to_thread',
-      description: 'Reply to a specific message thread in Slack',
-      schema: replyToThreadParamsSchema,
-      operations: [ToolOperation.CREATE],
-      func: async (args: ReplyToThreadParams) => service.replyToThread(args)
-    }),
+    {
+      tool: tool(async (args: ReplyToThreadParams) => service.replyToThread(args), {
+        name: 'slack_reply_to_thread',
+        description: 'Reply to a specific message thread in Slack',
+        schema: replyToThreadParamsSchema
+      }),
+      operations: [ToolOperation.CREATE]
+    },
 
-    tool({
-      name: 'slack_add_reaction',
-      description: 'Add a reaction emoji to a message',
-      schema: addReactionParamsSchema,
-      operations: [ToolOperation.CREATE],
-      func: async (args: AddReactionParams) => service.addReaction(args)
-    }),
+    {
+      tool: tool(async (args: AddReactionParams) => service.addReaction(args), {
+        name: 'slack_add_reaction',
+        description: 'Add a reaction emoji to a message',
+        schema: addReactionParamsSchema
+      }),
+      operations: [ToolOperation.CREATE]
+    },
 
-    tool({
-      name: 'slack_get_channel_history',
-      description:
-        'Get recent messages from a channel. Call slack_join_channel to join the channel first if you are not already in it.',
-      schema: getChannelHistoryParamsSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: GetChannelHistoryParams) => service.getChannelHistory(args)
-    }),
+    {
+      tool: tool(async (args: GetChannelHistoryParams) => service.getChannelHistory(args), {
+        name: 'slack_get_channel_history',
+        description:
+          'Get recent messages from a channel. Call slack_join_channel to join the channel first if you are not already in it.',
+        schema: getChannelHistoryParamsSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
 
-    tool({
-      name: 'slack_get_thread_replies',
-      description:
-        'Get all replies in a message thread. Call slack_join_channel to join the channel first if you are not already in it.',
-      schema: getThreadRepliesParamsSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: GetThreadRepliesParams) => service.getThreadReplies(args)
-    }),
+    {
+      tool: tool(async (args: GetThreadRepliesParams) => service.getThreadReplies(args), {
+        name: 'slack_get_thread_replies',
+        description:
+          'Get all replies in a message thread. Call slack_join_channel to join the channel first if you are not already in it.',
+        schema: getThreadRepliesParamsSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
 
-    tool({
-      name: 'slack_get_users',
-      description: 'Get a list of all users in the workspace with their basic profile information',
-      schema: getUsersParamsSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: GetUsersParams) => service.getUsers(args)
-    }),
+    {
+      tool: tool(async (args: GetUsersParams) => service.getUsers(args), {
+        name: 'slack_get_users',
+        description:
+          'Get a list of all users in the workspace with their basic profile information',
+        schema: getUsersParamsSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
 
-    tool({
-      name: 'slack_get_user_profile',
-      description: 'Get detailed profile information for a specific user',
-      schema: getUserProfileParamsSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: GetUserProfileParams) => service.getUserProfile(args)
-    }),
+    {
+      tool: tool(async (args: GetUserProfileParams) => service.getUserProfile(args), {
+        name: 'slack_get_user_profile',
+        description: 'Get detailed profile information for a specific user',
+        schema: getUserProfileParamsSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
 
-    tool({
-      name: 'slack_join_channel',
-      description: 'Join a Slack channel, requires confirmation from the user',
-      schema: joinChannelParamsSchema,
-      operations: [ToolOperation.UPDATE],
-      func: async (args: JoinChannelParams) => service.joinChannel(args)
-    }),
+    {
+      tool: tool(async (args: JoinChannelParams) => service.joinChannel(args), {
+        name: 'slack_join_channel',
+        description: 'Join a Slack channel, requires confirmation from the user',
+        schema: joinChannelParamsSchema
+      }),
+      operations: [ToolOperation.UPDATE]
+    },
 
-    tool({
-      name: 'slack_leave_channel',
-      description: 'Leave a Slack channel',
-      schema: leaveChannelParamsSchema,
-      operations: [ToolOperation.UPDATE],
-      func: async (args: LeaveChannelParams) => service.leaveChannel(args)
-    })
+    {
+      tool: tool(async (args: LeaveChannelParams) => service.leaveChannel(args), {
+        name: 'slack_leave_channel',
+        description: 'Leave a Slack channel',
+        schema: leaveChannelParamsSchema
+      }),
+      operations: [ToolOperation.UPDATE]
+    }
   ];
 
   return {
-    tools,
+    toolConfigs,
     prompts: {
       toolSelection: SLACK_TOOL_SELECTION_PROMPT,
       responseGeneration: SLACK_RESPONSE_GENERATION_PROMPT

@@ -59,8 +59,8 @@ describe('QuixAgent Slack – real LLM + mocked tools', () => {
 
         const toolsConfig: AvailableToolsWithConfig = {
           slack: {
-            toolConfig: {
-              tools: mockedSlackTools,
+            toolKit: {
+              toolConfigs: mockedSlackTools,
               prompts: slackToolsDef.prompts
             }
           }
