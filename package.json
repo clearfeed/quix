@@ -46,7 +46,7 @@
     "@langchain/google-genai": "0.2.14",
     "@langchain/langgraph": "0.3.8",
     "@langchain/openai": "0.5.18",
-    "@modelcontextprotocol/sdk": "^1.24.0",
+    "@modelcontextprotocol/sdk": "^1.25.2",
     "@n8n/json-schema-to-zod": "^1.1.0",
     "@nestjs/axios": "^4.0.0",
     "@nestjs/cache-manager": "^2.3.0",
