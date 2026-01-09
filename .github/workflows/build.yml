@@ -25,9 +25,13 @@ jobs:
 
       - name: TypeScript trace
         run: ./node_modules/.bin/tsc -p tsconfig.build.json --extendedDiagnostics --generateTrace trace
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+        continue-on-error: true
 
       - name: Upload TypeScript trace
         uses: actions/upload-artifact@v4
+        if: ${{ always() }}
         with:
           name: ts-trace
           path: trace/
