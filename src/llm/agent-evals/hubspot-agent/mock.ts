@@ -23,10 +23,9 @@ import {
   AssociateTaskWithEntityResponse,
   AssociateTicketWithEntityResponse
 } from '@clearfeed-ai/quix-hubspot-agent';
-import { BaseResponse } from '@clearfeed-ai/quix-common-agent';
+import { BaseResponse, ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { TestCase } from '../common/types';
 import { createMockedTools } from '../common/utils';
-import { DynamicStructuredTool } from '@langchain/core/tools';
 
 export interface HubspotDealResponse {
   id: string;
@@ -492,7 +491,7 @@ const toolResponseMap: ToolResponseTypeMap = {
 
 export function createHubspotMockedTools(
   testCase: TestCase<ToolResponseTypeMap>,
-  originalTools: DynamicStructuredTool[]
+  originalTools: ToolConfig[]
 ) {
   return createMockedTools(testCase, toolResponseMap, originalTools);
 }
