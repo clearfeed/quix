@@ -17,11 +17,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: |
-          yarn install --frozen-lockfile;
-          cd agent-packages;
-          yarn install --frozen-lockfile;
-          cd ..
+        run: yarn install --frozen-lockfile
 
       - name: Build
         run: yarn build
