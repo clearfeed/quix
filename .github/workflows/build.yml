@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: [runs-on, runner=4cpu-linux-x64, 'run-id=${{ github.run_id }}']
+    runs-on: [runs-on, runner=2cpu-linux-x64, 'run-id=${{ github.run_id }}']
 
     steps:
       - uses: actions/checkout@v4
@@ -23,13 +23,7 @@ jobs:
           yarn install --frozen-lockfile;
           cd ..
 
-      - name: Type check
-        run: yarn type-check
-        continue-on-error: true
-        env:
-          NODE_OPTIONS: --max-old-space-size=12288
-
       - name: Build
         run: yarn build
         env:
-          NODE_OPTIONS: --max-old-space-size=12288
+          NODE_OPTIONS: --max-old-space-size=2048
