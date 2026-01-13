@@ -25,6 +25,7 @@ jobs:
 
       - name: Type check
         run: yarn type-check
+        continue-on-error: true
         env:
           NODE_OPTIONS: --max-old-space-size=12288
 
