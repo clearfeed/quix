@@ -12,7 +12,6 @@
     "build:packages": "cd agent-packages && bash build.sh",
     "link:packages": "bash link.sh",
     "build": "nest build",
-    "type-check": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
