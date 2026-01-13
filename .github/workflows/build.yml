@@ -23,6 +23,11 @@ jobs:
           yarn install --frozen-lockfile;
           cd ..
 
+      - name: Type check
+        run: yarn type-check
+        env:
+          NODE_OPTIONS: --max-old-space-size=12288
+
       - name: Build
         run: yarn build
         env:
