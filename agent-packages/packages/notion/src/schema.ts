@@ -649,7 +649,7 @@ one of database_id or page_id must be provided.'
     .record(z.string(), z.any())
     .describe('Properties of the new database item. These should match the database schema.')
     .nullish()
-    .optional()
+    .transform((val) => val ?? undefined)
 });
 
 export const createCommentSchema = z.object({
@@ -742,7 +742,6 @@ export const createDatabaseSchema = z.object({
     .array(richTextObjectSchema)
     .describe('Title of database as it appears in Notion. An array of rich text objects.')
     .nullish()
-    .optional()
     .transform((val) => val ?? undefined),
   properties: z
     .record(z.string(), z.any())
