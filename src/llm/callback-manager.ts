@@ -1,7 +1,7 @@
 import { BaseCallbackHandler } from '@langchain/core/callbacks/base';
-import { ChainValues } from '@langchain/core/dist/utils/types';
 import { Serialized } from '@langchain/core/load/serializable';
 import { LLMResult } from '@langchain/core/outputs';
+import { ChainValues } from '@langchain/core/utils/types';
 import { Logger } from '@nestjs/common';
 import { isUndefined } from 'lodash';
 export class QuixCallBackManager extends BaseCallbackHandler {
@@ -13,10 +13,19 @@ export class QuixCallBackManager extends BaseCallbackHandler {
     string,
     {
       name: string;
-      args: Record<string, any>;
+      args: Record<string, any> | string;
       result: any;
     }
   > = {};
+
+  private parseToolInput(input: string) {
+    try {
+      return JSON.parse(input);
+    } catch (error) {
+      this.logger.debug('Tool input is not valid JSON.', { error });
+      return input;
+    }
+  }
 
   handleLLMStart(
     llm: Serialized,
@@ -101,7 +110,7 @@ export class QuixCallBackManager extends BaseCallbackHandler {
       // Create a new tool call entry
       this.toolCalls[runId] = {
         name: runName,
-        args: typeof input === 'string' ? JSON.parse(input) : input,
+        args: typeof input === 'string' ? this.parseToolInput(input) : input,
         result: null
       };
     }

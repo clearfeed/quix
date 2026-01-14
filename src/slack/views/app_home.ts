@@ -30,7 +30,6 @@ import { createJiraToolsExport } from '@clearfeed-ai/quix-jira-agent';
 import { createGitHubToolsExport } from '@clearfeed-ai/quix-github-agent';
 import { createPostgresToolsExport } from '@clearfeed-ai/quix-postgres-agent';
 import { createSalesforceToolsExport } from '@clearfeed-ai/quix-salesforce-agent';
-import { QuixTool } from '@clearfeed-ai/quix-common-agent';
 import { partition, isEmpty } from 'lodash';
 import { createNotionToolsExport } from '@clearfeed-ai/quix-notion-agent';
 import { createZendeskToolsExport } from '@clearfeed-ai/quix-zendesk-agent';
@@ -61,94 +60,111 @@ export const getToolData = async (
 
 const getAvailableFns = async (selectedTool: SUPPORTED_INTEGRATIONS) => {
   if (selectedTool === SUPPORTED_INTEGRATIONS.JIRA) {
-    const tools = createJiraToolsExport({
+    const toolConfigs = createJiraToolsExport({
       host: 'test-url',
       auth: { bearerToken: 'test-token' }
-    }).tools;
+    }).toolConfigs;
 
-    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
+    return toolConfigs.map(
+      (toolConfig) => '• `' + toolConfig.tool.name + '`: ' + toolConfig.tool.description
+    );
   }
 
   if (selectedTool === SUPPORTED_INTEGRATIONS.GITHUB) {
-    const tools = (
+    const toolConfigs = (
       await createGitHubToolsExport({
         token: 'test-access-token',
         owner: 'test-github-owner',
         repo: 'test-github-repo'
       })
-    ).tools;
+    ).toolConfigs;
 
-    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
+    return toolConfigs.map(
+      (toolConfig) => '• `' + toolConfig.tool.name + '`: ' + toolConfig.tool.description
+    );
   }
 
   if (selectedTool === SUPPORTED_INTEGRATIONS.HUBSPOT) {
-    const tools = createHubspotToolsExport({
+    const toolConfigs = createHubspotToolsExport({
       accessToken: 'test-access-token',
       hubId: 1234567890
-    }).tools;
+    }).toolConfigs;
 
-    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
+    return toolConfigs.map(
+      (toolConfig) => '• `' + toolConfig.tool.name + '`: ' + toolConfig.tool.description
+    );
   }
 
   if (selectedTool === SUPPORTED_INTEGRATIONS.POSTGRES) {
-    const tools = createPostgresToolsExport({
+    const toolConfigs = createPostgresToolsExport({
       host: 'test-host',
       port: 8080,
       user: 'test-user',
       password: 'test-password',
       database: 'test-db',
       ssl: false
-    }).tools;
+    }).toolConfigs;
 
-    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
+    return toolConfigs.map(
+      (toolConfig) => '• `' + toolConfig.tool.name + '`: ' + toolConfig.tool.description
+    );
   }
 
   if (selectedTool === SUPPORTED_INTEGRATIONS.SALESFORCE) {
-    const tools = createSalesforceToolsExport({
+    const toolConfigs = createSalesforceToolsExport({
       instanceUrl: 'test-instance-url',
       accessToken: 'test-access-token'
-    }).tools;
+    }).toolConfigs;
 
-    return tools.map(
-      (tool: QuixTool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description
+    return toolConfigs.map(
+      (toolConfig) => '• `' + toolConfig.tool.name + '`: ' + toolConfig.tool.description
     );
   }
 
   if (selectedTool === SUPPORTED_INTEGRATIONS.OKTA) {
-    const tools = createOktaToolsExport({
+    const toolConfigs = createOktaToolsExport({
       orgUrl: 'test-org-url',
       token: 'test-access-token'
-    }).tools;
+    }).toolConfigs;
 
-    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
+    return toolConfigs.map(
+      (toolConfig) => '• `' + toolConfig.tool.name + '`: ' + toolConfig.tool.description
+    );
   }
 
   if (selectedTool === SUPPORTED_INTEGRATIONS.JUMPCLOUD) {
-    const tools = createJumpCloudToolsExport({
-      apiKey: 'test-api-key'
-    }).tools;
+    const toolConfigs = createJumpCloudToolsExport({
+      apiKey: 'test-api-key',
+      baseUrl: 'https://console.jumpcloud.com'
+    }).toolConfigs;
 
-    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
+    return toolConfigs.map(
+      (toolConfig) => '• `' + toolConfig.tool.name + '`: ' + toolConfig.tool.description
+    );
   }
 
   if (selectedTool === SUPPORTED_INTEGRATIONS.NOTION) {
-    const tools = createNotionToolsExport({
+    const toolConfigs = createNotionToolsExport({
       token: ''
-    }).tools;
+    }).toolConfigs;
 
-    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
+    return toolConfigs.map(
+      (toolConfig) => '• `' + toolConfig.tool.name + '`: ' + toolConfig.tool.description
+    );
   }
 
   if (selectedTool === SUPPORTED_INTEGRATIONS.ZENDESK) {
-    const tools = createZendeskToolsExport({
+    const toolConfigs = createZendeskToolsExport({
       subdomain: '',
       auth: {
         email: '',
         token: ''
       }
-    }).tools;
+    }).toolConfigs;
 
-    return tools.map((tool) => '• `' + tool.lc_kwargs.name + '`: ' + tool.lc_kwargs.description);
+    return toolConfigs.map(
+      (toolConfig) => '• `' + toolConfig.tool.name + '`: ' + toolConfig.tool.description
+    );
   }
 
   return [];

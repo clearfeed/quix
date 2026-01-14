@@ -53,10 +53,14 @@ export class LlmService {
       enhancedPreviousMessages.push({
         role: 'system',
         content: `Previous tools you have used in this conversation: ${Object.values(lastToolCalls)
-          .map(
-            (call) =>
-              `Tool "${call.name}" with args ${JSON.stringify(call.args)} returned: ${call.result}`
-          )
+          .map((call) => {
+            const resultContent =
+              typeof call.result === 'string'
+                ? call.result
+                : (call.result?.kwargs?.content ??
+                  (call.result ? JSON.stringify(call.result) : ''));
+            return `Tool "${call.name}" with args ${JSON.stringify(call.args)} returned: ${resultContent}`;
+          })
           .join('; ')}`
       });
     }
@@ -150,9 +154,26 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
 
     // Update conversation state with tool calls
     if (agentResult.toolCallTracker.toolCalls) {
-      const newToolCalls = {
-        ...agentResult.toolCallTracker.toolCalls
-      };
+      const newToolCalls = Object.fromEntries(
+        Object.entries(agentResult.toolCallTracker.toolCalls).map(([runId, call]) => {
+          const args = typeof call.args === 'string' ? { input: call.args } : call.args;
+          const content =
+            typeof call.result === 'string'
+              ? call.result
+              : call.result
+                ? JSON.stringify(call.result)
+                : '';
+
+          return [
+            runId,
+            {
+              name: call.name,
+              args,
+              result: { kwargs: { content } }
+            }
+          ];
+        })
+      );
 
       conversationState.last_tool_calls = {
         ...conversationState.last_tool_calls,
@@ -170,8 +191,9 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
     const { totalTokens, toolCallCount, toolNames } =
       agentResult.agentExecutionOutput.messages.reduce(
         (acc, msg) => {
-          // Add token usage
-          const tokens = msg.response_metadata?.tokenUsage?.totalTokens || 0;
+          // Add token usage from AIMessages
+          const tokens =
+            msg instanceof AIMessage && msg.usage_metadata ? msg.usage_metadata.total_tokens : 0;
 
           // Add tool calls and names if it's an AIMessage with tool calls
           if (msg instanceof AIMessage && msg.tool_calls) {

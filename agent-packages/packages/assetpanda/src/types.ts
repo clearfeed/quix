@@ -250,7 +250,7 @@ export const SCHEMAS = {
         is_required: z.boolean()
       })
     ),
-    user_access_rules: z.record(z.unknown()),
+    user_access_rules: z.record(z.string(), z.unknown()),
     user_details: z.object({
       id: z.number(),
       email: z.string(),

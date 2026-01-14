@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-postgres-agent",
-  "version": "1.0.3",
+  "version": "2.1.0",
   "description": "Quix Postgres Agent",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,10 +9,10 @@
     "prepublishOnly": "yarn build"
   },
   "peerDependencies": {
-    "@langchain/core": "0.3.62"
+    "@langchain/core": "1.1.8"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "1.2.0",
+    "@clearfeed-ai/quix-common-agent": "2.1.0",
     "pg": "^8.14.0"
   },
   "files": [

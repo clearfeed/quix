@@ -1,3 +1,5 @@
+import { tool } from '@langchain/core/tools';
+import { ToolConfig, ToolOperation, Toolkit } from '@clearfeed-ai/quix-common-agent';
 import { JiraService } from './index';
 import {
   addJiraCommentSchema,
@@ -22,7 +24,6 @@ import {
   UpdateIssueParams,
   SearchUsersParams
 } from './types';
-import { ToolConfig, ToolOperation, tool } from '@clearfeed-ai/quix-common-agent';
 
 const JIRA_TOOL_SELECTION_PROMPT = `
 For Jira-related queries, ask for extra information only if it is required. Consider using Jira tools when the user wants to:
@@ -43,82 +44,105 @@ When formatting Jira responses:
 - When linking JIRA issues, use the host url: ${config.host}
 `;
 
-export function createJiraTools(config: JiraConfig): ToolConfig['tools'] {
+export function createJiraTools(config: JiraConfig): ToolConfig[] {
   const service = new JiraService(config);
 
-  const tools = [
-    tool({
-      name: 'find_jira_ticket',
-      description: `Search for Jira issues using a valid JQL (Jira Query Language) query. 
+  const toolConfigs: ToolConfig[] = [
+    {
+      tool: tool(async (args: FindJiraParams) => service.searchIssues(args), {
+        name: 'find_jira_ticket',
+        description: `Search for Jira issues using a valid JQL (Jira Query Language) query.
 This tool helps retrieve relevant issues by allowing complex filtering based on project, issue type, assignee, status, priority, labels, sprint, and more.`,
-      schema: findJiraTicketSchemaWithConfig(config),
-      operations: [ToolOperation.READ],
-      func: async (args: FindJiraParams) => service.searchIssues(args)
-    }),
-    tool({
-      name: 'get_jira_issue',
-      description:
-        'Retrieve detailed information about a specific Jira issue using its key or ID. Use this when the user provides an exact issue key or ID.',
-      schema: getJiraIssueSchema,
-      operations: [ToolOperation.READ],
-      func: async ({ issueId }: GetIssueParams) => service.getIssue(issueId)
-    }),
-    tool({
-      name: 'get_jira_issue_types',
-      description: 'Retrieve all available issue types for a Jira project.',
-      schema: getProjectKeySchemaWithConfig(config),
-      operations: [ToolOperation.READ],
-      func: async ({ projectKey }: ProjectKeyParams) => service.getProjectIssueTypes(projectKey)
-    }),
-    tool({
-      name: 'create_jira_issue',
-      description: 'Create a new Jira issue.',
-      schema: createJiraIssueSchemaWithConfig(config),
-      operations: [ToolOperation.CREATE],
-      func: async (args: CreateJiraParams) => service.createIssue(args)
-    }),
-    tool({
-      name: 'assign_jira_issue',
-      description: 'Assign a Jira issue to a user',
-      schema: assignJiraIssueSchema,
-      operations: [ToolOperation.UPDATE],
-      func: async (args: AssignIssueParams) => service.assignIssue(args.issueId, args.accountId)
-    }),
-    tool({
-      name: 'add_jira_comment',
-      description: 'Add a comment to a Jira issue',
-      schema: addJiraCommentSchema,
-      operations: [ToolOperation.CREATE],
-      func: async (args: AddCommentParams) => service.addComment(args)
-    }),
-    tool({
-      name: 'get_jira_comments',
-      description: 'Get comments for a specific Jira issue',
-      schema: getJiraCommentsSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: GetCommentsParams) => service.getComments(args.issueId)
-    }),
-    tool({
-      name: 'update_jira_issue',
-      description: 'Update an existing Jira issue.',
-      schema: updateJiraTicketSchema,
-      operations: [ToolOperation.UPDATE],
-      func: async (args: UpdateIssueParams) => service.updateIssue(args)
-    }),
-    tool({
-      name: 'search_jira_users',
-      description: 'Search for Jira users by name or email',
-      schema: searchJiraUsersSchema,
-      operations: [ToolOperation.READ],
-      func: async (args: SearchUsersParams) => service.searchUsers(args.query)
-    })
+        schema: findJiraTicketSchemaWithConfig(config)
+      }),
+      operations: [ToolOperation.READ]
+    },
+
+    {
+      tool: tool(async ({ issueId }: GetIssueParams) => service.getIssue(issueId), {
+        name: 'get_jira_issue',
+        description:
+          'Retrieve detailed information about a specific Jira issue using its key or ID. Use this when the user provides an exact issue key or ID.',
+        schema: getJiraIssueSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
+
+    {
+      tool: tool(
+        async ({ projectKey }: ProjectKeyParams) => service.getProjectIssueTypes(projectKey),
+        {
+          name: 'get_jira_issue_types',
+          description: 'Retrieve all available issue types for a Jira project.',
+          schema: getProjectKeySchemaWithConfig(config)
+        }
+      ),
+      operations: [ToolOperation.READ]
+    },
+
+    {
+      tool: tool(async (args: CreateJiraParams) => service.createIssue(args), {
+        name: 'create_jira_issue',
+        description: 'Create a new Jira issue.',
+        schema: createJiraIssueSchemaWithConfig(config)
+      }),
+      operations: [ToolOperation.CREATE]
+    },
+
+    {
+      tool: tool(
+        async (args: AssignIssueParams) => service.assignIssue(args.issueId, args.accountId),
+        {
+          name: 'assign_jira_issue',
+          description: 'Assign a Jira issue to a user',
+          schema: assignJiraIssueSchema
+        }
+      ),
+      operations: [ToolOperation.UPDATE]
+    },
+
+    {
+      tool: tool(async (args: AddCommentParams) => service.addComment(args), {
+        name: 'add_jira_comment',
+        description: 'Add a comment to a Jira issue',
+        schema: addJiraCommentSchema
+      }),
+      operations: [ToolOperation.CREATE]
+    },
+
+    {
+      tool: tool(async (args: GetCommentsParams) => service.getComments(args.issueId), {
+        name: 'get_jira_comments',
+        description: 'Get comments for a specific Jira issue',
+        schema: getJiraCommentsSchema
+      }),
+      operations: [ToolOperation.READ]
+    },
+
+    {
+      tool: tool(async (args: UpdateIssueParams) => service.updateIssue(args), {
+        name: 'update_jira_issue',
+        description: 'Update an existing Jira issue.',
+        schema: updateJiraTicketSchema
+      }),
+      operations: [ToolOperation.UPDATE]
+    },
+
+    {
+      tool: tool(async (args: SearchUsersParams) => service.searchUsers(args.query), {
+        name: 'search_jira_users',
+        description: 'Search for Jira users by name or email',
+        schema: searchJiraUsersSchema
+      }),
+      operations: [ToolOperation.READ]
+    }
   ];
-  return tools;
+  return toolConfigs;
 }
 
-export function createJiraToolsExport(config: JiraConfig): ToolConfig {
+export function createJiraToolsExport(config: JiraConfig): Toolkit {
   return {
-    tools: createJiraTools(config),
+    toolConfigs: createJiraTools(config),
     prompts: {
       toolSelection: JIRA_TOOL_SELECTION_PROMPT,
       responseGeneration: getJiraResponsePrompt(config)

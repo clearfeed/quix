@@ -47,6 +47,13 @@ lerna-debug.log*
 .temp
 .tmp
 
+# Claude Code CLI temp files
+tmpclaude*
+nul
+
+# Claude settings
+.claude/settings.local.json
+
 # Runtime data
 pids
 *.pid

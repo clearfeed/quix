@@ -8,16 +8,24 @@ import {
 } from './types';
 
 // Task Status Schema
-export const taskStatusSchema = z.nativeEnum(TaskStatusEnum);
+export const taskStatusSchema = z.enum(
+  Object.values(TaskStatusEnum) as [TaskStatusEnum, ...TaskStatusEnum[]]
+);
 
 // Task Priority Schema
-export const taskPrioritySchema = z.nativeEnum(TaskPriorityEnum);
+export const taskPrioritySchema = z.enum(
+  Object.values(TaskPriorityEnum) as [TaskPriorityEnum, ...TaskPriorityEnum[]]
+);
 
 // Task Type Schema
-export const taskTypeSchema = z.nativeEnum(TaskTypeEnum);
+export const taskTypeSchema = z.enum(
+  Object.values(TaskTypeEnum) as [TaskTypeEnum, ...TaskTypeEnum[]]
+);
 
 // Ticket Priority Schema
-export const ticketPrioritySchema = z.nativeEnum(TicketPriorityEnum);
+export const ticketPrioritySchema = z.enum(
+  Object.values(TicketPriorityEnum) as [TicketPriorityEnum, ...TicketPriorityEnum[]]
+);
 
 // Base Task Schema
 export const baseTaskSchema = z.object({
@@ -44,7 +52,7 @@ export const baseTaskSchema = z.object({
 export const associateTaskWithEntitySchema = z.object({
   taskId: z.string().describe('ID of the existing task to associate with an entity.'),
   associatedObjectType: z
-    .nativeEnum(HubspotEntityType)
+    .enum(Object.values(HubspotEntityType) as [HubspotEntityType, ...HubspotEntityType[]])
     .describe('Type of HubSpot object to associate with the task.'),
   associatedObjectId: z
     .string()
@@ -123,7 +131,7 @@ export const baseTicketSchema = z.object({
 export const associateTicketWithEntitySchema = z.object({
   ticketId: z.string().describe('ID of the existing ticket to associate with an entity.'),
   associatedObjectType: z
-    .nativeEnum(HubspotEntityType)
+    .enum(Object.values(HubspotEntityType) as [HubspotEntityType, ...HubspotEntityType[]])
     .describe('Type of HubSpot object to associate with the ticket.'),
   associatedObjectId: z
     .string()
@@ -143,7 +151,7 @@ export const ticketUpdateSchema = z.object({
     .describe('Updated stage (also referred to as status) name for the ticket.'),
   ownerId: z.string().nullish().describe('Updated HubSpot user ID to assign the ticket to.'),
   customProperties: z
-    .record(z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]))
+    .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]))
     .nullish()
     .describe(
       'Custom field properties to update. ' +
@@ -222,7 +230,7 @@ export const updateContactSchema = z.object({
   phone: z.string().nullish().describe('The phone number of the contact'),
   company: z.string().nullish().describe('The company associated with the contact'),
   customProperties: z
-    .record(z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]))
+    .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]))
     .nullish()
     .describe(
       'Custom field properties to update. ' +
@@ -236,7 +244,7 @@ export const updateDealSchema = baseDealSchema.extend({
   dealId: z.string().describe('The ID of the deal to update'),
   dealname: z.string().nullish().describe('The name of the deal'),
   customProperties: z
-    .record(z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]))
+    .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]))
     .nullish()
     .describe(
       'Custom field properties to update. ' +
@@ -253,7 +261,7 @@ export const searchCompaniesSchema = z.object({
 export const associateDealWithEntitySchema = z.object({
   dealId: z.string().describe('ID of the existing deal to associate with an entity.'),
   associatedObjectType: z
-    .nativeEnum(HubspotEntityType)
+    .enum(Object.values(HubspotEntityType) as [HubspotEntityType, ...HubspotEntityType[]])
     .describe('Type of HubSpot object to associate with the deal.'),
   associatedObjectId: z
     .string()

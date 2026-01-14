@@ -1,4 +1,3 @@
-import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { SlackWorkspace } from '@quix/database/models';
 import { Connections } from '@quix/lib/types/common';
 import { ConversationState } from '@quix/database/models';
@@ -6,6 +5,7 @@ import { BaseMessage } from '@langchain/core/messages';
 import { QuixCallBackManager } from './callback-manager';
 import { PlanStepSchema } from './schema';
 import { z } from 'zod';
+import { Toolkit } from '@clearfeed-ai/quix-common-agent';
 
 export type LLMContext = {
   role: 'user' | 'assistant' | 'system';
@@ -28,7 +28,7 @@ export interface MessageProcessingArgs {
 
 export type AvailableToolsWithConfig = Record<
   string,
-  { toolConfig: ToolConfig; config?: Connections | SlackWorkspace }
+  { toolKit: Toolkit; config?: Connections | SlackWorkspace }
 >;
 
 export interface ToolContextParams {

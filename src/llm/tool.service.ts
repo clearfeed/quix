@@ -49,12 +49,12 @@ export class ToolService {
     if (!slackWorkspace) return;
     const tools: AvailableToolsWithConfig = {
       common: {
-        toolConfig: createCommonToolsExport(),
+        toolKit: createCommonToolsExport(),
         config: slackWorkspace
       }
     };
     tools.slack = {
-      toolConfig: createSlackToolsExport({
+      toolKit: createSlackToolsExport({
         token: slackWorkspace.bot_access_token,
         teamId: slackWorkspace.team_id
       })
@@ -63,7 +63,7 @@ export class ToolService {
     if (jiraConfig) {
       const updatedJiraConfig = await this.integrationsService.updateJiraConfig(jiraConfig);
       tools.jira = {
-        toolConfig: createJiraToolsExport({
+        toolKit: createJiraToolsExport({
           host: updatedJiraConfig.url,
           apiHost: `https://api.atlassian.com/ex/jira/${updatedJiraConfig.id}`,
           auth: { bearerToken: updatedJiraConfig.access_token },
@@ -81,7 +81,7 @@ export class ToolService {
       const updatedHubspotConfig =
         await this.integrationsService.updateHubspotConfig(hubspotConfig);
       tools.hubspot = {
-        toolConfig: createHubspotToolsExport({
+        toolKit: createHubspotToolsExport({
           accessToken: updatedHubspotConfig.access_token,
           hubId: updatedHubspotConfig.hub_id
         }),
@@ -91,7 +91,7 @@ export class ToolService {
     const githubConfig = slackWorkspace.githubConfig;
     if (githubConfig) {
       tools.github = {
-        toolConfig: await createGitHubToolsExport({
+        toolKit: await createGitHubToolsExport({
           token: githubConfig.access_token,
           owner: githubConfig.default_config?.owner,
           repo: githubConfig.default_config?.repo
@@ -102,7 +102,7 @@ export class ToolService {
     const postgresConfig = slackWorkspace.postgresConfig;
     if (postgresConfig) {
       tools.postgres = {
-        toolConfig: createPostgresToolsExport({
+        toolKit: createPostgresToolsExport({
           host: postgresConfig.host,
           port: postgresConfig.port,
           user: postgresConfig.user,
@@ -118,7 +118,7 @@ export class ToolService {
       const updatedSalesforceConfig =
         await this.integrationsService.updateSalesforceConfig(salesforceConfig);
       tools.salesforce = {
-        toolConfig: createSalesforceToolsExport({
+        toolKit: createSalesforceToolsExport({
           instanceUrl: updatedSalesforceConfig.instance_url,
           accessToken: updatedSalesforceConfig.access_token
         }),
@@ -128,7 +128,7 @@ export class ToolService {
     const oktaConfig = slackWorkspace.oktaConfig;
     if (oktaConfig) {
       tools.okta = {
-        toolConfig: createOktaToolsExport({
+        toolKit: createOktaToolsExport({
           token: oktaConfig.api_token,
           orgUrl: oktaConfig.org_url
         }),
@@ -138,14 +138,14 @@ export class ToolService {
     const notionConfig = slackWorkspace.notionConfig;
     if (notionConfig) {
       tools.notion = {
-        toolConfig: createNotionToolsExport({ token: notionConfig.access_token }),
+        toolKit: createNotionToolsExport({ token: notionConfig.access_token }),
         config: notionConfig
       };
     }
     const zendeskConfig = slackWorkspace.zendeskConfig;
     if (zendeskConfig) {
       tools.zendesk = {
-        toolConfig: createZendeskToolsExport({
+        toolKit: createZendeskToolsExport({
           subdomain: zendeskConfig.subdomain,
           auth: {
             token: zendeskConfig.access_token,
@@ -158,8 +158,9 @@ export class ToolService {
     const jumpcloudConfig = slackWorkspace.jumpcloudConfig;
     if (jumpcloudConfig) {
       tools.jumpcloud = {
-        toolConfig: createJumpCloudToolsExport({
-          apiKey: jumpcloudConfig.api_key
+        toolKit: createJumpCloudToolsExport({
+          apiKey: jumpcloudConfig.api_key,
+          baseUrl: 'https://console.jumpcloud.com/api'
         }),
         config: jumpcloudConfig
       };
@@ -180,8 +181,11 @@ export class ToolService {
         if (linearMcpTools && linearMcpTools.tools.length > 0) {
           this.runningTools.push(linearMcpTools.cleanup);
           tools.linear = {
-            toolConfig: {
-              tools: linearMcpTools.tools,
+            toolKit: {
+              toolConfigs: linearMcpTools.tools.map((tool) => ({
+                tool,
+                operations: []
+              })),
               prompts: {
                 toolSelection: QuixPrompts.LINEAR.toolSelection,
                 responseGeneration: QuixPrompts.LINEAR.responseGeneration
@@ -198,8 +202,11 @@ export class ToolService {
         for (const mcpTool of mcpTools) {
           this.runningTools.push(mcpTool.cleanup);
           tools[`${mcpTool.mcpConnection.name}-${mcpTool.mcpConnection.id}`] = {
-            toolConfig: {
-              tools: mcpTool.tools,
+            toolKit: {
+              toolConfigs: mcpTool.tools.map((tool) => ({
+                tool,
+                operations: []
+              })),
               prompts: {
                 toolSelection: mcpTool.mcpConnection.request_config.tool_selection_prompt
               }

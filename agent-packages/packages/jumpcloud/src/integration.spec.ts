@@ -57,7 +57,7 @@ describe('JumpCloud Integration Tests', () => {
     const testEmail = `${testUsername}@example.com`;
 
     it('should list users successfully', async () => {
-      const result = await service.listUsers({ limit: 20 });
+      const result = await service.listUsers({ limit: 20, query: undefined });
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
@@ -77,7 +77,7 @@ describe('JumpCloud Integration Tests', () => {
     });
 
     it('should list users with limit parameter', async () => {
-      const result = await service.listUsers({ limit: 5 });
+      const result = await service.listUsers({ limit: 5, query: undefined });
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
@@ -155,7 +155,7 @@ describe('JumpCloud Integration Tests', () => {
 
   describe('Group Management', () => {
     it('should list groups successfully', async () => {
-      const result = await service.listGroups({ limit: 20 });
+      const result = await service.listGroups({ limit: 20, query: undefined });
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
@@ -302,7 +302,7 @@ describe('JumpCloud Integration Tests', () => {
     });
 
     it('should list all devices', async () => {
-      const result = await service.listDevices({ limit: 10 });
+      const result = await service.listDevices({ limit: 10, query: undefined });
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
@@ -339,7 +339,7 @@ describe('JumpCloud Integration Tests', () => {
         baseUrl: 'does-not-matter'
       });
 
-      const result = await invalidService.listUsers({ limit: 20 });
+      const result = await invalidService.listUsers({ limit: 20, query: undefined });
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
@@ -353,7 +353,7 @@ describe('JumpCloud Integration Tests', () => {
         baseUrl: 'does-not-matter'
       });
 
-      const result = await networkErrorService.listUsers({ limit: 20 });
+      const result = await networkErrorService.listUsers({ limit: 20, query: undefined });
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
@@ -364,7 +364,9 @@ describe('JumpCloud Integration Tests', () => {
     it('should handle malformed requests', async () => {
       const result = await service.createUser({
         username: '', // Invalid empty username
-        email: 'invalid-email' // Invalid email format
+        email: 'invalid-email', // Invalid email format,
+        firstname: undefined,
+        lastname: undefined
       });
 
       expect(result.success).toBe(false);

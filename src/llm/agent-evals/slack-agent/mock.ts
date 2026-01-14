@@ -5,7 +5,7 @@ import {
 } from '@slack/web-api';
 import { TestCase } from '../common/types';
 import { createMockedTools } from '../common/utils';
-import { DynamicStructuredTool } from '@langchain/core/tools';
+import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 
 export type ToolResponseTypeMap = {
   slack_list_channels: (overrides?: {
@@ -226,7 +226,7 @@ const toolResponseMap: ToolResponseTypeMap = {
 
 export function createSlackMockedTools(
   testCase: TestCase<ToolResponseTypeMap>,
-  originalTools: DynamicStructuredTool[]
+  originalTools: ToolConfig[]
 ) {
   return createMockedTools(testCase, toolResponseMap, originalTools);
 }

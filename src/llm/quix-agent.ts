@@ -1,7 +1,7 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { AvailableToolsWithConfig, LLMContext, PlanResult, QuixAgentResult } from './types';
-import { DynamicStructuredTool } from '@langchain/core/tools';
-import { z } from 'zod';
+import { tool } from '@langchain/core/tools';
+import { z, toJSONSchema } from 'zod';
 import {
   ChatPromptTemplate,
   SystemMessagePromptTemplate,
@@ -11,11 +11,10 @@ import {
 import { RunnableSequence, Runnable } from '@langchain/core/runnables';
 import { ToolConfig } from '@clearfeed-ai/quix-common-agent';
 import { QuixPrompts } from '../lib/constants';
-import { createReactAgent } from '@langchain/langgraph/prebuilt';
+import { createAgent } from 'langchain';
 import { SystemMessage } from '@langchain/core/messages';
 import { QuixCallBackManager } from './callback-manager';
 import { isEqual } from 'lodash';
-import { formatToOpenAITool } from '@langchain/openai';
 import { Logger } from '@nestjs/common';
 import { encryptForLogs } from '../lib/utils/encryption';
 import { PlanStepSchema } from './schema';
@@ -57,18 +56,18 @@ export class QuixAgent {
     }
 
     const availableFunctions: {
-      availableTools: AvailableToolsWithConfig[keyof AvailableToolsWithConfig]['toolConfig']['tools'];
+      availableTools: ToolConfig[];
       config?: AvailableToolsWithConfig[keyof AvailableToolsWithConfig]['config'];
     }[] = toolSelectionOutput.selectedTools
       .map((tool) => {
         return {
-          availableTools: tools[tool].toolConfig.tools,
+          availableTools: tools[tool].toolKit.toolConfigs,
           config: tools[tool].config
         };
       })
       .flat();
 
-    if (!availableFunctions) {
+    if (!availableFunctions || availableFunctions.length === 0) {
       return {
         stepCompleted: 'tool_selection',
         incompleteExecutionOutput:
@@ -105,11 +104,17 @@ export class QuixAgent {
     this.logger.log(`Plan generated for user's request`, {
       plan: encryptForLogs(formattedPlan)
     });
-    const availableTools = availableFunctions.flatMap((func) => func.availableTools);
-    const agent = createReactAgent({
-      llm,
+    const availableTools = availableFunctions.flatMap((func) =>
+      func.availableTools.map((tc) => tc.tool)
+    );
+    const agent = createAgent({
+      model: llm,
       tools: availableTools,
-      prompt: QuixPrompts.multiStepBasePrompt(formattedPlan, queryingUserName, customInstructions)
+      systemPrompt: QuixPrompts.multiStepBasePrompt(
+        formattedPlan,
+        queryingUserName,
+        customInstructions
+      )
     });
 
     // Create a callback to track tool calls
@@ -144,7 +149,7 @@ export class QuixAgent {
     const availableCategories = Object.keys(tools);
 
     const toolSelectionPrompts = availableCategories
-      .map((category) => tools[category].toolConfig.prompts?.toolSelection)
+      .map((category) => tools[category].toolKit.prompts?.toolSelection)
       .filter(Boolean)
       .join('\n');
     const customPrompts = availableCategories.map((category) => {
@@ -155,21 +160,23 @@ export class QuixAgent {
     });
     const systemPrompt = QuixPrompts.basePrompt(authorName) + '\n' + toolSelectionPrompts;
 
-    const toolSelectionFunction = new DynamicStructuredTool({
-      name: 'selectTool',
-      description: QuixPrompts.baseToolSelection,
-      schema: z.object({
-        toolCategories: z.array(z.enum(availableCategories as [string, ...string[]])),
-        reason: z
-          .string()
-          .describe(
-            "An explanation of why the selected tool categories were chosen. If no tools were selected, this must include a direct answer to the user's query using general knowledge."
-          )
-      }),
-      func: async ({ toolCategories, reason }) => {
+    const toolSelectionFunction = tool(
+      async ({ toolCategories, reason }) => {
         return { toolCategories, reason };
+      },
+      {
+        name: 'selectTool',
+        description: QuixPrompts.baseToolSelection,
+        schema: z.object({
+          toolCategories: z.array(z.enum(availableCategories as [string, ...string[]])),
+          reason: z
+            .string()
+            .describe(
+              "An explanation of why the selected tool categories were chosen. If no tools were selected, this must include a direct answer to the user's query using general knowledge."
+            )
+        })
       }
-    });
+    );
 
     let llmProviderWithTools: Runnable | undefined;
     if ('bindTools' in llm && typeof llm.bindTools === 'function') {
@@ -209,7 +216,7 @@ export class QuixAgent {
   }
 
   async generatePlan(
-    availableTools: ToolConfig['tools'],
+    availableTools: ToolConfig[],
     customInstructions: string[],
     previousMessages: LLMContext[],
     message: string,
@@ -217,9 +224,9 @@ export class QuixAgent {
     basePrompt: string
   ): Promise<PlanResult['steps']> {
     const allFunctions = availableTools
-      .map((tool) => {
-        const toolFunction = formatToOpenAITool(tool);
-        return `${toolFunction.function.name}: ${toolFunction.function.description} Args: ${JSON.stringify(toolFunction.function.parameters, null, 2)}\n`;
+      .map(({ tool }) => {
+        const jsonSchema = toJSONSchema(tool.schema as unknown as z.ZodTypeAny);
+        return `${tool.name}: ${tool.description} Args: ${JSON.stringify(jsonSchema, null, 2)}\n`;
       })
       .flat();
     const planPrompt = ChatPromptTemplate.fromMessages([

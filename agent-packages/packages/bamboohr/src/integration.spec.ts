@@ -66,7 +66,10 @@ describeOrSkip('BambooHR Integration Tests', () => {
 
       if (employees.success && employees.data?.employees && employees.data.employees.length > 0) {
         const employeeId = employees.data.employees[0].id;
-        const balances = await service.getEmployeeTimeOffBalance({ employeeId });
+        const balances = await service.getEmployeeTimeOffBalance({
+          employeeId,
+          endDate: undefined
+        });
 
         expect(balances.success).toBe(true);
         expect(balances.data).toBeInstanceOf(Array);
@@ -86,7 +89,13 @@ describeOrSkip('BambooHR Integration Tests', () => {
 
       if (employees.success && employees.data?.employees && employees.data.employees.length > 0) {
         const employeeId = employees.data.employees[0].id;
-        const requests = await service.getTimeOffRequests({ employeeId, limit: 20 });
+        const requests = await service.getTimeOffRequests({
+          employeeId,
+          limit: 20,
+          endDate: undefined,
+          startDate: undefined,
+          status: undefined
+        });
 
         expect(requests.success).toBe(true);
         expect(requests.data).toBeInstanceOf(Array);
@@ -113,7 +122,8 @@ describeOrSkip('BambooHR Integration Tests', () => {
           employeeId,
           startDate: '2024-01-01',
           endDate: '2024-12-31',
-          limit: 20
+          limit: 20,
+          status: undefined
         });
 
         expect(requests.success).toBe(true);
@@ -122,7 +132,13 @@ describeOrSkip('BambooHR Integration Tests', () => {
     });
 
     test('should handle non-existent employee ID', async () => {
-      const requests = await service.getTimeOffRequests({ employeeId: 999999, limit: 20 });
+      const requests = await service.getTimeOffRequests({
+        employeeId: 999999,
+        limit: 20,
+        endDate: undefined,
+        startDate: undefined,
+        status: undefined
+      });
 
       // Should succeed but return empty array or handle gracefully
       expect(requests.success).toBe(true);
@@ -150,13 +166,13 @@ describeOrSkip('BambooHR Integration Tests', () => {
       const toolsConfig = createBambooHRToolsExport(config);
 
       expect(toolsConfig).toBeDefined();
-      expect(toolsConfig.tools).toBeInstanceOf(Array);
-      expect(toolsConfig.tools.length).toBeGreaterThan(0);
+      expect(toolsConfig.toolConfigs).toBeInstanceOf(Array);
+      expect(toolsConfig.toolConfigs.length).toBeGreaterThan(0);
       expect(toolsConfig.prompts).toBeDefined();
       expect(toolsConfig.prompts?.toolSelection).toBeDefined();
       expect(toolsConfig.prompts?.responseGeneration).toBeDefined();
 
-      const toolNames = toolsConfig.tools.map((tool: any) => tool.name);
+      const toolNames = toolsConfig.toolConfigs.map((t) => t.tool.name);
       expect(toolNames).toContain('list_bamboohr_employees');
       expect(toolNames).toContain('get_bamboohr_employee');
       expect(toolNames).toContain('get_bamboohr_employee_time_off_balance');
