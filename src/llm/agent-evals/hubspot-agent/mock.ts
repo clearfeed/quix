@@ -362,6 +362,13 @@ const toolResponseMap: ToolResponseTypeMap = {
       const defaultTasks: HubspotTask[] = [
         {
           id: '8001',
+          title: 'Follow up with client',
+          body: 'Schedule a call to discuss proposal',
+          status: TaskStatusEnum.NOT_STARTED,
+          priority: TaskPriorityEnum.HIGH,
+          taskType: TaskTypeEnum.CALL,
+          dueDate: '2024-05-20',
+          ownerId: '1001',
           createdAt: '2024-05-01T09:00:00Z',
           lastModifiedDate: '2024-05-15T14:30:00Z',
           url: 'https://app.hubspot.com/tasks/8001'
