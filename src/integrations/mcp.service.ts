@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DynamicStructuredTool } from '@langchain/core/tools';
+import { tool, DynamicStructuredTool } from '@langchain/core/tools';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import {
   StdioClientTransport,
   StdioServerParameters
 } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
-import { CallToolResultSchema, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
 import { jsonSchemaToZod, JsonSchema } from '@n8n/json-schema-to-zod';
 import { z } from 'zod';
 import { SUPPORTED_INTEGRATIONS } from '../lib/constants';
@@ -89,7 +89,7 @@ export class McpService {
     envVars: { LINEAR_API_KEY: string },
     defaultConfig?: { teamId: string }
   ): Promise<{
-    tools: DynamicStructuredTool<any>[];
+    tools: DynamicStructuredTool[];
     cleanup: McpServerCleanupFn;
   }>;
   async getMcpServerTools(
@@ -97,7 +97,7 @@ export class McpService {
     envVars: Record<string, string>,
     defaultConfig?: Record<string, string>
   ): Promise<{
-    tools: DynamicStructuredTool<any>[];
+    tools: DynamicStructuredTool[];
     cleanup: McpServerCleanupFn;
   }> {
     const serverName = McpService.INTEGRATION_TO_MCP_SERVER[integration];
@@ -130,13 +130,13 @@ export class McpService {
   async getToolsFromMCPConnections(connections: McpConnection[]): Promise<
     {
       mcpConnection: McpConnection;
-      tools: DynamicStructuredTool<any>[];
+      tools: DynamicStructuredTool[];
       cleanup: McpServerCleanupFn;
     }[]
   > {
     const tools: {
       mcpConnection: McpConnection;
-      tools: DynamicStructuredTool<any>[];
+      tools: DynamicStructuredTool[];
       cleanup: McpServerCleanupFn;
     }[] = [];
     for (const connection of connections) {
@@ -264,59 +264,60 @@ export class McpService {
       await client.connect(transport);
       logger.log(`MCP server "${serverName}": connected`);
 
-      const toolsResponse = await client.request({ method: 'tools/list' }, ListToolsResultSchema);
+      const toolsResponse = await client.listTools();
 
-      const tools = toolsResponse.tools.map(
-        (tool) =>
-          new DynamicStructuredTool({
-            name: tool.name,
-            description: tool.description || '',
-            schema: this.convertJsonToZod(tool.inputSchema as JsonSchema, defaultConfig),
-            func: async function (input) {
-              logger.log(`MCP tool "${serverName}"/"${tool.name}" received input:`, {
-                input: encryptForLogs(JSON.stringify(input))
-              });
+      const tools = toolsResponse.tools.map((toolDef) =>
+        tool(
+          async (input) => {
+            logger.log(`MCP tool "${serverName}"/"${toolDef.name}" received input:`, {
+              input: encryptForLogs(JSON.stringify(input))
+            });
 
-              try {
-                // Execute tool call
-                const result = await client?.request(
-                  {
-                    method: 'tools/call',
-                    params: {
-                      name: tool.name,
-                      arguments: input
-                    }
-                  },
-                  CallToolResultSchema
-                );
+            try {
+              // Execute tool call
+              const result = await client?.callTool(
+                {
+                  name: toolDef.name,
+                  arguments: input
+                },
+                CallToolResultSchema
+              );
 
-                // Handles null/undefined cases gracefully
-                if (!result?.content) {
-                  logger.log(
-                    `MCP tool "${serverName}"/"${tool.name}" received null/undefined result`
-                  );
-                  return '';
-                }
-
-                const textContent = result.content
-                  .filter((content) => content.type === 'text')
-                  .map((content) => content.text)
-                  .join('\n\n');
-
-                // Log rough result size for monitoring
-                const size = new TextEncoder().encode(textContent).length;
+              // Handles null/undefined or non-content results gracefully
+              if (!result || !('content' in result) || !Array.isArray(result.content)) {
                 logger.log(
-                  `MCP tool "${serverName}"/"${tool.name}" received result (size: ${size})`
+                  `MCP tool "${serverName}"/"${toolDef.name}" received null/undefined result`
                 );
-
-                // If no text content, return a clear message
-                return textContent || 'No text content available in response';
-              } catch (error: unknown) {
-                logger.warn(`MCP tool "${serverName}"/"${tool.name}" caused error: ${error}`);
-                return `Error executing MCP tool: ${error}`;
+                if (result && 'toolResult' in result) {
+                  return JSON.stringify(result.toolResult);
+                }
+                return '';
               }
+
+              const textContent = result.content
+                .filter((content) => content.type === 'text')
+                .map((content) => content.text)
+                .join('\n\n');
+
+              // Log rough result size for monitoring
+              const size = new TextEncoder().encode(textContent).length;
+              logger.log(
+                `MCP tool "${serverName}"/"${toolDef.name}" received result (size: ${size})`
+              );
+
+              // If no text content, return a clear message
+              return textContent || 'No text content available in response';
+            } catch (error: unknown) {
+              logger.warn(`MCP tool "${serverName}"/"${toolDef.name}" caused error: ${error}`);
+              return `Error executing MCP tool: ${error}`;
             }
-          })
+          },
+          {
+            name: toolDef.name,
+            description: toolDef.description || '',
+            schema: this.convertJsonToZod(toolDef.inputSchema as JsonSchema, defaultConfig)
+          }
+        )
       );
 
       logger.log(`MCP server "${serverName}": ${tools.length} tool(s) available:`);

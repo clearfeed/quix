@@ -1,7 +1,7 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { AvailableToolsWithConfig, LLMContext, PlanResult, QuixAgentResult } from './types';
 import { tool } from '@langchain/core/tools';
-import { z } from 'zod';
+import { z, toJSONSchema } from 'zod';
 import {
   ChatPromptTemplate,
   SystemMessagePromptTemplate,
@@ -15,7 +15,6 @@ import { createAgent } from 'langchain';
 import { SystemMessage } from '@langchain/core/messages';
 import { QuixCallBackManager } from './callback-manager';
 import { isEqual } from 'lodash';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 import { Logger } from '@nestjs/common';
 import { encryptForLogs } from '../lib/utils/encryption';
 import { PlanStepSchema } from './schema';
@@ -226,7 +225,7 @@ export class QuixAgent {
   ): Promise<PlanResult['steps']> {
     const allFunctions = availableTools
       .map(({ tool }) => {
-        const jsonSchema = zodToJsonSchema(tool.schema as unknown as z.ZodTypeAny);
+        const jsonSchema = toJSONSchema(tool.schema as unknown as z.ZodTypeAny);
         return `${tool.name}: ${tool.description} Args: ${JSON.stringify(jsonSchema, null, 2)}\n`;
       })
       .flat();
