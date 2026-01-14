@@ -150,9 +150,26 @@ To continue, you can start a new conversation or ${Md.link(slackWorkspace.getApp
 
     // Update conversation state with tool calls
     if (agentResult.toolCallTracker.toolCalls) {
-      const newToolCalls = {
-        ...agentResult.toolCallTracker.toolCalls
-      };
+      const newToolCalls = Object.fromEntries(
+        Object.entries(agentResult.toolCallTracker.toolCalls).map(([runId, call]) => {
+          const args = typeof call.args === 'string' ? { input: call.args } : call.args;
+          const content =
+            typeof call.result === 'string'
+              ? call.result
+              : call.result
+                ? JSON.stringify(call.result)
+                : '';
+
+          return [
+            runId,
+            {
+              name: call.name,
+              args,
+              result: { kwargs: { content } }
+            }
+          ];
+        })
+      );
 
       conversationState.last_tool_calls = {
         ...conversationState.last_tool_calls,

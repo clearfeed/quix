@@ -51,6 +51,9 @@ lerna-debug.log*
 tmpclaude*
 nul
 
+# Claude settings
+.claude/settings.local.json
+
 # Runtime data
 pids
 *.pid
