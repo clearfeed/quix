@@ -53,10 +53,14 @@ export class LlmService {
       enhancedPreviousMessages.push({
         role: 'system',
         content: `Previous tools you have used in this conversation: ${Object.values(lastToolCalls)
-          .map(
-            (call) =>
-              `Tool "${call.name}" with args ${JSON.stringify(call.args)} returned: ${call.result}`
-          )
+          .map((call) => {
+            const resultContent =
+              typeof call.result === 'string'
+                ? call.result
+                : (call.result?.kwargs?.content ??
+                  (call.result ? JSON.stringify(call.result) : ''));
+            return `Tool "${call.name}" with args ${JSON.stringify(call.args)} returned: ${resultContent}`;
+          })
           .join('; ')}`
       });
     }
