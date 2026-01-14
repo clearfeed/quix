@@ -358,95 +358,95 @@
   resolved "https://registry.yarnpkg.com/@cfworker/json-schema/-/json-schema-4.1.1.tgz#4a2a3947ee9fa7b7c24be981422831b8674c3be6"
   integrity sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==
 
-"@clearfeed-ai/quix-common-agent@2.0.0", "@clearfeed-ai/quix-common-agent@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-2.0.0.tgz#1049577a975a0d95fed2835dd59c112b2e8263a5"
-  integrity sha512-XF/0u2ccFdoWDn22GZoElYqssf5Rv34qzlLIMbRM/onFE5aIEls617hfBznRX2WlGitNGV4afEs1oS9fsmEnDA==
+"@clearfeed-ai/quix-common-agent@2.1.0", "@clearfeed-ai/quix-common-agent@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-2.1.0.tgz#3cbb31bfd6a57da470f6a1fe5c81c824bd79febd"
+  integrity sha512-qROfbukfUeF6/AvMcml7u+SsUWgICMQh1lvPj7/pFW3uEltn5hvDE7oYcV9mbT2XmI3fIi6b808HD6NG9CQGXA==
   dependencies:
-    zod "^3.24.2"
+    zod "^4.3.5"
 
-"@clearfeed-ai/quix-github-agent@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-2.0.0.tgz#eccba45329bde29033646744c4f4a0591544c5d4"
-  integrity sha512-UH06egCYN9alvUwSesNCsK9unWmTHame/Fc4Cp//+CAsz9kKz3/uNEkFBq+TtuG2ztwdFJ5oA9t5hA0lDcI97g==
+"@clearfeed-ai/quix-github-agent@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-github-agent/-/quix-github-agent-2.1.0.tgz#26127f00850a59e364e172767c3a195eb48649d8"
+  integrity sha512-KMeJ6VLL8dPM9AVEZrjpVos5bXmKq02nLJHCT6qNWC+1PtcIubVE3h0865rJTWBTwhAGT8Hd1NbTsCcyLymvDQ==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "2.0.0"
+    "@clearfeed-ai/quix-common-agent" "2.1.0"
     "@octokit/rest" "^21.1.1"
 
-"@clearfeed-ai/quix-hubspot-agent@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-2.0.0.tgz#b2e6f9c5edb9d6906f07f5731203bf70932d428e"
-  integrity sha512-aHLxaCIguwPNedsDTP4feN+0wUI0Qbwjb4kGxyD7jve83cwl1krZG990PW7xIe3FDLQ0+siZHifRfR29hhv9UA==
+"@clearfeed-ai/quix-hubspot-agent@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-hubspot-agent/-/quix-hubspot-agent-2.1.0.tgz#9ef5e3c29fd7e1f645bfe95b6db826b82457e2a3"
+  integrity sha512-u6CruBCbtdHobdK3FpVdkgNRPjE5eHQgarsedD83QtAlmy1M3Rh00bca+CMwxQKEDWXKriXv/Z08r2XBHKH78g==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "2.0.0"
+    "@clearfeed-ai/quix-common-agent" "2.1.0"
     "@hubspot/api-client" "^12.0.1"
 
-"@clearfeed-ai/quix-jira-agent@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-2.0.0.tgz#8932e3e40d71e788c44214761c3859f78e6ec0ad"
-  integrity sha512-q2ZGBfS0l/Bl6CNb0PJKpzCClbZGgyGyKX3J+NVM0QMQ/bp9qbF2RcncW7tPOrLH6W2mUJTDQ3szyHKGjK3OiQ==
+"@clearfeed-ai/quix-jira-agent@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jira-agent/-/quix-jira-agent-2.1.0.tgz#f5145eeccd8b1bb7aebc45c3308772fb9427d0b1"
+  integrity sha512-pO3o+O2XG6J3tFIcC2UYBV4PlHQm+83tKOCW5URigas3FDxJkUMMadYOwJWR4ryClZqNyVcUv5IOAF5HxYnF+A==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "2.0.0"
+    "@clearfeed-ai/quix-common-agent" "2.1.0"
     atlassian-jwt "^2.0.3"
     axios "^1.12.2"
 
-"@clearfeed-ai/quix-jumpcloud-agent@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jumpcloud-agent/-/quix-jumpcloud-agent-2.0.0.tgz#fb566b3c5c9b2c7d6e7db511d2b85b3afa0c0851"
-  integrity sha512-ZhbVdN+ZgzyMa3U1oyW2/HfQ2cyMY3TqJw3b6a246M0PikRfCBN62qXYf0jiexDIoFgItheMsAxPgH+KNZRZNA==
+"@clearfeed-ai/quix-jumpcloud-agent@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-jumpcloud-agent/-/quix-jumpcloud-agent-2.1.0.tgz#33196409dc558d197a2ab15d657de6bbb2d2cdab"
+  integrity sha512-zuEaoFkI4JxI3EWyxrN3kvfk8m8KvOgFz6dB9uiMYKRKkdQhvZOpd9PseiY45zhj+YHj8OfhH0ITyqcan51sQA==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "2.0.0"
+    "@clearfeed-ai/quix-common-agent" "2.1.0"
     axios "^1.12.2"
 
-"@clearfeed-ai/quix-notion-agent@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-notion-agent/-/quix-notion-agent-2.0.0.tgz#90ec4b657b95775b35f4f10da5aab34c4b2438f0"
-  integrity sha512-DeGsRsr0cU68hrtKCrqzwUHfnDGYRpqBUZmum/2Jfsm83bwPrhbwy5WgxgvbnPAenWtyvhQ18e67eeFuvku+EQ==
+"@clearfeed-ai/quix-notion-agent@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-notion-agent/-/quix-notion-agent-2.1.0.tgz#b484be057b748f0efa9bad462fee35d1689c72fa"
+  integrity sha512-PM7dki3xsuz3v+NPBg5ZvsV3SW9MCHkI4yKJHj6/exUL+Jxqlf6gUT3iBSCJGbelF3Bi5GCrNJFi1EPiJQhiAQ==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "2.0.0"
+    "@clearfeed-ai/quix-common-agent" "2.1.0"
     "@notionhq/client" "^3.0.1"
     lodash "^4.17.21"
 
-"@clearfeed-ai/quix-okta-agent@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-okta-agent/-/quix-okta-agent-2.0.0.tgz#4cc7d5c5b2121f110764131fbcbd7aa324fe3463"
-  integrity sha512-VMofNuF04sennwJwZimMRclYSeVp/KWdm4LA5l8ATqhwt8DactfwtuojP9T6LTd0F0nohD7VqeLbv464ks7RSA==
+"@clearfeed-ai/quix-okta-agent@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-okta-agent/-/quix-okta-agent-2.1.0.tgz#3b87943fc200253cb089d15cdb61135da5fc14b5"
+  integrity sha512-kRjNHzpDRTyOyaKJF8eBFODLMcI+MPrnwSKH877gAdkNG5rs59mTwEoWYAPme601wjCziO1mvflZAC7FOvffXQ==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "2.0.0"
+    "@clearfeed-ai/quix-common-agent" "2.1.0"
     "@okta/okta-sdk-nodejs" "^7.0.1"
 
-"@clearfeed-ai/quix-postgres-agent@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-postgres-agent/-/quix-postgres-agent-2.0.0.tgz#1f3d74cd240a6eb210cee034b50ea7e21948ab21"
-  integrity sha512-ePth5mSG1J36BAXSBbjjQbLzKw1OF3SR8eAww3EacmpHhVcq8adiq3rvM9Ha+ClRLWN946JWMpDIlXGW8KmpDw==
+"@clearfeed-ai/quix-postgres-agent@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-postgres-agent/-/quix-postgres-agent-2.1.0.tgz#c8f6f9be602d89304b575b6612f18a129bc755fa"
+  integrity sha512-QgrVwBHyVrMLCnrQEk5OtjJIBzZQx4gxQ7e5KiluNj2pBv9/7UY8Uu34xOCSoOeAWde086pE4QOcnzzfnlEvHg==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "2.0.0"
+    "@clearfeed-ai/quix-common-agent" "2.1.0"
     pg "^8.14.0"
 
-"@clearfeed-ai/quix-salesforce-agent@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-salesforce-agent/-/quix-salesforce-agent-2.0.0.tgz#65549dad397fbbcfbaa33c1e639ce2d35793bfb7"
-  integrity sha512-mZBnq6J0/gkqVUhZi1iQtPhk6+DfOjAw6CbYPbVL/qjKarZPm85VBriyc+mspNceMmazjJXNKTHCja/KjmvTvQ==
+"@clearfeed-ai/quix-salesforce-agent@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-salesforce-agent/-/quix-salesforce-agent-2.1.0.tgz#34893dda5a14622f1855442fbeaee73f0c3b5a8e"
+  integrity sha512-k01RvBMEidsMC26RdmYMRL9hq5CWUWuxjTH39ifmnGyAMZNeapDg/D/DFU25NGwbp4y1hV9cOpX2SZu1yyMWWQ==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "2.0.0"
+    "@clearfeed-ai/quix-common-agent" "2.1.0"
     date-fns "^4.1.0"
     jsforce "^3.5.0"
 
-"@clearfeed-ai/quix-slack-agent@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-slack-agent/-/quix-slack-agent-2.0.0.tgz#e91c715eb21692f85e4a6cdbb3a247127c15edd5"
-  integrity sha512-vDrw4T0LC7PU3DVclf8UyD8muzdzAf6ICl0s/Zlog7V1eLGoAEtO/NXeuBW7fuPWi2Ds6ebvVbeKi0fX9ZPfEw==
+"@clearfeed-ai/quix-slack-agent@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-slack-agent/-/quix-slack-agent-2.1.0.tgz#2cc8f4d5bcb09861ac0b2084a193be745fdcf299"
+  integrity sha512-sJJ0/EerzSwIqJKDbTDLQ53GP34NQ/at2aQIu98T8lFYGPpGCX8H5eDXyPx6wXvNcGdgFBlja/cEE3OdpW398Q==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "2.0.0"
+    "@clearfeed-ai/quix-common-agent" "2.1.0"
     "@slack/web-api" "^6.9.0"
     slackify-markdown "^4.4.0"
 
-"@clearfeed-ai/quix-zendesk-agent@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-zendesk-agent/-/quix-zendesk-agent-2.0.0.tgz#d75be37ad4b09ad11e98128f648c3ae6f9eedd90"
-  integrity sha512-HXgjPCrML9Er7h6pO+aciD0Q6aJBA87r1TBbaX2BIZsBemUh0oHwKAjWkxIl9Yh24ul8zWhZkYbJd0K176+YCw==
+"@clearfeed-ai/quix-zendesk-agent@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-zendesk-agent/-/quix-zendesk-agent-2.1.0.tgz#1af27d884af7fd227f9ba1810a307920b4417bb5"
+  integrity sha512-X/wjD5gzhC3XXgy5LT91bi2+Xc9RjVAmufke/rV4d3jHcPlPZ4ZI1cK1b+5AP3gqU18tabM+xZeKS5B/zcBsfA==
   dependencies:
-    "@clearfeed-ai/quix-common-agent" "2.0.0"
+    "@clearfeed-ai/quix-common-agent" "2.1.0"
     node-zendesk "^6.0.1"
 
 "@colors/colors@1.5.0":
@@ -8171,11 +8171,6 @@ zod-to-json-schema@^3.25.0:
   version "3.25.1"
   resolved "https://registry.yarnpkg.com/zod-to-json-schema/-/zod-to-json-schema-3.25.1.tgz#7f24962101a439ddade2bf1aeab3c3bfec7d84ba"
   integrity sha512-pM/SU9d3YAggzi6MtR4h7ruuQlqKtad8e9S0fmxcMi+ueAK5Korys/aWcV9LIIHTVbj01NdzxcnXSN+O74ZIVA==
-
-zod@^3.24.2:
-  version "3.25.76"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.76.tgz#26841c3f6fd22a6a2760e7ccb719179768471e34"
-  integrity sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==
 
 "zod@^3.25 || ^4.0", "zod@^3.25.76 || ^4", zod@^4.3.5:
   version "4.3.5"
