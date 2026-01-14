@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-okta-agent",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -14,7 +14,7 @@
     "@langchain/core": "1.1.8"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "2.0.0",
+    "@clearfeed-ai/quix-common-agent": "2.1.0",
     "@okta/okta-sdk-nodejs": "^7.0.1"
   },
   "files": [

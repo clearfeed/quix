@@ -103,7 +103,7 @@ export const SCHEMAS = {
       .string()
       .regex(DATE_REGEX, 'End date must be in YYYY-MM-DD format')
       .nullish()
-      .transform((val) => val ?? undefined)
+      .optional()
       .describe(
         'End date for balance calculation (YYYY-MM-DD format, defaults to current year end)'
       )
@@ -119,18 +119,18 @@ export const SCHEMAS = {
       .string()
       .regex(DATE_REGEX, 'Start date must be in YYYY-MM-DD format')
       .nullish()
-      .transform((val) => val ?? undefined)
+      .optional()
       .describe('Start date filter (YYYY-MM-DD format, defaults to current year start)'),
     endDate: z
       .string()
       .regex(DATE_REGEX, 'End date must be in YYYY-MM-DD format')
       .nullish()
-      .transform((val) => val ?? undefined)
+      .optional()
       .describe('End date filter (YYYY-MM-DD format, defaults to current year end)'),
     status: z
       .enum(['approved', 'denied', 'superceded', 'requested', 'canceled'])
       .nullish()
-      .transform((val) => val ?? undefined)
+      .optional()
       .describe('Filter by request status'),
     limit: z
       .number()
@@ -164,7 +164,7 @@ export const SCHEMAS = {
         .string()
         .max(500, 'Notes cannot exceed 500 characters')
         .nullish()
-        .transform((val) => val ?? undefined)
+        .optional()
         .describe('Optional notes for the request')
     })
     .refine((data) => new Date(data.start) <= new Date(data.end), {

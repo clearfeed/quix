@@ -146,7 +146,7 @@ export const richTextObjectSchema = z
                         bot: z
                           .union([
                             z
-                              .record(z.never())
+                              .record(z.string(), z.never())
                               .describe('An empty object for simple bot mentions.'),
                             z
                               .object({
@@ -498,7 +498,7 @@ export const blockObjectSchema = z
       .describe('Array of rich text objects representing the block content.'),
     color: richTextColorSchema.describe('The color of the block.').default('default'),
     children: z
-      .array(z.record(z.any()).describe('A nested block object.'))
+      .array(z.record(z.string(), z.any()).describe('A nested block object.'))
       .describe('Nested child blocks.')
       .nullish()
       .transform((val) => val ?? undefined)
@@ -564,7 +564,7 @@ export const updatePagePropertiesSchema = z.object({
     .string()
     .describe('The ID of the page or database item to update. ' + commonIdDescription),
   properties: z
-    .record(z.any())
+    .record(z.string(), z.any())
     .describe('Properties to update. These correspond to the columns or fields in the database.')
 });
 
@@ -592,11 +592,7 @@ export const retrieveBotUserSchema = z.object({});
 
 export const queryDatabaseSchema = z.object({
   database_id: z.string().describe('The ID of the database to query. ' + commonIdDescription),
-  filter: z
-    .record(z.any())
-    .describe('Filter conditions')
-    .nullish()
-    .transform((val) => val ?? undefined),
+  filter: z.record(z.string(), z.any()).describe('Filter conditions').nullish().optional(),
   sorts: z
     .array(
       z.object({
@@ -650,10 +646,10 @@ export const createDatabaseItemSchema = z.object({
 one of database_id or page_id must be provided.'
     ),
   properties: z
-    .record(z.any())
+    .record(z.string(), z.any())
     .describe('Properties of the new database item. These should match the database schema.')
     .nullish()
-    .transform((val) => val ?? undefined)
+    .optional()
 });
 
 export const createCommentSchema = z.object({
@@ -746,9 +742,10 @@ export const createDatabaseSchema = z.object({
     .array(richTextObjectSchema)
     .describe('Title of database as it appears in Notion. An array of rich text objects.')
     .nullish()
+    .optional()
     .transform((val) => val ?? undefined),
   properties: z
-    .record(z.any())
+    .record(z.string(), z.any())
     .describe(
       'Property schema of database. The keys are the names of properties as they appear in Notion and the values are property schema objects.'
     )

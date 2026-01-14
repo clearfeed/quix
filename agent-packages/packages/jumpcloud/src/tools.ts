@@ -18,25 +18,13 @@ const JC_RESPONSE_PROMPT = `When formatting JumpCloud responses be sure to menti
 export const SCHEMAS = {
   listUsers: z.object({
     limit: z.number().nullish().default(20).describe('Number of users to return'),
-    query: z
-      .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Search query for users')
+    query: z.string().nullish().optional().describe('Search query for users')
   }),
   createUserSchema: z.object({
     username: z.string().describe('Username for the user'),
     email: z.string().email().describe('Email address'),
-    firstname: z
-      .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('First name'),
-    lastname: z
-      .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Last name')
+    firstname: z.string().nullish().optional().describe('First name'),
+    lastname: z.string().nullish().optional().describe('Last name')
   }),
   getUserSchema: z.object({
     userId: z.string().describe('ID of the user to fetch')
@@ -45,22 +33,9 @@ export const SCHEMAS = {
     userId: z.string().describe('ID of the user to update'),
     payload: z
       .object({
-        email: z
-          .string()
-          .email()
-          .nullish()
-          .transform((val) => val ?? undefined)
-          .describe('Email address'),
-        firstname: z
-          .string()
-          .nullish()
-          .transform((val) => val ?? undefined)
-          .describe('First name'),
-        lastname: z
-          .string()
-          .nullish()
-          .transform((val) => val ?? undefined)
-          .describe('Last name')
+        email: z.string().email().nullish().optional().describe('Email address'),
+        firstname: z.string().nullish().optional().describe('First name'),
+        lastname: z.string().nullish().optional().describe('Last name')
       })
       .describe('User fields to update - only firstname, lastname, and email are allowed')
   }),
@@ -69,19 +44,11 @@ export const SCHEMAS = {
   }),
   listGroupsSchema: z.object({
     limit: z.number().nullish().default(20).describe('Number of groups to return'),
-    query: z
-      .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Search query for groups')
+    query: z.string().nullish().optional().describe('Search query for groups')
   }),
   createGroupSchema: z.object({
     name: z.string().describe('Name of the group'),
-    description: z
-      .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Group description')
+    description: z.string().nullish().optional().describe('Group description')
   }),
   assignUserToGroupSchema: z.object({
     groupId: z.string().describe('Group ID'),
@@ -102,11 +69,7 @@ export const SCHEMAS = {
   }),
   listDevicesSchema: z.object({
     limit: z.number().default(20).describe('Number of devices to return'),
-    query: z
-      .string()
-      .nullish()
-      .transform((val) => val ?? undefined)
-      .describe('Search query for devices')
+    query: z.string().nullish().optional().describe('Search query for devices')
   })
 };
 

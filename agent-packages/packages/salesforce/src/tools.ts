@@ -61,7 +61,9 @@ export function createSalesforceToolsExport(config: SalesforceConfig): Toolkit {
         name: 'describe_object',
         description: 'Describe salesforce objects such as accounts, contacts, opportunities, etc.',
         schema: z.object({
-          objectName: z.nativeEnum(SalesforceObjectName)
+          objectName: z.enum(
+            Object.values(SalesforceObjectName) as [SalesforceObjectName, ...SalesforceObjectName[]]
+          )
         })
       }),
       operations: [ToolOperation.READ]
@@ -75,7 +77,7 @@ export function createSalesforceToolsExport(config: SalesforceConfig): Toolkit {
           description: 'Get details of an object in Salesforce',
           schema: z.object({
             objectId: z.string().describe('The ID of the object to get details for'),
-            objectType: z.nativeEnum(SalesforceObjectName)
+            objectType: z.enum(Object.values(SalesforceObjectName) as [string, ...string[]])
           })
         }
       ),

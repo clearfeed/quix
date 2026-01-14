@@ -28,7 +28,14 @@ export const accountTools = (config: SalesforceConfig): ToolConfig[] => {
             'Get related objects of an account in Salesforce. For example, you can get opportunities, tasks, notes, contacts, and cases related to an account.',
           schema: z.object({
             accountId: z.string().describe('The ID of the account to get objects for'),
-            objectType: z.nativeEnum(SalesforceObjectName).describe('The type of object to get')
+            objectType: z
+              .enum(
+                Object.values(SalesforceObjectName) as [
+                  SalesforceObjectName,
+                  ...SalesforceObjectName[]
+                ]
+              )
+              .describe('The type of object to get')
           })
         }
       ),

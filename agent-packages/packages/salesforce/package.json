@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-salesforce-agent",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -13,7 +13,7 @@
     "@langchain/core": "1.1.8"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "2.0.0",
+    "@clearfeed-ai/quix-common-agent": "2.1.0",
     "date-fns": "^4.1.0",
     "jsforce": "^3.5.0"
   },
