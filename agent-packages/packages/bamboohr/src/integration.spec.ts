@@ -66,7 +66,10 @@ describeOrSkip('BambooHR Integration Tests', () => {
 
       if (employees.success && employees.data?.employees && employees.data.employees.length > 0) {
         const employeeId = employees.data.employees[0].id;
-        const balances = await service.getEmployeeTimeOffBalance({ employeeId });
+        const balances = await service.getEmployeeTimeOffBalance({
+          employeeId,
+          endDate: undefined
+        });
 
         expect(balances.success).toBe(true);
         expect(balances.data).toBeInstanceOf(Array);
@@ -86,7 +89,13 @@ describeOrSkip('BambooHR Integration Tests', () => {
 
       if (employees.success && employees.data?.employees && employees.data.employees.length > 0) {
         const employeeId = employees.data.employees[0].id;
-        const requests = await service.getTimeOffRequests({ employeeId, limit: 20 });
+        const requests = await service.getTimeOffRequests({
+          employeeId,
+          limit: 20,
+          endDate: undefined,
+          startDate: undefined,
+          status: undefined
+        });
 
         expect(requests.success).toBe(true);
         expect(requests.data).toBeInstanceOf(Array);
@@ -113,7 +122,8 @@ describeOrSkip('BambooHR Integration Tests', () => {
           employeeId,
           startDate: '2024-01-01',
           endDate: '2024-12-31',
-          limit: 20
+          limit: 20,
+          status: undefined
         });
 
         expect(requests.success).toBe(true);
@@ -122,7 +132,13 @@ describeOrSkip('BambooHR Integration Tests', () => {
     });
 
     test('should handle non-existent employee ID', async () => {
-      const requests = await service.getTimeOffRequests({ employeeId: 999999, limit: 20 });
+      const requests = await service.getTimeOffRequests({
+        employeeId: 999999,
+        limit: 20,
+        endDate: undefined,
+        startDate: undefined,
+        status: undefined
+      });
 
       // Should succeed but return empty array or handle gracefully
       expect(requests.success).toBe(true);
