@@ -21,5 +21,5 @@
       "@quix/*": ["./src/*"]
     }
   },
-  "exclude": ["agent-packages/**/*", "dist"]
+  "exclude": ["node_modules", "agent-packages/**/*", "dist"]
 }
