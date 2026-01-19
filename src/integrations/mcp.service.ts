@@ -5,7 +5,6 @@ import {
   StdioClientTransport,
   StdioServerParameters
 } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
 import { jsonSchemaToZod, JsonSchema } from '@n8n/json-schema-to-zod';
@@ -237,7 +236,7 @@ export class McpService {
    */
   private async convertSingleMcpToLangchainTools(
     serverName: string,
-    transport: StdioClientTransport | SSEClientTransport | StreamableHTTPClientTransport,
+    transport: StdioClientTransport | StreamableHTTPClientTransport,
     logger: McpToolsLogger,
     defaultConfig?: Record<string, string>
   ): Promise<{
