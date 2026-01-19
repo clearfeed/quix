@@ -1,8 +1,53 @@
-/**
- * Utility functions for BambooHR integration
- */
-
 import { BAMBOOHR_CONSTANTS } from './constants';
+import type { BambooHRToolsConfig } from './types';
+import type { ToolCallContext } from '@clearfeed-ai/quix-common-agent';
+import { BambooHRService } from './index';
+
+/**
+ * Creates a tool handler that resolves employee ID.
+ * In restricted mode: resolves from user email via context (with API lookup and caching).
+ * In unrestricted mode: uses the employeeId from args.
+ */
+export function createToolHandler<TArgs extends { employeeId?: number }, TResult>(
+  config: BambooHRToolsConfig,
+  service: BambooHRService,
+  handler: (args: TArgs) => Promise<TResult>
+): (args: TArgs, runtime: ToolCallContext | undefined) => Promise<TResult> {
+  return async (args: TArgs, runtime: ToolCallContext | undefined): Promise<TResult> => {
+    // Unrestricted mode: use employeeId from args
+    if (!config.restrictedModeEnabled) {
+      return handler(args);
+    }
+
+    // Restricted mode: resolve employeeId from user email
+    const userEmail = runtime?.configurable?.userEmail?.trim()?.toLowerCase();
+    if (!userEmail) {
+      return {
+        success: false,
+        error:
+          'This operation cannot be performed - the current user does not have an email address configured.'
+      } as TResult;
+    }
+
+    const cached = config.userPropertiesCache
+      ? await config.userPropertiesCache.get(userEmail)
+      : null;
+    const employeeId = cached ? cached.employeeId : await service.getEmployeeIdByEmail(userEmail);
+
+    if (!employeeId) {
+      return {
+        success: false,
+        error: `This user (${userEmail}) does not have a corresponding BambooHR account.`
+      } as TResult;
+    }
+
+    if (config.userPropertiesCache && !cached) {
+      await config.userPropertiesCache.set(userEmail, { employeeId });
+    }
+
+    return handler({ ...args, employeeId });
+  };
+}
 
 /**
  * Generates current year date range for API calls

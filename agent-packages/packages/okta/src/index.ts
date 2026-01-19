@@ -62,6 +62,16 @@ export class OktaService implements BaseService<OktaAuthConfig> {
   }
 
   // === USER METHODS ===
+  async getUserIdByEmail(email: string): Promise<string | null> {
+    const search = `profile.email eq "${email}"`;
+    const users = await this.client.userApi.listUsers({ search, limit: 1 });
+    for await (const user of users) {
+      if (user?.id) {
+        return user.id;
+      }
+    }
+    return null;
+  }
 
   async listUsers({
     limit,

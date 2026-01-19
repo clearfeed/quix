@@ -107,6 +107,18 @@ export class BambooHRService implements BaseService<BambooHRConfig> {
     }
   }
 
+  async getEmployeeIdByEmail(email: string): Promise<number | null> {
+    const url = buildApiUrl('/employees/search', {
+      field: 'workEmail',
+      value: email.trim().toLowerCase()
+    });
+    const response = await this.client.get(url);
+    if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+      return response.data[0].id ?? null;
+    }
+    return null;
+  }
+
   async getEmployee(params: GetEmployeeParams): Promise<BaseResponse<BambooHREmployee>> {
     try {
       const fields = getEmployeeFields();

@@ -1,10 +1,15 @@
 import { z } from 'zod';
-import { BaseConfig } from '@clearfeed-ai/quix-common-agent';
+import { BaseConfig, UserPropertiesCache } from '@clearfeed-ai/quix-common-agent';
 
 export interface BambooHRConfig extends BaseConfig {
   apiKey: string;
   subdomain: string;
 }
+
+export type BambooHRToolsConfig = BambooHRConfig & {
+  restrictedModeEnabled?: boolean;
+  userPropertiesCache?: UserPropertiesCache<{ employeeId: number }>;
+};
 
 export interface BambooHREmployee {
   id: number;
