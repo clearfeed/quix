@@ -148,8 +148,7 @@ export class McpService {
         return fetch(url.toString(), { ...init, headers });
       };
       const transport = new StreamableHTTPClientTransport(new URL(connection.url), {
-        fetch: fetchWithAuth,
-        requestInit: { headers: { Authorization: authHeader } }
+        fetch: fetchWithAuth
       });
       const payload = await this.convertSingleMcpToLangchainTools(
         connection.name,
