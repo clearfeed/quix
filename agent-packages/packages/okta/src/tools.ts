@@ -406,30 +406,6 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
       operations: [ToolOperation.READ]
     },
     {
-      tool: tool(service.listDeviceUsers, {
-        name: 'list_okta_device_users',
-        description: 'List users for a specific device in Okta',
-        schema: SCHEMAS.listDeviceUsersSchema
-      }),
-      operations: [ToolOperation.READ]
-    },
-    {
-      tool: tool(service.listGroups, {
-        name: 'list_okta_groups',
-        description: 'List groups in Okta, optionally filtered by a search expression',
-        schema: SCHEMAS.listGroupsSchema
-      }),
-      operations: [ToolOperation.READ]
-    },
-    {
-      tool: tool(service.listGroupUsers, {
-        name: 'list_okta_group_users',
-        description: 'List users in a specific Okta group',
-        schema: SCHEMAS.listGroupUsersSchema
-      }),
-      operations: [ToolOperation.READ]
-    },
-    {
       tool: tool(service.listApplications, {
         name: 'list_okta_applications',
         description: 'List applications in Okta, optionally filtered by a search query',
@@ -507,6 +483,30 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           schema: SCHEMAS.deleteGroupSchema
         }),
         operations: [ToolOperation.DELETE]
+      },
+      {
+        tool: tool(service.listGroups, {
+          name: 'list_okta_groups',
+          description: 'List groups in Okta, optionally filtered by a search expression',
+          schema: SCHEMAS.listGroupsSchema
+        }),
+        operations: [ToolOperation.READ]
+      },
+      {
+        tool: tool(service.listGroupUsers, {
+          name: 'list_okta_group_users',
+          description: 'List users in a specific Okta group',
+          schema: SCHEMAS.listGroupUsersSchema
+        }),
+        operations: [ToolOperation.READ]
+      },
+      {
+        tool: tool(service.listDeviceUsers, {
+          name: 'list_okta_device_users',
+          description: 'List users for a specific device in Okta',
+          schema: SCHEMAS.listDeviceUsersSchema
+        }),
+        operations: [ToolOperation.READ]
       }
     );
   }
