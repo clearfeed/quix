@@ -54,6 +54,7 @@ export enum ToolOperation {
 export type ToolConfig = {
   tool: DynamicStructuredTool;
   operations: ToolOperation[];
+  isSupportedInRestrictedMode?: boolean;
 };
 
 /**
