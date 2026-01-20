@@ -36,6 +36,16 @@ export function createBambooHRToolsExport(config: BambooHRToolsConfig): Toolkit 
 
   const toolConfigs: ToolConfig[] = [
     {
+      tool: tool(service.listEmployees, {
+        name: 'list_bamboohr_employees',
+        description:
+          'List employees in BambooHR with their basic information including names, job titles, departments, managers, and contact details. Limited to 1000 employees by default to prevent large responses.',
+        schema: SCHEMAS.listEmployeesSchema
+      }),
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: false
+    },
+    {
       tool: tool(createToolHandler(config, service, service.getEmployee), {
         name: 'get_bamboohr_employee',
         description:
@@ -44,7 +54,8 @@ export function createBambooHRToolsExport(config: BambooHRToolsConfig): Toolkit 
           ? SCHEMAS.getEmployeeSchema.omit({ employeeId: true })
           : SCHEMAS.getEmployeeSchema
       }),
-      operations: [ToolOperation.READ]
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.getEmployeeTimeOffBalance), {
@@ -55,7 +66,8 @@ export function createBambooHRToolsExport(config: BambooHRToolsConfig): Toolkit 
           ? SCHEMAS.getTimeOffBalanceSchema.omit({ employeeId: true })
           : SCHEMAS.getTimeOffBalanceSchema
       }),
-      operations: [ToolOperation.READ]
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.getTimeOffRequests), {
@@ -66,7 +78,19 @@ export function createBambooHRToolsExport(config: BambooHRToolsConfig): Toolkit 
           ? SCHEMAS.getTimeOffRequestsSchema.omit({ employeeId: true })
           : SCHEMAS.getTimeOffRequestsSchema
       }),
-      operations: [ToolOperation.READ]
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: true
+    },
+
+    {
+      tool: tool(service.getTimeOffTypes, {
+        name: 'get_bamboohr_time_off_types',
+        description:
+          'Get all available time off types in BambooHR with their IDs, names, units, and icons. Use this before creating time off requests to know which type ID to use',
+        schema: z.object({})
+      }),
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.createTimeOffRequest), {
@@ -77,33 +101,18 @@ export function createBambooHRToolsExport(config: BambooHRToolsConfig): Toolkit 
           ? SCHEMAS.createTimeOffRequestSchema.omit({ employeeId: true })
           : SCHEMAS.createTimeOffRequestSchema
       }),
-      operations: [ToolOperation.CREATE]
-    },
-    {
-      tool: tool(() => service.getTimeOffTypes(), {
-        name: 'get_bamboohr_time_off_types',
-        description:
-          'Get all available time off types in BambooHR with their IDs, names, units, and icons. Use this before creating time off requests to know which type ID to use',
-        schema: z.object({})
-      }),
-      operations: [ToolOperation.READ]
+      operations: [ToolOperation.CREATE],
+      isSupportedInRestrictedMode: true
     }
   ];
 
-  if (!restrictedModeEnabled) {
-    toolConfigs.push({
-      tool: tool(service.listEmployees, {
-        name: 'list_bamboohr_employees',
-        description:
-          'List employees in BambooHR with their basic information including names, job titles, departments, managers, and contact details. Limited to 1000 employees by default to prevent large responses.',
-        schema: SCHEMAS.listEmployeesSchema
-      }),
-      operations: [ToolOperation.READ]
-    });
-  }
+  // Filter tools based on restricted mode
+  const filteredToolConfigs = restrictedModeEnabled
+    ? toolConfigs.filter((tc) => tc.isSupportedInRestrictedMode === true)
+    : toolConfigs;
 
   return {
-    toolConfigs,
+    toolConfigs: filteredToolConfigs,
     prompts: {
       toolSelection: BAMBOOHR_TOOL_SELECTION_PROMPT,
       responseGeneration: BAMBOOHR_RESPONSE_PROMPT

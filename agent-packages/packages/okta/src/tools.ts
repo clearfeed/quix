@@ -219,6 +219,25 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
 
   const toolConfigs: ToolConfig[] = [
     {
+      tool: tool(service.listUsers, {
+        name: 'list_okta_users',
+        description:
+          'List users in Okta using the search or filter parameter to filter by any user properties, including profile attributes, status, and dates. Always use dates in extended format (e.g., 2013-06-01T00:00:00.000Z).',
+        schema: SCHEMAS.listUsers
+      }),
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: false
+    },
+    {
+      tool: tool(service.createUser, {
+        name: 'create_okta_user',
+        description: 'Create a new user in Okta',
+        schema: SCHEMAS.createUserSchema
+      }),
+      operations: [ToolOperation.CREATE],
+      isSupportedInRestrictedMode: false
+    },
+    {
       tool: tool(createToolHandler(config, service, service.getUser), {
         name: 'get_okta_user',
         description: 'Get details of a specific user in Okta',
@@ -226,7 +245,8 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.getUserSchema.omit({ userId: true })
           : SCHEMAS.getUserSchema
       }),
-      operations: [ToolOperation.READ]
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.updateUser), {
@@ -236,7 +256,8 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.updateUserSchema.omit({ userId: true })
           : SCHEMAS.updateUserSchema
       }),
-      operations: [ToolOperation.UPDATE]
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.suspendUser), {
@@ -246,7 +267,8 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.suspendUserSchema.omit({ userId: true })
           : SCHEMAS.suspendUserSchema
       }),
-      operations: [ToolOperation.UPDATE]
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.unsuspendUser), {
@@ -256,7 +278,8 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.unsuspendUserSchema.omit({ userId: true })
           : SCHEMAS.unsuspendUserSchema
       }),
-      operations: [ToolOperation.UPDATE]
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.activateUser), {
@@ -266,7 +289,8 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.activateUserSchema.omit({ userId: true })
           : SCHEMAS.activateUserSchema
       }),
-      operations: [ToolOperation.UPDATE]
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.deactivateUser), {
@@ -277,7 +301,8 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.deactivateUserSchema.omit({ userId: true })
           : SCHEMAS.deactivateUserSchema
       }),
-      operations: [ToolOperation.UPDATE]
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.unlockUser), {
@@ -287,7 +312,8 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.unlockUserSchema.omit({ userId: true })
           : SCHEMAS.unlockUserSchema
       }),
-      operations: [ToolOperation.UPDATE]
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.resetUserPassword), {
@@ -297,7 +323,8 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.resetUserPasswordSchema.omit({ userId: true })
           : SCHEMAS.resetUserPasswordSchema
       }),
-      operations: [ToolOperation.UPDATE]
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.expireUserPassword), {
@@ -307,7 +334,8 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.expireUserPasswordSchema.omit({ userId: true })
           : SCHEMAS.expireUserPasswordSchema
       }),
-      operations: [ToolOperation.UPDATE]
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.resetUserFactors), {
@@ -317,7 +345,8 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.resetUserFactorsSchema.omit({ userId: true })
           : SCHEMAS.resetUserFactorsSchema
       }),
-      operations: [ToolOperation.UPDATE]
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.deleteUser), {
@@ -327,7 +356,26 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.deleteUserSchema.omit({ userId: true })
           : SCHEMAS.deleteUserSchema
       }),
-      operations: [ToolOperation.DELETE]
+      operations: [ToolOperation.DELETE],
+      isSupportedInRestrictedMode: true
+    },
+    {
+      tool: tool(service.listGroups, {
+        name: 'list_okta_groups',
+        description: 'List groups in Okta, optionally filtered by a search expression',
+        schema: SCHEMAS.listGroupsSchema
+      }),
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: false
+    },
+    {
+      tool: tool(service.createGroup, {
+        name: 'create_okta_group',
+        description: 'Create a new group in Okta',
+        schema: SCHEMAS.createGroupSchema
+      }),
+      operations: [ToolOperation.CREATE],
+      isSupportedInRestrictedMode: false
     },
     {
       tool: tool(createToolHandler(config, service, service.assignUserToGroup), {
@@ -337,7 +385,8 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.assignUserToGroupSchema.omit({ userId: true })
           : SCHEMAS.assignUserToGroupSchema
       }),
-      operations: [ToolOperation.UPDATE]
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.unassignUserFromGroup), {
@@ -347,7 +396,35 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.unassignUserFromGroupSchema.omit({ userId: true })
           : SCHEMAS.unassignUserFromGroupSchema
       }),
-      operations: [ToolOperation.UPDATE]
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: true
+    },
+    {
+      tool: tool(service.listGroupUsers, {
+        name: 'list_okta_group_users',
+        description: 'List users in a specific Okta group',
+        schema: SCHEMAS.listGroupUsersSchema
+      }),
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: false
+    },
+    {
+      tool: tool(service.deleteGroup, {
+        name: 'delete_okta_group',
+        description: 'Delete a group in Okta',
+        schema: SCHEMAS.deleteGroupSchema
+      }),
+      operations: [ToolOperation.DELETE],
+      isSupportedInRestrictedMode: false
+    },
+    {
+      tool: tool(service.listApplications, {
+        name: 'list_okta_applications',
+        description: 'List applications in Okta, optionally filtered by a search query',
+        schema: SCHEMAS.listApplicationsSchema
+      }),
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.assignUserToApplication), {
@@ -357,7 +434,8 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.assignUserToApplicationSchema.omit({ userId: true })
           : SCHEMAS.assignUserToApplicationSchema
       }),
-      operations: [ToolOperation.UPDATE]
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.unassignUserFromApplication), {
@@ -367,7 +445,44 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.unassignUserFromApplicationSchema.omit({ userId: true })
           : SCHEMAS.unassignUserFromApplicationSchema
       }),
-      operations: [ToolOperation.UPDATE]
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: true
+    },
+    {
+      tool: tool(service.assignGroupToApplication, {
+        name: 'assign_group_to_okta_application',
+        description: 'Assign a group to an application in Okta',
+        schema: SCHEMAS.assignGroupToApplicationSchema
+      }),
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: false
+    },
+    {
+      tool: tool(service.unassignGroupFromApplication, {
+        name: 'unassign_group_from_okta_application',
+        description: 'Unassign a group from an application in Okta',
+        schema: SCHEMAS.unassignGroupFromApplicationSchema
+      }),
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: false
+    },
+    {
+      tool: tool(service.deleteApplication, {
+        name: 'delete_okta_application',
+        description: 'Delete an application in Okta',
+        schema: SCHEMAS.deleteApplicationSchema
+      }),
+      operations: [ToolOperation.DELETE],
+      isSupportedInRestrictedMode: false
+    },
+    {
+      tool: tool(service.deactivateApplication, {
+        name: 'deactivate_okta_application',
+        description: 'Deactivate an application in Okta',
+        schema: SCHEMAS.deactivateApplicationSchema
+      }),
+      operations: [ToolOperation.UPDATE],
+      isSupportedInRestrictedMode: false
     },
     {
       tool: tool(createToolHandler(config, service, service.listUserGroups), {
@@ -377,7 +492,17 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.listUserGroupsSchema.omit({ userId: true })
           : SCHEMAS.listUserGroupsSchema
       }),
-      operations: [ToolOperation.READ]
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: true
+    },
+    {
+      tool: tool(service.listDevices, {
+        name: 'list_okta_devices',
+        description: 'List devices in Okta, optionally filtered by a search query',
+        schema: SCHEMAS.listDevicesSchema
+      }),
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(createToolHandler(config, service, service.listUserDevices), {
@@ -387,15 +512,8 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           ? SCHEMAS.listUserDevicesSchema.omit({ userId: true })
           : SCHEMAS.listUserDevicesSchema
       }),
-      operations: [ToolOperation.READ]
-    },
-    {
-      tool: tool(service.listDevices, {
-        name: 'list_okta_devices',
-        description: 'List devices in Okta, optionally filtered by a search query',
-        schema: SCHEMAS.listDevicesSchema
-      }),
-      operations: [ToolOperation.READ]
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(service.getDevice, {
@@ -403,116 +521,27 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
         description: 'Get details of a specific device in Okta',
         schema: SCHEMAS.getDeviceSchema
       }),
-      operations: [ToolOperation.READ]
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: true
     },
     {
-      tool: tool(service.listApplications, {
-        name: 'list_okta_applications',
-        description: 'List applications in Okta, optionally filtered by a search query',
-        schema: SCHEMAS.listApplicationsSchema
+      tool: tool(service.listDeviceUsers, {
+        name: 'list_okta_device_users',
+        description: 'List users for a specific device in Okta',
+        schema: SCHEMAS.listDeviceUsersSchema
       }),
-      operations: [ToolOperation.READ]
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: false
     }
   ];
 
-  // Add list_users only in unrestricted mode (exposes all users)
-  if (!restrictedModeEnabled) {
-    toolConfigs.push(
-      {
-        tool: tool(service.listUsers, {
-          name: 'list_okta_users',
-          description:
-            'List users in Okta using the search or filter parameter to filter by any user properties, including profile attributes, status, and dates. Always use dates in extended format (e.g., 2013-06-01T00:00:00.000Z).',
-          schema: SCHEMAS.listUsers
-        }),
-        operations: [ToolOperation.READ]
-      },
-      {
-        tool: tool(service.createUser, {
-          name: 'create_okta_user',
-          description: 'Create a new user in Okta',
-          schema: SCHEMAS.createUserSchema
-        }),
-        operations: [ToolOperation.CREATE]
-      },
-      {
-        tool: tool(service.createGroup, {
-          name: 'create_okta_group',
-          description: 'Create a new group in Okta',
-          schema: SCHEMAS.createGroupSchema
-        }),
-        operations: [ToolOperation.CREATE]
-      },
-      {
-        tool: tool(service.assignGroupToApplication, {
-          name: 'assign_group_to_okta_application',
-          description: 'Assign a group to an application in Okta',
-          schema: SCHEMAS.assignGroupToApplicationSchema
-        }),
-        operations: [ToolOperation.UPDATE]
-      },
-      {
-        tool: tool(service.unassignGroupFromApplication, {
-          name: 'unassign_group_from_okta_application',
-          description: 'Unassign a group from an application in Okta',
-          schema: SCHEMAS.unassignGroupFromApplicationSchema
-        }),
-        operations: [ToolOperation.UPDATE]
-      },
-      {
-        tool: tool(service.deleteApplication, {
-          name: 'delete_okta_application',
-          description: 'Delete an application in Okta',
-          schema: SCHEMAS.deleteApplicationSchema
-        }),
-        operations: [ToolOperation.DELETE]
-      },
-      {
-        tool: tool(service.deactivateApplication, {
-          name: 'deactivate_okta_application',
-          description: 'Deactivate an application in Okta',
-          schema: SCHEMAS.deactivateApplicationSchema
-        }),
-        operations: [ToolOperation.UPDATE]
-      },
-
-      {
-        tool: tool(service.deleteGroup, {
-          name: 'delete_okta_group',
-          description: 'Delete a group in Okta',
-          schema: SCHEMAS.deleteGroupSchema
-        }),
-        operations: [ToolOperation.DELETE]
-      },
-      {
-        tool: tool(service.listGroups, {
-          name: 'list_okta_groups',
-          description: 'List groups in Okta, optionally filtered by a search expression',
-          schema: SCHEMAS.listGroupsSchema
-        }),
-        operations: [ToolOperation.READ]
-      },
-      {
-        tool: tool(service.listGroupUsers, {
-          name: 'list_okta_group_users',
-          description: 'List users in a specific Okta group',
-          schema: SCHEMAS.listGroupUsersSchema
-        }),
-        operations: [ToolOperation.READ]
-      },
-      {
-        tool: tool(service.listDeviceUsers, {
-          name: 'list_okta_device_users',
-          description: 'List users for a specific device in Okta',
-          schema: SCHEMAS.listDeviceUsersSchema
-        }),
-        operations: [ToolOperation.READ]
-      }
-    );
-  }
+  // Filter tools based on restricted mode
+  const filteredToolConfigs = restrictedModeEnabled
+    ? toolConfigs.filter((tc) => tc.isSupportedInRestrictedMode === true)
+    : toolConfigs;
 
   return {
-    toolConfigs,
+    toolConfigs: filteredToolConfigs,
     prompts: {
       toolSelection: OKTA_TOOL_SELECTION_PROMPT,
       responseGeneration: OKTA_RESPONSE_GENERATION_PROMPT
