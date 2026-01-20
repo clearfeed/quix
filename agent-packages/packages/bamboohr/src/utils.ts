@@ -1,7 +1,9 @@
 import { BAMBOOHR_CONSTANTS } from './constants';
 import type { BambooHRToolsConfig } from './types';
-import type { ToolCallContext } from '@clearfeed-ai/quix-common-agent';
 import { BambooHRService } from './index';
+import { Runtime } from 'langchain';
+import { ToolConfigurable } from '@clearfeed-ai/quix-common-agent';
+import { Undefinable } from 'slack-block-builder/dist/internal';
 
 /**
  * Creates a tool handler that resolves employee ID.
@@ -12,15 +14,15 @@ export function createToolHandler<TArgs extends { employeeId?: number }, TResult
   config: BambooHRToolsConfig,
   service: BambooHRService,
   handler: (args: TArgs) => Promise<TResult>
-): (args: TArgs, runtime: ToolCallContext | undefined) => Promise<TResult> {
-  return async (args: TArgs, runtime: ToolCallContext | undefined): Promise<TResult> => {
+): (args: TArgs, runtime: Undefinable<Runtime>) => Promise<TResult> {
+  return async (args: TArgs, runtime: Undefinable<Runtime>): Promise<TResult> => {
     // Unrestricted mode: use employeeId from args
     if (!config.restrictedModeEnabled) {
       return handler(args);
     }
-
+    const configurable = runtime?.configurable as Undefinable<ToolConfigurable>;
     // Restricted mode: resolve employeeId from user email
-    const userEmail = runtime?.configurable?.userEmail?.trim()?.toLowerCase();
+    const userEmail = configurable?.userEmail?.trim()?.toLowerCase();
     if (!userEmail) {
       return {
         success: false,

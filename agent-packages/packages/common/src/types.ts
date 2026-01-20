@@ -84,10 +84,9 @@ export interface Toolkit {
  * Used in restricted mode to identify the current user (e.g., via userEmail)
  * so tools can enforce access control and filter results appropriately.
  */
-export type ToolCallContext = {
-  configurable?: {
-    userEmail?: string;
-  };
+export type ToolConfigurable = {
+  sessionId: string;
+  userEmail?: string;
 };
 
 /**

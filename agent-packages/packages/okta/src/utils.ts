@@ -1,6 +1,8 @@
 import type { OktaAuthConfig } from './types';
-import type { ToolCallContext } from '@clearfeed-ai/quix-common-agent';
 import { OktaService } from './index';
+import { Runtime } from 'langchain';
+import { Undefinable } from 'slack-block-builder/dist/internal';
+import { ToolConfigurable } from '@clearfeed-ai/quix-common-agent';
 
 /**
  * Creates a tool handler that resolves user ID.
@@ -11,15 +13,15 @@ export function createToolHandler<TArgs extends { userId?: string }, TResult>(
   config: OktaAuthConfig,
   service: OktaService,
   handler: (args: TArgs) => Promise<TResult>
-): (args: TArgs, runtime: ToolCallContext | undefined) => Promise<TResult> {
-  return async (args: TArgs, runtime: ToolCallContext | undefined): Promise<TResult> => {
+): (args: TArgs, runtime: Undefinable<Runtime>) => Promise<TResult> {
+  return async (args: TArgs, runtime: Undefinable<Runtime>): Promise<TResult> => {
     // Unrestricted mode: use userId from args
     if (!config.restrictedModeEnabled) {
       return handler(args);
     }
-
+    const configurable = runtime?.configurable as Undefinable<ToolConfigurable>;
     // Restricted mode: resolve userId from user email
-    const userEmail = runtime?.configurable?.userEmail?.trim()?.toLowerCase();
+    const userEmail = configurable?.userEmail?.trim()?.toLowerCase();
     if (!userEmail) {
       return {
         success: false,
