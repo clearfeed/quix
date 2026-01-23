@@ -7,8 +7,8 @@
     "dist"
   ],
   "scripts": {
-    "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
-    "build": "yarn clean && tsc",
+    "clean": "tsc --build --clean",
+    "build": "tsc",
     "test": "jest",
     "test:integration": "jest --testNamePattern='Integration'",
     "watch": "tsc --watch",

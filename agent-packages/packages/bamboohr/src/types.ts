@@ -133,7 +133,7 @@ export const SCHEMAS = {
       .transform((val) => val ?? undefined)
       .describe('End date filter (YYYY-MM-DD format, defaults to current year end)'),
     status: z
-      .enum(['approved', 'denied', 'superceded', 'requested', 'canceled'])
+      .enum(['approved', 'denied', 'requested', 'canceled'])
       .nullish()
       .transform((val) => val ?? undefined)
       .describe('Filter by request status'),
@@ -145,37 +145,31 @@ export const SCHEMAS = {
       .describe('Maximum number of requests to return (default: 20, max: 100)')
   }),
 
-  createTimeOffRequestSchema: z
-    .object({
-      employeeId: z.number().int().positive().describe('The employee ID requesting time off'),
-      timeOffTypeId: z
-        .number()
-        .int()
-        .min(1, 'Time off type ID must be a positive number')
-        .describe('The time off type ID (get it using get_bamboohr_time_off_types)'),
-      start: z
-        .string()
-        .regex(DATE_REGEX, 'Start date must be in YYYY-MM-DD format')
-        .describe('Start date in YYYY-MM-DD format'),
-      end: z
-        .string()
-        .regex(DATE_REGEX, 'End date must be in YYYY-MM-DD format')
-        .describe('End date in YYYY-MM-DD format'),
-      amount: z
-        .number()
-        .min(1, 'Amount must be at least 1')
-        .describe('Amount of time off in hours or days'),
-      notes: z
-        .string()
-        .max(500, 'Notes cannot exceed 500 characters')
-        .nullish()
-        .transform((val) => val ?? undefined)
-        .describe('Optional notes for the request')
-    })
-    .refine((data) => new Date(data.start) <= new Date(data.end), {
-      message: 'Start date must be before or equal to end date',
-      path: ['end']
-    })
+  createTimeOffRequestSchema: z.object({
+    employeeId: z.number().int().positive().describe('The employee ID requesting time off'),
+    timeOffTypeId: z
+      .string()
+      .describe('The time off type ID (get it using get_bamboohr_time_off_types)'),
+    start: z
+      .string()
+      .regex(DATE_REGEX, 'Start date must be in YYYY-MM-DD format')
+      .describe('Start date in YYYY-MM-DD format'),
+    end: z
+      .string()
+      .regex(DATE_REGEX, 'End date must be in YYYY-MM-DD format')
+      .describe('End date in YYYY-MM-DD format'),
+    amount: z
+      .number()
+      .min(1, 'Amount must be at least 1')
+      .describe('Amount of time off in hours or days'),
+    status: z.enum(['approved', 'requested', 'denied']).describe('Status of the time off request'),
+    notes: z
+      .string()
+      .max(500, 'Notes cannot exceed 500 characters')
+      .nullish()
+      .transform((val) => val ?? undefined)
+      .describe('Optional notes for the request')
+  })
 };
 
 // Inferred types from Zod schemas

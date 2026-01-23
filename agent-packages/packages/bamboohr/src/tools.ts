@@ -36,7 +36,7 @@ export function createBambooHRToolsExport(config: BambooHRToolsConfig): Toolkit 
 
   const toolConfigs: ToolConfig[] = [
     {
-      tool: tool(service.listEmployees, {
+      tool: tool((args) => service.listEmployees(args), {
         name: 'list_bamboohr_employees',
         description:
           'List employees in BambooHR with their basic information including names, job titles, departments, managers, and contact details. Limited to 1000 employees by default to prevent large responses.',
@@ -46,44 +46,53 @@ export function createBambooHRToolsExport(config: BambooHRToolsConfig): Toolkit 
       isSupportedInRestrictedMode: false
     },
     {
-      tool: tool(createToolHandler(config, service, service.getEmployee), {
-        name: 'get_bamboohr_employee',
-        description:
-          'Get detailed information for a specific employee by their ID, including job title, manager, department, and contact information',
-        schema: restrictedModeEnabled
-          ? SCHEMAS.getEmployeeSchema.omit({ employeeId: true })
-          : SCHEMAS.getEmployeeSchema
-      }),
+      tool: tool(
+        createToolHandler(config, service, (args) => service.getEmployee(args)),
+        {
+          name: 'get_bamboohr_employee',
+          description:
+            'Get detailed information for a specific employee by their ID, including job title, manager, department, and contact information',
+          schema: restrictedModeEnabled
+            ? SCHEMAS.getEmployeeSchema.omit({ employeeId: true })
+            : SCHEMAS.getEmployeeSchema
+        }
+      ),
       operations: [ToolOperation.READ],
       isSupportedInRestrictedMode: true
     },
     {
-      tool: tool(createToolHandler(config, service, service.getEmployeeTimeOffBalance), {
-        name: 'get_bamboohr_employee_time_off_balance',
-        description:
-          'Get time off balances for a specific employee, showing available vacation days, sick days, and other leave types with used amounts',
-        schema: restrictedModeEnabled
-          ? SCHEMAS.getTimeOffBalanceSchema.omit({ employeeId: true })
-          : SCHEMAS.getTimeOffBalanceSchema
-      }),
+      tool: tool(
+        createToolHandler(config, service, (args) => service.getEmployeeTimeOffBalance(args)),
+        {
+          name: 'get_bamboohr_employee_time_off_balance',
+          description:
+            'Get time off balances for a specific employee, showing available vacation days, sick days, and other leave types with used amounts',
+          schema: restrictedModeEnabled
+            ? SCHEMAS.getTimeOffBalanceSchema.omit({ employeeId: true })
+            : SCHEMAS.getTimeOffBalanceSchema
+        }
+      ),
       operations: [ToolOperation.READ],
       isSupportedInRestrictedMode: true
     },
     {
-      tool: tool(createToolHandler(config, service, service.getTimeOffRequests), {
-        name: 'get_bamboohr_time_off_requests_for_employee',
-        description:
-          'Retrieve time off requests for a specific employee. Requires employeeId. Optionally filter by date range and status. Shows request details, dates, amounts, and approval status',
-        schema: restrictedModeEnabled
-          ? SCHEMAS.getTimeOffRequestsSchema.omit({ employeeId: true })
-          : SCHEMAS.getTimeOffRequestsSchema
-      }),
+      tool: tool(
+        createToolHandler(config, service, (args) => service.getTimeOffRequests(args)),
+        {
+          name: 'get_bamboohr_time_off_requests_for_employee',
+          description:
+            'Retrieve time off requests for a specific employee. Requires employeeId. Optionally filter by date range and status. Shows request details, dates, amounts, and approval status',
+          schema: restrictedModeEnabled
+            ? SCHEMAS.getTimeOffRequestsSchema.omit({ employeeId: true })
+            : SCHEMAS.getTimeOffRequestsSchema
+        }
+      ),
       operations: [ToolOperation.READ],
       isSupportedInRestrictedMode: true
     },
 
     {
-      tool: tool(service.getTimeOffTypes, {
+      tool: tool(() => service.getTimeOffTypes(), {
         name: 'get_bamboohr_time_off_types',
         description:
           'Get all available time off types in BambooHR with their IDs, names, units, and icons. Use this before creating time off requests to know which type ID to use',
@@ -93,26 +102,26 @@ export function createBambooHRToolsExport(config: BambooHRToolsConfig): Toolkit 
       isSupportedInRestrictedMode: true
     },
     {
-      tool: tool(createToolHandler(config, service, service.createTimeOffRequest), {
-        name: 'create_bamboohr_time_off_request',
-        description:
-          'Create a new time off request for an employee. Requires employee ID, time off type ID, dates, and amount. Use get_bamboohr_time_off_types first to get available type IDs',
-        schema: restrictedModeEnabled
-          ? SCHEMAS.createTimeOffRequestSchema.omit({ employeeId: true })
-          : SCHEMAS.createTimeOffRequestSchema
-      }),
+      tool: tool(
+        createToolHandler(config, service, (args) => service.createTimeOffRequest(args)),
+        {
+          name: 'create_bamboohr_time_off_request',
+          description:
+            'Create a new time off request for an employee. Requires employee ID, time off type ID, dates, and amount. Use get_bamboohr_time_off_types first to get available type IDs',
+          schema: restrictedModeEnabled
+            ? SCHEMAS.createTimeOffRequestSchema.omit({ employeeId: true })
+            : SCHEMAS.createTimeOffRequestSchema
+        }
+      ),
       operations: [ToolOperation.CREATE],
       isSupportedInRestrictedMode: true
     }
   ];
 
-  // Filter tools based on restricted mode
-  const filteredToolConfigs = restrictedModeEnabled
-    ? toolConfigs.filter((tc) => tc.isSupportedInRestrictedMode === true)
-    : toolConfigs;
-
   return {
-    toolConfigs: filteredToolConfigs,
+    toolConfigs: restrictedModeEnabled
+      ? toolConfigs.filter((tc) => tc.isSupportedInRestrictedMode === true)
+      : toolConfigs,
     prompts: {
       toolSelection: BAMBOOHR_TOOL_SELECTION_PROMPT,
       responseGeneration: BAMBOOHR_RESPONSE_PROMPT

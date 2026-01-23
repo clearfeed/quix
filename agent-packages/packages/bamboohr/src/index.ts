@@ -108,15 +108,21 @@ export class BambooHRService implements BaseService<BambooHRConfig> {
   }
 
   async getEmployeeIdByEmail(email: string): Promise<number | null> {
-    const url = buildApiUrl('/employees/search', {
-      field: 'workEmail',
-      value: email.trim().toLowerCase()
-    });
+    const normalizedEmail = email.trim().toLowerCase();
+    const url = buildApiUrl('/employees/directory', { limit: 1000 });
     const response = await this.client.get(url);
-    if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-      return response.data[0].id ?? null;
-    }
-    return null;
+
+    const employees = Array.isArray(response.data?.employees)
+      ? response.data.employees
+      : Array.isArray(response.data)
+        ? response.data
+        : [];
+
+    const match = employees.find(
+      (employee: BambooHREmployee) => employee.workEmail?.trim?.().toLowerCase() === normalizedEmail
+    );
+
+    return match?.id ?? null;
   }
 
   async getEmployee(params: GetEmployeeParams): Promise<BaseResponse<BambooHREmployee>> {
@@ -193,14 +199,16 @@ export class BambooHRService implements BaseService<BambooHRConfig> {
     params: CreateTimeOffRequestParams
   ): Promise<BaseResponse<{ message: string; requestId?: string }>> {
     try {
-      const requestData = {
+      const requestData: Record<string, any> = {
         start: params.start,
         end: params.end,
         timeOffTypeId: params.timeOffTypeId,
-        amount: params.amount,
-        ...(params.notes && { notes: params.notes })
+        amount: String(params.amount),
+        status: params.status
       };
-
+      if (params.notes) {
+        requestData.notes = [{ from: 'employee', note: params.notes }];
+      }
       const response = await this.client.put(
         `/employees/${params.employeeId.toString()}/time_off/request`,
         requestData
