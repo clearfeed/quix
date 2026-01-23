@@ -1,5 +1,4 @@
-import { BaseConfig, BaseResponse, UserPropertiesCache } from '@clearfeed-ai/quix-common-agent';
-
+import { BaseConfig, BaseResponse } from '@clearfeed-ai/quix-common-agent';
 import {
   Application,
   ApplicationGroupAssignment,
@@ -24,11 +23,7 @@ export type OktaPrivateKeyAuthConfig = {
   privateKeyId: string;
 };
 
-export type OktaAuthConfig = BaseConfig &
-  (OktaTokenAuthConfig | OktaPrivateKeyAuthConfig) & {
-    restrictedModeEnabled?: boolean;
-    userPropertiesCache?: UserPropertiesCache<{ userId: string }>;
-  };
+export type OktaAuthConfig = BaseConfig & (OktaTokenAuthConfig | OktaPrivateKeyAuthConfig);
 
 export interface ListUsersResponse extends BaseResponse<User[]> {}
 
