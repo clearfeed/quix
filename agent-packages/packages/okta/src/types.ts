@@ -69,7 +69,8 @@ export interface AssignUserToApplicationResponse extends BaseResponse<AppUser> {
 
 export interface UnassignUserFromApplicationResponse extends BaseResponse<string> {}
 
-export interface AssignGroupToApplicationResponse extends BaseResponse<ApplicationGroupAssignment> {}
+export interface AssignGroupToApplicationResponse
+  extends BaseResponse<ApplicationGroupAssignment> {}
 
 export interface UnassignGroupFromApplicationResponse extends BaseResponse<string> {}
 
