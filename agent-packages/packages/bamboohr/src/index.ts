@@ -199,18 +199,18 @@ export class BambooHRService implements BaseService<BambooHRConfig> {
     params: CreateTimeOffRequestParams
   ): Promise<BaseResponse<{ message: string; requestId?: string }>> {
     try {
-      const requestData: Record<string, any> = {
+      const requestData: Record<string, unknown> = {
         start: params.start,
         end: params.end,
         timeOffTypeId: params.timeOffTypeId,
-        amount: String(params.amount),
+        amount: params.amount,
         status: params.status
       };
       if (params.notes) {
         requestData.notes = [{ from: 'employee', note: params.notes }];
       }
       const response = await this.client.put(
-        `/employees/${params.employeeId.toString()}/time_off/request`,
+        `/employees/${params.employeeId}/time_off/request`,
         requestData
       );
       return {
