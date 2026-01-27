@@ -5,7 +5,7 @@ import {
   StdioClientTransport,
   StdioServerParameters
 } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
 import { jsonSchemaToZod, JsonSchema } from '@n8n/json-schema-to-zod';
 import { z } from 'zod';
@@ -146,13 +146,8 @@ export class McpService {
         headers.set('Authorization', authHeader);
         return fetch(url.toString(), { ...init, headers });
       };
-      const transport = new SSEClientTransport(new URL(connection.url), {
-        // required for initial connection
-        eventSourceInit: {
-          fetch: fetchWithAuth
-        },
-        // required for tool calls and other requests to the MCP server
-        requestInit: { headers: { Authorization: authHeader } }
+      const transport = new StreamableHTTPClientTransport(new URL(connection.url), {
+        fetch: fetchWithAuth
       });
       const payload = await this.convertSingleMcpToLangchainTools(
         connection.name,
@@ -241,7 +236,7 @@ export class McpService {
    */
   private async convertSingleMcpToLangchainTools(
     serverName: string,
-    transport: StdioClientTransport | SSEClientTransport,
+    transport: StdioClientTransport | StreamableHTTPClientTransport,
     logger: McpToolsLogger,
     defaultConfig?: Record<string, string>
   ): Promise<{
