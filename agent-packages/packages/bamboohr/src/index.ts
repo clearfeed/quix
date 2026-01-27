@@ -107,6 +107,10 @@ export class BambooHRService implements BaseService<BambooHRConfig> {
     }
   }
 
+  /**
+   * TODO: Cache output of the directory API https://clearfeed.atlassian.net/browse/APP-9846
+   *
+   */
   async getEmployeeIdByEmail(email: string): Promise<number | null> {
     const normalizedEmail = email.trim().toLowerCase();
     const url = buildApiUrl('/employees/directory', { limit: 1000 });
