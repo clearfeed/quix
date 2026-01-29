@@ -99,13 +99,6 @@ export class OktaService implements BaseService<OktaAuthConfig> {
     limit,
     search
   }: z.infer<typeof SCHEMAS.searchUsers>): Promise<SearchUsersResponse> {
-    if (!search) {
-      return {
-        success: false,
-        error: 'Search parameter is required to search users'
-      };
-    }
-
     return this.listUsers({ limit, search });
   }
 
