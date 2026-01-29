@@ -32,7 +32,8 @@ import {
   ListDevicesResponse,
   ListUserDevicesResponse,
   GetDeviceResponse,
-  ListDeviceUsersResponse
+  ListDeviceUsersResponse,
+  SearchUsersResponse
 } from './types';
 import { extractPrimitives } from './utils';
 import { SCHEMAS } from './tools';
@@ -92,6 +93,20 @@ export class OktaService implements BaseService<OktaAuthConfig> {
         error: error instanceof Error ? error.message : 'Failed to list users'
       };
     }
+  }
+
+  async searchUsers({
+    limit,
+    search
+  }: z.infer<typeof SCHEMAS.searchUsers>): Promise<SearchUsersResponse> {
+    if (!search) {
+      return {
+        success: false,
+        error: 'Search parameter is required to search users'
+      };
+    }
+
+    return this.listUsers({ limit, search });
   }
 
   async createUser(params: z.infer<typeof SCHEMAS.createUserSchema>): Promise<CreateUserResponse> {
