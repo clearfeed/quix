@@ -54,6 +54,7 @@ export enum ToolOperation {
 export type ToolConfig = {
   tool: DynamicStructuredTool;
   operations: ToolOperation[];
+  isSupportedInRestrictedMode?: boolean;
 };
 
 /**
@@ -77,3 +78,22 @@ export interface Toolkit {
     responseGeneration?: string;
   };
 }
+
+/**
+ * Runtime context passed to tool handlers during execution.
+ * Used in restricted mode to identify the current user (e.g., via userEmail)
+ * so tools can enforce access control and filter results appropriately.
+ */
+export type ToolConfigurable = {
+  sessionId: string;
+  userEmail?: string;
+};
+
+/**
+ * Generic cache for storing user properties during restricted mode.
+ * Caches resolved user identifiers (e.g., userId, employeeId) to avoid repeated API lookups.
+ */
+export type UserPropertiesCache<T = any> = {
+  get(key: string): Promise<T | null>;
+  set(key: string, value: T): Promise<void>;
+};

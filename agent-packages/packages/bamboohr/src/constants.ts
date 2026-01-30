@@ -21,7 +21,6 @@ export const BAMBOOHR_CONSTANTS = {
   TIME_OFF_STATUS: {
     APPROVED: 'approved',
     DENIED: 'denied',
-    SUPERCEDED: 'superceded',
     REQUESTED: 'requested',
     CANCELED: 'canceled'
   } as const,

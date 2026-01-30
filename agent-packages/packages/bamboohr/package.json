@@ -1,23 +1,24 @@
 {
   "name": "@clearfeed-ai/quix-bamboohr-agent",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
+    "clean": "tsc --build --clean",
     "build": "yarn clean && tsc",
     "test": "jest",
     "test:integration": "jest --testNamePattern='Integration'",
+    "watch": "tsc --watch",
     "prepublishOnly": "yarn build"
   },
   "peerDependencies": {
     "@langchain/core": "1.1.8"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "2.1.0",
+    "@clearfeed-ai/quix-common-agent": "2.1.1",
     "axios": "^1.12.2"
   },
   "devDependencies": {
