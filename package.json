@@ -30,7 +30,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^2.1.0",
+    "@clearfeed-ai/quix-common-agent": "^2.1.1",
     "@clearfeed-ai/quix-github-agent": "^2.1.0",
     "@clearfeed-ai/quix-hubspot-agent": "^2.1.0",
     "@clearfeed-ai/quix-jira-agent": "^2.1.0",
