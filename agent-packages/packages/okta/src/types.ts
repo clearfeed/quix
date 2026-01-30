@@ -27,6 +27,8 @@ export type OktaAuthConfig = BaseConfig & (OktaTokenAuthConfig | OktaPrivateKeyA
 
 export interface ListUsersResponse extends BaseResponse<User[]> {}
 
+export interface SearchUsersResponse extends BaseResponse<User[]> {}
+
 export interface CreateUserResponse extends BaseResponse<User> {}
 
 export interface GetUserResponse extends BaseResponse<User> {}
@@ -69,8 +71,7 @@ export interface AssignUserToApplicationResponse extends BaseResponse<AppUser> {
 
 export interface UnassignUserFromApplicationResponse extends BaseResponse<string> {}
 
-export interface AssignGroupToApplicationResponse
-  extends BaseResponse<ApplicationGroupAssignment> {}
+export interface AssignGroupToApplicationResponse extends BaseResponse<ApplicationGroupAssignment> {}
 
 export interface UnassignGroupFromApplicationResponse extends BaseResponse<string> {}
 
