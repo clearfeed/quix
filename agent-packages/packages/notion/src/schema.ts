@@ -117,6 +117,7 @@ export const updatePagePropertiesSchema = z.object({
     .describe(
       'Properties to update. If omitted or empty, the tool returns current page details for the given page_id.'
     )
+    .nullable()
     .optional()
 });
 
@@ -150,8 +151,8 @@ const queryDatabaseSortSchema = z.union([
 
 export const queryDatabaseSchema = z.object({
   database_id: z.string().describe('The ID of the database to query. ' + commonIdDescription),
-  filter: z.record(z.string(), z.any()).describe('Filter conditions').optional(),
-  sorts: z.array(queryDatabaseSortSchema).describe('Sort conditions').optional(),
+  filter: z.record(z.string(), z.any()).describe('Filter conditions').nullable().optional(),
+  sorts: z.array(queryDatabaseSortSchema).describe('Sort conditions').nullable().optional(),
   start_cursor: nullableStringAsOptional.describe(
     'A string token used for pagination. Set this to the `next_cursor` value from the previous response to continue fetching the next page of results. Omit this to fetch the first page.'
   ),
@@ -164,32 +165,32 @@ export const retrieveDatabaseSchema = z.object({
 
 export const createDatabaseItemSchema = z.object({
   parent: z
-    .discriminatedUnion('type', [
+    .union([
       z.object({
-        type: z.literal('database_id'),
+        type: z.literal('database_id').optional(),
         database_id: notionIdSchema.describe(
           'The ID of the database to add the new page to. ' + commonIdDescription
         )
       }),
       z.object({
-        type: z.literal('page_id'),
+        type: z.literal('page_id').optional(),
         page_id: notionIdSchema.describe(
           'The ID of the page to add the new page to. ' + commonIdDescription
         )
       }),
       z.object({
-        type: z.literal('data_source_id'),
+        type: z.literal('data_source_id').optional(),
         data_source_id: notionIdSchema.describe(
           'The ID of the data source to add the new page to. ' + commonIdDescription
         )
       }),
       z.object({
-        type: z.literal('workspace'),
+        type: z.literal('workspace').optional(),
         workspace: z.literal(true).describe('Set true to create a top-level workspace page.')
       })
     ])
     .describe(
-      'Parent object for page creation. Supported: database_id, page_id, data_source_id, or workspace=true for root pages.'
+      'Parent object for page creation. Supported: `{ database_id }`, `{ page_id }`, `{ data_source_id }`, or `{ workspace: true }`. Optional `type` may be provided.'
     ),
   properties: z
     .record(z.string(), z.any())
@@ -198,13 +199,13 @@ export const createDatabaseItemSchema = z.object({
     .optional()
 });
 
-const createCommentParentSchema = z.discriminatedUnion('type', [
+const createCommentParentSchema = z.union([
   z.object({
-    type: z.literal('page_id'),
+    type: z.literal('page_id').optional(),
     page_id: z.string().describe('The ID of the page to comment on. ' + commonIdDescription)
   }),
   z.object({
-    type: z.literal('block_id'),
+    type: z.literal('block_id').optional(),
     block_id: z.string().describe('The ID of the block to comment on. ' + commonIdDescription)
   })
 ]);
@@ -214,16 +215,35 @@ const commentMarkdownSchema = z
   .min(1, 'Markdown content cannot be empty.')
   .describe('Markdown content for comment text.');
 
-export const createCommentSchema = z.object({
-  parent: createCommentParentSchema
-    .describe('Parent object that specifies the page or block.')
-    .optional(),
-  discussion_id: z
-    .string()
-    .describe('The ID of an existing discussion thread to add a comment to. ' + commonIdDescription)
-    .optional(),
-  markdown: commentMarkdownSchema
-});
+export const createCommentSchema = z
+  .object({
+    parent: createCommentParentSchema
+      .describe('Parent object that specifies the page or block.')
+      .nullable()
+      .optional(),
+    discussion_id: z
+      .string()
+      .describe(
+        'The ID of an existing discussion thread to add a comment to. ' + commonIdDescription
+      )
+      .nullable()
+      .optional(),
+    markdown: commentMarkdownSchema
+  })
+  .superRefine((value, ctx) => {
+    const hasParent = value.parent !== undefined && value.parent !== null;
+    const hasDiscussion =
+      value.discussion_id !== undefined &&
+      value.discussion_id !== null &&
+      value.discussion_id.trim().length > 0;
+
+    if (hasParent === hasDiscussion) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Provide exactly one of `parent` or `discussion_id`.'
+      });
+    }
+  });
 
 export const retrieveCommentsSchema = z.object({
   block_id: z
@@ -252,6 +272,7 @@ export const searchSchema = z.object({
     .describe(
       "Filter results by object type. Provide only `value`; the service will map to Notion's required `property: 'object'`."
     )
+    .nullable()
     .optional(),
   sort: z
     .object({
@@ -259,6 +280,7 @@ export const searchSchema = z.object({
       timestamp: z.enum(['last_edited_time'])
     })
     .describe('Sort order of results')
+    .nullable()
     .optional(),
   start_cursor: nullableStringAsOptional.describe(
     'A string token used for pagination. Set this to the `next_cursor` value from the previous response to continue fetching the next page of results. Omit this to fetch the first page.'
@@ -269,7 +291,7 @@ export const searchSchema = z.object({
 export const createDatabaseSchema = z.object({
   parent: z
     .object({
-      type: z.literal('page_id'),
+      type: z.literal('page_id').optional(),
       page_id: z
         .string()
         .describe('The ID of the page to create the database in. ' + commonIdDescription)

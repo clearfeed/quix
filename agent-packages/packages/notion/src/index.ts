@@ -62,16 +62,19 @@ function optionalString(value?: string | null): string | undefined {
 }
 
 function toCreatePageParent(parent: CreateDatabaseItemArgs['parent']) {
-  switch (parent.type) {
-    case 'database_id':
-      return { database_id: parent.database_id };
-    case 'page_id':
-      return { page_id: parent.page_id };
-    case 'data_source_id':
-      return { data_source_id: parent.data_source_id };
-    case 'workspace':
-      return { workspace: true };
+  if ('database_id' in parent) {
+    return { database_id: parent.database_id };
   }
+
+  if ('page_id' in parent) {
+    return { page_id: parent.page_id };
+  }
+
+  if ('data_source_id' in parent) {
+    return { data_source_id: parent.data_source_id };
+  }
+
+  return { workspace: true };
 }
 
 export class NotionService implements BaseService<NotionConfig> {
@@ -298,7 +301,8 @@ export class NotionService implements BaseService<NotionConfig> {
   ): Promise<BaseResponse<{ page: UpdatePageResponse | GetPageResponse }>> {
     try {
       const { page_id, properties } = args;
-      const hasProperties = properties !== undefined && Object.keys(properties).length > 0;
+      const hasProperties =
+        properties !== undefined && properties !== null && Object.keys(properties).length > 0;
       if (!hasProperties) {
         const page = await this.client.pages.retrieve({ page_id });
         return {
@@ -371,7 +375,7 @@ export class NotionService implements BaseService<NotionConfig> {
       const { database_id, sorts, start_cursor, page_size, filter } = args;
       const normalizedStartCursor = optionalString(start_cursor);
       const hasSorts = Array.isArray(sorts) && sorts.length > 0;
-      const hasFilter = filter !== undefined && Object.keys(filter).length > 0;
+      const hasFilter = filter !== undefined && filter !== null && Object.keys(filter).length > 0;
 
       const response = await this.client.databases.query({
         database_id,
@@ -436,13 +440,15 @@ export class NotionService implements BaseService<NotionConfig> {
       if (!normalizedRichText) {
         throw new Error('Markdown content is required');
       }
-      const hasParent = parent !== undefined;
-      const hasDiscussion = discussion_id !== undefined && discussion_id.trim().length > 0;
+      const normalizedDiscussionId = optionalString(discussion_id);
+      const hasParent = parent !== undefined && parent !== null;
+      const hasDiscussion =
+        normalizedDiscussionId !== undefined && normalizedDiscussionId.trim().length > 0;
       if (hasParent === hasDiscussion) {
         throw new Error('Provide exactly one of `parent` or `discussion_id`');
       }
       const requestBody: CreateCommentParameters = hasParent
-        ? parent.type === 'page_id'
+        ? 'page_id' in parent
           ? {
               parent: { page_id: parent.page_id },
               rich_text: normalizedRichText
@@ -452,7 +458,7 @@ export class NotionService implements BaseService<NotionConfig> {
               rich_text: normalizedRichText
             }
         : {
-            discussion_id: discussion_id as string,
+            discussion_id: normalizedDiscussionId as string,
             rich_text: normalizedRichText
           };
       const response = await this.client.comments.create(requestBody);
@@ -492,13 +498,13 @@ export class NotionService implements BaseService<NotionConfig> {
       const normalizedStartCursor = optionalString(start_cursor);
       const searchParams: SearchParameters = { page_size };
       if (!isEmpty(normalizedQuery)) searchParams.query = normalizedQuery;
-      if (filter) {
+      if (filter !== undefined && filter !== null) {
         searchParams.filter = {
           property: 'object',
           value: filter.value
         };
       }
-      if (sort) searchParams.sort = sort;
+      if (sort !== undefined && sort !== null) searchParams.sort = sort;
       if (!isEmpty(normalizedStartCursor)) searchParams.start_cursor = normalizedStartCursor;
       const response = await this.client.search(searchParams);
       return {
