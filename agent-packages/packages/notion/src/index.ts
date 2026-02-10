@@ -147,7 +147,7 @@ export class NotionService implements BaseService<NotionConfig> {
       const { block_id, children, after } = args;
       const normalizedAfter = optionalString(after);
       const validChildren = children.map((child) => {
-        const richText = markdownToNotionRichText(child.markdown);
+        const richText = markdownToNotionRichText(child.markdown, { allowBlank: true });
         if (!richText) {
           throw new Error('Each child block must include markdown');
         }
@@ -239,7 +239,7 @@ export class NotionService implements BaseService<NotionConfig> {
   async updateBlock(args: UpdateBlockArgs): Promise<BaseResponse<{ block: UpdateBlockResponse }>> {
     try {
       const { block_id, type, markdown } = args;
-      const normalizedRichText = markdownToNotionRichText(markdown);
+      const normalizedRichText = markdownToNotionRichText(markdown, { allowBlank: true });
       if (!normalizedRichText) {
         throw new Error('Markdown content is required');
       }

@@ -52,7 +52,6 @@ export const blockObjectSchema = z
       .describe('Type of the block. Not all types are supported for creation via API.'),
     markdown: z
       .string()
-      .min(1, 'Markdown content cannot be empty.')
       .describe('Markdown content for this block (supports common inline formatting).'),
     color: richTextColorSchema.describe('The color of the block.').default('default'),
     children: z
@@ -102,8 +101,7 @@ export const updateBlockSchema = z.object({
     .describe('The type of block to update.'),
   markdown: z
     .string()
-    .describe('Markdown content for the updated block.')
-    .min(1, 'Markdown content cannot be empty.')
+    .describe('Markdown content for the updated block. Use an empty string to clear content.')
 });
 
 export const retrievePageSchema = z.object({

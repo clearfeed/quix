@@ -6,6 +6,10 @@ import type {
   NotionTextItem
 } from './types';
 
+type MarkdownToNotionRichTextOptions = {
+  allowBlank?: boolean;
+};
+
 function isBlank(value?: string): boolean {
   return value === undefined || value.trim().length === 0;
 }
@@ -36,6 +40,21 @@ function isLikelyLinkTarget(target: string): boolean {
 
   // Accept absolute URLs/schemes (including mailto:) plus relative and anchor links.
   return /^(?:[A-Za-z][A-Za-z0-9+.-]*:|\/|#)/.test(target.trim());
+}
+
+function extractMarkdownLinkTarget(target: string): string | undefined {
+  const normalized = target.trim();
+  if (isBlank(normalized)) {
+    return undefined;
+  }
+
+  // Support markdown link titles: [label](url "title"), [label](url 'title'), [label](url (title))
+  const match = normalized.match(/^(\S+)(?:\s+(?:"[^"]*"|'[^']*'|\([^)]*\)))?$/);
+  if (!match) {
+    return undefined;
+  }
+
+  return match[1];
 }
 
 function findMarkdownLink(text: string): MarkdownToken | undefined {
@@ -83,8 +102,9 @@ function findMarkdownLink(text: string): MarkdownToken | undefined {
     }
 
     const label = text.slice(openBracket + 1, closeBracket);
-    const url = text.slice(closeBracket + 2, cursor).trim();
-    if (isBlank(label) || !isLikelyLinkTarget(url)) {
+    const rawTarget = text.slice(closeBracket + 2, cursor).trim();
+    const url = extractMarkdownLinkTarget(rawTarget);
+    if (isBlank(label) || !url || !isLikelyLinkTarget(url)) {
       searchFrom = openBracket + 1;
       continue;
     }
@@ -222,9 +242,12 @@ function parseInlineMarkdown(
 
 // Converts markdown to the Notion rich_text request format.
 // This is intentionally a limited inline markdown subset.
-export function markdownToNotionRichText(markdown?: string): NotionRichText | undefined {
+export function markdownToNotionRichText(
+  markdown?: string,
+  options: MarkdownToNotionRichTextOptions = {}
+): NotionRichText | undefined {
   if (isBlank(markdown)) {
-    return undefined;
+    return options.allowBlank ? ([] as NotionRichText) : undefined;
   }
 
   const normalizedMarkdown = (markdown as string).replace(/\r\n/g, '\n');
