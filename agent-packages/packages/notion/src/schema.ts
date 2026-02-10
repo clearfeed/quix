@@ -215,35 +215,18 @@ const commentMarkdownSchema = z
   .min(1, 'Markdown content cannot be empty.')
   .describe('Markdown content for comment text.');
 
-export const createCommentSchema = z
-  .object({
-    parent: createCommentParentSchema
-      .describe('Parent object that specifies the page or block.')
-      .nullable()
-      .optional(),
-    discussion_id: z
-      .string()
-      .describe(
-        'The ID of an existing discussion thread to add a comment to. ' + commonIdDescription
-      )
-      .nullable()
-      .optional(),
-    markdown: commentMarkdownSchema
-  })
-  .superRefine((value, ctx) => {
-    const hasParent = value.parent !== undefined && value.parent !== null;
-    const hasDiscussion =
-      value.discussion_id !== undefined &&
-      value.discussion_id !== null &&
-      value.discussion_id.trim().length > 0;
-
-    if (hasParent === hasDiscussion) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Provide exactly one of `parent` or `discussion_id`.'
-      });
-    }
-  });
+export const createCommentSchema = z.object({
+  parent: createCommentParentSchema
+    .describe('Parent object that specifies the page or block.')
+    .nullable()
+    .optional(),
+  discussion_id: z
+    .string()
+    .describe('The ID of an existing discussion thread to add a comment to. ' + commonIdDescription)
+    .nullable()
+    .optional(),
+  markdown: commentMarkdownSchema
+});
 
 export const retrieveCommentsSchema = z.object({
   block_id: z
