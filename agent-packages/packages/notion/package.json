@@ -1,13 +1,13 @@
 {
   "name": "@clearfeed-ai/quix-notion-agent",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
+    "clean": "tsc --build --clean",
     "build": "yarn clean && tsc",
     "test": "jest",
     "prepublishOnly": "yarn build",

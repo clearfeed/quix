@@ -75,7 +75,8 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
     {
       tool: tool(async (args: RetrieveBlockArgs) => service.retrieveBlock(args), {
         name: 'notion_retrieve_block',
-        description: 'Retrieve a block from Notion',
+        description:
+          'Use when you already have a block_id and need that single block object (not its children).',
         schema: retrieveBlockSchema
       }),
       operations: [ToolOperation.READ]
@@ -84,7 +85,8 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
     {
       tool: tool(async (args: RetrieveBlockChildrenArgs) => service.retrieveBlockChildren(args), {
         name: 'notion_retrieve_block_children',
-        description: 'Retrieve the children of a block',
+        description:
+          'Use when you need nested content under a block/page. This returns child blocks and supports pagination.',
         schema: retrieveBlockChildrenSchema
       }),
       operations: [ToolOperation.READ]
@@ -94,7 +96,7 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
       tool: tool(async (args: AppendBlockChildrenArgs) => service.appendBlockChildren(args), {
         name: 'notion_append_block_children',
         description:
-          "Append new children blocks to a specified parent block in Notion. Requires insert content capabilities. You can optionally specify the 'after' parameter to append after a certain block.",
+          'Use to add new child blocks under a page/block. Provide each child with `type` + `markdown`; optionally use `after` to insert after a specific child block.',
         schema: appendBlockChildrenSchema
       }),
       operations: [ToolOperation.CREATE]
@@ -103,7 +105,7 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
     {
       tool: tool(async (args: DeleteBlockArgs) => service.deleteBlock(args), {
         name: 'notion_delete_block',
-        description: 'Delete a block in Notion',
+        description: 'Use to delete a specific block by block_id (not a full page).',
         schema: deleteBlockSchema
       }),
       operations: [ToolOperation.DELETE]
@@ -113,7 +115,7 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
       tool: tool(async (args: UpdateBlockArgs) => service.updateBlock(args), {
         name: 'notion_update_block',
         description:
-          'Update the content of a block in Notion based on its type. The update replaces the entire value for a given field.',
+          'Use to replace text content of an existing supported block (paragraph/heading). Provide `type` and `markdown`.',
         schema: updateBlockSchema
       }),
       operations: [ToolOperation.UPDATE]
@@ -122,7 +124,7 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
     {
       tool: tool(async (args: RetrievePageArgs) => service.retrievePage(args), {
         name: 'notion_retrieve_page',
-        description: 'Retrieve a page from Notion',
+        description: 'Use when you already have a page_id and need the page object.',
         schema: retrievePageSchema
       }),
       operations: [ToolOperation.READ]
@@ -131,7 +133,8 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
     {
       tool: tool(async (args: DeleteOrArchivePageArgs) => service.deleteOrArchivePage(args), {
         name: 'notion_delete_or_archive_page',
-        description: 'Delete or archive a page in Notion',
+        description:
+          'Use to archive/delete a page by page_id. Prefer this over block deletion for full pages.',
         schema: deleteOrArchivePageSchema
       }),
       operations: [ToolOperation.DELETE]
@@ -140,7 +143,8 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
     {
       tool: tool(async (args: UpdatePagePropertiesArgs) => service.updatePageProperties(args), {
         name: 'notion_update_page_properties',
-        description: 'Update properties of a page or an item in a Notion database',
+        description:
+          'Use only to update page/database-item properties. Always provide a non-empty `properties` object; if you only have page_id and want details, use `notion_retrieve_page`.',
         schema: updatePagePropertiesSchema
       }),
       operations: [ToolOperation.UPDATE]
@@ -149,7 +153,8 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
     {
       tool: tool(async (args: QueryDatabaseArgs) => service.queryDatabase(args), {
         name: 'notion_query_database',
-        description: 'Query a database in Notion',
+        description:
+          'Use when you have a database_id and want matching items/rows, with optional filter/sorts/pagination.',
         schema: queryDatabaseSchema
       }),
       operations: [ToolOperation.READ]
@@ -158,7 +163,8 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
     {
       tool: tool(async (args: CreateDatabaseArgs) => service.createDatabase(args), {
         name: 'notion_create_database',
-        description: 'Create a new database in Notion',
+        description:
+          'Use to create a new database under a parent page. Provide `parent.page_id`, `title_markdown`, and `properties` schema.',
         schema: createDatabaseSchema
       }),
       operations: [ToolOperation.CREATE]
@@ -167,7 +173,8 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
     {
       tool: tool(async (args: RetrieveDatabaseArgs) => service.retrieveDatabase(args), {
         name: 'notion_retrieve_database',
-        description: 'Retrieve a database in Notion',
+        description:
+          'Use when you have a database_id and need database metadata/schema (not queried items).',
         schema: retrieveDatabaseSchema
       }),
       operations: [ToolOperation.READ]
@@ -176,7 +183,8 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
     {
       tool: tool(async (args: CreateDatabaseItemArgs) => service.createDatabaseItem(args), {
         name: 'notion_create_database_item',
-        description: 'Create a new item (page) in a Notion database',
+        description:
+          'Use to create a new Notion page/item under `parent.database_id`, `parent.page_id`, `parent.data_source_id`, or at root with `parent.workspace=true`. ID parents must be real Notion UUIDs (never list indexes like "1").',
         schema: createDatabaseItemSchema
       }),
       operations: [ToolOperation.CREATE]
@@ -186,7 +194,7 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
       tool: tool(async (args: CreateCommentArgs) => service.createComment(args), {
         name: 'notion_create_comment',
         description:
-          "Create a comment in Notion. This requires the integration to have 'insert comment' capabilities. You can either specify a page parent or a discussion_id, but not both.",
+          'Use to add a comment. Provide either `parent` (page_id/block_id) or `discussion_id` (exactly one), plus `markdown` body.',
         schema: createCommentSchema
       }),
       operations: [ToolOperation.CREATE]
@@ -195,8 +203,7 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
     {
       tool: tool(async (args: RetrieveCommentsArgs) => service.retrieveComments(args), {
         name: 'notion_retrieve_comments',
-        description:
-          "Retrieve a list of unresolved comments from a Notion page or block. Requires the integration to have 'read comment' capabilities.",
+        description: 'Use to list unresolved comments for a block/page id; supports pagination.',
         schema: retrieveCommentsSchema
       }),
       operations: [ToolOperation.READ]
@@ -205,7 +212,8 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
     {
       tool: tool(async (args: SearchArgs) => service.search(args), {
         name: 'notion_search',
-        description: 'Search pages or databases by title in Notion',
+        description:
+          'Use to discover pages/databases by text query when IDs are unknown. Optional filter shape is `{ "value": "page" | "database" }`.',
         schema: searchSchema
       }),
       operations: [ToolOperation.READ]
@@ -214,7 +222,7 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
     {
       tool: tool(async (args: ListAllUsersArgs) => service.listAllUsers(args), {
         name: 'notion_list_all_users',
-        description: 'List all users in the Notion workspace.',
+        description: 'Use to enumerate workspace users, optionally with pagination.',
         schema: listAllUsersSchema
       }),
       operations: [ToolOperation.READ]
@@ -223,7 +231,7 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
     {
       tool: tool(async (args: RetrieveUserArgs) => service.retrieveUser(args), {
         name: 'notion_retrieve_user',
-        description: 'Retrieve a specific user by user_id in Notion.',
+        description: 'Use when a specific user_id is known and only that user is needed.',
         schema: retrieveUserSchema
       }),
       operations: [ToolOperation.READ]
@@ -232,7 +240,8 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
     {
       tool: tool(async () => service.retrieveBotUser(), {
         name: 'notion_retrieve_bot_user',
-        description: 'Retrieve the bot user associated with the current token in Notion',
+        description:
+          'Use to identify the integration/bot account associated with the current token.',
         schema: retrieveBotUserSchema
       }),
       operations: [ToolOperation.READ]

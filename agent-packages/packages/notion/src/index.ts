@@ -52,9 +52,14 @@ import {
   UpdatePageResponse
 } from '@notionhq/client/build/src/api-endpoints';
 import { isEmpty } from 'lodash';
+import { markdownToNotionRichText } from './markdown-to-rich-text';
 
 export * from './types';
 export * from './tools';
+
+function optionalString(value?: string | null): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
 
 export class NotionService implements BaseService<NotionConfig> {
   private client: Client;
@@ -127,11 +132,17 @@ export class NotionService implements BaseService<NotionConfig> {
   ): Promise<BaseResponse<{ block_children: AppendBlockChildrenResponse }>> {
     try {
       const { block_id, children, after } = args;
+      const normalizedAfter = optionalString(after);
       const validChildren = children.map((child) => {
+        const richText = markdownToNotionRichText(child.markdown);
+        if (!richText) {
+          throw new Error('Each child block must include markdown');
+        }
+
         return {
           object: 'block',
           [child.type]: {
-            rich_text: child.rich_text,
+            rich_text: richText,
             color: child.color,
             ...(child.children && { children: child.children })
           }
@@ -146,8 +157,8 @@ export class NotionService implements BaseService<NotionConfig> {
        * Sometimes the LLM provides the `block_id` and `after` as same string, which throws error.
        * Added this check to prevent that.
        */
-      if (!isEmpty(after) && after !== block_id) {
-        body.after = after;
+      if (!isEmpty(normalizedAfter) && normalizedAfter !== block_id) {
+        body.after = normalizedAfter;
       }
       const response = await this.client.blocks.children.append(body);
       return {
@@ -179,11 +190,12 @@ export class NotionService implements BaseService<NotionConfig> {
   ): Promise<BaseResponse<{ block_children: ListBlockChildrenResponse }>> {
     try {
       const { block_id, start_cursor, page_size } = args;
+      const normalizedStartCursor = optionalString(start_cursor);
 
       const body: ListBlockChildrenParameters = {
         block_id,
         page_size: page_size ?? 100,
-        ...(isEmpty(start_cursor) ? {} : { start_cursor })
+        ...(isEmpty(normalizedStartCursor) ? {} : { start_cursor: normalizedStartCursor })
       };
 
       const response = await this.client.blocks.children.list(body);
@@ -213,10 +225,14 @@ export class NotionService implements BaseService<NotionConfig> {
 
   async updateBlock(args: UpdateBlockArgs): Promise<BaseResponse<{ block: UpdateBlockResponse }>> {
     try {
-      const { block_id, type, rich_text } = args;
+      const { block_id, type, markdown } = args;
+      const normalizedRichText = markdownToNotionRichText(markdown);
+      if (!normalizedRichText) {
+        throw new Error('Markdown content is required');
+      }
 
       const blockData: Record<string, any> = {};
-      blockData[type] = { rich_text };
+      blockData[type] = { rich_text: normalizedRichText };
 
       const response = await this.client.blocks.update({
         block_id,
@@ -285,9 +301,10 @@ export class NotionService implements BaseService<NotionConfig> {
   async listAllUsers(args: ListAllUsersArgs): Promise<BaseResponse<{ users: ListUsersResponse }>> {
     try {
       const { start_cursor, page_size } = args;
+      const normalizedStartCursor = optionalString(start_cursor);
       const response = await this.client.users.list({
         page_size,
-        ...(isEmpty(start_cursor) ? {} : { start_cursor })
+        ...(isEmpty(normalizedStartCursor) ? {} : { start_cursor: normalizedStartCursor })
       });
       return {
         success: true,
@@ -330,13 +347,16 @@ export class NotionService implements BaseService<NotionConfig> {
   ): Promise<BaseResponse<{ database: QueryDatabaseResponse }>> {
     try {
       const { database_id, sorts, start_cursor, page_size, filter } = args;
+      const normalizedStartCursor = optionalString(start_cursor);
+      const hasSorts = Array.isArray(sorts) && sorts.length > 0;
+      const hasFilter = filter !== undefined && Object.keys(filter).length > 0;
 
       const response = await this.client.databases.query({
         database_id,
-        sorts: sorts as QueryDatabaseParameters['sorts'],
         page_size,
-        filter: filter as QueryDatabaseParameters['filter'],
-        ...(isEmpty(start_cursor) ? {} : { start_cursor })
+        ...(hasSorts ? { sorts } : {}),
+        ...(hasFilter ? { filter: filter as QueryDatabaseParameters['filter'] } : {}),
+        ...(isEmpty(normalizedStartCursor) ? {} : { start_cursor: normalizedStartCursor })
       });
 
       return {
@@ -371,7 +391,8 @@ export class NotionService implements BaseService<NotionConfig> {
     try {
       const { parent, properties } = args;
       const response = await this.client.pages.create({
-        parent,
+        // SDK types can lag API parent variants (for example workspace/data_source_id).
+        parent: parent as any,
         properties: properties ? properties : {}
       });
       return {
@@ -387,22 +408,32 @@ export class NotionService implements BaseService<NotionConfig> {
     args: CreateCommentArgs
   ): Promise<BaseResponse<{ comment: CreateCommentResponse }>> {
     try {
-      const { parent, discussion_id, rich_text } = args;
-      if (!parent && !discussion_id) {
-        throw new Error('Either parent or discussion_id must be provided');
+      const { markdown } = args;
+      const normalizedRichText = markdownToNotionRichText(markdown);
+      if (!normalizedRichText) {
+        throw new Error('Markdown content is required');
       }
-      let requestBody!: CreateCommentParameters;
-      if (parent) {
-        requestBody = {
-          parent,
-          rich_text
-        };
-      } else if (discussion_id) {
-        requestBody = {
-          discussion_id,
-          rich_text
-        };
-      }
+      const requestBody: CreateCommentParameters =
+        'parent' in args
+          ? args.parent.type === 'page_id'
+            ? {
+                parent: {
+                  type: 'page_id',
+                  page_id: args.parent.page_id
+                },
+                rich_text: normalizedRichText
+              }
+            : {
+                parent: {
+                  type: 'block_id',
+                  block_id: args.parent.block_id
+                },
+                rich_text: normalizedRichText
+              }
+          : {
+              discussion_id: args.discussion_id,
+              rich_text: normalizedRichText
+            };
       const response = await this.client.comments.create(requestBody);
       return {
         success: true,
@@ -418,10 +449,11 @@ export class NotionService implements BaseService<NotionConfig> {
   ): Promise<BaseResponse<{ comments: ListCommentsResponse }>> {
     try {
       const { block_id, start_cursor, page_size } = args;
+      const normalizedStartCursor = optionalString(start_cursor);
       const response = await this.client.comments.list({
         block_id,
         page_size,
-        ...(isEmpty(start_cursor) ? {} : { start_cursor })
+        ...(isEmpty(normalizedStartCursor) ? {} : { start_cursor: normalizedStartCursor })
       });
       return {
         success: true,
@@ -435,11 +467,18 @@ export class NotionService implements BaseService<NotionConfig> {
   async search(args: SearchArgs): Promise<BaseResponse<SearchResponse>> {
     try {
       const { query, filter, sort, start_cursor, page_size } = args;
+      const normalizedQuery = optionalString(query);
+      const normalizedStartCursor = optionalString(start_cursor);
       const searchParams: SearchParameters = { page_size };
-      if (query) searchParams.query = query;
-      if (filter) searchParams.filter = filter;
+      if (!isEmpty(normalizedQuery)) searchParams.query = normalizedQuery;
+      if (filter) {
+        searchParams.filter = {
+          property: 'object',
+          value: filter.value
+        };
+      }
       if (sort) searchParams.sort = sort;
-      if (!isEmpty(start_cursor)) searchParams.start_cursor = start_cursor;
+      if (!isEmpty(normalizedStartCursor)) searchParams.start_cursor = normalizedStartCursor;
       const response = await this.client.search(searchParams);
       return {
         success: true,
@@ -454,10 +493,14 @@ export class NotionService implements BaseService<NotionConfig> {
     args: CreateDatabaseArgs
   ): Promise<BaseResponse<{ database: CreateDatabaseResponse }>> {
     try {
-      const { parent, title, properties } = args;
+      const { parent, title_markdown, properties } = args;
+      const normalizedTitle = markdownToNotionRichText(title_markdown);
+      if (!normalizedTitle) {
+        throw new Error('Database title markdown is required');
+      }
       const response = await this.client.databases.create({
         parent,
-        title,
+        title: normalizedTitle,
         properties
       });
       return {
