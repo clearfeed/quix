@@ -1,3 +1,4 @@
+import { describe, expect, it } from '@jest/globals';
 import { markdownToNotionRichText } from './markdown-to-rich-text';
 
 describe('markdownToNotionRichText', () => {
