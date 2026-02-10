@@ -295,9 +295,18 @@ export class NotionService implements BaseService<NotionConfig> {
 
   async updatePageProperties(
     args: UpdatePagePropertiesArgs
-  ): Promise<BaseResponse<{ page: UpdatePageResponse }>> {
+  ): Promise<BaseResponse<{ page: UpdatePageResponse | GetPageResponse }>> {
     try {
       const { page_id, properties } = args;
+      const hasProperties = properties !== undefined && Object.keys(properties).length > 0;
+      if (!hasProperties) {
+        const page = await this.client.pages.retrieve({ page_id });
+        return {
+          success: true,
+          data: { page }
+        };
+      }
+
       const response = await this.client.pages.update({
         page_id,
         properties

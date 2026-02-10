@@ -144,7 +144,7 @@ export function createNotionToolsExport(config: NotionConfig): Toolkit {
       tool: tool(async (args: UpdatePagePropertiesArgs) => service.updatePageProperties(args), {
         name: 'notion_update_page_properties',
         description:
-          'Use only to update page/database-item properties. Always provide a non-empty `properties` object; if you only have page_id and want details, use `notion_retrieve_page`.',
+          'Use to update page/database-item properties. If `properties` is omitted/empty, this returns current page details for the given page_id.',
         schema: updatePagePropertiesSchema
       }),
       operations: [ToolOperation.UPDATE]

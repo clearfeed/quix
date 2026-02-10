@@ -114,12 +114,10 @@ export const updatePagePropertiesSchema = z.object({
     .describe('The ID of the page or database item to update. ' + commonIdDescription),
   properties: z
     .record(z.string(), z.any())
-    .refine((value) => Object.keys(value).length > 0, {
-      message: 'Properties must include at least one field to update.'
-    })
     .describe(
-      'Properties to update. Required for updates and should include at least one field. If you only need to read a page, use retrieve page.'
+      'Properties to update. If omitted or empty, the tool returns current page details for the given page_id.'
     )
+    .optional()
 });
 
 export const deleteOrArchivePageSchema = z.object({
