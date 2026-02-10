@@ -216,28 +216,16 @@ const commentMarkdownSchema = z
   .min(1, 'Markdown content cannot be empty.')
   .describe('Markdown content for comment text.');
 
-const createCommentByParentSchema = z
-  .object({
-    parent: createCommentParentSchema.describe('Parent object that specifies the page or block.'),
-    markdown: commentMarkdownSchema
-  })
-  .strict();
-
-const createCommentByDiscussionSchema = z
-  .object({
-    discussion_id: z
-      .string()
-      .describe(
-        'The ID of an existing discussion thread to add a comment to. ' + commonIdDescription
-      ),
-    markdown: commentMarkdownSchema
-  })
-  .strict();
-
-export const createCommentSchema = z.union([
-  createCommentByParentSchema,
-  createCommentByDiscussionSchema
-]);
+export const createCommentSchema = z.object({
+  parent: createCommentParentSchema
+    .describe('Parent object that specifies the page or block.')
+    .optional(),
+  discussion_id: z
+    .string()
+    .describe('The ID of an existing discussion thread to add a comment to. ' + commonIdDescription)
+    .optional(),
+  markdown: commentMarkdownSchema
+});
 
 export const retrieveCommentsSchema = z.object({
   block_id: z

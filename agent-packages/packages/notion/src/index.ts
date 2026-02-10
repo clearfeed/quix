@@ -422,26 +422,30 @@ export class NotionService implements BaseService<NotionConfig> {
     args: CreateCommentArgs
   ): Promise<BaseResponse<{ comment: CreateCommentResponse }>> {
     try {
-      const { markdown } = args;
+      const { markdown, parent, discussion_id } = args;
       const normalizedRichText = markdownToNotionRichText(markdown);
       if (!normalizedRichText) {
         throw new Error('Markdown content is required');
       }
-      const requestBody: CreateCommentParameters =
-        'parent' in args
-          ? args.parent.type === 'page_id'
-            ? {
-                parent: { page_id: args.parent.page_id },
-                rich_text: normalizedRichText
-              }
-            : {
-                parent: { block_id: args.parent.block_id },
-                rich_text: normalizedRichText
-              }
-          : {
-              discussion_id: args.discussion_id,
+      const hasParent = parent !== undefined;
+      const hasDiscussion = discussion_id !== undefined && discussion_id.trim().length > 0;
+      if (hasParent === hasDiscussion) {
+        throw new Error('Provide exactly one of `parent` or `discussion_id`');
+      }
+      const requestBody: CreateCommentParameters = hasParent
+        ? parent.type === 'page_id'
+          ? {
+              parent: { page_id: parent.page_id },
               rich_text: normalizedRichText
-            };
+            }
+          : {
+              parent: { block_id: parent.block_id },
+              rich_text: normalizedRichText
+            }
+        : {
+            discussion_id: discussion_id as string,
+            rich_text: normalizedRichText
+          };
       const response = await this.client.comments.create(requestBody);
       return {
         success: true,
