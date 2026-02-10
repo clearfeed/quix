@@ -138,9 +138,14 @@ function findNextMarkdownToken(text: string): MarkdownToken | undefined {
   const tokenCandidates: MarkdownToken[] = [
     findMarkdownLink(text),
     findRegexToken(text, 'code', /`([^`\n]+)`/, [1]),
-    findRegexToken(text, 'bold', /\*\*([^\n*]+)\*\*|__([^\n_]+)__/, [1, 2]),
-    findRegexToken(text, 'italic', /(?<!\*)\*([^*\n]+)\*(?!\*)|(?<!_)_([^_\n]+)_(?!_)/, [1, 2]),
-    findRegexToken(text, 'strikethrough', /~~([^\n~]+)~~/, [1])
+    findRegexToken(text, 'bold', /\*\*([^\n]+?)\*\*|__([^\n]+?)__/, [1, 2]),
+    findRegexToken(
+      text,
+      'italic',
+      /(?<!\*)\*(?!\*)([^\n]+?)(?<!\*)\*(?!\*)|(?<!_)_(?!_)([^\n]+?)(?<!_)_(?!_)/,
+      [1, 2]
+    ),
+    findRegexToken(text, 'strikethrough', /~~([^\n]+?)~~/, [1])
   ].filter((token): token is MarkdownToken => token !== undefined);
 
   if (tokenCandidates.length === 0) {

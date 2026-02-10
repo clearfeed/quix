@@ -61,6 +61,19 @@ function optionalString(value?: string | null): string | undefined {
   return typeof value === 'string' ? value : undefined;
 }
 
+function toCreatePageParent(parent: CreateDatabaseItemArgs['parent']) {
+  switch (parent.type) {
+    case 'database_id':
+      return { database_id: parent.database_id };
+    case 'page_id':
+      return { page_id: parent.page_id };
+    case 'data_source_id':
+      return { data_source_id: parent.data_source_id };
+    case 'workspace':
+      return { workspace: true };
+  }
+}
+
 export class NotionService implements BaseService<NotionConfig> {
   private client: Client;
 
@@ -390,9 +403,10 @@ export class NotionService implements BaseService<NotionConfig> {
   ): Promise<BaseResponse<{ page: CreatePageResponse }>> {
     try {
       const { parent, properties } = args;
+      const parentForApi = toCreatePageParent(parent);
       const response = await this.client.pages.create({
         // SDK types can lag API parent variants (for example workspace/data_source_id).
-        parent: parent as any,
+        parent: parentForApi as any,
         properties: properties ? properties : {}
       });
       return {
@@ -417,17 +431,11 @@ export class NotionService implements BaseService<NotionConfig> {
         'parent' in args
           ? args.parent.type === 'page_id'
             ? {
-                parent: {
-                  type: 'page_id',
-                  page_id: args.parent.page_id
-                },
+                parent: { page_id: args.parent.page_id },
                 rich_text: normalizedRichText
               }
             : {
-                parent: {
-                  type: 'block_id',
-                  block_id: args.parent.block_id
-                },
+                parent: { block_id: args.parent.block_id },
                 rich_text: normalizedRichText
               }
           : {
