@@ -47,7 +47,7 @@
     "@langchain/langgraph": "1.0.7",
     "@langchain/openai": "1.2.0",
     "langchain": "^1.2.3",
-    "@modelcontextprotocol/sdk": "^1.25.2",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "@n8n/json-schema-to-zod": "^1.6.0",
     "@nestjs/axios": "^4.0.0",
     "@nestjs/cache-manager": "^2.3.0",
