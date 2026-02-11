@@ -2514,9 +2514,9 @@ kleur@^3.0.3:
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
 
 "langsmith@>=0.4.0 <1.0.0":
-  version "0.4.5"
-  resolved "https://registry.yarnpkg.com/langsmith/-/langsmith-0.4.5.tgz#4a2b23fe3c64bfaaab11269de47c572152bd89a6"
-  integrity sha512-9N4JSQLz6fWiZwVXaiy0erlvNHlC68EtGJZG2OX+1y9mqj7KvKSL+xJnbCFc+ky3JN8s1d6sCfyyDdi4uDdLnQ==
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/langsmith/-/langsmith-0.5.2.tgz#9ab70755d396669ad6a59086d830c54e13eb9f88"
+  integrity sha512-CfkcQsiajtTWknAcyItvJsKEQdY2VgDpm6U8pRI9wnM07mevnOv5EF+RcqWGwx37SEUxtyi2RXMwnKW8b06JtA==
   dependencies:
     "@types/uuid" "^10.0.0"
     chalk "^4.1.2"
