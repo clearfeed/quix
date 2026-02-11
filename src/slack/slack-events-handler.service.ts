@@ -212,6 +212,13 @@ export class SlackEventsHandlerService {
     this.logger.log('Received app mention event', {
       event: pick(event, ['event_ts', 'type', 'team', 'channel', 'user', 'ts', 'thread_ts'])
     });
+    if (event.subtype === 'message_changed') {
+      this.logger.log('Ignoring app mention on edited message', {
+        eventTs: event.event_ts,
+        channel: event.channel
+      });
+      return;
+    }
     if (!event.team) return;
     let slackWorkspace: SlackWorkspace | undefined;
     const replyThreadTs = event.thread_ts || event.ts;
