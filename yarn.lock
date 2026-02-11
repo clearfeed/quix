@@ -358,10 +358,17 @@
   resolved "https://registry.yarnpkg.com/@cfworker/json-schema/-/json-schema-4.1.1.tgz#4a2a3947ee9fa7b7c24be981422831b8674c3be6"
   integrity sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==
 
-"@clearfeed-ai/quix-common-agent@2.1.0", "@clearfeed-ai/quix-common-agent@^2.1.0":
+"@clearfeed-ai/quix-common-agent@2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-2.1.0.tgz#3cbb31bfd6a57da470f6a1fe5c81c824bd79febd"
   integrity sha512-qROfbukfUeF6/AvMcml7u+SsUWgICMQh1lvPj7/pFW3uEltn5hvDE7oYcV9mbT2XmI3fIi6b808HD6NG9CQGXA==
+  dependencies:
+    zod "^4.3.5"
+
+"@clearfeed-ai/quix-common-agent@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-2.1.1.tgz#2220e3425073643e298946632dc5121c04d89c01"
+  integrity sha512-VJYb9fjiTA3gmxPp1OU7MPmIiAunULTqOhpFOIvX02YOEH0TN2pKc91c8W9QkbGck5t/vpX+Vf11Q4B7dmr2Qw==
   dependencies:
     zod "^4.3.5"
 
@@ -407,10 +414,10 @@
     "@notionhq/client" "^3.0.1"
     lodash "^4.17.21"
 
-"@clearfeed-ai/quix-okta-agent@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-okta-agent/-/quix-okta-agent-2.1.0.tgz#3b87943fc200253cb089d15cdb61135da5fc14b5"
-  integrity sha512-kRjNHzpDRTyOyaKJF8eBFODLMcI+MPrnwSKH877gAdkNG5rs59mTwEoWYAPme601wjCziO1mvflZAC7FOvffXQ==
+"@clearfeed-ai/quix-okta-agent@^2.1.2":
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-okta-agent/-/quix-okta-agent-2.1.2.tgz#c167ff1bfa4cd736bbdec6986af2b1f526423a55"
+  integrity sha512-aCezJtuyIx27Ae+TDRl9B0JzWwRUKkM2ad/O3aQzh10D9p6Z0UQxjN8uh7TCOZ100c4WYww+ww3J3gWdQ700ig==
   dependencies:
     "@clearfeed-ai/quix-common-agent" "2.1.0"
     "@okta/okta-sdk-nodejs" "^7.0.1"

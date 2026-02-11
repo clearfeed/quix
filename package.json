@@ -30,12 +30,12 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "^2.1.0",
+    "@clearfeed-ai/quix-common-agent": "^2.1.1",
     "@clearfeed-ai/quix-github-agent": "^2.1.0",
     "@clearfeed-ai/quix-hubspot-agent": "^2.1.0",
     "@clearfeed-ai/quix-jira-agent": "^2.1.0",
     "@clearfeed-ai/quix-notion-agent": "^2.1.0",
-    "@clearfeed-ai/quix-okta-agent": "^2.1.0",
+    "@clearfeed-ai/quix-okta-agent": "^2.1.2",
     "@clearfeed-ai/quix-jumpcloud-agent": "^2.1.0",
     "@clearfeed-ai/quix-postgres-agent": "^2.1.0",
     "@clearfeed-ai/quix-salesforce-agent": "^2.1.0",

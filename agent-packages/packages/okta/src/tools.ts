@@ -46,6 +46,14 @@ export const SCHEMAS = {
         'Search expression with filtering for user properties. Supports any user profile attribute (including custom attributes), status, created, activated, statusChanged, lastUpdated, id, and type.id. Operators: eq, sw, co, gt, ge, lt, le. Logical operators: and, or. Available statuses: STAGED, PROVISIONED, ACTIVE, RECOVERY, PASSWORD_EXPIRED, LOCKED_OUT, SUSPENDED, DEPROVISIONED - use whatever is required. Examples: "profile.department eq \\"Engineering\\"", "profile.firstName sw \\"John\\"", "status eq \\"ACTIVE\\"", "profile.department eq \\"Engineering\\" and status eq \\"ACTIVE\\"".'
       )
   }),
+  searchUsers: z.object({
+    limit: z.number().default(20).describe('Number of results to return (default 20)'),
+    search: z
+      .string()
+      .describe(
+        'Search expression with filtering for user properties. Supports any user profile attribute (including custom attributes), status, created, activated, statusChanged, lastUpdated, id, and type.id. Operators: eq, sw, co, gt, ge, lt, le. Logical operators: and, or. Available statuses: STAGED, PROVISIONED, ACTIVE, RECOVERY, PASSWORD_EXPIRED, LOCKED_OUT, SUSPENDED, DEPROVISIONED - use whatever is required. Examples: "profile.department eq \\"Engineering\\"", "profile.firstName sw \\"John\\"", "status eq \\"ACTIVE\\"", "profile.department eq \\"Engineering\\" and status eq \\"ACTIVE\\"".'
+      )
+  }),
   createUserSchema: z.object({
     profile: z.object({
       firstName: z.string().describe('First name of the user'),
@@ -234,6 +242,15 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
       }),
       operations: [ToolOperation.CREATE],
       isSupportedInRestrictedMode: false
+    },
+    {
+      tool: tool(async (args: z.infer<typeof SCHEMAS.searchUsers>) => service.searchUsers(args), {
+        name: 'search_okta_users',
+        description:
+          'Search users in Okta using the search or filter parameter to filter by any user properties, including profile attributes, status, and dates. Always use dates in extended format (e.g., 2013-06-01T00:00:00.000Z).',
+        schema: SCHEMAS.searchUsers
+      }),
+      operations: [ToolOperation.READ]
     },
     {
       tool: tool(

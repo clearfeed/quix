@@ -107,6 +107,10 @@ export class BambooHRService implements BaseService<BambooHRConfig> {
     }
   }
 
+  /**
+   * TODO: Cache output of the directory API https://clearfeed.atlassian.net/browse/APP-9846
+   *
+   */
   async getEmployeeIdByEmail(email: string): Promise<number | null> {
     const normalizedEmail = email.trim().toLowerCase();
     const url = buildApiUrl('/employees/directory', { limit: 1000 });
@@ -199,18 +203,18 @@ export class BambooHRService implements BaseService<BambooHRConfig> {
     params: CreateTimeOffRequestParams
   ): Promise<BaseResponse<{ message: string; requestId?: string }>> {
     try {
-      const requestData: Record<string, any> = {
+      const requestData: Record<string, unknown> = {
         start: params.start,
         end: params.end,
         timeOffTypeId: params.timeOffTypeId,
-        amount: String(params.amount),
+        amount: params.amount,
         status: params.status
       };
       if (params.notes) {
         requestData.notes = [{ from: 'employee', note: params.notes }];
       }
       const response = await this.client.put(
-        `/employees/${params.employeeId.toString()}/time_off/request`,
+        `/employees/${params.employeeId}/time_off/request`,
         requestData
       );
       return {
