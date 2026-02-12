@@ -250,7 +250,8 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
           'Search users in Okta using the search or filter parameter to filter by any user properties, including profile attributes, status, and dates. Always use dates in extended format (e.g., 2013-06-01T00:00:00.000Z).',
         schema: SCHEMAS.searchUsers
       }),
-      operations: [ToolOperation.READ]
+      operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: false
     },
     {
       tool: tool(
@@ -426,32 +427,22 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
       isSupportedInRestrictedMode: false
     },
     {
-      tool: tool(
-        createToolHandler(config, service, (args) => service.assignUserToGroup(args)),
-        {
-          name: 'assign_user_to_okta_group',
-          description: 'Assign a user to a group in Okta',
-          schema: restrictedModeEnabled
-            ? SCHEMAS.assignUserToGroupSchema.omit({ userId: true })
-            : SCHEMAS.assignUserToGroupSchema
-        }
-      ),
+      tool: tool((args) => service.assignUserToGroup(args), {
+        name: 'assign_user_to_okta_group',
+        description: 'Assign a user to a group in Okta',
+        schema: SCHEMAS.assignUserToGroupSchema
+      }),
       operations: [ToolOperation.UPDATE],
-      isSupportedInRestrictedMode: true
+      isSupportedInRestrictedMode: false
     },
     {
-      tool: tool(
-        createToolHandler(config, service, (args) => service.unassignUserFromGroup(args)),
-        {
-          name: 'unassign_user_from_okta_group',
-          description: 'Unassign a user from a group in Okta',
-          schema: restrictedModeEnabled
-            ? SCHEMAS.unassignUserFromGroupSchema.omit({ userId: true })
-            : SCHEMAS.unassignUserFromGroupSchema
-        }
-      ),
+      tool: tool((args) => service.unassignUserFromGroup(args), {
+        name: 'unassign_user_from_okta_group',
+        description: 'Unassign a user from a group in Okta',
+        schema: SCHEMAS.unassignUserFromGroupSchema
+      }),
       operations: [ToolOperation.UPDATE],
-      isSupportedInRestrictedMode: true
+      isSupportedInRestrictedMode: false
     },
     {
       tool: tool((args) => service.listGroupUsers(args), {
@@ -478,35 +469,25 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
         schema: SCHEMAS.listApplicationsSchema
       }),
       operations: [ToolOperation.READ],
-      isSupportedInRestrictedMode: true
+      isSupportedInRestrictedMode: false
     },
     {
-      tool: tool(
-        createToolHandler(config, service, (args) => service.assignUserToApplication(args)),
-        {
-          name: 'assign_user_to_okta_application',
-          description: 'Assign a user to an application in Okta',
-          schema: restrictedModeEnabled
-            ? SCHEMAS.assignUserToApplicationSchema.omit({ userId: true })
-            : SCHEMAS.assignUserToApplicationSchema
-        }
-      ),
+      tool: tool((args) => service.assignUserToApplication(args), {
+        name: 'assign_user_to_okta_application',
+        description: 'Assign a user to an application in Okta',
+        schema: SCHEMAS.assignUserToApplicationSchema
+      }),
       operations: [ToolOperation.UPDATE],
-      isSupportedInRestrictedMode: true
+      isSupportedInRestrictedMode: false
     },
     {
-      tool: tool(
-        createToolHandler(config, service, (args) => service.unassignUserFromApplication(args)),
-        {
-          name: 'unassign_user_from_okta_application',
-          description: 'Unassign a user from an application in Okta',
-          schema: restrictedModeEnabled
-            ? SCHEMAS.unassignUserFromApplicationSchema.omit({ userId: true })
-            : SCHEMAS.unassignUserFromApplicationSchema
-        }
-      ),
+      tool: tool((args) => service.unassignUserFromApplication(args), {
+        name: 'unassign_user_from_okta_application',
+        description: 'Unassign a user from an application in Okta',
+        schema: SCHEMAS.unassignUserFromApplicationSchema
+      }),
       operations: [ToolOperation.UPDATE],
-      isSupportedInRestrictedMode: true
+      isSupportedInRestrictedMode: false
     },
     {
       tool: tool((args) => service.assignGroupToApplication(args), {
@@ -565,7 +546,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
         schema: SCHEMAS.listDevicesSchema
       }),
       operations: [ToolOperation.READ],
-      isSupportedInRestrictedMode: true
+      isSupportedInRestrictedMode: false
     },
     {
       tool: tool(
@@ -588,7 +569,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
         schema: SCHEMAS.getDeviceSchema
       }),
       operations: [ToolOperation.READ],
-      isSupportedInRestrictedMode: true
+      isSupportedInRestrictedMode: false
     },
     {
       tool: tool((args) => service.listDeviceUsers(args), {
