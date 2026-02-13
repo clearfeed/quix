@@ -1,10 +1,10 @@
 {
   "name": "@clearfeed-ai/quix-okta-agent",
-  "version": "2.1.2",
+  "version": "2.2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
+    "clean": "tsc --build --clean",
     "build": "yarn clean && tsc",
     "test": "jest",
     "watch": "tsc --watch",
@@ -14,7 +14,7 @@
     "@langchain/core": "1.1.8"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "2.1.0",
+    "@clearfeed-ai/quix-common-agent": "2.1.1",
     "@okta/okta-sdk-nodejs": "^7.0.1"
   },
   "files": [
