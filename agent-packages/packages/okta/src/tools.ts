@@ -235,15 +235,6 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
       isSupportedInRestrictedMode: false
     },
     {
-      tool: tool((args) => service.createUser(args), {
-        name: 'create_okta_user',
-        description: 'Create a new user in Okta',
-        schema: SCHEMAS.createUserSchema
-      }),
-      operations: [ToolOperation.CREATE],
-      isSupportedInRestrictedMode: false
-    },
-    {
       tool: tool(async (args: z.infer<typeof SCHEMAS.searchUsers>) => service.searchUsers(args), {
         name: 'search_okta_users',
         description:
@@ -251,6 +242,15 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
         schema: SCHEMAS.searchUsers
       }),
       operations: [ToolOperation.READ],
+      isSupportedInRestrictedMode: false
+    },
+    {
+      tool: tool((args) => service.createUser(args), {
+        name: 'create_okta_user',
+        description: 'Create a new user in Okta',
+        schema: SCHEMAS.createUserSchema
+      }),
+      operations: [ToolOperation.CREATE],
       isSupportedInRestrictedMode: false
     },
     {
@@ -415,7 +415,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
         schema: SCHEMAS.listGroupsSchema
       }),
       operations: [ToolOperation.READ],
-      isSupportedInRestrictedMode: false
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool((args) => service.createGroup(args), {
@@ -469,7 +469,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
         schema: SCHEMAS.listApplicationsSchema
       }),
       operations: [ToolOperation.READ],
-      isSupportedInRestrictedMode: false
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool((args) => service.assignUserToApplication(args), {
@@ -546,7 +546,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
         schema: SCHEMAS.listDevicesSchema
       }),
       operations: [ToolOperation.READ],
-      isSupportedInRestrictedMode: false
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool(
@@ -569,7 +569,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
         schema: SCHEMAS.getDeviceSchema
       }),
       operations: [ToolOperation.READ],
-      isSupportedInRestrictedMode: false
+      isSupportedInRestrictedMode: true
     },
     {
       tool: tool((args) => service.listDeviceUsers(args), {
