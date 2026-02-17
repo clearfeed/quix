@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { JiraConfig } from './types/config';
 
-export const findJiraTicketSchema = z.object({
+export const searchJiraIssuesSchema = z.object({
   jql_query: z.string(),
   maxResults: z
     .number()
@@ -66,8 +66,8 @@ export const getJiraCommentsSchema = z.object({
 export const searchJiraUsersSchema = z.object({
   query: z.string().describe('The query to search for in Jira users')
 });
-export const findJiraTicketSchemaWithConfig = (config: JiraConfig) =>
-  findJiraTicketSchema.extend({
+export const searchJiraIssuesSchemaWithConfig = (config: JiraConfig) =>
+  searchJiraIssuesSchema.extend({
     jql_query: z.string().describe(`
       A valid Jira Query Language (JQL) query used to filter issues.
       - When a user is mentioned in the query, first fetch users using the "search_jira_users" tool and then use the account ID of the mentioned user.

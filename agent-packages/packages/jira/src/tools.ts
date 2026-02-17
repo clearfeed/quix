@@ -8,13 +8,13 @@ import {
   searchJiraUsersSchema,
   assignJiraIssueSchema,
   getJiraIssueSchema,
-  findJiraTicketSchemaWithConfig,
+  searchJiraIssuesSchemaWithConfig,
   getProjectKeySchemaWithConfig,
   createJiraIssueSchemaWithConfig
 } from './schema';
 import {
   JiraConfig,
-  FindJiraParams,
+  SearchJiraIssuesParams,
   CreateJiraParams,
   ProjectKeyParams,
   GetIssueParams,
@@ -49,11 +49,11 @@ export function createJiraTools(config: JiraConfig): ToolConfig[] {
 
   const toolConfigs: ToolConfig[] = [
     {
-      tool: tool(async (args: FindJiraParams) => service.searchIssues(args), {
-        name: 'find_jira_ticket',
+      tool: tool(async (args: SearchJiraIssuesParams) => service.searchIssues(args), {
+        name: 'search_jira_issues',
         description: `Search for Jira issues using a valid JQL (Jira Query Language) query.
 This tool helps retrieve relevant issues by allowing complex filtering based on project, issue type, assignee, status, priority, labels, sprint, and more.`,
-        schema: findJiraTicketSchemaWithConfig(config)
+        schema: searchJiraIssuesSchemaWithConfig(config)
       }),
       operations: [ToolOperation.READ]
     },
