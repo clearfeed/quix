@@ -4,7 +4,7 @@ import {
   assignJiraIssueSchema,
   createJiraIssueSchema,
   createJiraIssueSchemaWithConfig,
-  findJiraTicketSchemaWithConfig,
+  searchJiraIssuesSchemaWithConfig,
   getJiraCommentsSchema,
   getJiraIssueSchema,
   getProjectKeySchemaWithConfig,
@@ -240,7 +240,7 @@ export type JiraUpdateIssueMetadata = {
   total: number;
 };
 
-export type FindJiraParams = z.infer<ReturnType<typeof findJiraTicketSchemaWithConfig>>;
+export type SearchJiraIssuesParams = z.infer<ReturnType<typeof searchJiraIssuesSchemaWithConfig>>;
 export type CreateJiraParams = z.infer<ReturnType<typeof createJiraIssueSchemaWithConfig>>;
 export type ProjectKeyParams = z.infer<ReturnType<typeof getProjectKeySchemaWithConfig>>;
 export type GetIssueParams = z.infer<typeof getJiraIssueSchema>;

@@ -40,7 +40,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     },
     reference_tool_calls: [
       {
-        name: 'find_jira_ticket',
+        name: 'search_jira_issues',
         arguments: {
           jql_query: 'summary ~ "login" OR description ~ "login"'
         }
@@ -49,7 +49,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     expected_response:
       "I found 3 tickets related to 'login': FEAT-101 ('Implement login functionality'), SUPP-101 ('User unable to access account'), and FEAT-103 ('Login button not working'). Would you like more details on a specific one?",
     tool_mock_response_overrides: {
-      find_jira_ticket: {
+      search_jira_issues: {
         issues: [
           {
             id: 'FEAT-101',
@@ -347,7 +347,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         }
       },
       {
-        name: 'find_jira_ticket',
+        name: 'search_jira_issues',
         arguments: {
           jql_query: 'project = FEAT AND assignee = user-alice AND priority = High'
         }
@@ -361,7 +361,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
         accountId: 'user-alice',
         email: 'alice@example.com'
       },
-      find_jira_ticket: {
+      search_jira_issues: {
         issues: [
           {
             id: 'FEAT-101',
@@ -393,7 +393,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     },
     reference_tool_calls: [
       {
-        name: 'find_jira_ticket',
+        name: 'search_jira_issues',
         arguments: {
           jql_query: `summary ~ "login functionality" OR description ~ "login functionality"`
         }
@@ -402,7 +402,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     expected_response:
       "I found a few issues matching 'login': FEAT-101 ('Implement login functionality'), SUPP-101 ('User unable to access account'), and FEAT-103 ('Login button not working'). Which one are you interested in?",
     tool_mock_response_overrides: {
-      find_jira_ticket: {
+      search_jira_issues: {
         issues: [
           {
             id: 'FEAT-101',
@@ -534,7 +534,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     },
     reference_tool_calls: [
       {
-        name: 'find_jira_ticket',
+        name: 'search_jira_issues',
         arguments: {
           jql_query: 'project = SUPP AND issuetype = Bug AND priority = Critical'
         }
@@ -543,7 +543,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     expected_response:
       "I'm having trouble connecting to JIRA at the moment to search for critical bugs in the SUPP project. Please try again in a bit.",
     tool_mock_response_overrides: {
-      find_jira_ticket: {
+      search_jira_issues: {
         success: false,
         error: 'API connection error'
       }
@@ -628,7 +628,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     },
     reference_tool_calls: [
       {
-        name: 'find_jira_ticket',
+        name: 'search_jira_issues',
         arguments: {
           jql_query: 'project = FEAT AND labels = authentication'
         }
@@ -637,7 +637,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     expected_response:
       "I found one issue in project FEAT tagged with 'authentication': FEAT-101 ('Implement login functionality').",
     tool_mock_response_overrides: {
-      find_jira_ticket: {
+      search_jira_issues: {
         issues: [
           {
             id: 'FEAT-101',
@@ -660,7 +660,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     },
     reference_tool_calls: [
       {
-        name: 'find_jira_ticket',
+        name: 'search_jira_issues',
         arguments: {
           jql_query: 'project = SUPP AND status = "In Progress"'
         }
@@ -668,7 +668,7 @@ export const testCases: TestCase<ToolResponseTypeMap>[] = [
     ],
     expected_response: "I couldn't find any tickets 'In Progress' in project SUPP.",
     tool_mock_response_overrides: {
-      find_jira_ticket: {
+      search_jira_issues: {
         issues: []
       }
     }

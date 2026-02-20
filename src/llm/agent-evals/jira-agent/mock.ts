@@ -47,7 +47,7 @@ export type ToolResponseTypeMap = {
       emailAddress: string;
     }>;
   }) => SearchUsersResponse;
-  find_jira_ticket: (overrides?: {
+  search_jira_issues: (overrides?: {
     issueKey?: string;
     success?: boolean;
     issues?: Array<{
@@ -193,7 +193,7 @@ const toolResponseMap: ToolResponseTypeMap = {
     }
   }),
 
-  find_jira_ticket: (overrides = {}): SearchIssuesResponse => ({
+  search_jira_issues: (overrides = {}): SearchIssuesResponse => ({
     issues: overrides.issues
       ? overrides.issues.map((issue) => ({
           id: issue.id,
