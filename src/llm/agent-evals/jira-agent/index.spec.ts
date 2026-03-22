@@ -39,7 +39,7 @@ describe('QuixAgent Jira – real LLM + mocked tools', () => {
     //   trajectoryMatchMode: 'superset',
     //   toolArgsMatchMode: 'superset',
     //   toolArgsMatchOverrides: {
-    //     find_jira_ticket: (a, b) => {
+    //     search_jira_issues: (a, b) => {
     //       return normalize(a.jql_query as string) === normalize(b.jql_query as string);
     //     }
     //   }
