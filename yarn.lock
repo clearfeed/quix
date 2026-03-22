@@ -7023,10 +7023,10 @@ sequelize-typescript@^2.1.6:
   dependencies:
     glob "7.2.0"
 
-sequelize@^6.37.6:
-  version "6.37.7"
-  resolved "https://registry.yarnpkg.com/sequelize/-/sequelize-6.37.7.tgz#55a6f8555ae76c1fbd4bce76b2ac5fcc0a1e6eb6"
-  integrity sha512-mCnh83zuz7kQxxJirtFD7q6Huy6liPanI67BSlbzSYgVNl5eXVdE2CN1FuAeZwG1SNpGsNRCV+bJAVVnykZAFA==
+sequelize@^6.37.8:
+  version "6.37.8"
+  resolved "https://registry.yarnpkg.com/sequelize/-/sequelize-6.37.8.tgz#70e62c9e682a2009005093104591e59ec2d0ed2c"
+  integrity sha512-HJ0IQFqcTsTiqbEgiuioYFMSD00TP6Cz7zoTti+zVVBwVe9fEhev9cH6WnM3XU31+ABS356durAb99ZuOthnKw==
   dependencies:
     "@types/debug" "^4.1.8"
     "@types/validator" "^13.7.17"
@@ -8157,9 +8157,9 @@ yargs@^17.3.1:
     yargs-parser "^21.1.1"
 
 yauzl@^3.1.2:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/yauzl/-/yauzl-3.2.0.tgz#7b6cb548f09a48a6177ea0be8ece48deb7da45c0"
-  integrity sha512-Ow9nuGZE+qp1u4JIPvg+uCiUr7xGQWdff7JQSk5VGYTAZMDe2q8lxJ10ygv10qmSj031Ty/6FNJpLO4o1Sgc+w==
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/yauzl/-/yauzl-3.2.1.tgz#d35befb9a0fdd328da41926be895ade2de14dbe7"
+  integrity sha512-k1isifdbpNSFEHFJ1ZY4YDewv0IH9FR61lDetaRMD3j2ae3bIXGV+7c+LHCqtQGofSd8PIyV4X6+dHMAnSr60A==
   dependencies:
     buffer-crc32 "~0.2.3"
     pend "~1.2.0"
