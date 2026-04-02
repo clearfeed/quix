@@ -1,9 +1,6 @@
 import { z } from 'zod';
 import { BaseConfig } from '@clearfeed-ai/quix-common-agent';
-
-export interface NotionConfig extends BaseConfig {
-  token: string;
-}
+import type { CreateCommentParameters } from '@notionhq/client/build/src/api-endpoints';
 
 import {
   appendBlockChildrenSchema,
@@ -21,11 +18,14 @@ import {
   retrieveDatabaseSchema,
   retrievePageSchema,
   retrieveUserSchema,
-  richTextObjectSchema,
   searchSchema,
   updateBlockSchema,
   updatePagePropertiesSchema
 } from './schema';
+
+export interface NotionConfig extends BaseConfig {
+  token: string;
+}
 
 export type SearchArgs = z.infer<typeof searchSchema>;
 export type AppendBlockChildrenArgs = z.infer<typeof appendBlockChildrenSchema>;
@@ -44,5 +44,25 @@ export type CreateCommentArgs = z.infer<typeof createCommentSchema>;
 export type RetrieveCommentsArgs = z.infer<typeof retrieveCommentsSchema>;
 export type UpdatePagePropertiesArgs = z.infer<typeof updatePagePropertiesSchema>;
 export type CreateDatabaseArgs = z.infer<typeof createDatabaseSchema>;
-export type RichTextObject = z.infer<typeof richTextObjectSchema>;
 export type BlockObject = z.infer<typeof blockObjectSchema>;
+
+// Shared Notion SDK request types used by markdown conversion utilities.
+export type NotionRichText = CreateCommentParameters['rich_text'];
+export type NotionRichTextItem = NotionRichText[number];
+export type InlineAnnotation = Pick<
+  NonNullable<NotionRichTextItem['annotations']>,
+  'bold' | 'italic' | 'strikethrough' | 'underline' | 'code'
+>;
+export type NotionTextItem = {
+  type: 'text';
+  text: { content: string; link?: { url: string } };
+  annotations?: InlineAnnotation;
+};
+export type MarkdownTokenType = 'link' | 'code' | 'bold' | 'italic' | 'strikethrough';
+export type MarkdownToken = {
+  type: MarkdownTokenType;
+  index: number;
+  raw: string;
+  content: string;
+  url?: string;
+};
