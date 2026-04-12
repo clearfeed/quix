@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20-slim AS build
+FROM node:22-slim AS build
 ENV NODE_ENV=build
 WORKDIR /app
 
@@ -19,7 +19,7 @@ RUN /bin/sh -c "yarn build && ls -la dist/"
 RUN /bin/sh -c "yarn install --production --frozen-lockfile --prefer-offline"
 
 # Production stage
-FROM node:20-slim
+FROM node:22-slim
 
 WORKDIR /app
 # Set NODE_ENV to production
