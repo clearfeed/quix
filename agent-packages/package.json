@@ -4,7 +4,7 @@
   "workspaces": [
     "packages/*"
   ],
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Quix Packages",
   "scripts": {
     "build": "yarn workspaces run build",
