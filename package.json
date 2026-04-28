@@ -131,6 +131,6 @@
     ]
   },
   "resolutions": {
-    "brace-expansion": "^1.1.13"
+    "**/minimatch/brace-expansion": "^1.1.13"
   }
 }
