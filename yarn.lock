@@ -2987,14 +2987,14 @@ brace-expansion@^1.1.7:
     balanced-match "^1.0.0"
     concat-map "0.0.1"
 
-brace-expansion@^2.0.1:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-2.0.2.tgz#54fc53237a613d854c7bd37463aad17df87214e7"
-  integrity sha512-Jt0vHyM+jmUBqojB7E1NIYadt0vI0Qxjxd2TErW94wDz+E2LAm5vKMXXwg6ZZBTHPuUlDgQHKXvjGBdfcF1ZDQ==
+brace-expansion@^2.0.2:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-2.1.0.tgz#4f41a41190216ee36067ec381526fe9539c4f0ae"
+  integrity sha512-TN1kCZAgdgweJhWWpgKYrQaMNHcDULHkWwQIspdtjV4Y5aurRdZpjAqn6yX3FPqTA9ngHCc4hJxMAMgGfve85w==
   dependencies:
     balanced-match "^1.0.0"
 
-brace-expansion@^5.0.5:
+brace-expansion@^5.0.2, brace-expansion@^5.0.5:
   version "5.0.5"
   resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-5.0.5.tgz#dcc3a37116b79f3e1b46db994ced5d570e930fdb"
   integrity sha512-VZznLgtwhn+Mact9tfiwx64fA9erHH/MCXEUfB/0bX/6Fz6ny5EGTXYltMocqg4xFAQZtnO3DHWWXi8RiuN7cQ==
@@ -3701,14 +3701,14 @@ eckles@^1.4.1:
   resolved "https://registry.yarnpkg.com/eckles/-/eckles-1.4.1.tgz#5e97fefa8554a7af594070c461e6b25fe3819382"
   integrity sha512-auWyk/k8oSkVHaD4RxkPadKsLUcIwKgr/h8F7UZEueFDBO7BsE4y+H6IMUDbfqKIFPg/9MxV6KcBdJCmVVcxSA==
 
-editorconfig@^1.0.4:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/editorconfig/-/editorconfig-1.0.4.tgz#040c9a8e9a6c5288388b87c2db07028aa89f53a3"
-  integrity sha512-L9Qe08KWTlqYMVvMcTIvMAdl1cDUubzRNYL+WfA4bLDMHe4nemKkpmYzkznE1FwLKu0EEmy6obgQKzMJrg4x9Q==
+editorconfig@1.0.7, editorconfig@^1.0.4:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/editorconfig/-/editorconfig-1.0.7.tgz#8d6e178aeb507c206d65e1804c1d7510d110d434"
+  integrity sha512-e0GOtq/aTQhVdNyDU9e02+wz9oDDM+SIOQxWME2QRjzRX5yyLAuHDE+0aE8vHb9XRC8XD37eO2u57+F09JqFhw==
   dependencies:
     "@one-ini/wasm" "0.1.1"
     commander "^10.0.0"
-    minimatch "9.0.1"
+    minimatch "^9.0.1"
     semver "^7.5.3"
 
 ee-first@1.1.1:
@@ -6054,13 +6054,6 @@ mimic-response@^4.0.0:
   resolved "https://registry.yarnpkg.com/mimic-response/-/mimic-response-4.0.0.tgz#35468b19e7c75d10f5165ea25e75a5ceea7cf70f"
   integrity sha512-e5ISH9xMYU0DzrT+jl8q2ze9D6eWBto+I8CNpe+VI+K2J/F/k3PdkdTdz4wvGVH4NTpo+NRYTVIuMQEMMcsLqg==
 
-minimatch@9.0.1:
-  version "9.0.1"
-  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-9.0.1.tgz#8a555f541cf976c622daf078bb28f29fb927c253"
-  integrity sha512-0jWhJpD/MdhPXwPuiRkCbfYfSKp2qnn2eOc279qI7f+osl/l+prKSrvhg157zSYvx/1nmgn2NqdT6k2Z7zSH9w==
-  dependencies:
-    brace-expansion "^2.0.1"
-
 minimatch@^10.2.2:
   version "10.2.5"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-10.2.5.tgz#bd48687a0be38ed2961399105600f832095861d1"
@@ -6075,12 +6068,19 @@ minimatch@^3.0.4, minimatch@^3.1.1, minimatch@^3.1.2:
   dependencies:
     brace-expansion "^1.1.7"
 
-minimatch@^9.0.3, minimatch@^9.0.4, minimatch@^9.0.5:
-  version "9.0.5"
-  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-9.0.5.tgz#d74f9dd6b57d83d8e98cfb82133b03978bc929e5"
-  integrity sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow==
+minimatch@^9.0.1, minimatch@^9.0.4, minimatch@^9.0.5:
+  version "9.0.9"
+  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-9.0.9.tgz#9b0cb9fcb78087f6fd7eababe2511c4d3d60574e"
+  integrity sha512-OBwBN9AL4dqmETlpS2zasx+vTeWclWzkblfZk7KTA5j3jeOONz/tRCnZomUyvNg83wL5Zv9Ss6HMJXAgL8R2Yg==
   dependencies:
-    brace-expansion "^2.0.1"
+    brace-expansion "^2.0.2"
+
+minimatch@^9.0.3:
+  version "9.0.7"
+  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-9.0.7.tgz#d76c4d0b3b527877016d6cc1b9922fc8e0ffe7b0"
+  integrity sha512-MOwgjc8tfrpn5QQEvjijjmDVtMw2oL88ugTevzxQnzRLm6l3fVEF2gzU0kYeYYKD8C66+IdGX6peJ4MyUlUnPg==
+  dependencies:
+    brace-expansion "^5.0.2"
 
 minimist@^1.2.5, minimist@^1.2.6:
   version "1.2.8"
