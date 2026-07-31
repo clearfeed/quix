@@ -70,6 +70,7 @@ import { ASSOCIATION_TYPE_IDS } from './constants';
 
 export * from './types';
 export * from './tools';
+export * from './audit';
 
 export class HubspotService implements BaseService<HubspotConfig> {
   private client: Client;

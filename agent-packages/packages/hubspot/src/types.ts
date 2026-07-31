@@ -18,6 +18,7 @@ import {
   associateDealWithEntitySchema
 } from './schema';
 import { z } from 'zod';
+import type { HubspotRequestAuditObserver } from './audit';
 
 /**
  * Represents the possible value types for HubSpot custom fields
@@ -27,6 +28,7 @@ export type HubSpotCustomFieldValueType = string | number | boolean | string[];
 export interface HubspotConfig extends BaseConfig {
   accessToken: string;
   hubId: number;
+  auditObserver?: HubspotRequestAuditObserver;
 }
 
 export interface HubspotOwner {
