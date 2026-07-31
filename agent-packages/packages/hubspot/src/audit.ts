@@ -11,20 +11,20 @@ import {
  * - clearfeed/app-server: audit-log HubSpot resource types
  */
 export enum HubspotRequestAuditResourceType {
-  ACCOUNT = 'hubspot_account',
-  ASSOCIATION = 'hubspot_association',
-  COMPANY = 'hubspot_company',
-  CONTACT = 'hubspot_contact',
-  CONVERSATION = 'hubspot_conversation',
-  DEAL = 'hubspot_deal',
-  EMAIL = 'hubspot_email',
-  FILE = 'hubspot_file',
-  NOTE = 'hubspot_note',
-  PIPELINE = 'hubspot_pipeline',
-  PROPERTY = 'hubspot_property',
-  TASK = 'hubspot_task',
-  TICKET = 'hubspot_ticket',
-  USER = 'hubspot_user'
+  ACCOUNT = 'HubSpotAccount',
+  ASSOCIATION = 'HubSpotAssociation',
+  COMPANY = 'HubSpotCompany',
+  CONTACT = 'HubSpotContact',
+  CONVERSATION = 'HubSpotConversation',
+  DEAL = 'HubSpotDeal',
+  EMAIL = 'HubSpotEmail',
+  FILE = 'HubSpotFile',
+  NOTE = 'HubSpotNote',
+  PIPELINE = 'HubSpotPipeline',
+  PROPERTY = 'HubSpotProperty',
+  TASK = 'HubSpotTask',
+  TICKET = 'HubSpotTicket',
+  USER = 'HubSpotUser'
 }
 
 export type HubspotRequestAuditDescriptor = ExternalRequestAuditDescriptor<
