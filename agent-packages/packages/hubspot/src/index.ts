@@ -90,13 +90,16 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   private async executeAuditedRequest<T>(
     descriptor: HubspotRequestAuditDescriptor,
-    request: () => Promise<T>
+    request: () => Promise<T>,
+    getSuccessResourceIds?: (result: T) => string[]
   ): Promise<T> {
     try {
       const result = await request();
       await emitExternalRequestAuditEvent(this.config.auditObserver, {
         ...descriptor,
+        ...(getSuccessResourceIds ? { resourceIds: getSuccessResourceIds(result) } : {}),
         outcome: ExternalRequestAuditOutcome.SUCCESS,
+        retries: 0,
         occurredAt: new Date().toISOString()
       });
       return result;
@@ -106,6 +109,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         ...descriptor,
         outcome: ExternalRequestAuditOutcome.FAILURE,
         ...(statusCode === undefined ? {} : { statusCode }),
+        retries: 0,
         occurredAt: new Date().toISOString()
       });
       throw error;
@@ -265,7 +269,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
           method: ExternalHttpMethod.POST,
           operation: ExternalRequestAuditOperation.ACCESS,
           action: 'Viewed HubSpot contact-company associations',
-          resourceType: HubspotRequestAuditResourceType.ASSOCIATION
+          resourceType: HubspotRequestAuditResourceType.ASSOCIATION,
+          resourceIds: allContactIds
         },
         () =>
           this.client.crm.associations.v4.batchApi.getPage('contact', 'companies', {
@@ -441,7 +446,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
           method: ExternalHttpMethod.POST,
           operation: ExternalRequestAuditOperation.ACCESS,
           action: 'Viewed HubSpot deal-company associations',
-          resourceType: HubspotRequestAuditResourceType.ASSOCIATION
+          resourceType: HubspotRequestAuditResourceType.ASSOCIATION,
+          resourceIds: allDealIds
         },
         () =>
           this.client.crm.associations.v4.batchApi.getPage('deal', 'companies', {
@@ -556,7 +562,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
                 ]
               }
             ]
-          })
+          }),
+        (createdNote) => [createdNote.id]
       );
 
       return {
@@ -663,7 +670,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
           action: 'Created HubSpot deal',
           resourceType: HubspotRequestAuditResourceType.DEAL
         },
-        () => this.client.crm.deals.basicApi.create({ properties, associations })
+        () => this.client.crm.deals.basicApi.create({ properties, associations }),
+        (createdDeal) => [createdDeal.id]
       );
 
       return {
@@ -794,7 +802,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
           action: 'Created HubSpot contact',
           resourceType: HubspotRequestAuditResourceType.CONTACT
         },
-        () => this.client.crm.contacts.basicApi.create({ properties })
+        () => this.client.crm.contacts.basicApi.create({ properties }),
+        (createdContact) => [createdContact.id]
       );
 
       return {
@@ -913,7 +922,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
           action: 'Created HubSpot task',
           resourceType: HubspotRequestAuditResourceType.TASK
         },
-        () => this.client.crm.objects.tasks.basicApi.create(taskInput)
+        () => this.client.crm.objects.tasks.basicApi.create(taskInput),
+        (createdTask) => [createdTask.id]
       );
 
       return {
@@ -1362,7 +1372,8 @@ export class HubspotService implements BaseService<HubspotConfig> {
           action: 'Created HubSpot ticket',
           resourceType: HubspotRequestAuditResourceType.TICKET
         },
-        () => this.client.crm.tickets.basicApi.create(ticketInput)
+        () => this.client.crm.tickets.basicApi.create(ticketInput),
+        (createdTicket) => [createdTicket.id]
       );
 
       return {
