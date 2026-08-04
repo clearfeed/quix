@@ -72,8 +72,8 @@ import {
   emitExternalRequestAuditEvent,
   ExternalHttpMethod,
   ExternalIntegration,
-  ExternalRequestAuditOperation,
-  ExternalRequestAuditOutcome,
+  ExternalRequestOperation,
+  ExternalRequestOutcome,
   HubspotRequestAuditDescriptor,
   HubspotRequestAuditResourceType
 } from './audit';
@@ -98,7 +98,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
       await emitExternalRequestAuditEvent(this.config.auditObserver, {
         ...descriptor,
         ...(getSuccessResourceIds ? { resourceIds: getSuccessResourceIds(result) } : {}),
-        outcome: ExternalRequestAuditOutcome.SUCCESS,
+        outcome: ExternalRequestOutcome.SUCCESS,
         retries: 0,
         occurredAt: new Date().toISOString()
       });
@@ -107,7 +107,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const statusCode = this.getHubspotErrorStatusCode(error);
       await emitExternalRequestAuditEvent(this.config.auditObserver, {
         ...descriptor,
-        outcome: ExternalRequestAuditOutcome.FAILURE,
+        outcome: ExternalRequestOutcome.FAILURE,
         ...(statusCode === undefined ? {} : { statusCode }),
         retries: 0,
         occurredAt: new Date().toISOString()
@@ -136,7 +136,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.GET,
-          operation: ExternalRequestAuditOperation.ACCESS,
+          operation: ExternalRequestOperation.ACCESS,
           action: 'Listed HubSpot users',
           resourceType: HubspotRequestAuditResourceType.USER
         },
@@ -160,7 +160,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.POST,
-          operation: ExternalRequestAuditOperation.ACCESS,
+          operation: ExternalRequestOperation.ACCESS,
           action: 'Searched HubSpot companies',
           resourceType: HubspotRequestAuditResourceType.COMPANY
         },
@@ -223,7 +223,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.POST,
-          operation: ExternalRequestAuditOperation.ACCESS,
+          operation: ExternalRequestOperation.ACCESS,
           action: 'Searched HubSpot contacts',
           resourceType: HubspotRequestAuditResourceType.CONTACT
         },
@@ -267,7 +267,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.POST,
-          operation: ExternalRequestAuditOperation.ACCESS,
+          operation: ExternalRequestOperation.ACCESS,
           action: 'Viewed HubSpot contact-company associations',
           resourceType: HubspotRequestAuditResourceType.ASSOCIATION,
           resourceIds: allContactIds
@@ -417,7 +417,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.POST,
-          operation: ExternalRequestAuditOperation.ACCESS,
+          operation: ExternalRequestOperation.ACCESS,
           action: 'Searched HubSpot deals',
           resourceType: HubspotRequestAuditResourceType.DEAL
         },
@@ -444,7 +444,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.POST,
-          operation: ExternalRequestAuditOperation.ACCESS,
+          operation: ExternalRequestOperation.ACCESS,
           action: 'Viewed HubSpot deal-company associations',
           resourceType: HubspotRequestAuditResourceType.ASSOCIATION,
           resourceIds: allDealIds
@@ -541,7 +541,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.POST,
-          operation: ExternalRequestAuditOperation.UPDATE,
+          operation: ExternalRequestOperation.UPDATE,
           action: 'Created HubSpot note',
           resourceType: HubspotRequestAuditResourceType.NOTE
         },
@@ -666,7 +666,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.POST,
-          operation: ExternalRequestAuditOperation.UPDATE,
+          operation: ExternalRequestOperation.UPDATE,
           action: 'Created HubSpot deal',
           resourceType: HubspotRequestAuditResourceType.DEAL
         },
@@ -734,7 +734,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.PATCH,
-          operation: ExternalRequestAuditOperation.UPDATE,
+          operation: ExternalRequestOperation.UPDATE,
           action: 'Updated HubSpot deal',
           resourceType: HubspotRequestAuditResourceType.DEAL,
           resourceIds: [dealId]
@@ -798,7 +798,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.POST,
-          operation: ExternalRequestAuditOperation.UPDATE,
+          operation: ExternalRequestOperation.UPDATE,
           action: 'Created HubSpot contact',
           resourceType: HubspotRequestAuditResourceType.CONTACT
         },
@@ -851,7 +851,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.PATCH,
-          operation: ExternalRequestAuditOperation.UPDATE,
+          operation: ExternalRequestOperation.UPDATE,
           action: 'Updated HubSpot contact',
           resourceType: HubspotRequestAuditResourceType.CONTACT,
           resourceIds: [contactId]
@@ -918,7 +918,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.POST,
-          operation: ExternalRequestAuditOperation.UPDATE,
+          operation: ExternalRequestOperation.UPDATE,
           action: 'Created HubSpot task',
           resourceType: HubspotRequestAuditResourceType.TASK
         },
@@ -967,7 +967,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.PUT,
-          operation: ExternalRequestAuditOperation.UPDATE,
+          operation: ExternalRequestOperation.UPDATE,
           action: 'Associated HubSpot task with entity',
           resourceType: HubspotRequestAuditResourceType.ASSOCIATION,
           resourceIds: [taskId, associatedObjectId]
@@ -1027,7 +1027,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.PUT,
-          operation: ExternalRequestAuditOperation.UPDATE,
+          operation: ExternalRequestOperation.UPDATE,
           action: 'Associated HubSpot deal with entity',
           resourceType: HubspotRequestAuditResourceType.ASSOCIATION,
           resourceIds: [dealId, associatedObjectId]
@@ -1096,7 +1096,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.PATCH,
-          operation: ExternalRequestAuditOperation.UPDATE,
+          operation: ExternalRequestOperation.UPDATE,
           action: 'Updated HubSpot task',
           resourceType: HubspotRequestAuditResourceType.TASK,
           resourceIds: [params.taskId]
@@ -1217,7 +1217,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.POST,
-          operation: ExternalRequestAuditOperation.ACCESS,
+          operation: ExternalRequestOperation.ACCESS,
           action: 'Searched HubSpot tasks',
           resourceType: HubspotRequestAuditResourceType.TASK
         },
@@ -1278,7 +1278,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.GET,
-          operation: ExternalRequestAuditOperation.ACCESS,
+          operation: ExternalRequestOperation.ACCESS,
           action: 'Viewed HubSpot user',
           resourceType: HubspotRequestAuditResourceType.USER,
           resourceIds: [String(ownerId)]
@@ -1303,7 +1303,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.POST,
-          operation: ExternalRequestAuditOperation.ACCESS,
+          operation: ExternalRequestOperation.ACCESS,
           action: 'Viewed HubSpot companies',
           resourceType: HubspotRequestAuditResourceType.COMPANY,
           resourceIds: Array.from(companyIds)
@@ -1368,7 +1368,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.POST,
-          operation: ExternalRequestAuditOperation.UPDATE,
+          operation: ExternalRequestOperation.UPDATE,
           action: 'Created HubSpot ticket',
           resourceType: HubspotRequestAuditResourceType.TICKET
         },
@@ -1415,7 +1415,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.PUT,
-          operation: ExternalRequestAuditOperation.UPDATE,
+          operation: ExternalRequestOperation.UPDATE,
           action: 'Associated HubSpot ticket with entity',
           resourceType: HubspotRequestAuditResourceType.ASSOCIATION,
           resourceIds: [ticketId, associatedObjectId]
@@ -1497,7 +1497,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.PATCH,
-          operation: ExternalRequestAuditOperation.UPDATE,
+          operation: ExternalRequestOperation.UPDATE,
           action: 'Updated HubSpot ticket',
           resourceType: HubspotRequestAuditResourceType.TICKET,
           resourceIds: [ticketId]
@@ -1546,7 +1546,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.GET,
-          operation: ExternalRequestAuditOperation.ACCESS,
+          operation: ExternalRequestOperation.ACCESS,
           action: 'Listed HubSpot pipelines',
           resourceType: HubspotRequestAuditResourceType.PIPELINE
         },
@@ -1595,7 +1595,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.GET,
-          operation: ExternalRequestAuditOperation.ACCESS,
+          operation: ExternalRequestOperation.ACCESS,
           action: 'Listed HubSpot pipeline stages',
           resourceType: HubspotRequestAuditResourceType.PIPELINE,
           resourceIds: [pipelineId]
@@ -1616,7 +1616,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.GET,
-          operation: ExternalRequestAuditOperation.ACCESS,
+          operation: ExternalRequestOperation.ACCESS,
           action: 'Viewed HubSpot ticket',
           resourceType: HubspotRequestAuditResourceType.TICKET,
           resourceIds: [ticketId]
@@ -1682,7 +1682,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.GET,
-          operation: ExternalRequestAuditOperation.ACCESS,
+          operation: ExternalRequestOperation.ACCESS,
           action: 'Viewed HubSpot deal',
           resourceType: HubspotRequestAuditResourceType.DEAL,
           resourceIds: [dealId]
@@ -1934,7 +1934,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.POST,
-          operation: ExternalRequestAuditOperation.ACCESS,
+          operation: ExternalRequestOperation.ACCESS,
           action: 'Searched HubSpot tickets',
           resourceType: HubspotRequestAuditResourceType.TICKET
         },
@@ -2030,7 +2030,7 @@ export class HubspotService implements BaseService<HubspotConfig> {
         {
           integration: ExternalIntegration.HUBSPOT,
           method: ExternalHttpMethod.GET,
-          operation: ExternalRequestAuditOperation.ACCESS,
+          operation: ExternalRequestOperation.ACCESS,
           action: 'Listed HubSpot properties',
           resourceType: HubspotRequestAuditResourceType.PROPERTY
         },

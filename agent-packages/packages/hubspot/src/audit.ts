@@ -43,6 +43,6 @@ export {
   emitExternalRequestAuditEvent,
   ExternalHttpMethod,
   ExternalIntegration,
-  ExternalRequestAuditOperation,
-  ExternalRequestAuditOutcome
+  ExternalRequestOperation,
+  ExternalRequestOutcome
 } from '@clearfeed-ai/quix-common-agent';

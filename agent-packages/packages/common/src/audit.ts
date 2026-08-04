@@ -16,12 +16,12 @@ export enum ExternalHttpMethod {
   PUT = 'PUT'
 }
 
-export enum ExternalRequestAuditOperation {
+export enum ExternalRequestOperation {
   ACCESS = 'access',
   UPDATE = 'update'
 }
 
-export enum ExternalRequestAuditOutcome {
+export enum ExternalRequestOutcome {
   FAILURE = 'failure',
   SUCCESS = 'success'
 }
@@ -32,7 +32,7 @@ export interface ExternalRequestAuditDescriptor<
 > {
   integration: TIntegration;
   method: ExternalHttpMethod;
-  operation: ExternalRequestAuditOperation;
+  operation: ExternalRequestOperation;
   action: string;
   resourceType: TResourceType;
   resourceIds?: string[];
@@ -42,7 +42,7 @@ export interface ExternalRequestAuditEvent<
   TIntegration extends ExternalIntegration = ExternalIntegration,
   TResourceType extends string = string
 > extends ExternalRequestAuditDescriptor<TIntegration, TResourceType> {
-  outcome: ExternalRequestAuditOutcome;
+  outcome: ExternalRequestOutcome;
   statusCode?: number;
   retries?: number;
   occurredAt: string;
