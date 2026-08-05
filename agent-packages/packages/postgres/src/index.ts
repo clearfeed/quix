@@ -49,9 +49,14 @@ export class PostgresService implements BaseService<PostgresConfig> {
       await client.query('COMMIT');
       return { success: true, data: res.rows };
     } catch (error) {
+      // Roll back only when the transaction is still open. The previous code
+      // ran ROLLBACK in `finally`, so it also fired after a successful COMMIT
+      // against a connection with no active transaction — a wasted round-trip
+      // that logs a Postgres warning and, if it rejected (e.g. a dropped
+      // connection), threw out of `finally` and masked the successful result.
+      await client.query('ROLLBACK').catch(() => undefined);
       return { success: false, error: (error as Error).message };
     } finally {
-      await client.query('ROLLBACK');
       client.release();
     }
   }
