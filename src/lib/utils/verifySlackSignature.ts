@@ -11,6 +11,16 @@ export const verifySlackSignature = (req: RawBodyRequest<Request>, secret: strin
     const requestSignature = req.headers['x-slack-signature'] as string;
     const requestTimestamp = req.headers['x-slack-request-timestamp'];
 
+    // Reject stale or replayed requests: Slack requires the request timestamp to
+    // be recent (within 5 minutes) before the signature is trusted.
+    const timestampSeconds = Number(requestTimestamp);
+    if (
+      !Number.isFinite(timestampSeconds) ||
+      Math.abs(Date.now() / 1000 - timestampSeconds) > 60 * 5
+    ) {
+      return false;
+    }
+
     // Create the HMAC
     const hmac = createHmac('sha256', secret);
 

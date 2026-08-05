@@ -1,7 +1,6 @@
 import {
   Controller,
   Post,
-  Body,
   Req,
   RawBodyRequest,
   Query,
@@ -11,7 +10,8 @@ import {
   Param,
   Inject,
   BadRequestException,
-  InternalServerErrorException
+  InternalServerErrorException,
+  UnauthorizedException
 } from '@nestjs/common';
 import { SlackService } from './slack.service';
 import { Request } from 'express';
@@ -67,8 +67,16 @@ export class SlackController {
   }
 
   @Post('interactions')
-  async handleInteraction(@Body() { payload }: { payload: string }) {
+  async handleInteraction(@Req() req: RawBodyRequest<Request>) {
+    const isVerified = verifySlackSignature(
+      req,
+      this.configService.get<string>('SLACK_SIGNING_SECRET')
+    );
+    if (!isVerified) {
+      throw new UnauthorizedException();
+    }
     try {
+      const { payload } = req.body as { payload: string };
       return await this.interactionsService.handleInteraction(JSON.parse(payload));
     } catch (error) {
       this.logger.error(error);
