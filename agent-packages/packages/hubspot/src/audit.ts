@@ -1,8 +1,8 @@
 import {
   ExternalIntegration,
-  ExternalRequestAuditDescriptor,
-  ExternalRequestAuditEvent,
-  ExternalRequestAuditObserver
+  IntegrationRequestAuditDescriptor,
+  IntegrationRequestAuditEvent,
+  IntegrationRequestAuditObserver
 } from '@clearfeed-ai/quix-common-agent';
 
 /**
@@ -27,22 +27,22 @@ export enum HubspotRequestAuditResourceType {
   USER = 'HubSpotUser'
 }
 
-export type HubspotRequestAuditDescriptor = ExternalRequestAuditDescriptor<
+export type HubspotRequestAuditDescriptor = IntegrationRequestAuditDescriptor<
   ExternalIntegration.HUBSPOT,
   HubspotRequestAuditResourceType
 >;
 
-export type HubspotRequestAuditEvent = ExternalRequestAuditEvent<
+export type HubspotRequestAuditEvent = IntegrationRequestAuditEvent<
   ExternalIntegration.HUBSPOT,
   HubspotRequestAuditResourceType
 >;
 
-export type HubspotRequestAuditObserver = ExternalRequestAuditObserver<HubspotRequestAuditEvent>;
+export type HubspotRequestAuditObserver = IntegrationRequestAuditObserver<HubspotRequestAuditEvent>;
 
 export {
-  emitExternalRequestAuditEvent,
-  ExternalHttpMethod,
+  emitIntegrationRequestAuditEvent,
   ExternalIntegration,
-  ExternalRequestOperation,
-  ExternalRequestOutcome
+  HttpMethod,
+  RequestOperation,
+  RequestOutcome
 } from '@clearfeed-ai/quix-common-agent';
