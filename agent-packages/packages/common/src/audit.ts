@@ -8,7 +8,7 @@ export enum ExternalIntegration {
   HUBSPOT = 'hubspot'
 }
 
-export enum ExternalHttpMethod {
+export enum HttpMethod {
   DELETE = 'DELETE',
   GET = 'GET',
   PATCH = 'PATCH',
@@ -16,12 +16,12 @@ export enum ExternalHttpMethod {
   PUT = 'PUT'
 }
 
-export enum ExternalRequestOperation {
+export enum RequestOperation {
   ACCESS = 'access',
   UPDATE = 'update'
 }
 
-export enum ExternalRequestOutcome {
+export enum RequestOutcome {
   FAILURE = 'failure',
   SUCCESS = 'success'
 }
@@ -30,13 +30,13 @@ export enum ExternalRequestOutcome {
  * Describes a single outbound request to an external integration. Packages annotate every API call
  * they make with a descriptor so the request can be attributed and audited consistently.
  */
-export interface ExternalRequestAuditDescriptor<
+export interface IntegrationRequestAuditDescriptor<
   TIntegration extends ExternalIntegration = ExternalIntegration,
   TResourceType extends string = string
 > {
   integration: TIntegration;
-  method: ExternalHttpMethod;
-  operation: ExternalRequestOperation;
+  method: HttpMethod;
+  operation: RequestOperation;
   action: string;
   resourceType: TResourceType;
   resourceIds?: string[];
@@ -45,11 +45,11 @@ export interface ExternalRequestAuditDescriptor<
 /**
  * A descriptor enriched with the outcome of the attempt. This is the shape handed to observers.
  */
-export interface ExternalRequestAuditEvent<
+export interface IntegrationRequestAuditEvent<
   TIntegration extends ExternalIntegration = ExternalIntegration,
   TResourceType extends string = string
-> extends ExternalRequestAuditDescriptor<TIntegration, TResourceType> {
-  outcome: ExternalRequestOutcome;
+> extends IntegrationRequestAuditDescriptor<TIntegration, TResourceType> {
+  outcome: RequestOutcome;
   statusCode?: number;
   retries?: number;
   occurredAt: string;
@@ -58,16 +58,16 @@ export interface ExternalRequestAuditEvent<
 /**
  * Sink for audit events. Provided by the host application; may be synchronous or asynchronous.
  */
-export type ExternalRequestAuditObserver<
-  TEvent extends ExternalRequestAuditEvent = ExternalRequestAuditEvent
+export type IntegrationRequestAuditObserver<
+  TEvent extends IntegrationRequestAuditEvent = IntegrationRequestAuditEvent
 > = (event: TEvent) => void | Promise<void>;
 
 /**
  * Safely dispatches an audit event to an observer. Observer failures are swallowed so that auditing
- * can never affect the external request attempt.
+ * can never affect the integration request attempt.
  */
-export async function emitExternalRequestAuditEvent<TEvent extends ExternalRequestAuditEvent>(
-  observer: ExternalRequestAuditObserver<TEvent> | undefined,
+export async function emitIntegrationRequestAuditEvent<TEvent extends IntegrationRequestAuditEvent>(
+  observer: IntegrationRequestAuditObserver<TEvent> | undefined,
   event: TEvent
 ): Promise<void> {
   if (!observer) return;
