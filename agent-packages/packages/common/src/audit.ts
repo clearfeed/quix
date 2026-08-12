@@ -52,6 +52,11 @@ export interface IntegrationRequestAuditEvent<
   outcome: RequestOutcome;
   statusCode?: number;
   retries?: number;
+  /**
+   * Timestamp when the external request reached its final outcome.
+   * Named `occurredAt` to capture the API response outcome time rather than
+   * when the corresponding audit-log record is created.
+   */
   occurredAt: string;
 }
 
