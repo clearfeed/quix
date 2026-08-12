@@ -38,11 +38,3 @@ export type HubspotRequestAuditEvent = IntegrationRequestAuditEvent<
 >;
 
 export type HubspotRequestAuditObserver = IntegrationRequestAuditObserver<HubspotRequestAuditEvent>;
-
-export {
-  emitIntegrationRequestAuditEvent,
-  ExternalIntegration,
-  HttpMethod,
-  RequestOperation,
-  RequestOutcome
-} from '@clearfeed-ai/quix-common-agent';

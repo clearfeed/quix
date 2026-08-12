@@ -72,10 +72,9 @@ import {
   ExternalIntegration,
   HttpMethod,
   RequestOperation,
-  RequestOutcome,
-  HubspotRequestAuditDescriptor,
-  HubspotRequestAuditResourceType
-} from './audit';
+  RequestOutcome
+} from '@clearfeed-ai/quix-common-agent';
+import { HubspotRequestAuditDescriptor, HubspotRequestAuditResourceType } from './audit';
 
 export * from './types';
 export * from './tools';
