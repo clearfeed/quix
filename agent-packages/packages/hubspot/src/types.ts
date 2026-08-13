@@ -33,7 +33,7 @@ export interface HubspotConfig extends BaseConfig {
    * When provided, each call emits a {@link HubspotRequestAuditObserver} event describing the
    * request and its outcome.
    */
-  auditObserver?: HubspotRequestAuditObserver;
+  auditObserver: HubspotRequestAuditObserver;
 }
 
 export interface HubspotOwner {
