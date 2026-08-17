@@ -29,7 +29,7 @@ export interface HubspotConfig extends BaseConfig {
   accessToken: string;
   hubId: number;
   /**
-   * Optional sink for auditing every outbound HubSpot API request made by this service.
+   * Sink for auditing every outbound HubSpot API request made by this service.
    * When provided, each call emits a {@link HubspotRequestAuditObserver} event describing the
    * request and its outcome.
    */
