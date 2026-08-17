@@ -67,9 +67,18 @@ import {
 import { AssociationSpecAssociationCategoryEnum } from '@hubspot/api-client/lib/codegen/crm/objects';
 import { keyBy } from 'lodash';
 import { ASSOCIATION_TYPE_IDS } from './constants';
+import {
+  emitIntegrationRequestAuditEvent,
+  ExternalIntegration,
+  HttpMethod,
+  RequestOperation,
+  RequestOutcome
+} from '@clearfeed-ai/quix-common-agent';
+import { HubspotRequestAuditDescriptor, HubspotRequestAuditResourceType } from './audit';
 
 export * from './types';
 export * from './tools';
+export * from './audit';
 
 export class HubspotService implements BaseService<HubspotConfig> {
   private client: Client;
@@ -77,9 +86,65 @@ export class HubspotService implements BaseService<HubspotConfig> {
     this.client = new Client({ accessToken: config.accessToken });
   }
 
+  /**
+   * Wraps a single HubSpot API call so that every outbound request is audited exactly once,
+   * regardless of outcome. The descriptor identifies the request; the optional
+   * `getSuccessResourceIds` derives resource ids that are only known once the call succeeds
+   * (e.g. the id of a freshly created entity). Auditing never interferes with the request: the
+   * observer is invoked through {@link emitIntegrationRequestAuditEvent}, which swallows its errors.
+   */
+  private async executeAuditedRequest<T>(
+    descriptor: HubspotRequestAuditDescriptor,
+    request: () => Promise<T>,
+    getSuccessResourceIds?: (result: T) => string[]
+  ): Promise<T> {
+    try {
+      const result = await request();
+      await emitIntegrationRequestAuditEvent(this.config.auditObserver, {
+        ...descriptor,
+        ...(getSuccessResourceIds ? { resourceIds: getSuccessResourceIds(result) } : {}),
+        outcome: RequestOutcome.SUCCESS,
+        retries: 0,
+        occurredAt: new Date().toISOString()
+      });
+      return result;
+    } catch (error) {
+      const statusCode = this.getHubspotErrorStatusCode(error);
+      await emitIntegrationRequestAuditEvent(this.config.auditObserver, {
+        ...descriptor,
+        outcome: RequestOutcome.FAILURE,
+        ...(statusCode === undefined ? {} : { statusCode }),
+        retries: 0,
+        occurredAt: new Date().toISOString()
+      });
+      throw error;
+    }
+  }
+
+  private getHubspotErrorStatusCode(error: unknown): number | undefined {
+    if (!error || typeof error !== 'object') return undefined;
+    const hubspotError = error as {
+      code?: unknown;
+      statusCode?: unknown;
+      response?: { status?: unknown };
+    };
+    return [hubspotError.code, hubspotError.statusCode, hubspotError.response?.status].find(
+      (value): value is number => typeof value === 'number'
+    );
+  }
+
   async getOwners(): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-      const response = await this.client.crm.owners.ownersApi.getPage();
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.GET,
+          operation: RequestOperation.ACCESS,
+          action: 'Listed HubSpot users',
+          resourceType: HubspotRequestAuditResourceType.USER
+        },
+        () => this.client.crm.owners.ownersApi.getPage()
+      );
       return { success: true, data: response.results ? response.results : [] };
     } catch (error) {
       console.error('Error fetching owners:', error);
@@ -94,21 +159,31 @@ export class HubspotService implements BaseService<HubspotConfig> {
     keyword: string
   ): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-      const response = await this.client.crm.companies.searchApi.doSearch({
-        filterGroups: [
-          {
-            filters: [
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.POST,
+          operation: RequestOperation.ACCESS,
+          action: 'Searched HubSpot companies',
+          resourceType: HubspotRequestAuditResourceType.COMPANY
+        },
+        () =>
+          this.client.crm.companies.searchApi.doSearch({
+            filterGroups: [
               {
-                propertyName: 'name',
-                operator: CompanyFilterOperatorEnum.ContainsToken,
-                value: keyword
+                filters: [
+                  {
+                    propertyName: 'name',
+                    operator: CompanyFilterOperatorEnum.ContainsToken,
+                    value: keyword
+                  }
+                ]
               }
-            ]
-          }
-        ],
-        properties: ['name', 'domain', 'industry', 'hs_lastmodifieddate'],
-        limit: 10
-      });
+            ],
+            properties: ['name', 'domain', 'industry', 'hs_lastmodifieddate'],
+            limit: 10
+          })
+      );
 
       return {
         success: true,
@@ -147,23 +222,33 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const customPropertyNames = this.getCustomPropertyNames(propertiesResponse);
       propertiesToFetch.push(...customPropertyNames);
 
-      const response = await this.client.crm.contacts.searchApi.doSearch({
-        filterGroups: ['email', 'firstname', 'lastname'].map((property) => {
-          return {
-            filters: [
-              {
-                propertyName: property,
-                operator: ContactFilterOperatorEnum.ContainsToken,
-                value: keyword
-              }
-            ]
-          };
-        }),
-        properties: propertiesToFetch,
-        sorts: ['createdate'],
-        limit: 100,
-        after: '0'
-      });
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.POST,
+          operation: RequestOperation.ACCESS,
+          action: 'Searched HubSpot contacts',
+          resourceType: HubspotRequestAuditResourceType.CONTACT
+        },
+        () =>
+          this.client.crm.contacts.searchApi.doSearch({
+            filterGroups: ['email', 'firstname', 'lastname'].map((property) => {
+              return {
+                filters: [
+                  {
+                    propertyName: property,
+                    operator: ContactFilterOperatorEnum.ContainsToken,
+                    value: keyword
+                  }
+                ]
+              };
+            }),
+            properties: propertiesToFetch,
+            sorts: ['createdate'],
+            limit: 100,
+            after: '0'
+          })
+      );
 
       // Define standard properties to exclude from custom properties
       const standardContactProperties = new Set([
@@ -181,14 +266,21 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       const allContactIds: string[] = response.results.map((contact) => contact.id);
 
-      const associationsResponse = await this.client.crm.associations.v4.batchApi.getPage(
-        'contact',
-        'companies',
+      const associationsResponse = await this.executeAuditedRequest(
         {
-          inputs: allContactIds.map((id) => ({
-            id
-          }))
-        }
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.POST,
+          operation: RequestOperation.ACCESS,
+          action: 'Viewed HubSpot contact-company associations',
+          resourceType: HubspotRequestAuditResourceType.ASSOCIATION,
+          resourceIds: allContactIds
+        },
+        () =>
+          this.client.crm.associations.v4.batchApi.getPage('contact', 'companies', {
+            inputs: allContactIds.map((id) => ({
+              id
+            }))
+          })
       );
 
       associationsResponse.results.forEach((result) => {
@@ -324,7 +416,16 @@ export class HubspotService implements BaseService<HubspotConfig> {
         properties: propertiesToFetch,
         limit: 100
       };
-      const response = await this.client.crm.deals.searchApi.doSearch(searchRequest);
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.POST,
+          operation: RequestOperation.ACCESS,
+          action: 'Searched HubSpot deals',
+          resourceType: HubspotRequestAuditResourceType.DEAL
+        },
+        () => this.client.crm.deals.searchApi.doSearch(searchRequest)
+      );
 
       // Define standard properties to exclude from custom properties
       const standardDealProperties = new Set([
@@ -342,14 +443,21 @@ export class HubspotService implements BaseService<HubspotConfig> {
       const dealCompanyMap = new Map<string, Set<string>>();
       const allCompanyIds = new Set<string>();
       const allDealIds: string[] = response.results.map((deal) => deal.id);
-      const associationsResponse = await this.client.crm.associations.v4.batchApi.getPage(
-        'deal',
-        'companies',
+      const associationsResponse = await this.executeAuditedRequest(
         {
-          inputs: allDealIds.map((id) => ({
-            id
-          }))
-        }
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.POST,
+          operation: RequestOperation.ACCESS,
+          action: 'Viewed HubSpot deal-company associations',
+          resourceType: HubspotRequestAuditResourceType.ASSOCIATION,
+          resourceIds: allDealIds
+        },
+        () =>
+          this.client.crm.associations.v4.batchApi.getPage('deal', 'companies', {
+            inputs: allDealIds.map((id) => ({
+              id
+            }))
+          })
       );
       associationsResponse.results.forEach((result) => {
         dealCompanyMap.set(result._from.id, new Set(result.to.map((c) => c.toObjectId)));
@@ -432,23 +540,34 @@ export class HubspotService implements BaseService<HubspotConfig> {
         [HubspotEntityType.CONTACT]: ASSOCIATION_TYPE_IDS.NOTE_TO_ENTITY.CONTACT
       };
 
-      const response = await this.client.crm.objects.notes.basicApi.create({
-        properties: {
-          hs_note_body: note,
-          hs_timestamp: new Date().toISOString()
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.POST,
+          operation: RequestOperation.UPDATE,
+          action: 'Created HubSpot note',
+          resourceType: HubspotRequestAuditResourceType.NOTE
         },
-        associations: [
-          {
-            to: { id: entityId },
-            types: [
+        () =>
+          this.client.crm.objects.notes.basicApi.create({
+            properties: {
+              hs_note_body: note,
+              hs_timestamp: new Date().toISOString()
+            },
+            associations: [
               {
-                associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
-                associationTypeId: associationTypeIds[entityType]
+                to: { id: entityId },
+                types: [
+                  {
+                    associationCategory: AssociationSpecAssociationCategoryEnum.HubspotDefined,
+                    associationTypeId: associationTypeIds[entityType]
+                  }
+                ]
               }
             ]
-          }
-        ]
-      });
+          }),
+        (createdNote) => [createdNote.id]
+      );
 
       return {
         success: true,
@@ -523,7 +642,13 @@ export class HubspotService implements BaseService<HubspotConfig> {
         properties.hubspot_owner_id = ownerId;
       }
 
-      const associations = [];
+      const associations: Array<{
+        to: { id: string };
+        types: Array<{
+          associationCategory: DealAssociationSpecAssociationCategoryEnum;
+          associationTypeId: number;
+        }>;
+      }> = [];
       if (companyId) {
         associations.push({
           to: { id: companyId },
@@ -546,10 +671,21 @@ export class HubspotService implements BaseService<HubspotConfig> {
           ]
         });
       }
-      const response = await this.client.crm.deals.basicApi.create({
-        properties,
-        associations
-      });
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.POST,
+          operation: RequestOperation.UPDATE,
+          action: 'Created HubSpot deal',
+          resourceType: HubspotRequestAuditResourceType.DEAL
+        },
+        () =>
+          this.client.crm.deals.basicApi.create({
+            properties,
+            associations
+          }),
+        (createdDeal) => [createdDeal.id]
+      );
 
       return {
         success: true,
@@ -607,7 +743,17 @@ export class HubspotService implements BaseService<HubspotConfig> {
         Object.assign(properties, transformedCustomProperties);
       }
 
-      const response = await this.client.crm.deals.basicApi.update(dealId, { properties });
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.PATCH,
+          operation: RequestOperation.UPDATE,
+          action: 'Updated HubSpot deal',
+          resourceType: HubspotRequestAuditResourceType.DEAL,
+          resourceIds: [dealId]
+        },
+        () => this.client.crm.deals.basicApi.update(dealId, { properties })
+      );
 
       const dealData: NonNullable<UpdateDealResponse['data']>['deal'] = {
         id: response.id,
@@ -661,9 +807,20 @@ export class HubspotService implements BaseService<HubspotConfig> {
         properties.company = params.company;
       }
 
-      const response = await this.client.crm.contacts.basicApi.create({
-        properties
-      });
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.POST,
+          operation: RequestOperation.UPDATE,
+          action: 'Created HubSpot contact',
+          resourceType: HubspotRequestAuditResourceType.CONTACT
+        },
+        () =>
+          this.client.crm.contacts.basicApi.create({
+            properties
+          }),
+        (createdContact) => [createdContact.id]
+      );
 
       return {
         success: true,
@@ -706,9 +863,20 @@ export class HubspotService implements BaseService<HubspotConfig> {
         Object.assign(properties, transformedCustomProperties);
       }
 
-      const response = await this.client.crm.contacts.basicApi.update(contactId, {
-        properties
-      });
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.PATCH,
+          operation: RequestOperation.UPDATE,
+          action: 'Updated HubSpot contact',
+          resourceType: HubspotRequestAuditResourceType.CONTACT,
+          resourceIds: [contactId]
+        },
+        () =>
+          this.client.crm.contacts.basicApi.update(contactId, {
+            properties
+          })
+      );
 
       const contactData: NonNullable<UpdateContactResponse['data']>['contact'] = {
         id: response.id,
@@ -765,7 +933,17 @@ export class HubspotService implements BaseService<HubspotConfig> {
         taskInput.properties.hubspot_owner_id = ownerId;
       }
 
-      const response = await this.client.crm.objects.tasks.basicApi.create(taskInput);
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.POST,
+          operation: RequestOperation.UPDATE,
+          action: 'Created HubSpot task',
+          resourceType: HubspotRequestAuditResourceType.TASK
+        },
+        () => this.client.crm.objects.tasks.basicApi.create(taskInput),
+        (createdTask) => [createdTask.id]
+      );
 
       return {
         success: true,
@@ -804,17 +982,28 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       const typeId = associationTypeIds[associatedObjectType];
 
-      await this.client.crm.associations.v4.basicApi.create(
-        'task',
-        taskId,
-        associatedObjectType,
-        associatedObjectId,
-        [
-          {
-            associationCategory: TaskAssociationSpecAssociationCategoryEnum.HubspotDefined,
-            associationTypeId: typeId
-          }
-        ]
+      await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.PUT,
+          operation: RequestOperation.UPDATE,
+          action: 'Associated HubSpot task with entity',
+          resourceType: HubspotRequestAuditResourceType.ASSOCIATION,
+          resourceIds: [taskId, associatedObjectId]
+        },
+        () =>
+          this.client.crm.associations.v4.basicApi.create(
+            'task',
+            taskId,
+            associatedObjectType,
+            associatedObjectId,
+            [
+              {
+                associationCategory: TaskAssociationSpecAssociationCategoryEnum.HubspotDefined,
+                associationTypeId: typeId
+              }
+            ]
+          )
       );
 
       return {
@@ -853,17 +1042,28 @@ export class HubspotService implements BaseService<HubspotConfig> {
         );
       }
 
-      await this.client.crm.associations.v4.basicApi.create(
-        'deal',
-        dealId,
-        associatedObjectType,
-        associatedObjectId,
-        [
-          {
-            associationCategory: DealAssociationSpecAssociationCategoryEnum.HubspotDefined,
-            associationTypeId: typeId
-          }
-        ]
+      await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.PUT,
+          operation: RequestOperation.UPDATE,
+          action: 'Associated HubSpot deal with entity',
+          resourceType: HubspotRequestAuditResourceType.ASSOCIATION,
+          resourceIds: [dealId, associatedObjectId]
+        },
+        () =>
+          this.client.crm.associations.v4.basicApi.create(
+            'deal',
+            dealId,
+            associatedObjectType,
+            associatedObjectId,
+            [
+              {
+                associationCategory: DealAssociationSpecAssociationCategoryEnum.HubspotDefined,
+                associationTypeId: typeId
+              }
+            ]
+          )
       );
 
       return {
@@ -911,9 +1111,16 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       const updateInput: TaskParameters = { properties };
 
-      const response = await this.client.crm.objects.tasks.basicApi.update(
-        params.taskId,
-        updateInput
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.PATCH,
+          operation: RequestOperation.UPDATE,
+          action: 'Updated HubSpot task',
+          resourceType: HubspotRequestAuditResourceType.TASK,
+          resourceIds: [params.taskId]
+        },
+        () => this.client.crm.objects.tasks.basicApi.update(params.taskId, updateInput)
       );
 
       return {
@@ -1025,21 +1232,31 @@ export class HubspotService implements BaseService<HubspotConfig> {
         });
       }
 
-      const response = await this.client.crm.objects.tasks.searchApi.doSearch({
-        filterGroups: filterGroups.length > 0 ? filterGroups : undefined,
-        properties: [
-          'hs_task_subject',
-          'hs_task_body',
-          'hs_task_status',
-          'hs_task_priority',
-          'hs_task_type',
-          'hs_timestamp',
-          'hubspot_owner_id',
-          'createdate',
-          'hs_lastmodifieddate'
-        ],
-        limit: 10
-      });
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.POST,
+          operation: RequestOperation.ACCESS,
+          action: 'Searched HubSpot tasks',
+          resourceType: HubspotRequestAuditResourceType.TASK
+        },
+        () =>
+          this.client.crm.objects.tasks.searchApi.doSearch({
+            filterGroups: filterGroups.length > 0 ? filterGroups : undefined,
+            properties: [
+              'hs_task_subject',
+              'hs_task_body',
+              'hs_task_status',
+              'hs_task_priority',
+              'hs_task_type',
+              'hs_timestamp',
+              'hubspot_owner_id',
+              'createdate',
+              'hs_lastmodifieddate'
+            ],
+            limit: 10
+          })
+      );
 
       const tasks = response.results.map((task) => {
         return {
@@ -1076,7 +1293,17 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async getOwner(ownerId: number): Promise<HubspotOwner | null> {
     try {
-      const response = await this.client.crm.owners.ownersApi.getById(ownerId);
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.GET,
+          operation: RequestOperation.ACCESS,
+          action: 'Viewed HubSpot user',
+          resourceType: HubspotRequestAuditResourceType.USER,
+          resourceIds: [String(ownerId)]
+        },
+        () => this.client.crm.owners.ownersApi.getById(ownerId)
+      );
       return {
         id: response.userId?.toString() || '',
         firstName: response.firstName || '',
@@ -1091,11 +1318,22 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   private async getCompanyDetails(companyIds: Set<string>): Promise<HubspotCompany[]> {
     try {
-      const response = await this.client.crm.companies.batchApi.read({
-        inputs: Array.from(companyIds).map((id) => ({ id })),
-        properties: ['name', 'domain', 'industry', 'website', 'description'],
-        propertiesWithHistory: []
-      });
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.POST,
+          operation: RequestOperation.ACCESS,
+          action: 'Viewed HubSpot companies',
+          resourceType: HubspotRequestAuditResourceType.COMPANY,
+          resourceIds: Array.from(companyIds)
+        },
+        () =>
+          this.client.crm.companies.batchApi.read({
+            inputs: Array.from(companyIds).map((id) => ({ id })),
+            properties: ['name', 'domain', 'industry', 'website', 'description'],
+            propertiesWithHistory: []
+          })
+      );
 
       return response.results.map((company) => ({
         id: company.id,
@@ -1145,7 +1383,17 @@ export class HubspotService implements BaseService<HubspotConfig> {
         ticketInput.properties.hs_pipeline_stage = validStages[0].id;
       }
 
-      const response = await this.client.crm.tickets.basicApi.create(ticketInput);
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.POST,
+          operation: RequestOperation.UPDATE,
+          action: 'Created HubSpot ticket',
+          resourceType: HubspotRequestAuditResourceType.TICKET
+        },
+        () => this.client.crm.tickets.basicApi.create(ticketInput),
+        (createdTicket) => [createdTicket.id]
+      );
 
       return {
         success: true,
@@ -1182,17 +1430,28 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       const typeId = associationTypeIds[associatedObjectType];
 
-      await this.client.crm.associations.v4.basicApi.create(
-        'ticket',
-        ticketId,
-        associatedObjectType,
-        associatedObjectId,
-        [
-          {
-            associationCategory: TaskAssociationSpecAssociationCategoryEnum.HubspotDefined,
-            associationTypeId: typeId
-          }
-        ]
+      await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.PUT,
+          operation: RequestOperation.UPDATE,
+          action: 'Associated HubSpot ticket with entity',
+          resourceType: HubspotRequestAuditResourceType.ASSOCIATION,
+          resourceIds: [ticketId, associatedObjectId]
+        },
+        () =>
+          this.client.crm.associations.v4.basicApi.create(
+            'ticket',
+            ticketId,
+            associatedObjectType,
+            associatedObjectId,
+            [
+              {
+                associationCategory: TaskAssociationSpecAssociationCategoryEnum.HubspotDefined,
+                associationTypeId: typeId
+              }
+            ]
+          )
       );
 
       return {
@@ -1253,7 +1512,17 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
       const updateInput: TicketParameters = { properties };
 
-      const response = await this.client.crm.tickets.basicApi.update(ticketId, updateInput);
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.PATCH,
+          operation: RequestOperation.UPDATE,
+          action: 'Updated HubSpot ticket',
+          resourceType: HubspotRequestAuditResourceType.TICKET,
+          resourceIds: [ticketId]
+        },
+        () => this.client.crm.tickets.basicApi.update(ticketId, updateInput)
+      );
 
       const ticketData: NonNullable<UpdateTicketResponse['data']>['ticket'] = {
         id: response.id,
@@ -1292,7 +1561,16 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async getPipelines(entityType: string): Promise<BaseResponse<HubspotPipeline[]>> {
     try {
-      const response = await this.client.crm.pipelines.pipelinesApi.getAll(entityType);
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.GET,
+          operation: RequestOperation.ACCESS,
+          action: 'Listed HubSpot pipelines',
+          resourceType: HubspotRequestAuditResourceType.PIPELINE
+        },
+        () => this.client.crm.pipelines.pipelinesApi.getAll(entityType)
+      );
 
       const result = response.results.map((pipeline) => {
         return {
@@ -1332,9 +1610,16 @@ export class HubspotService implements BaseService<HubspotConfig> {
     pipelineId: string;
   }): Promise<HubspotPipelineStage[] | null> {
     try {
-      const stageResponse = await this.client.crm.pipelines.pipelineStagesApi.getAll(
-        entityType,
-        pipelineId
+      const stageResponse = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.GET,
+          operation: RequestOperation.ACCESS,
+          action: 'Listed HubSpot pipeline stages',
+          resourceType: HubspotRequestAuditResourceType.PIPELINE,
+          resourceIds: [pipelineId]
+        },
+        () => this.client.crm.pipelines.pipelineStagesApi.getAll(entityType, pipelineId)
       );
       const validStages = stageResponse.results.filter((stage) => !stage.archived);
       return validStages || null;
@@ -1346,13 +1631,24 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async getTicketById(ticketId: string): Promise<HubspotTicket | null> {
     try {
-      const response = await this.client.crm.tickets.basicApi.getById(ticketId, [
-        'hs_pipeline',
-        'hs_pipeline_stage',
-        'hs_ticket_priority',
-        'hs_ticket_category',
-        'hubspot_owner_id'
-      ]);
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.GET,
+          operation: RequestOperation.ACCESS,
+          action: 'Viewed HubSpot ticket',
+          resourceType: HubspotRequestAuditResourceType.TICKET,
+          resourceIds: [ticketId]
+        },
+        () =>
+          this.client.crm.tickets.basicApi.getById(ticketId, [
+            'hs_pipeline',
+            'hs_pipeline_stage',
+            'hs_ticket_priority',
+            'hs_ticket_category',
+            'hubspot_owner_id'
+          ])
+      );
       const result = {
         id: response.id,
         url: this.getTicketUrl(response.id),
@@ -1401,15 +1697,26 @@ export class HubspotService implements BaseService<HubspotConfig> {
 
   async getDealById(dealId: string): Promise<DealResponse | null> {
     try {
-      const response = await this.client.crm.deals.basicApi.getById(dealId, [
-        'dealname',
-        'dealstage',
-        'amount',
-        'closedate',
-        'description',
-        'pipeline',
-        'hubspot_owner_id'
-      ]);
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.GET,
+          operation: RequestOperation.ACCESS,
+          action: 'Viewed HubSpot deal',
+          resourceType: HubspotRequestAuditResourceType.DEAL,
+          resourceIds: [dealId]
+        },
+        () =>
+          this.client.crm.deals.basicApi.getById(dealId, [
+            'dealname',
+            'dealstage',
+            'amount',
+            'closedate',
+            'description',
+            'pipeline',
+            'hubspot_owner_id'
+          ])
+      );
       return response;
     } catch (error) {
       console.error('Error getting deal by Id', error);
@@ -1642,7 +1949,16 @@ export class HubspotService implements BaseService<HubspotConfig> {
         limit: 100
       };
 
-      const response = await this.client.crm.tickets.searchApi.doSearch(searchRequest);
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.POST,
+          operation: RequestOperation.ACCESS,
+          action: 'Searched HubSpot tickets',
+          resourceType: HubspotRequestAuditResourceType.TICKET
+        },
+        () => this.client.crm.tickets.searchApi.doSearch(searchRequest)
+      );
 
       // Standard properties that are explicitly included in the response
       const standardProperties = new Set([
@@ -1729,7 +2045,16 @@ export class HubspotService implements BaseService<HubspotConfig> {
         contact: 'contact'
       };
       const hubspotObjectType = objectTypeMap[objectType];
-      const response = await this.client.crm.properties.coreApi.getAll(hubspotObjectType);
+      const response = await this.executeAuditedRequest(
+        {
+          integration: ExternalIntegration.HUBSPOT,
+          method: HttpMethod.GET,
+          operation: RequestOperation.ACCESS,
+          action: 'Listed HubSpot properties',
+          resourceType: HubspotRequestAuditResourceType.PROPERTY
+        },
+        () => this.client.crm.properties.coreApi.getAll(hubspotObjectType)
+      );
       const properties: HubspotProperty[] = response.results.map((prop) => ({
         name: prop.name,
         label: prop.label,

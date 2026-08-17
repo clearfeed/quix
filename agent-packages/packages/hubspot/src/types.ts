@@ -18,6 +18,7 @@ import {
   associateDealWithEntitySchema
 } from './schema';
 import { z } from 'zod';
+import type { HubspotRequestAuditObserver } from './audit';
 
 /**
  * Represents the possible value types for HubSpot custom fields
@@ -27,6 +28,12 @@ export type HubSpotCustomFieldValueType = string | number | boolean | string[];
 export interface HubspotConfig extends BaseConfig {
   accessToken: string;
   hubId: number;
+  /**
+   * Sink for auditing every outbound HubSpot API request made by this service.
+   * When provided, each call emits a {@link HubspotRequestAuditObserver} event describing the
+   * request and its outcome.
+   */
+  auditObserver: HubspotRequestAuditObserver;
 }
 
 export interface HubspotOwner {
