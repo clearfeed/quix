@@ -294,6 +294,13 @@
   dependencies:
     zod "^4.3.5"
 
+"@clearfeed-ai/quix-common-agent@2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-2.1.1.tgz#2220e3425073643e298946632dc5121c04d89c01"
+  integrity sha512-VJYb9fjiTA3gmxPp1OU7MPmIiAunULTqOhpFOIvX02YOEH0TN2pKc91c8W9QkbGck5t/vpX+Vf11Q4B7dmr2Qw==
+  dependencies:
+    zod "^4.3.5"
+
 "@google/generative-ai@^0.24.0":
   version "0.24.1"
   resolved "https://registry.yarnpkg.com/@google/generative-ai/-/generative-ai-0.24.1.tgz#634a3c06f8ea7a6125c1b0d6c1e66bb11afb52c9"
@@ -1711,9 +1718,9 @@ find-up@^4.0.0, find-up@^4.1.0:
     path-exists "^4.0.0"
 
 follow-redirects@^1.16.0:
-  version "1.16.0"
-  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.16.0.tgz#28474a159d3b9d11ef62050a14ed60e4df6d61bc"
-  integrity sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==
+  version "1.16.1"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.16.1.tgz#6e0efa40a727fb369b98dab15883ec34787d675e"
+  integrity sha512-FNvFGzoMLWmE6Yj9spb/zjd7yiNCHiAW9/Tg9CXrQ8wuu32HtlJOwWO11OJafl5FfY3DxTdQ0vj42zU1kvv5jg==
 
 form-data@^2.5.0:
   version "2.5.5"
