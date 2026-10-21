@@ -17,7 +17,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          # eMudhra CA fix; keep the floor even while the Node manifest/cache catches up.
+          node-version: '^22.23.4'
+          check-latest: true
 
       - name: Install dependencies
         run: |
