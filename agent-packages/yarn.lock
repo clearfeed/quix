@@ -294,6 +294,13 @@
   dependencies:
     zod "^4.3.5"
 
+"@clearfeed-ai/quix-common-agent@2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-2.1.1.tgz#2220e3425073643e298946632dc5121c04d89c01"
+  integrity sha512-VJYb9fjiTA3gmxPp1OU7MPmIiAunULTqOhpFOIvX02YOEH0TN2pKc91c8W9QkbGck5t/vpX+Vf11Q4B7dmr2Qw==
+  dependencies:
+    zod "^4.3.5"
+
 "@google/generative-ai@^0.24.0":
   version "0.24.1"
   resolved "https://registry.yarnpkg.com/@google/generative-ai/-/generative-ai-0.24.1.tgz#634a3c06f8ea7a6125c1b0d6c1e66bb11afb52c9"
@@ -3843,10 +3850,10 @@ yocto-queue@^0.1.0:
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
 
-"zod@^3.25.76 || ^4", zod@^4.3.5:
-  version "4.3.5"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-4.3.5.tgz#aeb269a6f9fc259b1212c348c7c5432aaa474d2a"
-  integrity sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g==
+"zod@^3.25.76 || ^4", zod@^4.3.5, zod@^4.6.6:
+  version "4.6.6"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-4.6.6.tgz#0bb0cf57b87011a71ec28ed2e1b51f6455563f9a"
+  integrity sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==
 
 zwitch@^1.0.0:
   version "1.0.5"
