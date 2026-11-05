@@ -6629,9 +6629,9 @@ pirates@^4.0.4:
   integrity sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==
 
 piscina@^4.3.1:
-  version "4.9.2"
-  resolved "https://registry.yarnpkg.com/piscina/-/piscina-4.9.2.tgz#80f2c2375231720337c703e443941adfac8caf75"
-  integrity sha512-Fq0FERJWFEUpB4eSY59wSNwXD4RYqR+nR/WiEVcZW8IWfVBxJJafcgTEZDQo8k3w0sUarJ8RyVbbUF4GQ2LGbQ==
+  version "4.9.4"
+  resolved "https://registry.yarnpkg.com/piscina/-/piscina-4.9.4.tgz#1fe911df1ffe920325c24822e5d7b596833a0df7"
+  integrity sha512-RyBDr2VheQ8ZfH3N8SzQZHztqVyOtadTwLnUYof6gdj5161/eu2wNhCbGl5GHnNKDpnkicJYpKtL2J+y/gk6XA==
   optionalDependencies:
     "@napi-rs/nice" "^1.0.1"
 
