@@ -294,6 +294,13 @@
   dependencies:
     zod "^4.3.5"
 
+"@clearfeed-ai/quix-common-agent@2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-2.1.1.tgz#2220e3425073643e298946632dc5121c04d89c01"
+  integrity sha512-VJYb9fjiTA3gmxPp1OU7MPmIiAunULTqOhpFOIvX02YOEH0TN2pKc91c8W9QkbGck5t/vpX+Vf11Q4B7dmr2Qw==
+  dependencies:
+    zod "^4.3.5"
+
 "@google/generative-ai@^0.24.0":
   version "0.24.1"
   resolved "https://registry.yarnpkg.com/@google/generative-ai/-/generative-ai-0.24.1.tgz#634a3c06f8ea7a6125c1b0d6c1e66bb11afb52c9"
@@ -2853,9 +2860,9 @@ node-fetch@^2.6.0, node-fetch@^2.6.1, node-fetch@^2.6.7, node-fetch@^2.7.0:
     whatwg-url "^5.0.0"
 
 node-forge@^1.2.1:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/node-forge/-/node-forge-1.4.0.tgz#1c7b7d8bdc2d078739f58287d589d903a11b2fc2"
-  integrity sha512-LarFH0+6VfriEhqMMcLX2F7SwSXeWwnEAJEsYm5QKWchiVYVvJyV9v7UDvUv+w5HO23ZpQTXDv/GxdDdMyOuoQ==
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/node-forge/-/node-forge-1.4.3.tgz#5dc578529ac8e162f58038c6673337cabfab3277"
+  integrity sha512-P6wzfh6t70avmV8FrVEAd/36sOPJQ+hkaJVX1Laap9J/77m7M0eyozDvc8SwnDf4P7MP94gwbAAo0rg3YVXT+g==
 
 node-int64@^0.4.0:
   version "0.4.0"
