@@ -47,7 +47,7 @@ export function createBambooHRToolsExport(config: BambooHRToolsConfig): Toolkit 
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.getEmployee(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.getEmployee>[0]) => service.getEmployee(args)),
         {
           name: 'get_bamboohr_employee',
           description:
@@ -62,7 +62,7 @@ export function createBambooHRToolsExport(config: BambooHRToolsConfig): Toolkit 
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.getEmployeeTimeOffBalance(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.getEmployeeTimeOffBalance>[0]) => service.getEmployeeTimeOffBalance(args)),
         {
           name: 'get_bamboohr_employee_time_off_balance',
           description:
@@ -77,7 +77,7 @@ export function createBambooHRToolsExport(config: BambooHRToolsConfig): Toolkit 
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.getTimeOffRequests(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.getTimeOffRequests>[0]) => service.getTimeOffRequests(args)),
         {
           name: 'get_bamboohr_time_off_requests_for_employee',
           description:
@@ -103,7 +103,7 @@ export function createBambooHRToolsExport(config: BambooHRToolsConfig): Toolkit 
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.createTimeOffRequest(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.createTimeOffRequest>[0]) => service.createTimeOffRequest(args)),
         {
           name: 'create_bamboohr_time_off_request',
           description:

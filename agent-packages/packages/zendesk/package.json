@@ -1,6 +1,6 @@
 {
   "name": "@clearfeed-ai/quix-zendesk-agent",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -10,13 +10,14 @@
     "clean": "rm -rf ./dist && find . -type f \\( -name \"*.js\" -o -name \"*.js.map\" -o -name \"*.d.ts\" \\) ! -path \"*/node_modules/*\" -delete",
     "build": "yarn clean && tsc",
     "watch": "tsc --watch",
-    "test": "jest"
+    "test": "jest",
+    "prepublishOnly": "yarn build"
   },
   "peerDependencies": {
-    "@langchain/core": "1.1.8"
+    "@langchain/core": "^1.1.8"
   },
   "dependencies": {
-    "@clearfeed-ai/quix-common-agent": "2.1.0",
+    "@clearfeed-ai/quix-common-agent": "^2.3.0",
     "node-zendesk": "^6.0.1"
   },
   "devDependencies": {

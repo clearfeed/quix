@@ -1,7 +1,7 @@
 import type { OktaAuthConfig } from './types';
 import { OktaService } from './index';
-import { Runtime } from 'langchain';
 import { ToolConfigurable } from '@clearfeed-ai/quix-common-agent';
+type Runtime = { configurable?: unknown };
 
 /**
  * Creates a tool handler that resolves user ID.
