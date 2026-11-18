@@ -7,7 +7,7 @@
   "version": "1.0.2",
   "description": "Quix Packages",
   "scripts": {
-    "build": "yarn workspaces run build",
+    "build": "yarn workspace @clearfeed-ai/quix-common-agent build && yarn workspaces run build",
     "test": "yarn workspaces run test"
   },
   "keywords": [
