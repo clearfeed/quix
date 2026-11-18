@@ -1,9 +1,9 @@
 import { BAMBOOHR_CONSTANTS } from './constants';
 import type { BambooHRToolsConfig } from './types';
 import { BambooHRService } from './index';
-import { Runtime } from 'langchain';
 import { ToolConfigurable } from '@clearfeed-ai/quix-common-agent';
-import { Undefinable } from 'slack-block-builder/dist/internal';
+type Runtime = { configurable?: unknown };
+type Undefinable<T> = T | undefined;
 
 /**
  * Creates a tool handler that resolves employee ID.

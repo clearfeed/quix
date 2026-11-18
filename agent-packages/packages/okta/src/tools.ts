@@ -255,7 +255,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.getUser(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.getUser>[0]) => service.getUser(args)),
         {
           name: 'get_okta_user',
           description: 'Get details of a specific user in Okta',
@@ -269,7 +269,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.updateUser(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.updateUser>[0]) => service.updateUser(args)),
         {
           name: 'update_okta_user',
           description: 'Update an existing user in Okta',
@@ -283,7 +283,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.suspendUser(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.suspendUser>[0]) => service.suspendUser(args)),
         {
           name: 'suspend_okta_user',
           description: 'Suspend a user in Okta',
@@ -297,7 +297,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.unsuspendUser(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.unsuspendUser>[0]) => service.unsuspendUser(args)),
         {
           name: 'unsuspend_okta_user',
           description: 'Reactivate a suspended user in Okta',
@@ -311,7 +311,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.activateUser(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.activateUser>[0]) => service.activateUser(args)),
         {
           name: 'activate_okta_user',
           description: 'Activate a user in Okta, optionally activate without sending an email',
@@ -325,7 +325,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.deactivateUser(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.deactivateUser>[0]) => service.deactivateUser(args)),
         {
           name: 'deactivate_okta_user',
           description:
@@ -340,7 +340,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.unlockUser(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.unlockUser>[0]) => service.unlockUser(args)),
         {
           name: 'unlock_okta_user',
           description: 'Unlock a locked-out user in Okta',
@@ -354,7 +354,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.resetUserPassword(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.resetUserPassword>[0]) => service.resetUserPassword(args)),
         {
           name: 'reset_okta_user_password',
           description: 'Send password reset email with one-time token to a user in Okta',
@@ -368,7 +368,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.expireUserPassword(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.expireUserPassword>[0]) => service.expireUserPassword(args)),
         {
           name: 'expire_okta_user_password',
           description: "Expire a user's password in Okta, requiring them to reset it on next login",
@@ -382,7 +382,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.resetUserFactors(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.resetUserFactors>[0]) => service.resetUserFactors(args)),
         {
           name: 'reset_okta_user_factors',
           description: 'Reset enrolled MFA factors for a user in Okta',
@@ -396,7 +396,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.deleteUser(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.deleteUser>[0]) => service.deleteUser(args)),
         {
           name: 'delete_okta_user',
           description: 'Delete a user in Okta. This will fail if user is not deactivated.',
@@ -527,7 +527,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.listUserGroups(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.listUserGroups>[0]) => service.listUserGroups(args)),
         {
           name: 'list_okta_user_groups',
           description: 'List groups for a specific user in Okta',
@@ -550,7 +550,7 @@ export function createOktaToolsExport(config: OktaAuthConfig): Toolkit {
     },
     {
       tool: tool(
-        createToolHandler(config, service, (args) => service.listUserDevices(args)),
+        createToolHandler(config, service, (args: Parameters<typeof service.listUserDevices>[0]) => service.listUserDevices(args)),
         {
           name: 'list_okta_user_devices',
           description: 'List devices for a specific user in Okta',

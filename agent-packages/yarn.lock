@@ -287,13 +287,6 @@
   resolved "https://registry.yarnpkg.com/@cfworker/json-schema/-/json-schema-4.1.1.tgz#4a2a3947ee9fa7b7c24be981422831b8674c3be6"
   integrity sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==
 
-"@clearfeed-ai/quix-common-agent@2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@clearfeed-ai/quix-common-agent/-/quix-common-agent-2.1.0.tgz#3cbb31bfd6a57da470f6a1fe5c81c824bd79febd"
-  integrity sha512-qROfbukfUeF6/AvMcml7u+SsUWgICMQh1lvPj7/pFW3uEltn5hvDE7oYcV9mbT2XmI3fIi6b808HD6NG9CQGXA==
-  dependencies:
-    zod "^4.3.5"
-
 "@google/generative-ai@^0.24.0":
   version "0.24.1"
   resolved "https://registry.yarnpkg.com/@google/generative-ai/-/generative-ai-0.24.1.tgz#634a3c06f8ea7a6125c1b0d6c1e66bb11afb52c9"
@@ -886,6 +879,11 @@
   integrity sha512-AVCSPccfb/L1uuzSneNx3f/W7i9vI3fyzjLZPhZ2sF+0HevpM9d8a74n915ONK02C20hOncKbUQYI4Wz9NUelA==
   dependencies:
     "@types/node" ">=4.0"
+
+"@types/lodash@^4.17.0":
+  version "4.17.27"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.17.27.tgz#15fb73275b64dbfe49e2ae8376bb469b352a47a7"
+  integrity sha512-VenMRv/eKNrspX9v3H4dbmjsrnCOYdYBG3kxXKk3dG6X+urBGcj2Prww3xw1U5K4FV/mE4h5GbWd0szEKf+9ew==
 
 "@types/mdast@^3.0.0":
   version "3.0.15"
